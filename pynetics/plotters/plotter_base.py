@@ -1,10 +1,10 @@
-from pynetic import ModelShell
+from pynetics import ModelShell
 
 
-class CorrectorBase(ModelShell):
+class PlotterBase(ModelShell):
     def __init__(self, owner):
         """
         A class acts as a base class to be inherited by other
-        corrector classes, it is not functional on its own.
+        plotter classes, it is not functional on its own.
         """
         ModelShell.__init__(self, owner)

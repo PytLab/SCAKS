@@ -1,5 +1,5 @@
-from pynetic import ModelShell
-from pynetic.functions import *
+from pynetics import ModelShell
+from pynetics.functions import *
 import numpy as np
 
 

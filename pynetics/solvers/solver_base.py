@@ -1,8 +1,8 @@
-from pynetic import ModelShell
+from pynetics import ModelShell
 import mpmath as mp
 from scipy.optimize import golden
 import numpy as np
-from pynetic.functions import numerical_jacobian
+from pynetics.functions import numerical_jacobian
 from scipy.integrate import odeint
 import gmpy2
 import sympy as sym

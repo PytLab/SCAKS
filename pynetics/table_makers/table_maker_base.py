@@ -1,4 +1,4 @@
-from pynetic import ModelShell
+from pynetics import ModelShell
 
 
 class TableMakerBase(ModelShell):
