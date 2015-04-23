@@ -1,6 +1,6 @@
 import sys
 sys.path.append('D:\Dropbox\Code\Python\kinetic')
-from pynetic import model
+from pynetics import model
 
 #create micro kinetic model instance
 m = model.KineticModel(setup_file='formic_acid.mkm')
