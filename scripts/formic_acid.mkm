@@ -1,0 +1,43 @@
+rxn_expressions = [
+    'HCOOH_g + *_s -> HCOOH_s',
+    'HCOOH_s + *_s <-> H-COOH_s + *_s -> COOH_s + H_s',
+    'COOH_s + *_s <-> COO-H_s + *_s -> CO2_s + H_s',
+    'H_s + H_s <-> H-H_s + *_s -> H2_g + 2*_s',
+    'CO2_s -> CO2_g + *_s',
+]
+
+#reference dict for generating 'generalized formation energy'
+ref_dict = {}
+ref_dict['H'] = 0.5 * -7.246
+ref_dict['O'] = -14.776 - 2*ref_dict['H']
+ref_dict['C'] = -30.491 - 2*ref_dict['H'] - 2*ref_dict['O']
+ref_dict['111'] = -303.55
+#ref_dict['sub_111'] = -271.54
+
+species_definitions = {}
+species_definitions['HCOOH_g'] = {'pressure': 0.1}  # define the gas pressures
+species_definitions['H2_g'] = {'pressure': 0.03}  # 0.094
+species_definitions['CO2_g'] = {'pressure': 0.03}
+
+species_definitions['s'] = {'site_name': '111', 'total': 1.0, 'type': 'site'}
+#species_definitions['ss'] = {'site_name': 'sub_111', 'total': 1.0, 'type': 'site'}
+
+surface_name = 'Pd'
+
+temperature = 500  # Temperature of the reaction
+
+gas_thermo_mode = 'shomate_gas'
+
+
+#parameters for solver
+tolerance = 1e-20  # convergence criterion
+max_rootfinding_iterations = 100  # maximum iterations
+residual_threshold = 1.2  # divergent root criterion
+
+
+#parameters for advanced use
+perturbation_size = 0.01  # numerical jacobian perturbation size
+perturbation_direction = 'left'  # numerical jacobian perturbation direction
+initial_guess_scale_factor = 1e-2  # scaling factor for initial guess
+
+stable_criterion = 1e-20  # criterion for almost stagnated norm
