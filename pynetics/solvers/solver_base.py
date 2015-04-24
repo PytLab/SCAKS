@@ -746,6 +746,17 @@ class SolverBase(ModelShell):
 
         return kfs, krs
 
+    def get_rates_by_sym(self):
+        """
+        Calculate rates values by back substitution
+        to symbol expressions.
+        """
+        if not hasattr(self, 'rf_syms') or not hasattr(self, 'rr_syms'):
+            self.get_rate_syms()
+        #get substitution dict(need G, theta, p, constants dicts)
+        G_subs_dict = self.get_G_subs_dict()
+        theta_subs_dict = self.get_theta_subs_dict()
+
     def get_G_subs_dict(self):
         "Get values from solver's data dict."
         #free energy value dict
@@ -770,7 +781,7 @@ class SolverBase(ModelShell):
 
         return p_dict
 
-        ###### calculate micro kinetic model with Sympy END ######
+    ###### calculate micro kinetic model with Sympy END ######
 
 
 class NewtonRoot(object):  # Hacked from CatMap

@@ -1,5 +1,5 @@
 from table_maker_base import *
-from pynetic.functions import string2symbols
+from pynetics.functions import string2symbols
 import string
 
 
