@@ -528,7 +528,8 @@ class SolverBase(ModelShell):
         fsite_theta_sym = []
         for site_name in self._owner.site_names:
             total = self._owner.species_definitions[site_name]['total']
-            free_site_cvg = sym.Symbol(str(total), is_real=True)
+            #free_site_cvg = sym.Symbol(str(total), is_real=True)
+            free_site_cvg = total
             for ads_name in self.classified_adsorbates[site_name]:
                 free_site_cvg -= self.extract_symbol(sp_name=ads_name,
                                                      symbol_type='ads_cvg')
@@ -722,6 +723,31 @@ class SolverBase(ModelShell):
 
         return rf_syms, rr_syms
 
+    def get_subs_dict(self, **kwargs):
+        "get substitution dict(e.g. G, theta, p, constants dicts)."
+        #free energy substitution dict
+        G_subs_dict = self.get_G_subs_dict()
+        #coverage substitution dict
+        if 'cvgs_tuple' in kwargs:
+            theta_subs_dict = self.get_theta_subs_dict(kwargs['cvgs_tuple'])
+        #pressure substitution dict
+        p_subs_dict = self.get_p_subs_dict()
+        #constants substitution dict
+        constants_subs_dict = self.constants_subs_dict
+        #get dicts list
+        if 'cvgs_tuple' in kwargs:
+            dicts_list = [G_subs_dict, theta_subs_dict,
+                          constants_subs_dict, p_subs_dict]
+        else:
+            dicts_list = [G_subs_dict, constants_subs_dict, p_subs_dict]
+
+        #merge dicts
+        subs_dict = {}
+        for dic in dicts_list:
+            subs_dict = dict(subs_dict, **dic)
+
+        return subs_dict
+
     def get_rate_constants_by_sym(self):
         """
         Calculate rate constants values
@@ -730,8 +756,8 @@ class SolverBase(ModelShell):
         if not hasattr(self, 'kf_syms') or not hasattr(self, 'kr_syms'):
             self.get_rate_constant_syms()
         #get substitution dict(need G_dict and constants dict)
-        G_subs_dict = self.get_G_subs_dict()
-        subs_dict = dict(G_subs_dict, **self.constants_subs_dict)  # merge 2 dicts
+        subs_dict = self.get_subs_dict()
+
         kfs, krs = [], []
         #calculate kfs
         for kf_sym in self.kf_syms:
@@ -746,16 +772,29 @@ class SolverBase(ModelShell):
 
         return kfs, krs
 
-    def get_rates_by_sym(self):
+    def get_rates_by_sym(self, cvgs_tuple):
         """
-        Calculate rates values by back substitution
-        to symbol expressions.
+        Expect a coverages tuple, and then calculate rates values
+        by back substitution to symbol expressions,
+        return rfs, rrs
         """
         if not hasattr(self, 'rf_syms') or not hasattr(self, 'rr_syms'):
             self.get_rate_syms()
         #get substitution dict(need G, theta, p, constants dicts)
-        G_subs_dict = self.get_G_subs_dict()
-        theta_subs_dict = self.get_theta_subs_dict()
+        subs_dict = self.get_subs_dict(cvgs_tuple=cvgs_tuple)
+        #calculate rfs
+        rfs, rrs = [], []
+        for rf_sym in self.rf_syms:
+            rf = self._mpf(rf_sym.evalf(subs=subs_dict))
+            rfs.append(rf)
+        #cal rrs
+        for rr_sym in self.rr_syms:
+            rr = self._mpf(rr_sym.evalf(subs=subs_dict))
+            rrs.append(rr)
+
+        self.rfs, self.rrs = tuple(rfs), tuple(rrs)
+
+        return tuple(rfs), tuple(rrs)
 
     def get_G_subs_dict(self):
         "Get values from solver's data dict."
@@ -766,10 +805,10 @@ class SolverBase(ModelShell):
 
         return G_dict
 
-    def get_theta_subs_dict(self, cvg_tuple):
+    def get_theta_subs_dict(self, cvgs_tuple):
         theta_dict = {}
         for idx, ads_name in enumerate(self._owner.adsorbate_names):
-            theta_dict.setdefault(self.ads_theta_sym[idx], cvg_tuple[idx])
+            theta_dict.setdefault(self.ads_theta_sym[idx], cvgs_tuple[idx])
 
         return theta_dict
 
