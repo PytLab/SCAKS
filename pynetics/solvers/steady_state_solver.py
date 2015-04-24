@@ -22,31 +22,31 @@ class SteadyStateSolver(SolverBase):
             'coverages_constraint_warning': '${initial_cvgs} --> ' +
                                             '${constrained_cvgs}\n',
 
-                   'inital_guess_success' : 'initial point (${initial_cvgs})\n',
-                 'rootfinding_in-process' : 'iteration ${n_iter} with ' +
+                    'inital_guess_success': 'initial point (${initial_cvgs})\n',
+                  'rootfinding_in-process': 'iteration ${n_iter} with ' +
                                             'residual ${resid}, norm ${norm}, '
                                             '\n' + ' '*38 + 'dtheta/dt ${fx}' +
                                             '\n' + ' '*38 + 'coverage ${x}',
 
-                    'rootfinding_success' : 'iteration ${n_iter} with residual ' +
+                     'rootfinding_success': 'iteration ${n_iter} with residual ' +
                                             '${resid}\n\nsteady_state_root:\n${root}',
 
-                       'rootfinding_fail' : '\niteration ${n_iter} with ' +
+                        'rootfinding_fail': '\niteration ${n_iter} with ' +
                                             'residual ${resid}, norm ${norm}',
 
-                      'rootfinding_break' : 'iteration ${n_iter} with residual ' +
+                       'rootfinding_break': 'iteration ${n_iter} with residual ' +
                                             '${resid}, \nstable_root (${root})\n',
 
-                    'rootfinding_maxiter' : '\nout of iteration at iteration ' +
+                     'rootfinding_maxiter': '\nout of iteration at iteration ' +
                                             '{$n_iter} - residual ${resid}',
 
-           'modify_initial_guess_success' : '\n${old_init_cvg} --> ' +
+            'modify_initial_guess_success': '\n${old_init_cvg} --> ' +
                                             '${new_init_cvg}\n',
 
-                   'rootfinding_continue' : 'Bad steady_state_root : ${bad_root}, ' +
+                    'rootfinding_continue': 'Bad steady_state_root : ${bad_root}, ' +
                                             'iteration continue.',
 
-                      'rootfinding_stable' : 'iteration ${n_iter} with residual ' +
+                      'rootfinding_stable': 'iteration ${n_iter} with residual ' +
                                             '${resid}, \nstable_root (${root})\n',
         }
         self.logger._templates_dict.update(self.logger_template_dict)
@@ -388,7 +388,9 @@ class SteadyStateSolver(SolverBase):
                                                         poly_expression))
         return J
 
+    ######################################################
     ###### calculate micro kinetic model with Sympy ######
+    ######################################################
 
     def get_elementary_dtheta_dt_sym(self, adsorbate_name,
                                      elementary_rxn_list):
@@ -427,16 +429,46 @@ class SteadyStateSolver(SolverBase):
         Expect a adsorbate_name, and go through self.rxns_list,
         return dtheta_dt of the adsorbate.
         """
-        total_dtheta_dt_sym = sym.Symbol('0', is_real=True)
+        #total_dtheta_dt_sym = sym.Symbol('0', is_real=True)
+        total_dtheta_dt_sym = 0
         for elementary_rxn_list in self.rxns_list:
             dtheta_dt_sym = \
                 self.get_elementary_dtheta_dt_sym(adsorbate_name,
                                                   elementary_rxn_list)
-            if not dtheta_dt_sym:
+            if not dtheta_dt_sym:  # rxn equation do not contain the adsorbate
                 continue
             total_dtheta_dt_sym = total_dtheta_dt_sym + dtheta_dt_sym
 
         return total_dtheta_dt_sym
+
+    def get_dtheta_dt_syms(self):
+        "Go through adsorbate_names to get dtheta_dts list."
+        dtheta_dt_syms = []
+        for adsorbate_name in self._owner.adsorbate_names:
+            dtheta_dt_sym = self.get_adsorbate_dtheta_dt_sym(adsorbate_name)
+            dtheta_dt_syms.append(dtheta_dt_sym)
+        self.dtheta_dt_syms = tuple(dtheta_dt_syms)
+
+        return tuple(dtheta_dt_syms)
+
+    def steady_state_function_by_sym(self, cvgs_tuple):
+        """
+        Recieve a coverages tuple containing coverages of adsorbates,
+        return a tuple of dtheta_dts of corresponding adsorbates.
+        """
+        if not hasattr(self, 'dtheta_dt_syms'):
+            self.get_dtheta_dt_syms()
+        #get substitution dict
+        subs_dict = self.get_subs_dict(cvgs_tuple=cvgs_tuple)
+        #loop to get values of dtheta/dt
+        dtheta_dts = []
+        for dtheta_dt_sym in self.dtheta_dt_syms:
+            dtheta_dt = self._mpf(dtheta_dt_sym.evalf(subs=subs_dict))
+            dtheta_dts.append(dtheta_dt)
+
+        return tuple(dtheta_dts)
+
+    # miss analytical_jacobian_by_sym(), may add later...
 
     ###### calculate micro kinetic model with Sympy END ######
 
