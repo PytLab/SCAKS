@@ -820,7 +820,9 @@ class SolverBase(ModelShell):
 
         return p_dict
 
+    ##########################################################
     ###### calculate micro kinetic model with Sympy END ######
+    ##########################################################
 
 
 class NewtonRoot(object):  # Hacked from CatMap

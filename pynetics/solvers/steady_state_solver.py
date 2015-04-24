@@ -389,7 +389,9 @@ class SteadyStateSolver(SolverBase):
         return J
 
     ######################################################
+    ######                                          ######
     ###### calculate micro kinetic model with Sympy ######
+    ######                                          ######
     ######################################################
 
     def get_elementary_dtheta_dt_sym(self, adsorbate_name,
@@ -468,9 +470,46 @@ class SteadyStateSolver(SolverBase):
 
         return tuple(dtheta_dts)
 
-    # miss analytical_jacobian_by_sym(), may add later...
+    def analytical_jacobian_sym(self, dtheta_dt_syms):
+        """
+        Get the jacobian matrix symbol expressions of
+        the dtheta/dt nonlinear equations.
+        Return a jacobian matrix(in self._matrix form).
+        """
+        m = n = len(dtheta_dt_syms)
+        sym_jacobian = self._matrix(m, n)
+        for i in xrange(m):
+            dthe_dt_sym = dtheta_dt_syms[i]
+            for j in xrange(n):
+                ads_name = self._owner.adsorbate_names[j]
+                theta_sym = self.extract_symbol(ads_name, 'ads_cvg')
+                sym_jacobian[i, j] = \
+                    sym.Derivative(dthe_dt_sym, theta_sym).doit()
 
+        return sym_jacobian
+
+    def analytical_jacobian_by_sym(self, dtheta_dt_syms, cvgs_tuple):
+        """
+        Get the jacobian matrix of the dtheta/dt nonlinear equations.
+        Return a jacobian matrix(in self._matrix form).
+        """
+        #get substitution dicts
+        subs_dict = self.get_subs_dict(cvgs_tuple=cvgs_tuple)
+        #get symbol jacobian matrix
+        sym_jacobian = self.analytical_jacobian_sym(dtheta_dt_syms)
+        #get numerial jacobian matrix
+        num_jacobian = sym_jacobian.evalf(subs=subs_dict)
+        #keep precision
+#        m, n = num_jacobian.shape
+#        for i in xrange(m):
+#            for j in xrange(n):
+#                num_jacobian[i, j] = self._mpf(num_jacobian[i, j])
+
+        return num_jacobian  # may lose precision
+
+    ##########################################################
     ###### calculate micro kinetic model with Sympy END ######
+    ##########################################################
 
     def get_residual(self, cvgs_tuple):
         "Return the minimum cvg rate wrt coverage."
