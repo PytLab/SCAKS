@@ -1,6 +1,6 @@
 import sys
 sys.path.append('D:\Dropbox\Code\Python\kinetic')
-from pynetic import model
+from pynetics import model
 import matplotlib.pyplot as plt
 
 #create micro kinetic model instance
