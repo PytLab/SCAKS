@@ -820,6 +820,22 @@ class SolverBase(ModelShell):
 
         return p_dict
 
+    def get_net_rate_syms(self):
+        "Go through rfs and rrs, to get net rate symbolic expressions."
+        if not hasattr(self, 'rfs_syms') or not hasattr(self, 'rrs_syms'):
+            self.get_rate_syms()
+        net_rate_syms = []
+        for rf_sym, rr_sym in zip(self.rf_syms, self.rr_syms):
+            net_rate_sym = rf_sym - rr_sym
+            net_rate_syms.append(net_rate_sym)
+
+        self.net_rate_syms = net_rate_syms
+
+        return net_rate_syms
+
+    def get_tof_syms(self):
+        "Return a tuple containing turnover frequencies of gases."
+
     ##########################################################
     ###### calculate micro kinetic model with Sympy END ######
     ##########################################################
