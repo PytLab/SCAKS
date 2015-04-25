@@ -829,9 +829,20 @@ class SolverBase(ModelShell):
             net_rate_sym = rf_sym - rr_sym
             net_rate_syms.append(net_rate_sym)
 
-        self.net_rate_syms = net_rate_syms
+        self.net_rate_syms = tuple(net_rate_syms)
 
-        return net_rate_syms
+        return tuple(net_rate_syms)
+
+    def get_net_rates_by_sym(self, cvgs_tuple):
+        if not hasattr(self, 'net_rate_syms'):
+            self.get_net_rate_syms()
+        #get substitution dict
+        subs_dict = self.get_subs_dict(cvgs_tuple=cvgs_tuple)
+        net_rate_syms_vect = sym.Matrix(self.net_rate_syms)  # col vect
+        #back substitution
+        net_rates_vect = net_rate_syms_vect.evalf(subs=subs_dict)
+
+        return tuple(net_rates_vect)
 
     def get_tof_syms(self):
         "Return a tuple containing turnover frequencies of gases."
