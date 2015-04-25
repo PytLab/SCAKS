@@ -242,6 +242,9 @@ class SolverBase(ModelShell):
         self._cvg_types = self._owner.adsorbate_names + free_site_names
         kB, h, T = [self._mpf(constant) for constant in
                     [self._owner._kB, self._owner._h, self._owner.temperature]]
+        #check whether solver has load data from species_definition
+        if not self.has_data:
+            self.get_data_dict()
 #        boltz_sum = sum([mp.exp(-self.E[adsorbate]/(kB*T))
 #                                    for adsorbate in self._cvg_types])
         boltz_sum = sum([self._math.exp(-self.E[adsorbate]/(kB*T))
