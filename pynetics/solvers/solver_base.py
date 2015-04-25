@@ -524,9 +524,10 @@ class SolverBase(ModelShell):
 
         #get coverage symnols objects
         #for adsorbates
-        self.ads_theta_sym = tuple([sym.Symbol(r'theta_' + ads_name,
-                                               is_real=True)
-                                    for ads_name in self._owner.adsorbate_names])
+        self.ads_theta_sym = tuple(
+            [sym.Symbol(r'theta_' + ads_name, is_real=True)
+             for ads_name in self._owner.adsorbate_names]
+            )
         #for free sites
         fsite_theta_sym = []
         for site_name in self._owner.site_names:
