@@ -874,6 +874,40 @@ class SolverBase(ModelShell):
 
         return tuple(tof_vect)
 
+    def get_DTRC_syms(self):
+        """
+        Return a m*n matrix containing XTRC_i_j,
+        i is order of elementary reaction,
+        j is the order of species on surf.
+        m is the number of elementary reactions,
+        n is the number of species on surf.
+        """
+        sp_names = self._owner.adsorbate_names + \
+            self._owner.transition_state_names
+        tof_syms = self.get_tof_syms()
+        #get matrix
+        m, n = len(tof_syms), len(sp_names)
+        DTRC_matrix = sym.zeros(m, n)
+        #loop the matrix to get expression of DTRC
+        for i, tof_sym in enumerate(tof_syms):
+            for j, sp_name in enumerate(sp_names):
+                G_sym = self.extract_symbol(
+                    sp_name=sp_name, symbol_type='free_energy')
+                k_B, T = self.k_B_sym, self.T_sym
+                DTRC_sym = -k_B/T*(sym.Derivative(tof_sym, G_sym).doit())
+                DTRC_matrix[i, j] = DTRC_sym
+
+        return DTRC_matrix
+
+    def get_rate_control_by_sym(self, cvgs_tuple):
+        "Get numerial XTRC matrix by back substitution to DTRC_matrix."
+        DTRC_sym_matrix = self.get_DTRC_syms()
+        subs_dict = self.get_subs_dict(cvgs_tuple=cvgs_tuple)
+        DTRC_num_matrix = DTRC_sym_matrix.evalf(subs=subs_dict)
+
+        return DTRC_num_matrix
+
+
     ##########################################################
     ###### calculate micro kinetic model with Sympy END ######
     ##########################################################
