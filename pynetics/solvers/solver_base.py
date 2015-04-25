@@ -604,7 +604,7 @@ class SolverBase(ModelShell):
                 if stoichiometry == 1:
                     sp_energy_sym = sp_sym
                 else:
-                    sp_energy_sym = stoichiometry*sp_energy_sym
+                    sp_energy_sym = stoichiometry*sp_sym
                 state_energy_sym += sp_energy_sym
             state_energy_sym_list.append(state_energy_sym)
 
