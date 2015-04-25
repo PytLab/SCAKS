@@ -789,11 +789,11 @@ class SolverBase(ModelShell):
         #calculate rfs
         rfs, rrs = [], []
         for rf_sym in self.rf_syms:
-            rf = self._mpf(rf_sym.evalf(subs=subs_dict))
+            rf = self._mpf(float(rf_sym.evalf(subs=subs_dict)))
             rfs.append(rf)
         #cal rrs
         for rr_sym in self.rr_syms:
-            rr = self._mpf(rr_sym.evalf(subs=subs_dict))
+            rr = self._mpf(float(rr_sym.evalf(subs=subs_dict)))
             rrs.append(rr)
 
         self.rfs, self.rrs = tuple(rfs), tuple(rrs)
@@ -845,6 +845,9 @@ class SolverBase(ModelShell):
         net_rate_syms_vect = sym.Matrix(self.net_rate_syms)  # col vect
         #back substitution
         net_rates_vect = net_rate_syms_vect.evalf(subs=subs_dict)
+        #keep precision
+        net_rates_vect = [self._mpf(float(net_rate))
+                          for net_rate in net_rates_vect]
 
         return tuple(net_rates_vect)
 
@@ -872,6 +875,8 @@ class SolverBase(ModelShell):
         tof_syms_vect = sym.Matrix(self.get_tof_syms())
         subs_dict = self.get_subs_dict(cvgs_tuple=cvgs_tuple)
         tof_vect = tof_syms_vect.evalf(subs=subs_dict)
+        #keep precision
+        tof_vect = [self._mpf(float(tof)) for tof in tof_vect]
 
         return tuple(tof_vect)
 
@@ -905,6 +910,7 @@ class SolverBase(ModelShell):
         DTRC_sym_matrix = self.get_DTRC_syms()
         subs_dict = self.get_subs_dict(cvgs_tuple=cvgs_tuple)
         DTRC_num_matrix = DTRC_sym_matrix.evalf(subs=subs_dict)
+        #Maybe no need to keep precision
 
         return DTRC_num_matrix
 
