@@ -835,6 +835,30 @@ class SolverBase(ModelShell):
 
     def get_tof_syms(self):
         "Return a tuple containing turnover frequencies of gases."
+        #get gas coefficients matrix
+        if hasattr(self._owner, 'gas_matrix'):
+            gas_matrix = self._owner.gas_matrix
+        else:
+            gas_matrix = \
+                self._owner.parser.get_stoichiometry_matrices()[1]
+        gas_matrix = -1*self._matrix(gas_matrix)
+        #get net rates symbolic expressions vector
+        if not hasattr(self, 'net_rate_syms'):
+            self.get_net_rate_syms()
+        rate_syms_vect = \
+            sym.Matrix(self.get_net_rate_syms()).transpose()  # row vector
+        #get tof symbolic expression vector(row vector)
+        tof_vect = rate_syms_vect*gas_matrix
+
+        return tuple(tof_vect)
+
+    def get_tof_by_sym(self, cvgs_tuple):
+        "Expect a coverage tuple, return a tuple of TOFs."
+        tof_syms_vect = sym.Matrix(self.get_tof_syms())
+        subs_dict = self.get_subs_dict(cvgs_tuple=cvgs_tuple)
+        tof_vect = tof_syms_vect.evalf(subs=subs_dict)
+
+        return tuple(tof_vect)
 
     ##########################################################
     ###### calculate micro kinetic model with Sympy END ######
