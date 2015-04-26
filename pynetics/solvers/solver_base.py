@@ -859,7 +859,7 @@ class SolverBase(ModelShell):
         else:
             gas_matrix = \
                 self._owner.parser.get_stoichiometry_matrices()[1]
-        gas_matrix = -1*self._matrix(gas_matrix)
+        gas_matrix = -sym.Matrix(gas_matrix)
         #get net rates symbolic expressions vector
         if not hasattr(self, 'net_rate_syms'):
             self.get_net_rate_syms()
