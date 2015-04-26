@@ -374,6 +374,9 @@ class SolverBase(ModelShell):
         self.get_rate_constants()
         steady_state_cvg = \
             self.get_steady_state_cvgs(self.boltzmann_coverages())
+        #check whether solver has rate_expressions
+        if not hasattr(self, 'rate_expressions'):  # if not, get it
+            self.get_rate_expressions(self.rxns_list)
         rfs, rrs = self.get_rates(self.rate_expressions, steady_state_cvg)
         net_rates = self.get_net_rates(rfs, rrs)
 
