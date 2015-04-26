@@ -235,7 +235,7 @@ class SteadyStateSolver(SolverBase):
         """
         Expect a single expression and an adsorbate_name
         e.g. "kf[2]*theta['CO_s']*theta['*_s']" 'CO_s',
-        return a derivation expression about adsorbate_name.
+        return a derivation expression wrt adsorbate_name.
         """
         if '*' in adsorbate_name:
             adsorbate_name = '\\' + adsorbate_name
@@ -244,6 +244,12 @@ class SteadyStateSolver(SolverBase):
         regex = \
             "((.*)\*|)(theta\['"+adsorbate_name+"'\])(\*{2}(\d)|)(\*(.*)|)"
         #r"(.*)\*(theta\['CO_s'\])(\*\*(\d)|)(\*(.*)|)"
+        ##########################################################
+        #group(1) -> ((.*)\*|), group(2) -> (.*)                 #
+        #group(3) -> (theta\['"+adsorbate_name+"'\])             #
+        #group(4) -> (\*{2}(\d)|), group(5) -> \*{2}(\d) or None #
+        #group(6) -> (\*(.*)|), group(7) -> (.*) or None         #
+        ##########################################################
         #coefficient
         m = re.search(regex, term_expression)
         if m.group(7) and m.group(2):
