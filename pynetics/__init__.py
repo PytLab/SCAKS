@@ -1,9 +1,11 @@
-import os, sys 
+import os
+import sys
 import inspect
 from functions import *
 
 
-__all__ = ['loggers', 'parsers', 'solvers']
+__all__ = ['loggers', 'parsers', 'solvers', 'table_makers',
+           'correctors', 'plotters']
 
 __version__ = '0.0.1'
 
