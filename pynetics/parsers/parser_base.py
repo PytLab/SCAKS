@@ -75,7 +75,10 @@ class ParserBase(ModelShell):
         total_site_dict = {}
         if state_dict['empty_sites_dict']:
             for empty_site in state_dict['empty_sites_dict']:
-                total_site_dict.setdefault(empty_site, state_dict['empty_sites_dict'][empty_site]['number'])
+                total_site_dict.setdefault(
+                    empty_site,
+                    state_dict['empty_sites_dict'][empty_site]['number']
+                )
 
         #get site number from species dict
         for species in state_dict['species_dict']:
@@ -184,6 +187,7 @@ class ParserBase(ModelShell):
         states_dict =
         {'TS': {state_expression: 'H-O_s + *_s', 'species_dict': {...}},
          'IS': {}}
+        and elementary_rxn(list), e.g. [['HCOOH_g', '*_s'], ['HCOOH_s']]
         """
         elementary_rxn = []
 
@@ -209,37 +213,59 @@ class ParserBase(ModelShell):
 
     def parse_state_expression(self, state_expression):
         """
-        Parse in state_expression in elementary equation.
+        Parse in state_expression in elementary equation,
+        e.g. 'HCOOH_g + *_s'.
+
         Return species_dict, empty_sites_dict and species_list, like
         {'sp_dict': {'CH-H_s': {'number': 1,
                               'site': 's',
                               'elements': {'C': 1, 'H': 2}}}},
-        {},
+        {'s': {'number': 1, 'type': 's'}},
         ['CH2-H_s', '*_s']
         """
         state_dict = {}
-        clean_species_list = []
+        merged_species_list = []
         species_dict, empty_sites_dict = {}, {}
         state_dict['state_expression'] = state_expression
         if '+' in state_expression:
             species_list = state_expression.split('+')
             #species_dict, empty_sites_dict = {}, {}
-            for sp in species_list:
-                sp = sp.strip()
-                clean_species_list.append(sp)
+            #strip whitespace in sp_name
+            species_list = [raw_sp.strip() for raw_sp in species_list]
+
+            #merge repetitive sp in species_list
+            sp_num_dict = {}
+            for sp_str in species_list:
+                stoichiometry, raw_sp_name = self.split_species(sp_str)
+                if raw_sp_name not in sp_num_dict:
+                    sp_num_dict.setdefault(raw_sp_name, stoichiometry)
+                else:
+                    sp_num_dict[raw_sp_name] += stoichiometry
+            #convert dict to new merged species_list
+            for raw_sp_name in sp_num_dict:
+                if sp_num_dict[raw_sp_name] == 1:
+                    merged_sp_name = raw_sp_name
+                else:
+                    merged_sp_name = str(sp_num_dict[raw_sp_name]) + raw_sp_name
+                merged_species_list.append(merged_sp_name)
+            #Ok! we get a new merged species list
+
+            for sp in merged_species_list:
+#                sp = sp.strip()
+#                clean_species_list.append(sp)
                 if not '*' in sp:
                     species_dict.update(self.parse_species_expression(sp))
                 else:
                     empty_sites_dict.update(self.parse_site_expression(sp))
         else:
             sp = state_expression.strip()
-            clean_species_list.append(sp)
+            merged_species_list.append(sp)
             if not '*' in sp:
                 species_dict.update(self.parse_species_expression(sp))
             else:
                 empty_sites_dict.update(self.parse_site_expression(sp))
 
-        return species_dict, empty_sites_dict, clean_species_list
+        return species_dict, empty_sites_dict, merged_species_list
 
     def parse_species_expression(self, species_expression):
         """
