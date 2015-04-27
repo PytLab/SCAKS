@@ -1,5 +1,5 @@
 import sys
-sys.path.append('D:\Dropbox\Code\Python\kinetic')
+sys.path.append('D:\Dropbox\Code\Python\kinetic\Pynetics')
 from pynetics import model
 import threading
 
