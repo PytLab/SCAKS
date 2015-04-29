@@ -73,7 +73,7 @@ class SolverBase(ModelShell):
             self._norm = lambda x: symp.norm(x, p=2)
 
         elif self.numerical_representation == 'sympy':
-#            import sympy as sym
+            #import sympy as sym
             self._math = sym
             self._linalg = sym
             precision = self._owner.decimal_precision
@@ -88,7 +88,6 @@ class SolverBase(ModelShell):
 
             self._matrix = cus_matrix
             self._Axb_solver = lambda A, b: A.LUsolve(b)
-            #
             self._norm = lambda x: sym.sqrt((x.transpose()*x)[0])  # x is a column vector
 
         self.has_data = False
