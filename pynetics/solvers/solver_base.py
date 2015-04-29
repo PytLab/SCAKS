@@ -22,13 +22,14 @@ class SolverBase(ModelShell):
             perturbation_size=0.01,
             perturbation_direction='right',
             numerical_representation='mpmath',
+            archived_variables=['steady_state_coverage', 'rates'],
             )
         defaults = self.update_defaults(defaults)
         self.__dict__.update(defaults)
 
         #set numerical represention
         if self.numerical_representation == 'mpmath':
-            import mpmath as mp
+            #import mpmath as mp
             mp.mp.dps = self._owner.decimal_precision
             self._math = mp  # to do math operations
             self._linalg = mp
@@ -38,7 +39,7 @@ class SolverBase(ModelShell):
             self._norm = lambda x: mp.norm(x, p=2)
 
         elif self.numerical_representation == 'gmpy':
-            import gmpy2
+            #import gmpy2
             gmpy2.get_context().precision = 3*self._owner.decimal_precision
             self._math = gmpy2
             self._linalg = np
@@ -335,13 +336,17 @@ class SolverBase(ModelShell):
             exec exprs_str in locals()
         rfs, rrs = map(tuple, (rfs, rrs))
         setattr(self, '_rates', (rfs, rrs))
+        #archive
+        self.logger.archive_data('rates', (rfs, rrs))
 
         return rfs, rrs
 
     def get_net_rates(self, rfs, rrs):
-        net_rate = tuple([rf - rr for rf, rr in zip(rfs, rrs)])
-        setattr(self, 'net_rate', net_rate)
-        return net_rate
+        net_rates = tuple([rf - rr for rf, rr in zip(rfs, rrs)])
+        setattr(self, 'net_rates', net_rates)
+        #archive
+        self.logger.archive_data('net_rates', net_rates)
+        return net_rates
 
     def get_reversibilities(self, rfs, rrs):
         "Return a list of reversibilities."
@@ -352,6 +357,8 @@ class SolverBase(ModelShell):
         reversibilities = [float(rate_tuple[1]/rate_tuple[0])
                            for rate_tuple in zipped_rates]
         setattr(self, 'reversibilities', reversibilities)
+        #archive
+        self.logger.archive_data('reversibilities', reversibilities)
 
         return reversibilities
 
@@ -391,6 +398,8 @@ class SolverBase(ModelShell):
         rate_vector = np.matrix(net_rates)  # get rate vector
         tof_list = (rate_vector*gas_matrix).tolist()[0]
         setattr(self, 'tof', tof_list)
+        #archive
+        self.logger.archive_data('tofs', tof_list)
 
         return tof_list
 
@@ -415,6 +424,8 @@ class SolverBase(ModelShell):
         rate_vector = np.matrix(net_rates)  # get rate vector
         tof_list = (rate_vector*gas_matrix).tolist()[0]
         setattr(self, 'tof', tof_list)
+        #archive
+        self.logger.archive_data('tofs', tof_list)
 
         return tof_list
 
@@ -485,6 +496,8 @@ class SolverBase(ModelShell):
         #multiply 1/r to drdG matrix
         diag_matrix = self._linalg.diag([-kT/tof for tof in r])
         DTRC = diag_matrix*drdG
+        #archive
+        self.logger.archive_data('DTRC', DTRC)
 
         return DTRC
 
@@ -801,6 +814,8 @@ class SolverBase(ModelShell):
 
         self.rfs, self.rrs = tuple(rfs), tuple(rrs)
 
+        self.logger.archive_data('rates', (self.rfs, self.rrs))
+
         return tuple(rfs), tuple(rrs)
 
     def get_G_subs_dict(self):
@@ -852,7 +867,11 @@ class SolverBase(ModelShell):
         net_rates_vect = [self._mpf(float(net_rate))
                           for net_rate in net_rates_vect]
 
-        return tuple(net_rates_vect)
+        net_rates_tup = tuple(net_rates_vect)
+        #archive
+        self.logger.archive_data('net_rates', net_rates_tup)
+
+        return net_rates_tup
 
     def get_tof_syms(self):
         "Return a tuple containing turnover frequencies of gases."
@@ -871,7 +890,9 @@ class SolverBase(ModelShell):
         #get tof symbolic expression vector(row vector)
         tof_vect = rate_syms_vect*gas_matrix
 
-        return tuple(tof_vect)
+        tof_tup = tuple(tof_vect)
+
+        return tof_tup
 
     def get_tof_by_sym(self, cvgs_tuple):
         "Expect a coverage tuple, return a tuple of TOFs."

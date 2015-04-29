@@ -1,4 +1,5 @@
 from string import Template
+import cPickle
 
 
 class Logger(object):
@@ -14,6 +15,10 @@ class Logger(object):
         self._event_lines = []
         self._iter_lines = []
         self._warnings = []
+
+        #attrs for archive data
+        self.data_dict = {}  # object to be serialized
+        self.data_file = 'data.pkl'  # pickle file name
 
     @staticmethod
     def write_logfile(filename, line):
@@ -49,3 +54,13 @@ class Logger(object):
         print message
 
         return message
+
+    def archive_data(self, data_name, data):
+        "Update data dict and dump it to data file."
+        #update data dict
+        if data_name in self._owner.archived_variables:
+            self.data_dict[data_name] = data
+            #dump data dict to data file
+            if self.data_dict:
+                with open(self.data_file, 'wb') as f:
+                    cPickle.dump(self.data_dict, f)

@@ -27,7 +27,6 @@ class KineticModel(object):
             'setup_file': str,
             'rxn_expression': list
         }
-        self._output_variables = ['coverage', 'rate', 'tof']
 
         self._tools = \
             ['parser', 'table_maker', 'solver', 'corrector', 'plotter']
@@ -120,7 +119,6 @@ class KineticModel(object):
         assign them as the attrs of model.
         """
         defaults = dict(
-            adsorbate_interaction_model='ideal',
             data_file='data.pkl',
             decimal_precision=100,
             parser='CsvParser',

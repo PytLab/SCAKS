@@ -204,10 +204,12 @@ class SteadyStateSolver(SolverBase):
             dtheta_dt_expression += \
                 self.get_adsorbate_dtheta_dt_expression(adsorbate_name)
             dtheta_dt_expressions_list.append(dtheta_dt_expression)
-        setattr(self, 'dtheta_dt_expressions',
-                tuple(dtheta_dt_expressions_list))
 
-        return tuple(dtheta_dt_expressions_list)
+        dtheta_dt_expressions_tup = tuple(dtheta_dt_expressions_list)
+        setattr(self, 'dtheta_dt_expressions',
+                dtheta_dt_expressions_tup)
+
+        return dtheta_dt_expressions_tup
 
     def steady_state_function(self, cvgs_tuple):
         """
@@ -244,12 +246,12 @@ class SteadyStateSolver(SolverBase):
         regex = \
             "((.*)\*|)(theta\['"+adsorbate_name+"'\])(\*{2}(\d)|)(\*(.*)|)"
         #r"(.*)\*(theta\['CO_s'\])(\*\*(\d)|)(\*(.*)|)"
-        ##########################################################
-        #group(1) -> ((.*)\*|), group(2) -> (.*)                 #
-        #group(3) -> (theta\['"+adsorbate_name+"'\])             #
-        #group(4) -> (\*{2}(\d)|), group(5) -> \*{2}(\d) or None #
-        #group(6) -> (\*(.*)|), group(7) -> (.*) or None         #
-        ##########################################################
+        ###########################################################
+        # group(1) -> ((.*)\*|), group(2) -> (.*)                 #
+        # group(3) -> (theta\['"+adsorbate_name+"'\])             #
+        # group(4) -> (\*{2}(\d)|), group(5) -> \*{2}(\d) or None #
+        # group(6) -> (\*(.*)|), group(7) -> (.*) or None         #
+        ###########################################################
         #coefficient
         m = re.search(regex, term_expression)
         if m.group(7) and m.group(2):
@@ -455,9 +457,11 @@ class SteadyStateSolver(SolverBase):
         for adsorbate_name in self._owner.adsorbate_names:
             dtheta_dt_sym = self.get_adsorbate_dtheta_dt_sym(adsorbate_name)
             dtheta_dt_syms.append(dtheta_dt_sym)
-        self.dtheta_dt_syms = tuple(dtheta_dt_syms)
 
-        return tuple(dtheta_dt_syms)
+        dtheta_dt_syms = tuple(dtheta_dt_syms)
+        self.dtheta_dt_syms = dtheta_dt_syms
+
+        return dtheta_dt_syms
 
     def steady_state_function_by_sym(self, cvgs_tuple):
         """
@@ -635,7 +639,7 @@ class SteadyStateSolver(SolverBase):
                                           event='rootfinding_stable',
                                           n_iter=i, resid=float(f_resid(x)),
                                           root=mpf2float(x))
-                    print 'difference: ' + str(abs(error - old_error))
+#                    print 'difference: ' + str(abs(error - old_error))
                     #jump out of loop for this c0
                     cancel = False
                     break
@@ -643,6 +647,11 @@ class SteadyStateSolver(SolverBase):
                 old_error = error  # set old error to be compared in next loop
                 self._coverage = x
                 self._error = error
+
+                #archive
+                if i % 100 == 0:
+                    self.logger.archive_data('iter_coverage', x)
+                    self.logger.archive_data('iter_error', error)
 
                 #stagnated or diverging
 #                elif error >= self.residual_threshold*old_error:
@@ -674,6 +683,10 @@ class SteadyStateSolver(SolverBase):
 
         if converged_cvgs:
             self._coverage = converged_cvgs
+            #archive
+            self.logger.archive_data('steady_state_coverage',
+                                     converged_cvgs)
+            self.logger.archive_data('steady_state_error', error)
             return converged_cvgs
 
     def modify_init_guess(self, c0, dtheta_dts):

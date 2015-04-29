@@ -28,6 +28,14 @@ temperature = 500  # Temperature of the reaction
 
 gas_thermo_mode = 'shomate_gas'
 
+numerical_representation = 'mpmath'
+
+#variables to be serialized
+#must be in
+#['steady_state_coverage', 'steady_state_error', 'rates', 'net_rates', 'tofs', 'reversibilities',
+# 'DTRC', 'rate_expressions', 'net_rate_expressions', 'tof_expressions', 'dtheta_dt_expressions',
+# 'iter_coverage', 'iter_error']
+archived_variables = ['steady_state_coverage', 'rates']
 
 #parameters for solver
 tolerance = 1e-20  # convergence criterion
