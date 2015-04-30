@@ -771,7 +771,7 @@ class ThermoPlotter(PlotterBase):
             fname = 'multi_energy_diagram.' + fmt
 
         if show_mode == 'show':
-            plt.show()
+            fig.show()
         elif show_mode == 'save':
             fig.savefig(fname)
         else:
