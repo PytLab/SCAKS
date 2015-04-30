@@ -663,6 +663,21 @@ class SolverBase(ModelShell):
 
         return delta_Gf_syms, delta_Gr_syms
 
+    def get_K_syms(self):
+        "Go through elementary_rxns_list to get symbols of equilibrium constant."
+        #get rate constant symbols
+        if not hasattr(self, 'kf_syms') or not hasattr(self, 'kr_syms'):
+            self.get_rate_constant_syms()
+        K_syms = []
+        for kf_sym, kr_sym in zip(self.kf_syms, self.kr_syms):
+            K_sym = kf_sym/kr_sym
+            K_syms.append(K_sym)
+
+        K_syms = tuple(K_syms)
+        self.K_syms = K_syms
+
+        return K_syms
+
     def get_rate_constant_syms(self):
         "Go through elementary_rxns_list to get symbols of rate constants."
         #k_B, h, T = sym.symbols('k_B, h, T', is_real=True)
