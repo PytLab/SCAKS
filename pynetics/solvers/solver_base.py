@@ -598,6 +598,21 @@ class SolverBase(ModelShell):
 
         return symbol_tup[idx]
 
+    @staticmethod
+    def get_latex_strs(part1, part2, symbols):
+        """
+        part1 and part2 are parts of left string in equation string,
+        symbols is a iterable object e.g. list or tuple.
+        """
+        latex_strs = []
+        for i, symbol in enumerate(symbols):
+            left = part1 + str(i+1) + part2
+            right = sym.latex(symbol)
+            latex_str = left + ' = ' + right + '\n'
+            latex_strs.append(latex_str)
+
+        return tuple(latex_strs)
+
     def get_single_delta_G_symbols(self, elementary_rxn_list):
         """
         Expect a elementary_rxn_list,
@@ -660,6 +675,13 @@ class SolverBase(ModelShell):
 
         self.delta_Gf_syms = delta_Gf_syms
         self.delta_Gr_syms = delta_Gr_syms
+
+        #latex strings
+        f_latexs = self.get_latex_strs(part1=r'\Delta G_{', part2=r'+}',
+                                       symbols=delta_Gf_syms)
+        r_latexs = self.get_latex_strs(part1=r'\Delta G_{', part2=r'-}',
+                                       symbols=delta_Gr_syms)
+        self.delta_G_latex = (tuple(f_latexs), tuple(r_latexs))
 
         return delta_Gf_syms, delta_Gr_syms
 
