@@ -378,6 +378,7 @@ class SolverBase(ModelShell):
 
         #get net rates about new Gs
         self.get_rate_constants()
+#        steady_state_cvg = self.get_steady_state_cvgs((0.0, 0.0, 0.0, 0.0))
         steady_state_cvg = \
             self.get_steady_state_cvgs(self.boltzmann_coverages())
         #check whether solver has rate_expressions
@@ -534,7 +535,7 @@ class SolverBase(ModelShell):
     def get_data_symbols(self):
         "Get Sympy Symbol objects tuple for P, G, coverage."
         #get pressure symbols objects
-        self.p_syms = tuple([sym.Symbol('p_' + gas_name, is_real=True)
+        self.p_sym = tuple([sym.Symbol('p_' + gas_name, is_real=True)
                             for gas_name in self._owner.gas_names])
 
         #get coverage symnols objects
