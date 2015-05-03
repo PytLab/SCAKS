@@ -569,7 +569,7 @@ class SolverBase(ModelShell):
         K_sym_list = []
         for i in xrange(len(self.rxns_list)):
             #subscript = i + 1
-            K_sym = sym.Symbol('K_' + str(subscript), is_real=True)
+            K_sym = sym.Symbol('K_' + str(i), is_real=True)
             K_sym_list.append(K_sym)
         self.K_sym = tuple(K_sym_list)
 
