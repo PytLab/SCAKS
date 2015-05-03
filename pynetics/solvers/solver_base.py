@@ -246,7 +246,7 @@ class SolverBase(ModelShell):
         if not self.has_data:
             self.get_data_dict()
 #        boltz_sum = sum([mp.exp(-self.E[adsorbate]/(kB*T))
-#                                    for adsorbate in self._cvg_types])
+#                         for adsorbate in self._cvg_types])
         boltz_sum = sum([self._math.exp(-self.E[adsorbate]/(kB*T))
                          for adsorbate in self._owner.adsorbate_names])
         #get coverages list
