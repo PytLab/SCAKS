@@ -30,6 +30,8 @@ gas_thermo_mode = 'shomate_gas'
 
 numerical_representation = 'mpmath'
 
+RDS = 2  # Rate Determinating Step Number
+
 #variables to be serialized
 #must be in
 #['steady_state_coverage', 'steady_state_error', 'rates', 'net_rates', 'tofs', 'reversibilities',
