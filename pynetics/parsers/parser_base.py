@@ -432,6 +432,42 @@ class ParserBase(ModelShell):
 
         return total_rxn_equation
 
+    #below codes are used to merge 2 elementary_rxn_list
+    def get_coefficients_vector(self, elementary_rxn_list):
+        """
+        Expect a elementary_rxn_list e.g.
+        [['HCOOH_s', '*_s'], ['H-COOH_s', '*_s'], ['COOH_s', 'H_s']],
+        return corresponding coefficients vector, e.g.
+        [1, 0, 0, 0, 0, -1, 1, -1]
+        """
+        #get sp list and set it as an attr of the model
+        end_sp_list = []
+        #add site strings
+        for site_name in self._owner.site_names:
+            site_str = '*_' + site_name
+            end_sp_list.append(site_str)
+        #add gas names
+        end_sp_list.extend(self._owner.gas_names)
+        #add adsorbate names
+        end_sp_list.extend(self._owner.adsorbate_names)
+        self.end_sp_list = end_sp_list
+
+        #intialize coefficients vector
+        coeff_list = [0]*len(end_sp_list)
+        ends_states = (elementary_rxn_list[0], elementary_rxn_list[-1])
+        for state_idx, state_list in enumerate(ends_states):
+            for sp_str in state_list:
+                stoichiometry, species_name = self.split_species(sp_str)
+                coeff_idx = end_sp_list.index(species_name)
+                if state_idx == 0:
+                    coeff = stoichiometry
+                else:
+                    coeff = -stoichiometry
+                #replace corresponding 0 by coeff
+                coeff_list[coeff_idx] = coeff
+
+        return coeff_list
+
     def get_total_rxn_equation_orig(self, elementary_rxns_list):
         """
         Analyse elementary_rxns_list, get total_rxn_equation and
