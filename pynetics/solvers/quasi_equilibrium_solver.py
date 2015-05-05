@@ -88,6 +88,7 @@ class QuasiEquilibriumSolver(SolverBase):
         return complete_tof_sym
 
     def get_complete_eq_dict(self, theta_f, theta_f_expr):
+        "substitute theta_f and K, to get complete equivalent dict."
         #check number of elements in eq_dict
         ads_num = len(self._owner.adsorbate_names)
         if len(self.eq_dict) != ads_num:
@@ -105,7 +106,7 @@ class QuasiEquilibriumSolver(SolverBase):
         #merge two dicts
         self.eq_dict = dict(self.eq_dict, **K_subs_dict)
 
-        return self.eq_dict
+        return self.eq_dict  # Note: K still in it!
 
     def represent(self, rxn_list, target_adsorbate, theta_f):
         """
