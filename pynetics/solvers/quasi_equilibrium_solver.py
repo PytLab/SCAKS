@@ -68,7 +68,16 @@ class QuasiEquilibriumSolver(SolverBase):
         normalization_expr = syms_sum + theta_f - 1
         theta_f_expr = sym.solve(normalization_expr, theta_f, check=0)[0]
 
-        return theta_f_expr
+        #get complete equivalent dict
+        complete_eq_dict = self.get_complete_eq_dict(theta_f, theta_f_expr)
+        #get net rate of rate determinating step
+        if not hasattr(self, 'net_rate_syms'):
+            self.get_net_rate_syms()
+        tof_sym = self.net_rate_syms[self.RDS]
+        #substitute thetas of adsorbates
+        complete_tof_sym = tof_sym.subs(complete_eq_dict)
+
+        return complete_tof_sym
 
     def get_complete_eq_dict(self, theta_f, theta_f_expr):
         #check number of elements in eq_dict
