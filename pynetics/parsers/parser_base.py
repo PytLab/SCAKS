@@ -432,14 +432,8 @@ class ParserBase(ModelShell):
 
         return total_rxn_equation
 
-    #below codes are used to merge 2 elementary_rxn_list
-    def get_coefficients_vector(self, elementary_rxn_list):
-        """
-        Expect a elementary_rxn_list e.g.
-        [['HCOOH_s', '*_s'], ['H-COOH_s', '*_s'], ['COOH_s', 'H_s']],
-        return corresponding coefficients vector, e.g.
-        [1, 0, 0, 0, 0, -1, 1, -1]
-        """
+    #below 3 methods are used to merge 2 elementary_rxn_list
+    def get_end_sp_list(self):
         #get sp list and set it as an attr of the model
         end_sp_list = []
         #add site strings
@@ -450,7 +444,20 @@ class ParserBase(ModelShell):
         end_sp_list.extend(self._owner.gas_names)
         #add adsorbate names
         end_sp_list.extend(self._owner.adsorbate_names)
-        self.end_sp_list = end_sp_list
+        self._owner.end_sp_list = end_sp_list
+
+        return end_sp_list
+
+    def get_coefficients_vector(self, elementary_rxn_list):
+        """
+        Expect a elementary_rxn_list e.g.
+        [['HCOOH_s', '*_s'], ['H-COOH_s', '*_s'], ['COOH_s', 'H_s']],
+        return corresponding coefficients vector, e.g.
+        [1, 0, 0, 0, 0, -1, 1, -1]
+        """
+        if not hasattr(self._owner, 'end_sp_list'):
+            self.get_end_sp_list()
+        end_sp_list = self._owner.end_sp_list
 
         #intialize coefficients vector
         coeff_list = [0]*len(end_sp_list)
@@ -466,7 +473,48 @@ class ParserBase(ModelShell):
                 #replace corresponding 0 by coeff
                 coeff_list[coeff_idx] = coeff
 
-        return coeff_list
+        return np.array(coeff_list)
+
+    def merge_elementary_rxn_list(self, *lists):
+        """
+        Expect 2 elementary_rxn_list, e.g.
+        [['HCOOH_s', '*_s'], ['H-COOH_s', '*_s'], ['COOH_s', 'H_s']]
+        and
+        [['*_s', 'COOH_s'], ['*_s', 'COO-H_s'], ['CO2_s', 'H_s']],
+        return a merged elementary_rxn_list, e.g.
+        [['2*_s', 'HCOOH_s'], ['CO2_s', '2H_s']]
+        """
+        if not hasattr(self._owner, 'end_sp_list'):
+            self.get_end_sp_list()
+        end_sp_list = self._owner.end_sp_list
+
+        vect_len = len(end_sp_list)
+        merged_vect = np.zeros(vect_len)
+
+        for elementary_rxn_list in lists:
+            coeff_vect = self.get_coefficients_vector(elementary_rxn_list)
+            merged_vect += coeff_vect
+
+        #go through merged_vect to get merged elementary_rxn_list
+        left_list, right_list = [], []
+        for coeff, sp_name in zip(merged_vect, end_sp_list):
+            if coeff > 0:
+                if coeff == 1:
+                    sp_str = sp_name
+                else:
+                    sp_str = str(int(coeff)) + sp_name
+                left_list.append(sp_str)
+            elif coeff < 0:
+                coeff = abs(coeff)
+                if coeff == 1:
+                    sp_str = sp_name
+                else:
+                    sp_str = str(int(coeff)) + sp_name
+                right_list.append(sp_str)
+
+        merged_elementary_rxn_list = [left_list, right_list]
+
+        return merged_elementary_rxn_list
 
     def get_total_rxn_equation_orig(self, elementary_rxns_list):
         """
