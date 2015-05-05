@@ -22,6 +22,9 @@ class QuasiEquilibriumSolver(SolverBase):
         self.represented_species = []
 
     def get_tof_sym(self):
+        #refresh self.represented_species
+        self.represented_species = []
+        #operate copy later
         rxns_list_copy = copy.copy(self.rxns_list)
         #remove rate determinating step
         RDS_rxn_list = rxns_list_copy[self.RDS]
