@@ -27,7 +27,7 @@ class QuasiEquilibriumSolver(SolverBase):
         RDS_rxn_list = rxns_list_copy[self.RDS]
         rxns_list_copy.remove(RDS_rxn_list)
         #create a free site theta symbol used in all rxns
-        theta_f = sym.Symbol('theta_f', is_positive=True, is_real=True)
+        theta_f = sym.Symbol('theta_f', positive=True, real=True)
         syms_sum = 0  # sum expression of all adsorbates' thetas
         subs_dict = {}  # substitution dict for symbols
         while rxns_list_copy:
@@ -62,8 +62,8 @@ class QuasiEquilibriumSolver(SolverBase):
                     rxns_list_copy.append(rxn_list)  # insert to the end
         #get theta_f expression
 #        print syms_sum
-        self.normalization_expr = syms_sum + theta_f - 1
-        ans = sym.solve(self.normalization_expr, theta_f, check=0)
+        normalization_expr = syms_sum + theta_f - 1
+        ans = sym.solve(normalization_expr, theta_f, check=0)
 
         return ans
 
