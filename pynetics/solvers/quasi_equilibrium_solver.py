@@ -70,16 +70,12 @@ class QuasiEquilibriumSolver(SolverBase):
 
         #get complete equivalent dict
         complete_eq_dict = self.get_complete_eq_dict(theta_f, theta_f_expr)
-#        print complete_eq_dict
         #get net rate of rate determinating step
         if not hasattr(self, 'net_rate_syms'):
             self.get_net_rate_syms()
         tof_sym = self.net_rate_syms[self.RDS]
         #substitute thetas of adsorbates
         complete_tof_sym = tof_sym.subs(complete_eq_dict)
-        #substitute again to subs Ks in complete_eq_dict itself!
-        #e.g. complete_eq_dict[theta_H_s]
-        complete_tof_sym = complete_tof_sym.subs(complete_eq_dict)
 
         return complete_tof_sym
 
@@ -91,15 +87,6 @@ class QuasiEquilibriumSolver(SolverBase):
         for ads_sym in self.eq_dict:
             self.eq_dict[ads_sym] = \
                 self.eq_dict[ads_sym].subs({theta_f: theta_f_expr})
-        #get equilibrium constant subs dict
-        if not hasattr(self, 'K_expr_syms'):
-            self.get_K_syms()
-        K_subs_dict = {}
-        for i, K_sym in enumerate(self.K_sym):
-            K_subs_dict.setdefault(K_sym, self.K_expr_syms[i])
-
-        #merge two dicts
-        self.eq_dict = dict(self.eq_dict, **K_subs_dict)
 
         return self.eq_dict
 
