@@ -22,6 +22,9 @@ class QuasiEquilibriumSolver(SolverBase):
         self.represented_species = []
 
     def get_tof_sym(self):
+        """
+        Return complete analytical expression of rate of RDS.
+        """
         #refresh self.represented_species
         self.represented_species = []
         #operate copy later
@@ -34,6 +37,7 @@ class QuasiEquilibriumSolver(SolverBase):
         syms_sum = 0  # sum expression of all adsorbates' thetas
         self.eq_dict = {}  # substitution dict for symbols
         while rxns_list_copy:
+            print rxns_list_copy
             for rxn_idx, rxn_list in enumerate(rxns_list_copy):
                 #get adsorbate name that will be represented
                 target_adsorbate = self.check_repr(rxn_list)
@@ -44,9 +48,9 @@ class QuasiEquilibriumSolver(SolverBase):
                     #represented by theta_f
                     theta_target_subs = self.represent(rxn_list, target_adsorbate,
                                                        theta_f)
-#                    print theta_target_subs
+                    print theta_target_subs
                     theta_target_subs = theta_target_subs.subs(self.eq_dict)
-#                    print theta_target_subs
+                    print theta_target_subs
 
                     #add it to self.eq_dict
                     if theta_target in self.eq_dict:
@@ -230,3 +234,11 @@ class QuasiEquilibriumSolver(SolverBase):
             return archived_ads
         else:
             return
+
+    def get_XTRC(self, intermediate_name):
+        r = self.get_tof_sym()  # tof symbol expression
+        G = self.extract_symbol(intermediate_name, 'free_energy')  # free energy symbol
+        k_B, T = self.k_B_sym, self.T_sym
+        XTRC = -k_B*T/r*(sym.Derivative(r, G).doit())
+
+        return XTRC
