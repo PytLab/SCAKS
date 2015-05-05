@@ -66,9 +66,20 @@ class QuasiEquilibriumSolver(SolverBase):
         #get theta_f expression
 #        print syms_sum
         normalization_expr = syms_sum + theta_f - 1
-        ans = sym.solve(normalization_expr, theta_f, check=0)
+        theta_f_expr = sym.solve(normalization_expr, theta_f, check=0)[0]
 
-        return ans
+        return theta_f_expr
+
+    def get_complete_eq_dict(self, theta_f, theta_f_expr):
+        #check number of elements in eq_dict
+        ads_num = len(self._owner.adsorbate_names)
+        if len(self.eq_dict) != ads_num:
+            raise ValueError('eq_dict is illegal.')
+        for ads_sym in self.eq_dict:
+            self.eq_dict[ads_sym] = \
+                self.eq_dict[ads_sym].subs({theta_f: theta_f_expr})
+
+        return self.eq_dict
 
     def represent(self, rxn_list, target_adsorbate, theta_f):
         """
