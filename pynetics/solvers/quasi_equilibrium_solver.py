@@ -32,7 +32,7 @@ class QuasiEquilibriumSolver(SolverBase):
         #create a free site theta symbol used in all rxns
         theta_f = sym.Symbol('theta_f', positive=True, real=True)
         syms_sum = 0  # sum expression of all adsorbates' thetas
-        subs_dict = {}  # substitution dict for symbols
+        self.eq_dict = {}  # substitution dict for symbols
         while rxns_list_copy:
             for rxn_idx, rxn_list in enumerate(rxns_list_copy):
                 #get adsorbate name that will be represented
@@ -45,14 +45,14 @@ class QuasiEquilibriumSolver(SolverBase):
                     theta_target_subs = self.represent(rxn_list, target_adsorbate,
                                                        theta_f)
 #                    print theta_target_subs
-                    theta_target_subs = theta_target_subs.subs(subs_dict)
+                    theta_target_subs = theta_target_subs.subs(self.eq_dict)
 #                    print theta_target_subs
 
-                    #add it to subs_dict
-                    if theta_target in subs_dict:
-                        subs_dict[theta_target] = theta_target_subs
+                    #add it to self.eq_dict
+                    if theta_target in self.eq_dict:
+                        self.eq_dict[theta_target] = theta_target_subs
                     else:
-                        subs_dict.setdefault(theta_target, theta_target_subs)
+                        self.eq_dict.setdefault(theta_target, theta_target_subs)
 
                     rxns_list_copy.remove(rxn_list)
                     #add this good species name to self.represented_species
