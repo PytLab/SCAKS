@@ -705,7 +705,7 @@ class SolverBase(ModelShell):
             K_syms.append(K_sym)
 
         K_syms = tuple(K_syms)
-        self.K_syms = K_syms
+        self.K_expr_syms = K_syms
 
         return K_syms
 
