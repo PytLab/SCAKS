@@ -1,5 +1,6 @@
 from solver_base import *
 import sympy as sym
+import copy
 
 
 class QuasiEquilibriumSolver(SolverBase):
@@ -8,7 +9,7 @@ class QuasiEquilibriumSolver(SolverBase):
 
         #set default parameter dict
         defaults = dict(
-            RDS=3,  # rate determining step number
+            RDS=2,  # rate determining step number
             )
         defaults = self.update_defaults(defaults)
         self.__dict__.update(defaults)
@@ -17,23 +18,54 @@ class QuasiEquilibriumSolver(SolverBase):
         self.logger_template_dict = {}
         self.logger._templates_dict.update(self.logger_template_dict)
 
-        self.represented_thetas = []  # thetas that has been represented by theta*
+        #species names that has been represented by theta*
+        self.represented_species = []
 
     def get_tof_sym(self):
-        waiting_room = []
-        for rxn_idx, rxn_list in enumerate(self.rxns_list):
-            #get adsorbate name that will be represented
-            target_adsorbate = self.check_repr(rxn_list)
-            #get target adsorbate theta symbol
-            theta_target = self.extract_symbol(target_adsorbate, 'ads_cvg')
-            #create a free site theta symbol used in all rxns
-            theta_f = sym.Symbol('theta_f', is_positive=True, is_real=True)
+        rxns_list_copy = copy.copy(self.rxns_list)
+        #remove rate determinating step
+        RDS_rxn_list = rxns_list_copy[self.RDS]
+        rxns_list_copy.remove(RDS_rxn_list)
+        #create a free site theta symbol used in all rxns
+        theta_f = sym.Symbol('theta_f', is_positive=True, is_real=True)
+        syms_sum = 0  # sum expression of all adsorbates' thetas
+        subs_dict = {}  # substitution dict for symbols
+        while rxns_list_copy:
+            for rxn_idx, rxn_list in enumerate(rxns_list_copy):
+                #get adsorbate name that will be represented
+                target_adsorbate = self.check_repr(rxn_list)
 
-            if target_adsorbate:
-                pass
+                if target_adsorbate:
+                    #get target adsorbate theta symbol
+                    theta_target = self.extract_symbol(target_adsorbate, 'ads_cvg')
+                    #represented by theta_f
+                    theta_target_subs = self.represent(rxn_list, target_adsorbate,
+                                                       theta_f)
+#                    print theta_target_subs
+                    theta_target_subs = theta_target_subs.subs(subs_dict)
+#                    print theta_target_subs
 
-            else:  # throw it to waiting room
-                waiting_room.append(rxn_list)
+                    #add it to subs_dict
+                    if theta_target in subs_dict:
+                        subs_dict[theta_target] = theta_target_subs
+                    else:
+                        subs_dict.setdefault(theta_target, theta_target_subs)
+
+                    rxns_list_copy.remove(rxn_list)
+                    #add this good species name to self.represented_species
+                    self.represented_species.append(target_adsorbate)
+                    #add theta to sym_sum
+                    syms_sum += theta_target_subs
+                else:
+                    #move the rxn_list to the end of rxns_list
+                    rxns_list_copy.remove(rxn_list)  # remove it
+                    rxns_list_copy.append(rxn_list)  # insert to the end
+        #get theta_f expression
+#        print syms_sum
+        self.normalization_expr = syms_sum + theta_f - 1
+        ans = sym.solve(self.normalization_expr, theta_f, check=0)
+
+        return ans
 
     def represent(self, rxn_list, target_adsorbate, theta_f):
         """
@@ -103,7 +135,7 @@ class QuasiEquilibriumSolver(SolverBase):
         #use theta_f to represent theta_target_adsorbate
         '''
         --------------------------------------------------------------------------
-        |theta_* location | theta_t_loc | theta_target_adsorbate expression      |
+        |theta_* location | theta_t_loc | theta_t expression without exponential |
         --------------------------------------------------------------------------
         |    left         |    left     |            R/(K*L*theta_f_term)        |
         --------------------------------------------------------------------------
@@ -154,7 +186,7 @@ class QuasiEquilibriumSolver(SolverBase):
         for sp_str in merged_list:
             stoichiometry, species_name = self.split_species(sp_str)
             if (species_name in self._owner.adsorbate_names and
-                    species_name not in self.represented_thetas):
+                    species_name not in self.represented_species):
                 free_num += 1
                 archived_ads = species_name
 
