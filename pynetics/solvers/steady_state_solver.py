@@ -558,10 +558,12 @@ class SteadyStateSolver(SolverBase):
                 print 'Good initial guess.'
                 return c0
 
-            newton_iterator = NewtonRoot(f=f, J=J, x0=c0, constraint=constraint,
-                                         norm=self._norm, mpfloat=self._mpf,
-                                         matrix=self._matrix, Axb_solver=self._Axb_solver,
-                                         dtheta_dt_expressions=f_expression)
+            newton_iterator = NewtonRoot(
+                f=f, J=J, x0=c0, constraint=constraint,
+                norm=self._norm, mpfloat=self._mpf,
+                matrix=self._matrix, Axb_solver=self._Axb_solver,
+                dtheta_dt_expressions=f_expression
+            )
             i = 0
             x = c0
             old_error = 1e99
