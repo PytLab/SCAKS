@@ -29,6 +29,7 @@ class QuasiEquilibriumSolver(SolverBase):
         self.represented_species = []
         #operate copy later
         rxns_list_copy = copy.copy(self.rxns_list)
+        Ks_list_copy = list(copy.copy(self.K_sym))
         #remove rate determinating step
         RDS_rxn_list = rxns_list_copy[self.RDS]
         rxns_list_copy.remove(RDS_rxn_list)
@@ -36,9 +37,15 @@ class QuasiEquilibriumSolver(SolverBase):
         theta_f = sym.Symbol('theta_f', positive=True, real=True)
         syms_sum = 0  # sum expression of all adsorbates' thetas
         self.eq_dict = {}  # substitution dict for symbols
+        rxns_num = len(self.rxns_list)
+
+        loop_counter = 0
         while rxns_list_copy:
-            print rxns_list_copy
-            for rxn_idx, rxn_list in enumerate(rxns_list_copy):
+            loop_counter += 1
+#            print rxns_list_copy
+            origin_num = len(rxns_list_copy)  # number of rxns
+
+            for K_sym, rxn_list in zip(Ks_list_copy, rxns_list_copy):
                 #get adsorbate name that will be represented
                 target_adsorbate = self.check_repr(rxn_list)
 
@@ -47,10 +54,10 @@ class QuasiEquilibriumSolver(SolverBase):
                     theta_target = self.extract_symbol(target_adsorbate, 'ads_cvg')
                     #represented by theta_f
                     theta_target_subs = self.represent(rxn_list, target_adsorbate,
-                                                       theta_f)
-                    print theta_target_subs
+                                                       theta_f, K_sym)
+#                    print theta_target_subs
                     theta_target_subs = theta_target_subs.subs(self.eq_dict)
-                    print theta_target_subs
+#                    print theta_target_subs
 
                     #add it to self.eq_dict
                     if theta_target in self.eq_dict:
@@ -64,9 +71,25 @@ class QuasiEquilibriumSolver(SolverBase):
                     #add theta to sym_sum
                     syms_sum += theta_target_subs
                 else:
-                    #move the rxn_list to the end of rxns_list
+                    #move the rxn_list to the end of rxns_list_copy
                     rxns_list_copy.remove(rxn_list)  # remove it
                     rxns_list_copy.append(rxn_list)  # insert to the end
+                    #move the K_sym to the end of Ks_list_copy
+                    Ks_list_copy.remove(K_sym)  # remove it
+                    Ks_list_copy.append(K_sym)  # insert to the end
+
+            remaining_num = len(rxns_list_copy)  # number of rxn remaining in list
+
+            if remaining_num == origin_num and loop_counter > rxns_num:
+                #insert K for merged rxn list to head of Ks_list_copy
+                merged_K = self.get_merged_K(rxns_list_copy)
+                Ks_list_copy.insert(0, merged_K)
+                #merge all remaining elementary_rxn lists
+                merged_rxn_list = \
+                    self._owner.parser.merge_elementary_rxn_list(*rxns_list_copy)
+                #insert new merged list to the head of rxns_list_copy
+                rxns_list_copy.insert(0, merged_rxn_list)
+
         #get theta_f expression
 #        print syms_sum
         normalization_expr = syms_sum + theta_f - 1
@@ -86,6 +109,16 @@ class QuasiEquilibriumSolver(SolverBase):
         complete_tof_sym = complete_tof_sym.subs(complete_eq_dict)
 
         return complete_tof_sym
+
+    def get_merged_K(self, rxns_list):
+        merged_K = 1
+        for rxn_list in rxns_list:
+            #get index
+            idx = self.rxns_list.index(rxn_list)
+            #get corresponding K
+            K = self.K_sym[idx]
+            merged_K *= K
+        return merged_K
 
     def get_complete_eq_dict(self, theta_f, theta_f_expr):
         "substitute theta_f and K, to get complete equivalent dict."
@@ -108,7 +141,7 @@ class QuasiEquilibriumSolver(SolverBase):
 
         return self.eq_dict  # Note: K still in it!
 
-    def represent(self, rxn_list, target_adsorbate, theta_f):
+    def represent(self, rxn_list, target_adsorbate, theta_f, K):
         """
         Expect a rxn_list which can be represented by theta_f,
         return the symbol expression of theta_target_adsorbate.
@@ -122,10 +155,6 @@ class QuasiEquilibriumSolver(SolverBase):
         theta_f : sympy.core.symbol.Symbol
             coverage of free sites
         """
-        #get equilibrium constant symbol
-        rxn_idx = self.rxns_list.index(rxn_list)
-        K = self.K_sym[rxn_idx]
-
         left_syms, right_syms = [], []  # syms to be multipled later
 
         #go thtough rxn_list's head and tail
