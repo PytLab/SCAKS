@@ -33,6 +33,9 @@ class QuasiEquilibriumSolver(SolverBase):
         #remove rate determinating step
         RDS_rxn_list = rxns_list_copy[self.RDS]
         rxns_list_copy.remove(RDS_rxn_list)
+        #remove rate determinating step's K
+        RDS_K = Ks_list_copy[self.RDS]
+        Ks_list_copy.remove(RDS_K)
         #create a free site theta symbol used in all rxns
         theta_f = sym.Symbol('theta_f', positive=True, real=True)
         syms_sum = 0  # sum expression of all adsorbates' thetas
@@ -67,6 +70,7 @@ class QuasiEquilibriumSolver(SolverBase):
                         self.eq_dict.setdefault(theta_target, theta_target_subs)
 
                     rxns_list_copy.remove(rxn_list)
+                    Ks_list_copy.remove(K_sym)
                     #add this good species name to self.represented_species
                     self.represented_species.append(target_adsorbate)
                     #add theta to sym_sum
@@ -74,6 +78,7 @@ class QuasiEquilibriumSolver(SolverBase):
                 elif target_adsorbate and target_adsorbate == 'all_represented':
                     #just remove it
                     rxns_list_copy.remove(rxn_list)
+                    Ks_list_copy.remove(K_sym)
                 else:
                     #move the rxn_list to the end of rxns_list_copy
                     rxns_list_copy.remove(rxn_list)  # remove it
