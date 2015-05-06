@@ -49,7 +49,7 @@ class QuasiEquilibriumSolver(SolverBase):
                 #get adsorbate name that will be represented
                 target_adsorbate = self.check_repr(rxn_list)
 
-                if target_adsorbate:
+                if target_adsorbate and target_adsorbate != 'all_represented':
                     #get target adsorbate theta symbol
                     theta_target = self.extract_symbol(target_adsorbate, 'ads_cvg')
                     #represented by theta_f
@@ -70,6 +70,9 @@ class QuasiEquilibriumSolver(SolverBase):
                     self.represented_species.append(target_adsorbate)
                     #add theta to sym_sum
                     syms_sum += theta_target_subs
+                elif target_adsorbate and target_adsorbate == 'all_represented':
+                    #just remove it
+                    rxns_list_copy.remove(rxn_list)
                 else:
                     #move the rxn_list to the end of rxns_list_copy
                     rxns_list_copy.remove(rxn_list)  # remove it
@@ -94,6 +97,7 @@ class QuasiEquilibriumSolver(SolverBase):
 #        print syms_sum
         normalization_expr = syms_sum + theta_f - 1
         theta_f_expr = sym.solve(normalization_expr, theta_f, check=0)[0]
+        print theta_f_expr
 
         #get complete equivalent dict
         complete_eq_dict = self.get_complete_eq_dict(theta_f, theta_f_expr)
@@ -262,6 +266,8 @@ class QuasiEquilibriumSolver(SolverBase):
 
         if free_num == 1:
             return archived_ads
+        elif free_num == 0:
+            return 'all_represented'
         else:
             return
 
