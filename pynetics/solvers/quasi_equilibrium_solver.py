@@ -1,7 +1,6 @@
 from solver_base import *
 import sympy as sym
 import copy
-import threading
 
 
 class QuasiEquilibriumSolver(SolverBase):
@@ -289,30 +288,6 @@ class QuasiEquilibriumSolver(SolverBase):
 
         return XTRC_value
 
-    def get_XTRCs_multi(self):
-        "Use multi-threads to get XTRC for all intermediates and transition states"
-        sp_list = self._owner.adsorbate_names + \
-            self._owner.transition_state_names
-
-        nloops = xrange(len(sp_list))
-        threads = []
-        XTRCs = [0.0]*len(sp_list)
-
-        for i in nloops:
-            ads_name = sp_list[i]
-            t = GetXTRCThread(self.get_XTRC, (ads_name, ), ads_name)
-            threads.append(t)
-
-        for i in nloops:
-            threads[i].start()
-
-        for i in nloops:
-            threads[i].join()
-            XTRC = threads[i].get_result()
-            XTRCs[i] = XTRC
-
-        return XTRCs
-
     def get_XTRCs(self):
         sp_list = self._owner.adsorbate_names + \
             self._owner.transition_state_names
@@ -320,17 +295,3 @@ class QuasiEquilibriumSolver(SolverBase):
         XTRCs = [self.get_XTRC(sp) for sp in sp_list]
 
         return XTRCs
-
-
-class GetXTRCThread(threading.Thread):
-    def __init__(self, func, args, ads_name):
-        threading.Thread.__init__(self)
-        self.func = func
-        self.args = args
-        self.ads_name = ads_name
-
-    def get_result(self):
-        return self.XTRC
-
-    def run(self):
-        self.XTRC = apply(self.func, self.args)
