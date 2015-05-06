@@ -97,7 +97,7 @@ class QuasiEquilibriumSolver(SolverBase):
 #        print syms_sum
         normalization_expr = syms_sum + theta_f - 1
         theta_f_expr = sym.solve(normalization_expr, theta_f, check=0)[0]
-        print theta_f_expr
+#        print theta_f_expr
 
         #get complete equivalent dict
         complete_eq_dict = self.get_complete_eq_dict(theta_f, theta_f_expr)
