@@ -1,6 +1,7 @@
 from solver_base import *
 import sympy as sym
 import copy
+import threading
 
 
 class QuasiEquilibriumSolver(SolverBase):
@@ -287,3 +288,17 @@ class QuasiEquilibriumSolver(SolverBase):
         XTRC_value = XTRC.evalf(subs=subs_dict)
 
         return XTRC_value
+
+
+class GetXTRCThread(threading.Thread):
+    def __init__(self, func, args, ads_name):
+        threading.Thread.__init__(self)
+        self.func = func
+        self.args = args
+        self.ads_name = ads_name
+
+    def get_result(self):
+        return self.XTRC
+
+    def run(self):
+        self.XTRC = apply(self.func, args)
