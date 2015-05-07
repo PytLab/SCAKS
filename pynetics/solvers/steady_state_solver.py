@@ -571,7 +571,8 @@ class SteadyStateSolver(SolverBase):
             mpf2float = lambda x: [float(i) for i in x]
             if c0:
                 #log initial guess
-                self.logger.log(log_type='iteration', event='inital_guess_success',
+                self.logger.log(log_type='iteration',
+                                event='inital_guess_success',
                                 initial_cvgs=mpf2float(c0))
 
             #####    Sub LOOP for a c0    #####
@@ -579,17 +580,21 @@ class SteadyStateSolver(SolverBase):
                 i += 1  # counter for loop
                 #if iterations is larger than 100, log every 10 steps
                 if i > 100 and i % 30 == 0:
-                    msg = self.logger.log(log_type='iteration',
-                                          event='rootfinding_in-process',
-                                          n_iter=i, resid=float(f_resid(x)),
-                                          norm=float(error), fx=tuple(map(float, fx)),
-                                          x=tuple(map(float, x)))
+                    msg = self.logger.log(
+                        log_type='iteration',
+                        event='rootfinding_in-process',
+                        n_iter=i, resid=float(f_resid(x)),
+                        norm=float(error), fx=tuple(map(float, fx)),
+                        x=tuple(map(float, x))
+                    )
                 elif i < 100:
-                    msg = self.logger.log(log_type='iteration',
-                                          event='rootfinding_in-process',
-                                          n_iter=i, resid=float(f_resid(x)),
-                                          norm=float(error), fx=tuple(map(float, fx)),
-                                          x=tuple(map(float, x)))
+                    msg = self.logger.log(
+                        log_type='iteration',
+                        event='rootfinding_in-process',
+                        n_iter=i, resid=float(f_resid(x)),
+                        norm=float(error), fx=tuple(map(float, fx)),
+                        x=tuple(map(float, x))
+                    )
 
                 #less than tolerance
                 if error < self.tolerance:
@@ -603,18 +608,22 @@ class SteadyStateSolver(SolverBase):
                                 lt_zero = False
                         # check END #
                         if not lt_zero:
-                            msg = self.logger.log(log_type='iteration',
-                                                  event='rootfinding_success',
-                                                  n_iter=i,
-                                                  resid=float(f_resid(x)),
-                                                  root=mpf2float(x))
+                            msg = self.logger.log(
+                                log_type='iteration',
+                                event='rootfinding_success',
+                                n_iter=i,
+                                resid=float(f_resid(x)),
+                                root=mpf2float(x)
+                            )
                             converged_cvgs = x
                             cancel = True
                             break
                         else:  # bad root, iteration continue...
-                            msg = self.logger.log(log_type='iteration',
-                                                  event='rootfinding_continue',
-                                                  bad_root=mpf2float(x))
+                            msg = self.logger.log(
+                                log_type='iteration',
+                                event='rootfinding_continue',
+                                bad_root=mpf2float(x)
+                            )
                     else:
                         #No constraint when iterations less than 6
                         if x >= 5:
@@ -626,10 +635,12 @@ class SteadyStateSolver(SolverBase):
                       abs(error - old_error) < 1e-4) and error > 1e-1:
                 #elif i > self.max_rootfinding_iterations:
                     #print "root stable"
-                    msg = self.logger.log(log_type='iteration',
-                                          event='rootfinding_break',
-                                          n_iter=i, resid=float(f_resid(x)),
-                                          root=mpf2float(x))
+                    msg = self.logger.log(
+                        log_type='iteration',
+                        event='rootfinding_break',
+                        n_iter=i, resid=float(f_resid(x)),
+                        root=mpf2float(x)
+                    )
                     #jump out of loop for this c0
                     cancel = False
                     break
@@ -637,10 +648,12 @@ class SteadyStateSolver(SolverBase):
                 #residual is almost stagnated
                 elif abs(error - old_error) < self.stable_criterion:
 
-                    msg = self.logger.log(log_type='iteration',
-                                          event='rootfinding_stable',
-                                          n_iter=i, resid=float(f_resid(x)),
-                                          root=mpf2float(x))
+                    msg = self.logger.log(
+                        log_type='iteration',
+                        event='rootfinding_stable',
+                        n_iter=i, resid=float(f_resid(x)),
+                        root=mpf2float(x)
+                    )
 #                    print 'difference: ' + str(abs(error - old_error))
                     #jump out of loop for this c0
                     cancel = False
@@ -715,11 +728,12 @@ class SteadyStateSolver(SolverBase):
         #add to log
         #lambda func used when log
         mpf2float = lambda x: [float(i) for i in x]
-        self.logger.log(log_type='iteration',
-                        event='modify_initial_guess_success',
-                        old_init_cvg=mpf2float(c0),
-                        new_init_cvg=mpf2float(new_c0),
-                        )
+        self.logger.log(
+            log_type='iteration',
+            event='modify_initial_guess_success',
+            old_init_cvg=mpf2float(c0),
+            new_init_cvg=mpf2float(new_c0),
+        )
 
         #return self.constrain_converage(new_c0)
         return new_c0
@@ -748,10 +762,11 @@ class SteadyStateSolver(SolverBase):
         #add to log
         #lambda func used when log
         mpf2float = lambda x: [float(i) for i in x]
-        self.logger.log(log_type='iteration',
-                        event='modify_initial_guess_success',
-                        old_init_cvg=mpf2float(c0),
-                        new_init_cvg=mpf2float(new_c0),
-                        )
+        self.logger.log(
+            log_type='iteration',
+            event='modify_initial_guess_success',
+            old_init_cvg=mpf2float(c0),
+            new_init_cvg=mpf2float(new_c0),
+        )
 
         return new_c0
