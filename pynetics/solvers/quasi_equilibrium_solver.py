@@ -109,7 +109,7 @@ class QuasiEquilibriumSolver(SolverBase):
 
     def get_simplified_tof_sym(self, theta_f, theta_f_expr):
         "No substitution second time to get a simplifed expression with K."
-        subs_dict = self.get_complete_eq_dict(theta_f, theta_f_expr)
+        subs_dict = dict({theta_f: theta_f_expr}, **self.eq_dict)
         #get net rate of rate determinating step
         if not hasattr(self, 'net_rate_syms'):
             self.get_net_rate_syms()
