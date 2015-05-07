@@ -104,7 +104,7 @@ class QuasiEquilibriumSolver(SolverBase):
         normalization_expr = syms_sum + theta_f - 1
         theta_f_expr = sym.solve(normalization_expr, theta_f, check=0)[0]
 #        print theta_f_expr
-        return theta_f_expr, theta_f
+        return theta_f, theta_f_expr
 
     def get_tof_sym(self, theta_f, theta_f_expr):
         #get complete equivalent dict
