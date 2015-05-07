@@ -21,7 +21,7 @@ class QuasiEquilibriumSolver(SolverBase):
         #species names that has been represented by theta*
         self.represented_species = []
 
-    def get_tof_sym(self):
+    def get_theta_f_sym(self):
         """
         Return complete analytical expression of rate of RDS.
         """
@@ -104,7 +104,9 @@ class QuasiEquilibriumSolver(SolverBase):
         normalization_expr = syms_sum + theta_f - 1
         theta_f_expr = sym.solve(normalization_expr, theta_f, check=0)[0]
 #        print theta_f_expr
+        return theta_f_expr, theta_f
 
+    def get_tof_sym(self, theta_f, theta_f_expr):
         #get complete equivalent dict
         complete_eq_dict = self.get_complete_eq_dict(theta_f, theta_f_expr)
 #        print complete_eq_dict
