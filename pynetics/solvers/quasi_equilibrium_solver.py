@@ -23,7 +23,8 @@ class QuasiEquilibriumSolver(SolverBase):
 
     def get_theta_f_sym(self):
         """
-        Return complete analytical expression of rate of RDS.
+        Return a solved analytical expression of theta_f and
+        theta_f symbol object.
         """
         #refresh self.represented_species
         self.represented_species = []
@@ -107,6 +108,7 @@ class QuasiEquilibriumSolver(SolverBase):
         return theta_f, theta_f_expr
 
     def get_simplified_tof_sym(self, theta_f, theta_f_expr):
+        "No substitution second time to get a simplifed expression with K."
         subs_dict = self.get_complete_eq_dict(theta_f, theta_f_expr)
         #get net rate of rate determinating step
         if not hasattr(self, 'net_rate_syms'):
@@ -118,6 +120,7 @@ class QuasiEquilibriumSolver(SolverBase):
         return tof_sym
 
     def get_tof_sym(self, theta_f, theta_f_expr):
+        "Do substitution twice to get complete expanded expression."
         #get complete equivalent dict
         complete_eq_dict = self.get_complete_eq_dict(theta_f, theta_f_expr)
 #        print complete_eq_dict
@@ -134,6 +137,7 @@ class QuasiEquilibriumSolver(SolverBase):
         return complete_tof_sym
 
     def get_merged_K(self, rxns_list):
+        "Merged K is the multiplication of K for corresponding rxns."
         merged_K = 1
         for rxn_list in rxns_list:
             #get index
