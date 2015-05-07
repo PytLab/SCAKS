@@ -106,6 +106,17 @@ class QuasiEquilibriumSolver(SolverBase):
 #        print theta_f_expr
         return theta_f, theta_f_expr
 
+    def get_simplified_tof_sym(self, theta_f, theta_f_expr):
+        subs_dict = self.get_complete_eq_dict(theta_f, theta_f_expr)
+        #get net rate of rate determinating step
+        if not hasattr(self, 'net_rate_syms'):
+            self.get_net_rate_syms()
+        tof_sym = self.net_rate_syms[self.RDS]
+        #substitute thetas of adsorbates
+        tof_sym = tof_sym.subs(subs_dict)
+
+        return tof_sym
+
     def get_tof_sym(self, theta_f, theta_f_expr):
         #get complete equivalent dict
         complete_eq_dict = self.get_complete_eq_dict(theta_f, theta_f_expr)
