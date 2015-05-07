@@ -28,7 +28,7 @@ temperature = 500  # Temperature of the reaction
 
 gas_thermo_mode = 'shomate_gas'
 
-numerical_representation = 'mpmath'
+numerical_representation = 'mpmath'  # 'gmpy', 'mpmath', 'sympy'
 
 RDS = 2  # Rate Determinating Step Number
 
