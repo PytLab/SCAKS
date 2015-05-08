@@ -382,16 +382,16 @@ class ParserBase(ModelShell):
         "Get total reaction expression of the kinetic model."
         site_matrix, gas_matrix = self.get_stoichiometry_matrices()
 
-#        def null(A, eps=1e-10):
-#            "get null space of transposition of site_matrix"
-#            u, s, vh = np.linalg.svd(A, full_matrices=1, compute_uv=1)
-#            null_space = np.compress(s <= eps, vh, axis=0)
-#            return null_space.T
-        def null(A, eps=1e-15):
-            u, s, vh = scipy.linalg.svd(A)
-            null_mask = (s <= eps)
-            null_space = scipy.compress(null_mask, vh, axis=0)
-            return scipy.transpose(null_space)
+        def null(A, eps=1e-10):
+            "get null space of transposition of site_matrix"
+            u, s, vh = np.linalg.svd(A, full_matrices=1, compute_uv=1)
+            null_space = np.compress(s <= eps, vh, axis=0)
+            return null_space.T
+#        def null(A, eps=1e-15):
+#            u, s, vh = scipy.linalg.svd(A)
+#            null_mask = (s <= eps)
+#            null_space = scipy.compress(null_mask, vh, axis=0)
+#            return scipy.transpose(null_space)
         x = null(site_matrix.T)  # basis of null space
         x = map(abs, x.T.tolist()[0])
         #convert entries of x to integer
