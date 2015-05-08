@@ -140,6 +140,14 @@ class QuasiEquilibriumSolver(SolverBase):
 
         return complete_tof_sym
 
+    def get_tof(self):
+        #get substitution dict
+        subs_dict = self.get_subs_dict()
+        tof_sym = self.get_tof_sym()
+        tof = tof_sym.evalf(subs=subs_dict)
+
+        return tof
+
     def get_merged_K(self, rxns_list):
         "Merged K is the multiplication of K for corresponding rxns."
         merged_K = 1
