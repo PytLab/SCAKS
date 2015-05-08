@@ -50,6 +50,7 @@ class QuasiEquilibriumSolver(SolverBase):
             origin_num = len(rxns_list_copy)  # number of rxns
 
             for K_sym, rxn_list in zip(Ks_list_copy, rxns_list_copy):
+#                print rxns_list_copy
 #                print Ks_list_copy
                 #get adsorbate name that will be represented
                 target_adsorbate = self.check_repr(rxn_list)
@@ -88,9 +89,12 @@ class QuasiEquilibriumSolver(SolverBase):
                     Ks_list_copy.remove(K_sym)  # remove it
                     Ks_list_copy.append(K_sym)  # insert to the end
 
+#                print rxns_list_copy  # see what left
+
             remaining_num = len(rxns_list_copy)  # number of rxn remaining in list
 
             if remaining_num == origin_num and loop_counter > rxns_num:
+                print rxns_list_copy
                 #insert K for merged rxn list to head of Ks_list_copy
                 merged_K = self.get_merged_K(rxns_list_copy)
                 Ks_list_copy.insert(0, merged_K)
@@ -193,11 +197,18 @@ class QuasiEquilibriumSolver(SolverBase):
             adsorbate_name which will be represented
         theta_f : sympy.core.symbol.Symbol
             coverage of free sites
+
+        Example
+        -------
+        >>> m.solver.represent([['O2_s', 'NO_s'], ['*_s', 'ONOO_s']], 'NO_s', theta_f, K)
+        >>> theta_O2_s**(-1.0)*theta_ONOO_s**1.0*(theta_f/K)**1.0
+
         """
         left_syms, right_syms = [], []  # syms to be multipled later
 
         #go thtough rxn_list's head and tail
         ends_list = [rxn_list[0], rxn_list[-1]]
+        site_num = 0  # counter site number in a rxn list (0 or 1).
         for state_idx, state_list in enumerate(ends_list):
             #go through sp_list to locate theta
             for sp_str in state_list:
@@ -211,6 +222,8 @@ class QuasiEquilibriumSolver(SolverBase):
                         theta_f_loc = 'right'
                     #add exponential
                     theta_f_term = theta_f**stoichiometry
+                    #update site number
+                    site_num += 1
                 #target species theta
                 elif species_name == target_adsorbate:
                     # get location of theta_target_ads
@@ -240,6 +253,10 @@ class QuasiEquilibriumSolver(SolverBase):
                         left_syms.append(p_sym_term)
                     else:
                         right_syms.append(p_sym_term)
+        #if there is no site in txn_list
+        if site_num == 0:
+            theta_f_loc = 'left'
+            theta_f_term = 1
 
         #use theta_f to represent theta_target_adsorbate
         '''
@@ -256,6 +273,7 @@ class QuasiEquilibriumSolver(SolverBase):
         --------------------------------------------------------------------------
         '''
         def get_multi_sym_list(syms_list):
+            "product all elements in symbols list, left or right list."
             multi_sym = 1
             for symbol in syms_list:
                 multi_sym *= symbol
