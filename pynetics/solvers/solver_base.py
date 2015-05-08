@@ -865,6 +865,9 @@ class SolverBase(ModelShell):
 
     def get_G_subs_dict(self):
         "Get values from solver's data dict."
+        #get value dict for solver
+        if not self.has_data:
+            self.get_data_dict()
         #free energy value dict
         G_dict = {}
         for idx, sp_name in enumerate(self.sp_list):
