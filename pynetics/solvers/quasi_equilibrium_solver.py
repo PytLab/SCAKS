@@ -45,13 +45,13 @@ class QuasiEquilibriumSolver(SolverBase):
 
         loop_counter = 0
         while rxns_list_copy:
-            loop_counter += 1
 #            print rxns_list_copy
             origin_num = len(rxns_list_copy)  # number of rxns
 
             for K_sym, rxn_list in zip(Ks_list_copy, rxns_list_copy):
 #                print rxns_list_copy
 #                print Ks_list_copy
+                loop_counter += 1
                 #get adsorbate name that will be represented
                 target_adsorbate = self.check_repr(rxn_list)
 
@@ -92,9 +92,12 @@ class QuasiEquilibriumSolver(SolverBase):
 #                print rxns_list_copy  # see what left
 
             remaining_num = len(rxns_list_copy)  # number of rxn remaining in list
+#            print "remain: %d" % remaining_num
+#            print "loop count: %d" % loop_counter
 
             if remaining_num == origin_num and loop_counter > rxns_num:
-                print rxns_list_copy
+                print "In merging part..."
+#                print rxns_list_copy
                 #insert K for merged rxn list to head of Ks_list_copy
                 merged_K = self.get_merged_K(rxns_list_copy)
                 Ks_list_copy.insert(0, merged_K)
