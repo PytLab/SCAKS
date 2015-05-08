@@ -32,11 +32,15 @@ numerical_representation = 'mpmath'  # 'gmpy', 'mpmath', 'sympy'
 
 RDS = 2  # Rate Determinating Step Number
 
-#variables to be serialized
-#must be in
-#['steady_state_coverage', 'steady_state_error', 'rates', 'net_rates', 'tofs', 'reversibilities',
-# 'DTRC', 'rate_expressions', 'net_rate_expressions', 'tof_expressions', 'dtheta_dt_expressions',
-# 'iter_coverage', 'iter_error']
+'''
+
+variables to be serialized
+must be in
+['steady_state_coverage', 'steady_state_error', 'rates', 'net_rates', 'tofs', 'reversibilities',
+ 'DTRC', 'rate_expressions', 'net_rate_expressions', 'tof_expressions', 'dtheta_dt_expressions',
+ 'iter_coverage', 'iter_error']
+
+'''
 archived_variables = ['steady_state_coverage', 'rates']
 
 #parameters for solver
