@@ -1,6 +1,7 @@
 from pynetics import ModelShell
 from pynetics.functions import *
 import numpy as np
+import scipy
 
 
 class ParserBase(ModelShell):
@@ -381,11 +382,16 @@ class ParserBase(ModelShell):
         "Get total reaction expression of the kinetic model."
         site_matrix, gas_matrix = self.get_stoichiometry_matrices()
 
-        def null(A, eps=1e-10):
-            "get null space of transposition of site_matrix"
-            u, s, vh = np.linalg.svd(A, full_matrices=1, compute_uv=1)
-            null_space = np.compress(s <= eps, vh, axis=0)
-            return null_space.T
+#        def null(A, eps=1e-10):
+#            "get null space of transposition of site_matrix"
+#            u, s, vh = np.linalg.svd(A, full_matrices=1, compute_uv=1)
+#            null_space = np.compress(s <= eps, vh, axis=0)
+#            return null_space.T
+        def null(A, eps=1e-15):
+            u, s, vh = scipy.linalg.svd(A)
+            null_mask = (s <= eps)
+            null_space = scipy.compress(null_mask, vh, axis=0)
+            return scipy.transpose(null_space)
         x = null(site_matrix.T)  # basis of null space
         x = map(abs, x.T.tolist()[0])
         #convert entries of x to integer
@@ -394,6 +400,12 @@ class ParserBase(ModelShell):
         setattr(self._owner, 'trim_coeffients', x)
         x = np.matrix(x)
         total_coefficients = (x*gas_matrix).tolist()[0]
+#        print total_coefficients
+        #cope with small differences between coeffs
+        abs_total_coefficients = map(abs, total_coefficients)
+        min_coeff = min(abs_total_coefficients)
+        total_coefficients = [int(i/min_coeff) for i in total_coefficients]
+#        print total_coefficients
         #create total rxn expression
         reactants_list, products_list = [], []
         for sp_name in self._owner.gas_names:
