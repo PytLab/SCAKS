@@ -125,7 +125,7 @@ class SolverBase(ModelShell):
         setattr(self, 'classified_adsorbates', classified_adsorbates)
         return classified_adsorbates
 
-    def get_data_dict(self):   # !!!could introduce thermo correction here!!!
+    def get_data_dict(self):   # !!!correction added base on the values got in here!!!
         """
         Assign gas pressure, formation_energy of sites and
         species, frequencies as attrs of solver.
