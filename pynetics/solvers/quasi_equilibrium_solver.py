@@ -256,7 +256,7 @@ class QuasiEquilibriumSolver(SolverBase):
                         left_syms.append(p_sym_term)
                     else:
                         right_syms.append(p_sym_term)
-        #if there is no site in txn_list
+        #if there is no site in rxn_list
         if site_num == 0:
             theta_f_loc = 'left'
             theta_f_term = 1

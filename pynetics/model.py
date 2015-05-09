@@ -123,8 +123,8 @@ class KineticModel(object):
             decimal_precision=100,
             parser='CsvParser',
             table_maker='CsvMaker',
-            solver='SteadyStateSolver',
-            #solver='QuasiEquilibriumSolver',
+            #solver='SteadyStateSolver',
+            solver='QuasiEquilibriumSolver',
             corrector='ThermodynamicCorrector',
             plotter='ThermoPlotter'
         )
