@@ -537,6 +537,7 @@ class SteadyStateSolver(SolverBase):
         """
         #Oh, intial coverage must have physical meaning!
         c0 = self.constrain_converage(c0)
+        self.initial_guess = c0  # set self.initial_guess
 
         #start root finding algorithm
         f = self.steady_state_function
