@@ -496,8 +496,10 @@ class SolverBase(ModelShell):
         #multiply 1/r to drdG matrix
         diag_matrix = self._linalg.diag([-kT/tof for tof in r])
         DTRC = diag_matrix*drdG
+        #covert it to list
+        DTRC_list = DTRC.tolist()
         #archive
-        self.logger.archive_data('DTRC', DTRC)
+        self.logger.archive_data('DTRC', DTRC_list)
 
         return DTRC
 
