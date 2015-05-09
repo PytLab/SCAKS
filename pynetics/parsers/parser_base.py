@@ -1,7 +1,7 @@
 from pynetics import ModelShell
 from pynetics.functions import *
 import numpy as np
-import scipy
+#import scipy
 
 
 class ParserBase(ModelShell):
