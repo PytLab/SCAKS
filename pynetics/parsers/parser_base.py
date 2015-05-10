@@ -5,6 +5,9 @@ import numpy as np
 
 
 class ParserBase(ModelShell):
+    '''
+    class to operate and analyse rxn equations and rxn lists.
+    '''
     def __init__(self, owner):
         """
         A class acts as a base class to be inherited by other
@@ -527,6 +530,18 @@ class ParserBase(ModelShell):
         merged_elementary_rxn_list = [left_list, right_list]
 
         return merged_elementary_rxn_list
+
+    @staticmethod
+    def remove_site_str(state_list):
+        """
+        Expect a state list e.g. ['2*_s', 'H2O_g'],
+        remove site str in it,
+        return a new list, e.g. [H2O_g']
+        """
+        for sp_str in state_list:
+            if '*' in sp_str:
+                state_list.remove(sp_str)
+        return state_list
 
     def get_total_rxn_equation_orig(self, elementary_rxns_list):
         """
