@@ -450,7 +450,8 @@ class ParserBase(ModelShell):
 
         return total_rxn_equation
 
-    #below 3 methods are used to merge 2 elementary_rxn_list
+    #below 3 methods are used to merge elementary_rxn_lists
+    #note: there is no reaction equation balancing operations(may add later, if need)
     def get_end_sp_list(self):
         #get sp list and set it as an attr of the model
         end_sp_list = []
