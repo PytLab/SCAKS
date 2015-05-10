@@ -428,6 +428,9 @@ class ParserBase(ModelShell):
                 else:
                     coefficient = str(coefficient)
                 reactants_list.append(coefficient + sp_name)
+        #get total rxn list and set it as an attr of model
+        total_rxn_list = [reactants_list, products_list]
+        self._owner.total_rxn_list = total_rxn_list
         reactants_expr = ' + '.join(reactants_list)
         products_expr = ' + '.join(products_list)
         total_rxn_equation = reactants_expr + ' -> ' + products_expr
