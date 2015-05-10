@@ -487,10 +487,12 @@ class SolverBase(ModelShell):
         kT = self._owner._kB*self._owner.temperature
         epsilon = self._mpf(self.perturbation_size)
         #get dr/dG matrix
-        drdG = numerical_jacobian(f=self.get_tof, x=Gs,
-                                  num_repr=self.numerical_representation,
-                                  matrix=self._matrix, h=epsilon,
-                                  direction=self.perturbation_direction)
+        drdG = numerical_jacobian(
+            f=self.get_tof, x=Gs,
+            num_repr=self.numerical_representation,
+            matrix=self._matrix, h=epsilon,
+            direction=self.perturbation_direction
+        )
         r = self.get_tof(Gs)
 
         #multiply 1/r to drdG matrix
