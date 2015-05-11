@@ -649,6 +649,7 @@ class ParserBase(ModelShell):
             single_related_ads = \
                 self.get_related_adsorbates_wrt_product(product)
             related_adsorbates.append(single_related_ads)
+        self.related_adsorbates = related_adsorbates
 
         return related_adsorbates
 
