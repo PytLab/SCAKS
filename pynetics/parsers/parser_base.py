@@ -535,6 +535,7 @@ class ParserBase(ModelShell):
 
         return merged_elementary_rxn_list
 
+    #methods below are used to find original gas specie of an intermediate
     @staticmethod
     def remove_site_str(state_list):
         """
@@ -546,6 +547,27 @@ class ParserBase(ModelShell):
             if '*' in sp_str:
                 state_list.remove(sp_str)
         return state_list
+
+    def find_parent_species(self, rxns_list, sp_name):
+        """
+        Expect a rxns_list e.g.
+        [[['*_s', 'HCOOH_g'], ['HCOOH_s']],
+        [['HCOOH_s', '*_s'], ['*_s', 'HCO-OH_s'], ['HCO_s', 'OH_s']],
+        [['HCO_s', '*_s'], ['*_s', 'H-CO_s'], ['CO_s', 'H_s']],
+        [['H_s', 'OH_s'], ['H-OH_s', '*_s'], ['2*_s', 'H2O_g']],
+        [['CO_s'], ['CO-_s'], ['*_s', 'CO_g']],
+        [['H2O_s'], ['*_s', 'H2O_g']]],
+        and a species name, e.g. 'H_s',
+        return a list of its parent species, e.g. ['HCO_s']
+        """
+        parent_list = []
+        for rxn_list in rxns_list:
+            if sp_name in rxn_list[-1]:
+                parent_list.extend(self.remove_site_str(rxn_list[0]))
+
+        return parent_list
+
+    #original gas specie finding END
 
     def get_total_rxn_equation_orig(self, elementary_rxns_list):
         """
