@@ -575,7 +575,9 @@ class ParserBase(ModelShell):
             raise ValueError('%s has two parents: %s!' %
                              (sp_name, str(parent_list)))
         else:
-            parent_species = parent_list[0]
+            parent_species_str = parent_list[0]
+            parent_species = self.split_species(parent_species_str)[-1]
+
         while parent_species not in self._owner.gas_names:
             sp_name = parent_species
             parent_list = self.find_parent_species(parent_species)
@@ -583,7 +585,8 @@ class ParserBase(ModelShell):
                 raise ValueError('%s has two parents: %s!' %
                                  (sp_name, str(parent_list)))
             else:
-                parent_species = parent_list[0]
+                parent_species_str = parent_list[0]
+                parent_species = self.split_species(parent_species_str)[-1]
 
         return parent_species  # origin species
 
