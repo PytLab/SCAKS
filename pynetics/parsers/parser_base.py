@@ -548,6 +548,15 @@ class ParserBase(ModelShell):
                 state_list.remove(sp_str)
         return state_list
 
+    def strip_sp_list(self, sp_list):
+        "Remove stoichiometry of species in sp_list."
+        striped_sp_list = []
+        for sp_str in sp_list:
+            stoichiometry, sp_name = self.split_species(sp_str)
+            striped_sp_list.append(sp_name)
+
+        return striped_sp_list
+
     def find_parent_species(self, sp_name):
         """
         Expect a rxns_list e.g.
@@ -563,7 +572,8 @@ class ParserBase(ModelShell):
         parent_list = []
         rxns_list = self._owner.elementary_rxns_list
         for rxn_list in rxns_list:
-            if sp_name in rxn_list[-1]:
+            FS_sp_list = self.strip_sp_list(rxn_list[-1])
+            if sp_name in FS_sp_list:
                 parent_list.extend(self.remove_site_str(rxn_list[0]))
 
         return parent_list
