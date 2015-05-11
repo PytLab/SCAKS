@@ -40,7 +40,7 @@ class QuasiEquilibriumSolver(SolverBase):
         #create a free site theta symbol used in all rxns
         theta_f = sym.Symbol('theta_f', positive=True, real=True)
         syms_sum = 0  # sum expression of all adsorbates' thetas
-        self.eq_dict = {}  # substitution dict for symbols
+        self.eq_dict = {}  # complete substitution dict for each adsorbate symbols
         rxns_num = len(self.rxns_list)
 
         loop_counter = 0
@@ -162,7 +162,7 @@ class QuasiEquilibriumSolver(SolverBase):
             #get index
             idx = self.rxns_list.index(rxn_list)  # could use rxns_list.index(rxn_list) here
                                                   # if the first merging dosen't work
-                                                  # raise exception here
+                                                  # an exception will be raised here
             #get corresponding K
             K = self.K_sym[idx]
             merged_K *= K
