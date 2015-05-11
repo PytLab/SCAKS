@@ -604,7 +604,14 @@ class ParserBase(ModelShell):
 
     #get related species and ratio in all elementary rxns
     def get_related_adsorbates(self, product_name):
-        "Expect a product name, return related adsorbate_names wrt the product."
+        """
+        Expect a product name, return related adsorbate_names wrt the product.
+
+        example:
+        --------
+        >>> m.parser.get_related_adsorbates('H2O_g')
+        >>> [('H_s', 'OH_s'), (1, 1)]
+        """
         #get corresponding adsorbate name
         product_ads = product_name.split('_')[0] + '_s'
         candidate_adsorbates = self.find_parent_species(product_ads)
