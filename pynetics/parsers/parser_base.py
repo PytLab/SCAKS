@@ -548,7 +548,7 @@ class ParserBase(ModelShell):
                 state_list.remove(sp_str)
         return state_list
 
-    def find_parent_species(self, rxns_list, sp_name):
+    def find_parent_species(self, sp_name):
         """
         Expect a rxns_list e.g.
         [[['*_s', 'HCOOH_g'], ['HCOOH_s']],
@@ -561,11 +561,15 @@ class ParserBase(ModelShell):
         return a list of its parent species, e.g. ['HCO_s']
         """
         parent_list = []
+        rxns_list = self._owner.elementary_rxns_list
         for rxn_list in rxns_list:
             if sp_name in rxn_list[-1]:
                 parent_list.extend(self.remove_site_str(rxn_list[0]))
 
         return parent_list
+
+#    def find_origin_species(self, rxns_list, sp_name):
+
 
     #original gas specie finding END
 
