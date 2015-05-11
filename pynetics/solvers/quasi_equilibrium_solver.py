@@ -45,7 +45,7 @@ class QuasiEquilibriumSolver(SolverBase):
 
         loop_counter = 0
         while rxns_list_copy:
-#            print rxns_list_copy
+            print rxns_list_copy
             origin_num = len(rxns_list_copy)  # number of rxns
 
             for K_sym, rxn_list in zip(Ks_list_copy, rxns_list_copy):
@@ -160,7 +160,9 @@ class QuasiEquilibriumSolver(SolverBase):
         merged_K = 1
         for rxn_list in rxns_list:
             #get index
-            idx = self.rxns_list.index(rxn_list)
+            idx = self.rxns_list.index(rxn_list)  # could use rxns_list.index(rxn_list) here
+                                                  # if the first merging dosen't work
+                                                  # raise exception here
             #get corresponding K
             K = self.K_sym[idx]
             merged_K *= K
