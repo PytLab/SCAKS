@@ -396,6 +396,7 @@ class ParserBase(ModelShell):
 #            null_space = scipy.compress(null_mask, vh, axis=0)
 #            return scipy.transpose(null_space)
         x = null(site_matrix.T)  # basis of null space
+#        print x
         x = map(abs, x.T.tolist()[0])
         #convert entries of x to integer
         min_x = min(x)
@@ -602,8 +603,8 @@ class ParserBase(ModelShell):
 
     #original gas specie finding END
 
-    #get related species and ratio in all elementary rxns
-    def get_related_adsorbates(self, product_name):
+    #get related species and coefficients in all elementary rxns
+    def get_related_adsorbates_wrt_product(self, product_name):
         """
         Expect a product name, return related adsorbate_names wrt the product.
 
@@ -633,6 +634,23 @@ class ParserBase(ModelShell):
                 stoichiometries = tuple(stoichiometries)
                 related_adsorbates = tuple(related_adsorbates)
                 return [related_adsorbates, stoichiometries]
+
+    def get_related_adsorbates(self):
+        """
+        Get related adsorbate in all elementary rxns,
+        related means there is a certain proportion relations
+        among the coverages of these adsorbates.
+        """
+        if not hasattr(self._owner, 'total_rxn_list'):
+            self.get_total_rxn_equation()
+        products = self.strip_sp_list(self._owner.total_rxn_list[-1])
+        related_adsorbates = []
+        for product in products:
+            single_related_ads = \
+                self.get_related_adsorbates_wrt_product(product)
+            related_adsorbates.append(single_related_ads)
+
+        return related_adsorbates
 
     def get_total_rxn_equation_orig(self, elementary_rxns_list):
         """
