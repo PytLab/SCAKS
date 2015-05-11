@@ -568,8 +568,23 @@ class ParserBase(ModelShell):
 
         return parent_list
 
-#    def find_origin_species(self, rxns_list, sp_name):
+    def find_origin_species(self, sp_name):
+        parent_list = self.find_parent_species(sp_name)
+        if len(parent_list) != 1:
+            raise ValueError('%s has two parents: %s!' %
+                             (sp_name, str(parent_list)))
+        else:
+            parent_species = parent_list[0]
+        while parent_species not in self._owner.gas_names:
+            sp_name = parent_species
+            parent_list = self.find_parent_species(parent_species)
+            if len(parent_list) != 1:
+                raise ValueError('%s has two parents: %s!' %
+                                 (sp_name, str(parent_list)))
+            else:
+                parent_species = parent_list[0]
 
+        return parent_species  # origin species
 
     #original gas specie finding END
 
