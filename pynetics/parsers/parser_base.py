@@ -602,6 +602,31 @@ class ParserBase(ModelShell):
 
     #original gas specie finding END
 
+    #get related species and ratio in all elementary rxns
+    def get_related_adsorbates(self, product_name):
+        "Expect a product name, return related adsorbate_names wrt the product."
+        #get corresponding adsorbate name
+        product_ads = product_name.split('_')[0] + '_s'
+        candidate_adsorbates = self.find_parent_species(product_ads)
+        if len(candidate_adsorbates) <= 1:
+            return []
+        else:  # firstly related adsorbates number must be larger than 1
+            stoichiometries, related_adsorbates, origin_sp_list = [], [], []
+            for sp_str in candidate_adsorbates:
+                stoichiometry, sp_name = self.split_species(sp_str)
+                stoichiometries.append(stoichiometry)
+                related_adsorbates.append(sp_name)
+                #get origin species for sp_name
+                origin_sp = self.find_origin_species(sp_name)
+                origin_sp_list.append(origin_sp)
+            origin_sp_set = set(origin_sp_list)
+            if len(origin_sp_set) != 1:
+                return []
+            else:
+                stoichiometries = tuple(stoichiometries)
+                related_adsorbates = tuple(related_adsorbates)
+                return [related_adsorbates, stoichiometries]
+
     def get_total_rxn_equation_orig(self, elementary_rxns_list):
         """
         Analyse elementary_rxns_list, get total_rxn_equation and
