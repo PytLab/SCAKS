@@ -650,6 +650,12 @@ class ParserBase(ModelShell):
                 self.get_related_adsorbates_wrt_product(product)
             related_adsorbates.append(single_related_ads)
         self._owner.related_adsorbates = related_adsorbates
+        #get related adsorbates names
+        related_adsorbate_names = []
+        for rel_ads_tuple in self._owner.related_adsorbates:
+            if rel_ads_tuple:
+                related_adsorbate_names.append(rel_ads_tuple[0])
+        self.related_adsorbate_names = related_adsorbate_names
 
         return related_adsorbates
 
