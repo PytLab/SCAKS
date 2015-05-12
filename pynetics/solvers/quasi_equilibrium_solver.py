@@ -388,18 +388,25 @@ class QuasiEquilibriumSolver(SolverBase):
         #initial number of theta that hasn't been represented by theta_*
         free_num = 0
         #adsorbate name that will be archived in loop
-        archived_ads = ''
+        archived_adsorbates = []
         for sp_str in merged_list:
             stoichiometry, species_name = self.split_species(sp_str)
             if (species_name in self._owner.adsorbate_names and
                     species_name not in self.represented_species):
                 free_num += 1
-                archived_ads = species_name
+                archived_adsorbates.append(species_name)
+
+        archived_adsorbates = sorted(tuple(archived_adsorbates))
+
+        if not hasattr(self._owner, 'related_adsorbate_names'):
+            self._owner.parser.get_related_adsorbates()
 
         if free_num == 1:
-            return archived_ads
+            return archived_adsorbates[0]
         elif free_num == 0:
             return 'all_represented'
+        elif archived_adsorbates in self._owner.related_adsorbate_names:
+            return archived_adsorbates[0]
         else:
             return
 
