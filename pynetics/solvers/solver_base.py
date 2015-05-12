@@ -539,8 +539,9 @@ class SolverBase(ModelShell):
     def get_data_symbols(self):
         "Get Sympy Symbol objects tuple for P, G, coverage."
         #get pressure symbols objects
-        self.p_sym = tuple([sym.Symbol('p_' + gas_name, real=True)
-                            for gas_name in self._owner.gas_names])
+        self.p_sym = \
+            tuple([sym.Symbol('p_' + gas_name, real=True, positive=True)
+                   for gas_name in self._owner.gas_names])
 
         #get coverage symnols objects
         #for adsorbates
@@ -567,14 +568,15 @@ class SolverBase(ModelShell):
             if sp_name in self._owner.site_names:
                 sp_name = '*_' + sp_name
                 sp_list[idx] = sp_name
-            G_sym_list.append(sym.Symbol('G_' + sp_name, real=True))
+            G_sym_list.append(sym.Symbol('G_' + sp_name, real=True,
+                                         positive=True))
         self.G_sym = tuple(G_sym_list)
 
         #get equilibrium constants(K) symbols for each elementary rxn
         K_sym_list = []
         for i in xrange(len(self.rxns_list)):
             #subscript = i + 1
-            K_sym = sym.Symbol('K_' + str(i), real=True)
+            K_sym = sym.Symbol('K_' + str(i), real=True, positive=True)
             K_sym_list.append(K_sym)
         self.K_sym = tuple(K_sym_list)
 
