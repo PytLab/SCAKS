@@ -365,9 +365,13 @@ class QuasiEquilibriumSolver(SolverBase):
         equation = R/L - K  # R/L - K = 0
         #get target theta symbol
         theta_t = self.extract_symbol(target_adsorbate, 'ads_cvg')
-        represented_theta_t = sym.solve(equation, theta_t)[0]
+        represented_theta_t = sym.solve(equation, theta_t)
+        if len(represented_theta_t) == 1:
+            ans = represented_theta_t[0]
+        else:
+            raise ValueError('No unique solution!')
 
-        return represented_theta_t
+        return ans
 
     def check_repr(self, rxn_list):
         """
