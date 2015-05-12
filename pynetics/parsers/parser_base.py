@@ -654,7 +654,7 @@ class ParserBase(ModelShell):
         related_adsorbate_names = []
         for rel_ads_tuple in self._owner.related_adsorbates:
             if rel_ads_tuple:
-                related_adsorbate_names.append(rel_ads_tuple[0])
+                related_adsorbate_names.append(sorted(rel_ads_tuple[0]))
         self._owner.related_adsorbate_names = related_adsorbate_names
 
         return related_adsorbates
