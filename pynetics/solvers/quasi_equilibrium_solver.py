@@ -399,6 +399,7 @@ class QuasiEquilibriumSolver(SolverBase):
                     ratio = numerator/float(denominator)
                     value = ratio*pivot_theta_sym
                     related_theta_subs_dict.setdefault(key, value)
+        self.related_theta_subs_dict = related_theta_subs_dict
 
         return related_theta_subs_dict
 
