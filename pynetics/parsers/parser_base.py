@@ -1,6 +1,7 @@
 from pynetics import ModelShell
 from pynetics.functions import *
 import numpy as np
+import copy
 #import scipy
 
 
@@ -544,10 +545,11 @@ class ParserBase(ModelShell):
         remove site str in it,
         return a new list, e.g. [H2O_g']
         """
-        for sp_str in state_list:
+        state_list_copy = copy.copy(state_list)
+        for sp_str in state_list_copy:
             if '*' in sp_str:
-                state_list.remove(sp_str)
-        return state_list
+                state_list_copy.remove(sp_str)
+        return state_list_copy
 
     def strip_sp_list(self, sp_list):
         "Remove stoichiometry of species in sp_list."
