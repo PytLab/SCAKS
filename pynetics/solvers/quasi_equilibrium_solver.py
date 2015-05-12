@@ -368,15 +368,18 @@ class QuasiEquilibriumSolver(SolverBase):
         #do substitution
         #get substitution dict
         #substitute the other adsorbates theta with theta_t
-        represented_theta_t = sym.solve(equation, theta_t)
+        represented_theta_t = sym.solve(equation, theta_t)  # list
         if len(represented_theta_t) == 1:
             ans = represented_theta_t[0]
         else:
             raise ValueError('No unique solution!')
 
-        return ans
+        return ans  # theta_t actually
 
     def get_related_theta_subs_dict(self):
+        """
+        Use the first adsorbate theta symbol to represented the other theta symbols.
+        """
         #add related adsorbates theta symbol substitution to eq_dict
         if not hasattr(self._owner, 'related_adsorbates'):
             self._owner.parser.get_related_adsorbates()
