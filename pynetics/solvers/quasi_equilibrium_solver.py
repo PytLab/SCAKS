@@ -49,7 +49,7 @@ class QuasiEquilibriumSolver(SolverBase):
 
         loop_counter = 0
         while rxns_list_copy:
-            print rxns_list_copy
+#            print rxns_list_copy
             origin_num = len(rxns_list_copy)  # number of rxns
 
             for K_sym, rxn_list in zip(Ks_list_copy, rxns_list_copy):
@@ -365,6 +365,9 @@ class QuasiEquilibriumSolver(SolverBase):
         equation = R/L - K  # R/L - K = 0
         #get target theta symbol
         theta_t = self.extract_symbol(target_adsorbate, 'ads_cvg')
+        #do substitution
+        #get substitution dict
+        #substitute the other adsorbates theta with theta_t
         represented_theta_t = sym.solve(equation, theta_t)
         if len(represented_theta_t) == 1:
             ans = represented_theta_t[0]
@@ -372,6 +375,29 @@ class QuasiEquilibriumSolver(SolverBase):
             raise ValueError('No unique solution!')
 
         return ans
+
+    def get_related_theta_subs_dict(self):
+        #add related adsorbates theta symbol substitution to eq_dict
+        if not hasattr(self._owner, 'related_adsorbates'):
+            self._owner.parser.get_related_adsorbates()
+        #related_adsorbates is like [{}, {'H_s': 1, 'OH_s': 1}]
+        related_theta_subs_dict = {}
+        for rel_ads_dict in self._owner.related_adsorbates:
+            if rel_ads_dict:
+                related_adsorbate_names = sorted(rel_ads_dict.keys())
+                # the first adsorbate is the pivot adsorbate
+                pivot_adsorbate = related_adsorbate_names[0]
+                denominator = rel_ads_dict[pivot_adsorbate]
+                pivot_theta_sym = self.extract_symbol(pivot_adsorbate, 'ads_cvg')
+                for adsorbate_name in related_adsorbate_names[1:]:
+                    theta_sym = self.extract_symbol(adsorbate_name, 'ads_cvg')
+                    key = theta_sym
+                    numerator = rel_ads_dict[adsorbate_name]
+                    ratio = numerator/float(denominator)
+                    value = ratio*pivot_theta_sym
+                    related_theta_subs_dict.setdefault(key, value)
+
+        return related_theta_subs_dict
 
     def check_repr(self, rxn_list):
         """
@@ -397,6 +423,7 @@ class QuasiEquilibriumSolver(SolverBase):
                 archived_adsorbates.append(species_name)
 
         archived_adsorbates = sorted(tuple(archived_adsorbates))
+        print archived_adsorbates
 
         if not hasattr(self._owner, 'related_adsorbate_names'):
             self._owner.parser.get_related_adsorbates()
