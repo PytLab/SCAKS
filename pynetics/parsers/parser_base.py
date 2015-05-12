@@ -613,29 +613,27 @@ class ParserBase(ModelShell):
         example:
         --------
         >>> m.parser.get_related_adsorbates('H2O_g')
-        >>> [('H_s', 'OH_s'), (1, 1)]
+        >>> {'H_s': 1, 'OH_s': 1}
         """
         #get corresponding adsorbate name
         product_ads = product_name.split('_')[0] + '_s'
         candidate_adsorbates = self.find_parent_species(product_ads)
         if len(candidate_adsorbates) <= 1:
-            return []
+            return {}
         else:  # firstly related adsorbates number must be larger than 1
-            stoichiometries, related_adsorbates, origin_sp_list = [], [], []
+            origin_sp_list = []
+            related_adsorbates_dict = {}
             for sp_str in candidate_adsorbates:
                 stoichiometry, sp_name = self.split_species(sp_str)
-                stoichiometries.append(stoichiometry)
-                related_adsorbates.append(sp_name)
+                related_adsorbates_dict.setdefault(sp_name, stoichiometry)
                 #get origin species for sp_name
                 origin_sp = self.find_origin_species(sp_name)
                 origin_sp_list.append(origin_sp)
             origin_sp_set = set(origin_sp_list)
             if len(origin_sp_set) != 1:
-                return []
+                return {}
             else:
-                stoichiometries = tuple(stoichiometries)
-                related_adsorbates = tuple(related_adsorbates)
-                return [related_adsorbates, stoichiometries]
+                return related_adsorbates_dict
 
     def get_related_adsorbates(self):
         """
@@ -648,15 +646,16 @@ class ParserBase(ModelShell):
         products = self.strip_sp_list(self._owner.total_rxn_list[-1])
         related_adsorbates = []
         for product in products:
-            single_related_ads = \
+            single_related_ads_dict = \
                 self.get_related_adsorbates_wrt_product(product)
-            related_adsorbates.append(single_related_ads)
+            related_adsorbates.append(single_related_ads_dict)
         self._owner.related_adsorbates = related_adsorbates
         #get related adsorbates names
         related_adsorbate_names = []
-        for rel_ads_tuple in self._owner.related_adsorbates:
-            if rel_ads_tuple:
-                related_adsorbate_names.append(sorted(rel_ads_tuple[0]))
+        for rel_ads_dict in self._owner.related_adsorbates:
+            if rel_ads_dict:
+                keys_tup = tuple(sorted(rel_ads_dict.keys()))
+                related_adsorbate_names.append(keys_tup)
         self._owner.related_adsorbate_names = related_adsorbate_names
 
         return related_adsorbates
