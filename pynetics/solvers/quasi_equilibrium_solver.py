@@ -49,7 +49,7 @@ class QuasiEquilibriumSolver(SolverBase):
 
         loop_counter = 0
         while rxns_list_copy:
-#            print rxns_list_copy
+            print rxns_list_copy
             origin_num = len(rxns_list_copy)  # number of rxns
 
             for K_sym, rxn_list in zip(Ks_list_copy, rxns_list_copy):
@@ -367,7 +367,12 @@ class QuasiEquilibriumSolver(SolverBase):
         theta_t = self.extract_symbol(target_adsorbate, 'ads_cvg')
         #do substitution
         #get substitution dict
-        #substitute the other adsorbates theta with theta_t
+        if not hasattr(self, 'related_theta_subs_dict'):
+            self.get_related_theta_subs_dict()
+        related_theta_subs_dict = self.related_theta_subs_dict
+        #substitute the other adsorbates theta with theta_t in equation
+        equation = equation.subs(related_theta_subs_dict)
+        #solve the equation to get theta_t
         represented_theta_t = sym.solve(equation, theta_t)  # list
         if len(represented_theta_t) == 1:
             ans = represented_theta_t[0]
@@ -426,8 +431,8 @@ class QuasiEquilibriumSolver(SolverBase):
                 free_num += 1
                 archived_adsorbates.append(species_name)
 
-        archived_adsorbates = sorted(tuple(archived_adsorbates))
-        print archived_adsorbates
+        archived_adsorbates = tuple(sorted(archived_adsorbates))
+#        print "archived_adsorbates: %s" % str(archived_adsorbates)
 
         if not hasattr(self._owner, 'related_adsorbate_names'):
             self._owner.parser.get_related_adsorbates()
