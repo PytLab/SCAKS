@@ -40,7 +40,11 @@ class QuasiEquilibriumSolver(SolverBase):
         #create a free site theta symbol used in all rxns
         theta_f = sym.Symbol('theta_f', positive=True, real=True)
         syms_sum = 0  # sum expression of all adsorbates' thetas
-        self.eq_dict = {}  # complete substitution dict for each adsorbate symbols
+
+        #set equivalent dict
+        #A complete substitution dict for each adsorbate symbols
+        self.eq_dict = {}
+
         rxns_num = len(self.rxns_list)
 
         loop_counter = 0
@@ -189,7 +193,7 @@ class QuasiEquilibriumSolver(SolverBase):
 
         return self.eq_dict  # Note: K still in it!
 
-    def represent(self, rxn_list, target_adsorbate, theta_f, K):
+    def represent_orig(self, rxn_list, target_adsorbate, theta_f, K):
         """
         Expect a rxn_list which can be represented by theta_f,
         return the symbol expression of theta_target_adsorbate.
@@ -298,6 +302,72 @@ class QuasiEquilibriumSolver(SolverBase):
             theta_t = (K*L/(R*theta_f_term))**total_exp
 
         return theta_t
+
+    def represent(self, rxn_list, target_adsorbate, theta_f, K):
+        """
+        Expect a rxn_list which can be represented by theta_f,
+        return the symbol expression of theta_target_adsorbate.
+
+        Parameters
+        ----------
+        rxn_list : list of states
+            e.g. [['*_s', 'HCOOH_g'], ['HCOOH_s']]
+        target_adsorbate : str
+            adsorbate_name which will be represented
+        theta_f : sympy.core.symbol.Symbol
+            coverage of free sites
+
+        Example
+        -------
+        >>> m.solver.represent([['O2_s', 'NO_s'], ['*_s', 'ONOO_s']], 'NO_s', theta_f, K)
+        >>> theta_O2_s**(-1.0)*theta_ONOO_s**1.0*(theta_f/K)**1.0
+
+        """
+        left_syms, right_syms = [], []  # syms to be multipled later
+
+        #go thtough rxn_list's head and tail
+        ends_list = [rxn_list[0], rxn_list[-1]]
+        for state_idx, state_list in enumerate(ends_list):
+            #go through sp_list to locate theta
+            for sp_str in state_list:
+                stoichiometry, species_name = self.split_species(sp_str)
+                #free site
+                if '*' in species_name:
+                    #add exponential
+                    sym_term = theta_f**stoichiometry
+                #represented adsorbate
+                elif species_name in self._owner.adsorbate_names:
+                    #extract symbol of the adsorbate
+                    theta_sym = self.extract_symbol(species_name, 'ads_cvg')
+                    #add exponential
+                    sym_term = theta_sym**stoichiometry
+                #gas pressure
+                elif species_name in self._owner.gas_names:
+                    p_sym = self.extract_symbol(species_name, 'pressure')
+                    #add exponential
+                    sym_term = p_sym**stoichiometry
+                #classify the symbol term to left or right list
+                if state_idx == 0:
+                    left_syms.append(sym_term)
+                else:
+                    right_syms.append(sym_term)
+
+        def get_multi_sym_list(syms_list):
+            "product all elements in symbols list, left or right list."
+            multi_sym = 1
+            for symbol in syms_list:
+                multi_sym *= symbol
+            return multi_sym
+
+        #get equation to be solved
+        L = get_multi_sym_list(left_syms)  # left multipled symbols
+        R = get_multi_sym_list(right_syms)  # right multipled symbols
+        equation = R/L - K  # R/L - K = 0
+        #get target theta symbol
+        theta_t = self.extract_symbol(target_adsorbate, 'ads_cvg')
+        represented_theta_t = sym.solve(equation, theta_t)[0]
+
+        return represented_theta_t
 
     def check_repr(self, rxn_list):
         """
