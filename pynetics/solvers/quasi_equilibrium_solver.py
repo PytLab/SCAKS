@@ -49,7 +49,7 @@ class QuasiEquilibriumSolver(SolverBase):
 
         loop_counter = 0
         while rxns_list_copy:
-            print rxns_list_copy
+#            print rxns_list_copy
             origin_num = len(rxns_list_copy)  # number of rxns
 
             for K_sym, rxn_list in zip(Ks_list_copy, rxns_list_copy):
@@ -63,7 +63,7 @@ class QuasiEquilibriumSolver(SolverBase):
                     #get target adsorbate theta symbol
                     theta_target = self.extract_symbol(target_adsorbate, 'ads_cvg')
                     #represented by theta_f
-                    print "target_adsorbate: %s" % target_adsorbate
+#                    print "target_adsorbate: %s" % target_adsorbate
                     theta_target_subs = self.represent(rxn_list, target_adsorbate,
                                                        theta_f, K_sym)
 #                    print theta_target_subs
@@ -75,13 +75,35 @@ class QuasiEquilibriumSolver(SolverBase):
                         self.eq_dict[theta_target] = theta_target_subs
                     else:
                         self.eq_dict.setdefault(theta_target, theta_target_subs)
+                    #add theta to sym_sum
+#                    print "added theta %s: %s" % (str(target_adsorbate), str(theta_target_subs))
+                    syms_sum += theta_target_subs
+                    #add this good species name to self.represented_species
+                    self.represented_species.append(target_adsorbate)
+
+                    #Ok, come on bros!
+                    bros, bros_syms = \
+                        self.get_related_adsorbates_of_adsorbate(target_adsorbate)
+
+                    if bros and bros_syms:
+                        if not hasattr(self, 'related_theta_subs_dict'):
+                            self.get_related_theta_subs_dict()
+
+                        #add bros to self.eq_dict, syms_sum, self.represented_species
+                        for rel_ads, rel_ads_sym in zip(bros, bros_syms):
+                            key = rel_ads_sym
+                            value = self.related_theta_subs_dict[key].subs(self.eq_dict)
+                            #add this bro to self.eq_dict
+                            self.eq_dict[key] = value
+                            #add this bro to syms_sum
+                            rel_ads_sym = rel_ads_sym.subs(self.eq_dict)  # bro symbol needs substitution
+#                            print "added theta %s: %s" % (str(rel_ads), str(rel_ads_sym))
+                            syms_sum += rel_ads_sym
+                            #add this bro to self.represented_species
+                            self.represented_species.append(rel_ads)
 
                     rxns_list_copy.remove(rxn_list)
                     Ks_list_copy.remove(K_sym)
-                    #add this good species name to self.represented_species
-                    self.represented_species.append(target_adsorbate)
-                    #add theta to sym_sum
-                    syms_sum += theta_target_subs
                 elif target_adsorbate and target_adsorbate == 'all_represented':
                     #just remove it
                     rxns_list_copy.remove(rxn_list)
@@ -101,7 +123,7 @@ class QuasiEquilibriumSolver(SolverBase):
 #            print "loop count: %d" % loop_counter
 
             if remaining_num == origin_num and loop_counter > rxns_num:
-                print "In merging part..."
+#                print "In merging part..."
 #                print rxns_list_copy
                 #insert K for merged rxn list to head of Ks_list_copy
                 merged_K = self.get_merged_K(rxns_list_copy)
@@ -124,7 +146,7 @@ class QuasiEquilibriumSolver(SolverBase):
         if not hasattr(self._owner, 'related_adsorbate_names'):
             self._owner.parser.get_related_adsorbates()
 
-        bros = []
+        bros, bros_syms = [], []
         for rel_ads_tup in self._owner.related_adsorbate_names:
             if adsorbate_name in rel_ads_tup:
                 bros.extend(list(rel_ads_tup))
@@ -132,7 +154,6 @@ class QuasiEquilibriumSolver(SolverBase):
         if bros:
             bros.remove(adsorbate_name)
             #get corresponding theta symbols
-            bros_syms = []
             for ads in bros:
                 ads_sym = self.extract_symbol(ads, 'ads_cvg')
                 bros_syms.append(ads_sym)
@@ -463,7 +484,6 @@ class QuasiEquilibriumSolver(SolverBase):
         elif free_num == 0:
             return 'all_represented'
         elif archived_adsorbates in self._owner.related_adsorbate_names:
-            print archived_adsorbates
             return archived_adsorbates[0]
         else:
             return
