@@ -131,8 +131,13 @@ class QuasiEquilibriumSolver(SolverBase):
                 break
         if bros:
             bros.remove(adsorbate_name)
+            #get corresponding theta symbols
+            bros_syms = []
+            for ads in bros:
+                ads_sym = self.extract_symbol(ads, 'ads_cvg')
+                bros_syms.append(ads_sym)
 
-        return bros
+        return bros, bros_syms
 
     def get_simplified_tof_sym(self, theta_f, theta_f_expr):
         "No substitution second time to get a simplifed expression with K."
