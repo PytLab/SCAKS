@@ -119,6 +119,21 @@ class QuasiEquilibriumSolver(SolverBase):
 #        print theta_f_expr
         return theta_f, theta_f_expr
 
+    def get_related_adsorbates_of_adsorbate(self, adsorbate_name):
+        "Return a list containing names of related adsorbate of adsorbate in parameter."
+        if not hasattr(self._owner, 'related_adsorbate_names'):
+            self._owner.parser.get_related_adsorbates()
+
+        bros = []
+        for rel_ads_tup in self._owner.related_adsorbate_names:
+            if adsorbate_name in rel_ads_tup:
+                bros.extend(list(rel_ads_tup))
+                break
+        if bros:
+            bros.remove(adsorbate_name)
+
+        return bros
+
     def get_simplified_tof_sym(self, theta_f, theta_f_expr):
         "No substitution second time to get a simplifed expression with K."
         #get theta_f, theta_f_expr
