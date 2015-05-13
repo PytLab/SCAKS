@@ -63,6 +63,7 @@ class QuasiEquilibriumSolver(SolverBase):
                     #get target adsorbate theta symbol
                     theta_target = self.extract_symbol(target_adsorbate, 'ads_cvg')
                     #represented by theta_f
+                    print "target_adsorbate: %s" % target_adsorbate
                     theta_target_subs = self.represent(rxn_list, target_adsorbate,
                                                        theta_f, K_sym)
 #                    print theta_target_subs
@@ -377,7 +378,7 @@ class QuasiEquilibriumSolver(SolverBase):
         if len(represented_theta_t) == 1:
             ans = represented_theta_t[0]
         else:
-            raise ValueError('No unique solution!')
+            raise ValueError('No unique solution! Solutions: %s' % str(represented_theta_t))
 
         return ans  # theta_t actually
 
@@ -442,6 +443,7 @@ class QuasiEquilibriumSolver(SolverBase):
         elif free_num == 0:
             return 'all_represented'
         elif archived_adsorbates in self._owner.related_adsorbate_names:
+            print archived_adsorbates
             return archived_adsorbates[0]
         else:
             return
