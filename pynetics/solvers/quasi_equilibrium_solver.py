@@ -113,8 +113,8 @@ class QuasiEquilibriumSolver(SolverBase):
                     rxns_list_copy.remove(rxn_list)  # remove it
                     rxns_list_copy.append(rxn_list)  # insert to the end
                     #move the K_sym to the end of Ks_list_copy
-                    Ks_list_copy.remove(K_sym)  # remove it
-                    Ks_list_copy.append(K_sym)  # insert to the end
+                    Ks_list_copy.remove(K_sym)
+                    Ks_list_copy.append(K_sym)
 
 #                print rxns_list_copy  # see what left
 
@@ -265,19 +265,16 @@ class QuasiEquilibriumSolver(SolverBase):
                 stoichiometry, species_name = self.split_species(sp_str)
                 #free site
                 if '*' in species_name:
-                    #add exponential
-                    sym_term = theta_f**stoichiometry
+                    sym_term = theta_f**stoichiometry  # add exponential
                 #represented adsorbate
                 elif species_name in self._owner.adsorbate_names:
                     #extract symbol of the adsorbate
                     theta_sym = self.extract_symbol(species_name, 'ads_cvg')
-                    #add exponential
-                    sym_term = theta_sym**stoichiometry
+                    sym_term = theta_sym**stoichiometry  # add exponential
                 #gas pressure
                 elif species_name in self._owner.gas_names:
                     p_sym = self.extract_symbol(species_name, 'pressure')
-                    #add exponential
-                    sym_term = p_sym**stoichiometry
+                    sym_term = p_sym**stoichiometry  # add exponential
                 #classify the symbol term to left or right list
                 if state_idx == 0:
                     left_syms.append(sym_term)
@@ -309,7 +306,8 @@ class QuasiEquilibriumSolver(SolverBase):
         if len(represented_theta_t) == 1:
             ans = represented_theta_t[0]
         else:
-            raise ValueError('No unique solution! Solutions: %s' % str(represented_theta_t))
+            raise ValueError('No unique solution! Solutions: %s' %
+                             str(represented_theta_t))
 
         return ans  # theta_t actually
 
