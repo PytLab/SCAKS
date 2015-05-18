@@ -1,6 +1,8 @@
-from solver_base import *
-import sympy as sym
 import copy
+
+import sympy as sym
+
+from solver_base import *
 
 
 class QuasiEquilibriumSolver(SolverBase):
