@@ -2,7 +2,7 @@ import copy
 
 import sympy as sym
 
-from solver_base import *
+from solver_base import SolverBase
 
 
 class QuasiEquilibriumSolver(SolverBase):

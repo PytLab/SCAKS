@@ -1,11 +1,12 @@
-from pynetics import ModelShell
 import mpmath as mp
-from scipy.optimize import golden
 import numpy as np
-from pynetics.functions import numerical_jacobian
-from scipy.integrate import odeint
 import gmpy2
 import sympy as sym
+from scipy.integrate import odeint
+from scipy.optimize import golden
+
+from pynetics import ModelShell
+from pynetics.functions import numerical_jacobian
 
 
 class SolverBase(ModelShell):
