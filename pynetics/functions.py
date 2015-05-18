@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 #↓↓↓static utility functions↓↓↓
-import mpmath as mp
-import gmpy2
 import copy
 
 
