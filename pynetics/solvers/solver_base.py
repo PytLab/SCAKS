@@ -133,7 +133,9 @@ class SolverBase(ModelShell):
         """
         if not self._owner.hasdata:
             raise AttributeError('model object has '
-                                 'no input data in species_definitions')
+                                 'no input data in species_definitions\n'
+                                 'try parser.parse_data() '
+                                 'or add data in data table.')
         #get gas pressure dict
         p_dict = {}
         for gas_name in self._owner.gas_names:
