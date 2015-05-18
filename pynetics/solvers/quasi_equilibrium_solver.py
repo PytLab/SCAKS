@@ -23,6 +23,10 @@ class QuasiEquilibriumSolver(SolverBase):
         #species names that has been represented by theta*
         self.represented_species = []
 
+        #get data symbols
+        if not self.has_symbols:
+            self.get_data_symbols()
+
     def get_theta_f_sym(self):
         """
         Return a solved analytical expression of theta_f and
