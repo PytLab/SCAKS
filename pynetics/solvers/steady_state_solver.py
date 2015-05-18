@@ -1,5 +1,6 @@
-from solver_base import *
 import re
+
+from solver_base import *
 
 
 class SteadyStateSolver(SolverBase):
