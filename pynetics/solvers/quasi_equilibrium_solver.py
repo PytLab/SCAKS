@@ -373,8 +373,8 @@ class QuasiEquilibriumSolver(SolverBase):
             return archived_adsorbates[0]
         elif free_num == 0:
             return 'all_represented'
-        elif archived_adsorbates in self._owner.related_adsorbate_names:
-            return archived_adsorbates[0]
+        elif archived_adsorbates in self._owner.related_adsorbate_names:  # if the archived adsorbates are related
+            return archived_adsorbates[0]                                 # return them all in a tuple
         else:
             return
 
