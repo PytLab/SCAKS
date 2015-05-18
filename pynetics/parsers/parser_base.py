@@ -1,8 +1,9 @@
+import copy
+
+import numpy as np
+
 from pynetics import ModelShell
 from pynetics.functions import *
-import numpy as np
-import copy
-#import scipy
 
 
 class ParserBase(ModelShell):

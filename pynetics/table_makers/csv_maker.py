@@ -1,6 +1,7 @@
+import string
+
 from table_maker_base import *
 from pynetics.functions import string2symbols
-import string
 
 
 class CsvMaker(TableMakerBase):

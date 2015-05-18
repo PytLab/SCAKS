@@ -1,11 +1,13 @@
-from plotter_base import PlotterBase
+import threading
+
 import numpy as np
 from scipy import interpolate
 import matplotlib.pyplot as plt
 import matplotlib.transforms as transforms
 from math import sqrt
 from matplotlib.patches import Ellipse
-import threading
+
+from plotter_base import PlotterBase
 
 
 class ShadowThread(threading.Thread):
