@@ -31,7 +31,6 @@ class KineticModel(object):
 
         self._tools = \
             ['parser', 'table_maker', 'solver', 'corrector', 'plotter']
-            #['parser', 'table_maker', 'solver', 'thermodynamics', 'plotter']
 
         #set logger
         self.set_logger()
@@ -86,7 +85,7 @@ class KineticModel(object):
         """
         Import parser and set the instance of it as attr of model
         """
-        #The 'BLACK MAGIC' is hacked from CatMap (catmap/model.py)
+        #hacked from CatMap (catmap/model.py)
         #https://docs.python.org/2/library/functions.html#__import__
         basepath = os.path.dirname(
             inspect.getfile(inspect.currentframe()))
@@ -101,8 +100,6 @@ class KineticModel(object):
         """
         import logger and get an instance of Logger class
         """
-        #The 'BLACK MAGIC' is hacked from CatMap (catmap/model.py)
-        #https://docs.python.org/2/library/functions.html#__import__
         basepath = os.path.dirname(
             inspect.getfile(inspect.currentframe()))
         if basepath not in sys.path:
