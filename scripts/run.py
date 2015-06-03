@@ -1,25 +1,8 @@
 import sys
+
 sys.path.append('D:\Dropbox\Code\Python\kinetic\Pynetics')
 from pynetics import model
-import threading
 
-
-class MyThread(threading.Thread):
-    "Sub-class of Thread to create sub threads."
-    def __init__(self, func, args, kwargs, name=''):
-        threading.Thread.__init__(self)
-        self.func = func
-        self.args = args
-        self.kwargs = kwargs
-        self.name = name
-
-    def run(self):
-        print 'Plotting diagram ' + self.name + '...'
-        self.res = apply(self.func, self.args, self.kwargs)
-        print 'Ok.'
-
-    def get_result(self):
-        return self.res
 
 #create micro kinetic model instance
 m = model.KineticModel(setup_file='formic_acid.mkm')
