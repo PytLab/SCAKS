@@ -19,19 +19,28 @@ class RelativeEnergyParser(ParserBase):
         Get energy symbols in order of site_names +
         gas_names + adsorbate_names + transition_state_names.
         """
-        all_sp = self._owner.site_names + self._owner.gas_names + \
+        self.all_sp = self._owner.site_names + self._owner.gas_names + \
             self._owner.adsorbate_names + self._owner.transition_state_names
 
         energy_symbols = []
-        for sp_name in all_sp:
+        for sp_name in self.all_sp:
             if sp_name in self._owner.ref_species:
                 #set reference energies as 0
                 self.G_dict.setdefault(sp_name, 0.0)
-            else:
-                symbol = sym.Symbol('G_' + sp_name, real=True,
-                                    positive=True)
-                energy_symbols.append(symbol)
+            symbol = sym.Symbol('G_' + sp_name, real=True, positive=True)
+            energy_symbols.append(symbol)
 
         self.energy_symbols = energy_symbols
 
         return energy_symbols
+
+    def str_sym(self, obj):
+        "Return corresponding string of the symbols and symbol of the string."
+        if obj in self.energy_symbols:
+            idx = self.energy_symbols.index(obj)
+            return self.all_sp[idx]
+        elif obj in self.all_sp:
+            idx = self.all_sp.index(obj)
+            return self.energy_symbols[idx]
+        else:
+            raise ValueError("%s not in energy_symbols or all_sp." % obj)
