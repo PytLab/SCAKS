@@ -11,6 +11,9 @@ class RelativeEnergyParser(ParserBase):
         '''
         ParserBase.__init__(self, owner)
 
+        #intialize generalized formation energy dict
+        self.G_dict = {}
+
     def get_energy_symbols(self):
         """
         Get energy symbols in order of site_names +
@@ -22,7 +25,8 @@ class RelativeEnergyParser(ParserBase):
         energy_symbols = []
         for sp_name in all_sp:
             if sp_name in self._owner.ref_species:
-                continue
+                #set reference energies as 0
+                self.G_dict.setdefault(sp_name, 0.0)
             else:
                 symbol = sym.Symbol('G_' + sp_name, real=True,
                                     positive=True)
