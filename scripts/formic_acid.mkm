@@ -14,6 +14,9 @@ ref_dict['C'] = -30.491 - 2*ref_dict['H'] - 2*ref_dict['O']
 ref_dict['111'] = -303.55
 #ref_dict['sub_111'] = -271.54
 
+#reference species names
+ref_species = []  # energies of reference species will be set to 0
+
 species_definitions = {}
 species_definitions['HCOOH_g'] = {'pressure': 0.1}  # define the gas pressures
 species_definitions['H2_g'] = {'pressure': 0.03}  # 0.094
@@ -36,9 +39,11 @@ RDS = 2  # Rate Determinating Step Number
 
 variables to be serialized
 must be in
-['steady_state_coverage', 'steady_state_error', 'rates', 'net_rates', 'tofs', 'reversibilities',
+[
+ 'steady_state_coverage', 'steady_state_error', 'rates', 'net_rates', 'tofs', 'reversibilities',
  'DTRC', 'rate_expressions', 'net_rate_expressions', 'tof_expressions', 'dtheta_dt_expressions',
- 'iter_coverage', 'iter_error']
+ 'iter_coverage', 'iter_error'
+]
 
 '''
 archived_variables = ['steady_state_coverage', 'rates']
