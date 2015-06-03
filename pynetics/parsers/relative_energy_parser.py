@@ -1,3 +1,5 @@
+import os
+
 import sympy as sym
 
 from parser_base import *
@@ -13,6 +15,16 @@ class RelativeEnergyParser(ParserBase):
 
         #intialize generalized formation energy dict
         self.G_dict = {}
+
+        #parse in data file
+        if os.path.exists('rel_energy.py'):
+            globs, locs = {}, {}
+            execfile('rel_energy.py', globs, locs)
+            #set variables in data file as attr of parser
+            for key in locs:
+                setattr(self, key, locs[key])
+        else:
+            raise ValueError("No rel_energy.py in current path.")
 
     def get_energy_symbols(self):
         """
