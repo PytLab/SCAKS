@@ -119,7 +119,8 @@ class KineticModel(object):
         defaults = dict(
             data_file='data.pkl',
             decimal_precision=100,
-            parser='CsvParser',
+            #parser='CsvParser',
+            parser='RelativeEnergyParser',
             table_maker='CsvMaker',
             solver='SteadyStateSolver',
             #solver='QuasiEquilibriumSolver',
