@@ -120,3 +120,88 @@ class RelativeEnergyParser(ParserBase):
             equations_list.extend(polys_list)
 
         return equations_list
+
+    ####### Use matrix to get generalized formation energy ########
+    def get_unknown_species(self):
+        "Get species whose free energy is unknown."
+        all_sp = self._owner.site_names + self._owner.gas_names + \
+            self._owner.adsorbate_names + self._owner.transition_state_names
+        all_sp = list(all_sp)
+
+        for known_sp in self._owner.ref_species:
+            all_sp.remove(known_sp)
+
+        self.unknowns = all_sp
+
+        return all_sp
+
+    def list2dict(self, state_list):
+        """
+        Expect a state list, e.g. ['*_s', 'NO_g']
+        return a corresponding dict, e.g. {'*_s': 1, 'NO_g': 1}.
+        """
+        state_dict = {}
+        for sp_str in state_list:
+            stoichiometry, species_name = self.split_species(sp_str)
+            state_dict.setdefault(species_name, stoichiometry)
+
+        return state_dict
+
+    def get_unknown_coeff_vector(self, elementary_rxn_list):
+        """
+        Expect a elementary_rxn_list,
+        e.g. [['O2_s', 'NO_g'], ['*_s', 'ON-OO_s'], ['*_s', 'ONOO_s']]
+        return coefficient vectors, Ea, G0.
+        e.g. ([[0, 0, -1, 0, 0, 0, 0, 0, 1], [0, 0, -1, 1, 0, 0, 0, 0, 0]], 0.655, -0.455)
+        """
+        idx = self._owner.elementary_rxns_list.index(elementary_rxn_list)
+        Ea, G0 = self.Ea[idx], self.G0[idx]
+
+        if not hasattr(self, 'unknowns'):
+            self.get_unknown_species()
+
+        coeff_vects = []
+        if Ea != 0 and len(elementary_rxn_list) != 2:  # has barrier
+            #get ts coefficient vector
+            is_list, ts_list = elementary_rxn_list[0], elementary_rxn_list[1]
+            is_dict, ts_dict = self.list2dict(is_list), self.list2dict(ts_list)
+            coeff_vect = []
+            for unknown in self.unknowns:
+                if unknown in is_dict:
+                    coeff = -is_dict[unknown]
+                elif unknown in ts_dict:
+                    coeff = ts_dict[unknown]
+                else:
+                    coeff = 0
+                coeff_vect.append(coeff)
+            coeff_vects.append(coeff_vect)
+
+        #coefficient vector for G0
+        is_list, fs_list = elementary_rxn_list[0], elementary_rxn_list[-1]
+        is_dict, fs_dict = self.list2dict(is_list), self.list2dict(fs_list)
+        coeff_vect = []
+        for unknown in self.unknowns:
+            if unknown in is_dict:
+                coeff = -is_dict[unknown]
+            elif unknown in fs_dict:
+                coeff = fs_dict[unknown]
+            else:
+                coeff = 0
+            coeff_vect.append(coeff)
+        coeff_vects.append(coeff_vect)
+
+        if Ea:
+            return coeff_vects, [Ea, G0]
+        else:
+            return coeff_vects, [G0]
+
+    def get_G_values(self):
+        A, b = [], []
+        for rxn_list in self._owner.elementary_rxns_list:
+            coeff_vects, value = self.get_unknown_coeff_vector(rxn_list)
+            A.extend(coeff_vects)
+            b.extend(value)
+
+        A, b = np.matrix(A), np.matrix(b).reshape(-1, 1)
+
+        return A.I*b
