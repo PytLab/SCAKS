@@ -40,8 +40,7 @@ class CsvParser(ParserBase):
                     full_name = species_name + '_' + site_symbol
 
             #update _owner.species_definition
-            for key in ['DFT_energy', 'formation_energy',
-                        'frequencies', 'information']:
+            for key in ['DFT_energy', 'formation_energy', 'information']:
                 #print eval(key)
                 sp_dict[full_name].setdefault(key, eval(key))
         file_obj.close()

@@ -50,10 +50,9 @@ class CsvMaker(TableMakerBase):
                     species_name = self.species_definitions[species]['name']
 
                 DFT_energy = '0.0'
-                frequencies = '[]'
                 information = 'None'
                 line_tuple = (surface_name, site_name, species_name,
-                              DFT_energy, frequencies, information)
+                              DFT_energy, information)
 
                 if self.species_definitions[species]['type'] == 'adsorbate':
                     adsorbate_lines += update_line(line_tuple)

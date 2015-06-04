@@ -145,7 +145,7 @@ class SolverBase(ModelShell):
             )
 
         #get energy, frequencies dict
-        E_dict, frequencies_dict = {}, {}
+        E_dict = {}
         for species in self._owner.species_definitions:
             if self._owner.species_definitions[species]['type'] == 'site':
                 key = '*_' + species
@@ -153,12 +153,10 @@ class SolverBase(ModelShell):
                 key = species
             energy = self._mpf(self._owner.species_definitions
                                [species]['formation_energy'])
-            frequencies = [self._mpf(frequency) for frequency in
-                           self._owner.species_definitions[species]['frequencies']]
             E_dict.setdefault(key, energy)
-            frequencies_dict.setdefault(key, frequencies)
         setattr(self, 'energy_correction', False)
-        self.p, self.E, self.frequencies = p_dict, E_dict, frequencies_dict
+
+        self.p, self.E = p_dict, E_dict
         self.has_data = True
 
     def get_reaction_energies(self, elementary_rxn_list):

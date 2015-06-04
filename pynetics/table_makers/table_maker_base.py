@@ -13,7 +13,7 @@ class TableMakerBase(ModelShell):
         """
         ModelShell.__init__(self, owner)
         self.header = ['surface_name', 'site_name', 'species_name',
-                       'DFT_energy', 'frequencies', 'infomation']
+                       'DFT_energy', 'infomation']
 
         #get suface names in setup file
         if hasattr(self._owner, 'surface_name'):
