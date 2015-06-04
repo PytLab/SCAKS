@@ -197,6 +197,9 @@ class RelativeEnergyParser(ParserBase):
             return coeff_vects, [G0]
 
     def parse_data(self):  # correspond with parse_data() in csv_parser.py
+        """
+        Solve Axb equation to get value of generalized free energies.
+        """
         A, b = [], []
         for rxn_list in self._owner.elementary_rxns_list:
             coeff_vects, value = self.get_unknown_coeff_vector(rxn_list)
