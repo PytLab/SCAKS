@@ -130,6 +130,7 @@ class RelativeEnergyParser(ParserBase):
 
         for known_sp in self._owner.ref_species:
             all_sp.remove(known_sp)
+            self.G_dict.setdefault(known_sp, 0.0)
 
         self.unknowns = all_sp
 
@@ -195,7 +196,7 @@ class RelativeEnergyParser(ParserBase):
         else:
             return coeff_vects, [G0]
 
-    def get_G_values(self):
+    def parse_data(self):  # correspond with parse_data() in csv_parser.py
         A, b = [], []
         for rxn_list in self._owner.elementary_rxns_list:
             coeff_vects, value = self.get_unknown_coeff_vector(rxn_list)
@@ -203,5 +204,19 @@ class RelativeEnergyParser(ParserBase):
             b.extend(value)
 
         A, b = np.matrix(A), np.matrix(b).reshape(-1, 1)
+        x = A.I*b  # values for unknowns
+        #convert column vector to list
+        x = x.reshape(1, -1).tolist()[0]
 
-        return A.I*b
+        #put values to G_dict
+        for sp_name, G in zip(self.unknowns, x):
+            self.G_dict.setdefault(sp_name, G)
+
+        #put generalized formation energy into species_definition
+        for sp_name in self.G_dict:
+            sp_dict = self._owner.species_definitions
+            sp_dict[sp_name].setdefault('formation_energy', self.G_dict[sp_name])
+
+        setattr(self._owner, 'hasdata', True)
+
+        return
