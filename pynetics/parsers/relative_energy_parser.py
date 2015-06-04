@@ -108,3 +108,15 @@ class RelativeEnergyParser(ParserBase):
         polys.append(fs_poly)
 
         return polys
+
+    def solve_equations(self):
+        """
+        Solve a system of equations to get values of generalized formation energy.
+        """
+        #get polynomials list
+        equations_list = []
+        for elementary_rxn_list in self._owner.elementary_rxns_list:
+            polys_list = self.get_single_polys(elementary_rxn_list)
+            equations_list.extend(polys_list)
+
+        return equations_list
