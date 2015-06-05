@@ -20,12 +20,12 @@ print "Plotting multi_energy_diagram..."
 m.plotter.plot_multi_energy_diagram(m.rxn_expressions, show_mode='save')
 print 'Ok.\n'
 
-if 'c' in sys.argv[1]:
+if len(sys.argv) > 1 and '-c' == sys.argv[1]:
     print 'Correct free energies...'
     m.solver.correct_energies()
     print 'Ok.'
 
 b_cvg = m.solver.boltzmann_coverages()
-#init_cvg = (b_cvg[0]*(1e-2), b_cvg[1], b_cvg[-1]*(1e-2))
+#init_cvg = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 cvg = m.solver.get_steady_state_cvgs(b_cvg)
 print m.adsorbate_names
