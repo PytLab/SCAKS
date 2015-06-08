@@ -643,8 +643,8 @@ class SteadyStateSolver(SolverBase):
                             )
                     else:
                         #No constraint when iterations less than 6
-                        if x >= 5:
-                            x = self.constrain_converage(x)
+#                        if x >= 5:
+#                            x = self.constrain_converage(x)
                         error = f_resid(x)  # use residual as error
 
                 #if convergence is slow when the norm is larger than 0.1
@@ -684,26 +684,6 @@ class SteadyStateSolver(SolverBase):
                 if i % 100 == 0:
                     self.logger.archive_data('iter_coverage', x)
                     self.logger.archive_data('iter_error', error)
-
-                #stagnated or diverging
-#                elif error >= self.residual_threshold*old_error:
-#                    msg = self.logger.log(log_type='iteration',
-#                                          event='rootfinding_fail',
-#                                          n_iter=i, resid=float(f_resid(x)),
-#                                          norm=float(error))
-#                    print 'error :' + str(error) + 'old error : ' + str(old_error)
-#                    print error/old_error
-#                    raise ValueError('Stagnated or diverging residual '+\
-#                                     '(resid='+str(float(f_resid(x)))+')')
-
-                #out of iteration
-#                if i > self.max_rootfinding_iterations:
-#                    msg = self.logger.log(log_type='iteration',
-#                                          event='rootfinding_maxiter',
-#                                          resid=float(f_resid(x)))
-#                    #print msg
-#                    raise ValueError('Out of iterations (resid='+\
-#                                     str(float(f_resid(x)))+')')
 
             #####    Sub loop for a c0 END    #####
             #change the initial guess(c0)
