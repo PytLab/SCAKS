@@ -128,11 +128,12 @@ class SteadyStateSolver(SolverBase):
         constrained_cvgs_tuple = self.cvg_dict2tuple(cvgs_dict)
         #log if constraint has been carried out
         if constrained_cvgs_tuple != cvgs_tuple:
-            self.logger.log(log_type='event',
-                            event='coverages_constraint_warning',
-                            initial_cvgs=tuple(map(float, cvgs_tuple)),
-                            constrained_cvgs=tuple(map(float, constrained_cvgs_tuple))
-                            )
+            self.logger.log(
+                log_type='event',
+                event='coverages_constraint_warning',
+                initial_cvgs=tuple(map(float, cvgs_tuple)),
+                constrained_cvgs=tuple(map(float, constrained_cvgs_tuple))
+            )
         return constrained_cvgs_tuple
 
     def get_elementary_dtheta_dt_expression(self, adsorbate_name,
@@ -596,7 +597,7 @@ class SteadyStateSolver(SolverBase):
                 i += 1  # counter for loop
                 #if iterations is larger than 100, log every 10 steps
                 if i > 100 and i % 30 == 0:
-                    msg = self.logger.log(
+                    self.logger.log(
                         log_type='iteration',
                         event='rootfinding_in-process',
                         n_iter=i, resid=float(f_resid(x)),
@@ -604,7 +605,7 @@ class SteadyStateSolver(SolverBase):
                         x=tuple(map(float, x))
                     )
                 elif i < 100:
-                    msg = self.logger.log(
+                    self.logger.log(
                         log_type='iteration',
                         event='rootfinding_in-process',
                         n_iter=i, resid=float(f_resid(x)),
@@ -624,7 +625,7 @@ class SteadyStateSolver(SolverBase):
                                 lt_zero = False
                         # check END #
                         if not lt_zero:
-                            msg = self.logger.log(
+                            self.logger.log(
                                 log_type='iteration',
                                 event='rootfinding_success',
                                 n_iter=i,
@@ -635,7 +636,7 @@ class SteadyStateSolver(SolverBase):
                             cancel = True
                             break
                         else:  # bad root, iteration continue...
-                            msg = self.logger.log(
+                            self.logger.log(
                                 log_type='iteration',
                                 event='rootfinding_continue',
                                 bad_root=mpf2float(x)
@@ -651,7 +652,7 @@ class SteadyStateSolver(SolverBase):
                       abs(error - old_error) < 1e-4) and error > 1e-1:
                 #elif i > self.max_rootfinding_iterations:
                     #print "root stable"
-                    msg = self.logger.log(
+                    self.logger.log(
                         log_type='iteration',
                         event='rootfinding_break',
                         n_iter=i, resid=float(f_resid(x)),
@@ -664,7 +665,7 @@ class SteadyStateSolver(SolverBase):
                 #residual is almost stagnated
                 elif abs(error - old_error) < self.stable_criterion:
 
-                    msg = self.logger.log(
+                    self.logger.log(
                         log_type='iteration',
                         event='rootfinding_stable',
                         n_iter=i, resid=float(f_resid(x)),
