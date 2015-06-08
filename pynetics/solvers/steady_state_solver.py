@@ -545,7 +545,7 @@ class SteadyStateSolver(SolverBase):
         residual = max([abs(dtheta_dt) for dtheta_dt in dtheta_dts])
         return residual
 
-    def get_steady_state_cvgs(self, c0):
+    def get_steady_state_cvgs(self, c0, single_pt=False):
         """
         Expect an inital coverages tuple,
         use Newton Method to solving nonlinear equations,
@@ -570,7 +570,7 @@ class SteadyStateSolver(SolverBase):
         cancel = False
 
         while not cancel:
-            if f_resid(c0) <= self.tolerance:
+            if f_resid(c0) <= self.tolerance and not single_pt:
                 self._coverage = c0
                 print 'Good initial guess.'
                 return c0
@@ -595,6 +595,7 @@ class SteadyStateSolver(SolverBase):
             #####    Sub LOOP for a c0    #####
             for x, error, fx in newton_iterator:
                 i += 1  # counter for loop
+                print i
                 #if iterations is larger than 100, log every 10 steps
                 if i > 100 and i % 30 == 0:
                     self.logger.log(
@@ -618,7 +619,7 @@ class SteadyStateSolver(SolverBase):
                     if f_resid(x) < self.tolerance:
                         #check whether there is minus value in x
                         for cvg in x:
-                            if cvg < 0:
+                            if cvg < 0.0:
                                 lt_zero = True  # less than 0
                                 break
                             else:
