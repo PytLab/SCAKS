@@ -706,7 +706,7 @@ class SteadyStateSolver(SolverBase):
 
     def modify_init_guess(self, c0, dtheta_dts):
         "Return a new initial guess according to dthe_dts."
-        max_dtheta_dt = np.max(np.abs(dtheta_dts))
+#        max_dtheta_dt = np.max(np.abs(dtheta_dts))
         base_coefficient = self.initial_guess_scale_factor
         coefficients = []
         for dtheta_dt in np.abs(dtheta_dts):
