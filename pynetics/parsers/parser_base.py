@@ -89,7 +89,7 @@ class ParserBase(ModelShell):
         #get site number from species dict
         for species in state_dict['species_dict']:
             site = state_dict['species_dict'][species]['site']
-            if site == 'g':  # neglect gas site when check conservation
+            if site == 'g' or site == 'l':  # neglect gas site when check conservation
                 continue
             number = state_dict['species_dict'][species]['number']
             if site in total_site_dict:
@@ -141,6 +141,7 @@ class ParserBase(ModelShell):
         elementary_rxns_list = []
         adsorbate_names = []
         gas_names = []
+        liquid_names = []
         site_names = []
         transition_state_names = []
 
@@ -171,8 +172,8 @@ class ParserBase(ModelShell):
                 for sp in states_dict[state]['species_dict']:
                     if states_dict[state]['species_dict'][sp]['site'] == 'g':  # sp is gas
                         gas_names.append(sp)
-#                    if states_dict[state]['species_dict'][sp]['site'] != 'g'\
-#                                            and not '-' in sp: #sp is adsorbate
+                    elif states_dict[state]['species_dict'][sp]['site'] == 'l':  # sp is in liquid
+                        liquid_names.append(sp)
                     elif not '-' in sp:  # sp is adsorbate
                         adsorbate_names.append(sp)
             #merge elementary rxn
@@ -180,6 +181,7 @@ class ParserBase(ModelShell):
         #merge duplicates in lists
         self._owner.adsorbate_names = tuple(sorted(list(set(adsorbate_names))))
         self._owner.gas_names = tuple(sorted(list(set(gas_names))))
+        self._owner.liquid_names = tuple(sorted(list(set(liquid_names))))
         self._owner.site_names = tuple(sorted(list(set(site_names))))
         self._owner.transition_state_names = \
             tuple(sorted(list(set(transition_state_names))))
