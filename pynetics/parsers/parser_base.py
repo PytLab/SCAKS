@@ -398,7 +398,8 @@ class ParserBase(ModelShell):
 #            null_space = scipy.compress(null_mask, vh, axis=0)
 #            return scipy.transpose(null_space)
         x = null(site_matrix.T)  # basis of null space
-#        print x
+        if not x:
+            raise ValueError('Failed to get basis of nullspace.')
         x = map(abs, x.T.tolist()[0])
         #convert entries of x to integer
         min_x = min(x)
