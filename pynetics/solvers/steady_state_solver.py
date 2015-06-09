@@ -696,10 +696,12 @@ class SteadyStateSolver(SolverBase):
 
         if converged_cvgs:
             self._coverage = converged_cvgs
-            #archive
+            #archive converged root and error
             self.logger.archive_data('steady_state_coverage',
                                      converged_cvgs)
             self.logger.archive_data('steady_state_error', error)
+            #archive initial guess
+            self.logger.archive_data('initial_guess', c0)
             return converged_cvgs
 
     def modify_init_guess(self, c0, dtheta_dts):
