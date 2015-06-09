@@ -63,6 +63,6 @@ stable_criterion = 1e-20  # criterion for almost stagnated norm
 
 #tools for model to use
 #parser = 'CsvParser'
-parser = 'RelativeEnergyParser'
-solver = 'SteadyStateSolver'
+parser = 'RelativeEnergyParser'  # default
+solver = 'SteadyStateSolver'  # default
 #solver = 'QuasiEquilibriumSolver'
