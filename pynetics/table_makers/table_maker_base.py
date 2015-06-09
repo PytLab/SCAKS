@@ -29,7 +29,7 @@ class TableMakerBase(ModelShell):
             self.species_definitions = self._owner.species_definitions
 
         #ref_dict
-        if self._owner.ref_dict:
+        if hasattr(self._owner, 'ref_dict'):
             self.ref_dict = self._owner.ref_dict
 
         self.row_list = [''] * len(self.header)
