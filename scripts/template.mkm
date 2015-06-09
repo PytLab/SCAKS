@@ -42,11 +42,11 @@ must be in
 [
  'steady_state_coverage', 'steady_state_error', 'rates', 'net_rates', 'tofs', 'reversibilities',
  'DTRC', 'rate_expressions', 'net_rate_expressions', 'tof_expressions', 'dtheta_dt_expressions',
- 'iter_coverage', 'iter_error'
+ 'iter_coverage', 'iter_error', 'initial_guess'
 ]
 
 '''
-archived_variables = ['steady_state_coverage', 'rates']
+archived_variables = ['steady_state_coverage', 'rates', 'initial_guess']
 
 #parameters for solver
 tolerance = 1e-20  # convergence criterion
