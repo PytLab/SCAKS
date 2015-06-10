@@ -19,18 +19,19 @@ class CsvParser(ParserBase):
         for line_str in file_obj:
             line_list = line_str.strip('\n').split(',')
             site_name, species_name, information = \
-                line_list[1], line_list[2], line_list[6]
+                line_list[1], line_list[2], line_list[5]
             DFT_energy = float(line_list[3])
             formation_energy = float(line_list[4])
-            frequencies = eval(line_list[5].replace(' ', ','))
 
             #get full name
             #for gas
             if site_name == 'gas':
                 full_name = species_name + '_g'
+            elif site_name == 'liquid':
+                full_name = species_name + '_l'
             #for any species on site
             else:
-                #get site symbol e.g. 's' or 'ss'
+                #get site symbol of current line e.g. 's' or 'ss'
                 for site_symbol in self._owner.site_names:
                     if sp_dict[site_symbol]['site_name'] == site_name:
                         break
