@@ -338,6 +338,8 @@ class SolverBase(ModelShell):
         kf, kr = self.get_rate_constants()
         #pressure
         p = self.p
+        #concentration
+        c = self.c
         #rate list
         rfs, rrs = [0]*len(self._owner.elementary_rxns_list), \
             [0]*len(self._owner.elementary_rxns_list)
@@ -426,15 +428,15 @@ class SolverBase(ModelShell):
         net_rates = self.get_net_rates(rfs, rrs)
 
         #get turnover frequencies
-        if hasattr(self._owner, 'gas_matrix'):
-            gas_matrix = self._owner.gas_matrix
+        if hasattr(self._owner, 'reapro_matrix'):
+            reapro_matrix = self._owner.reapro_matrix
         else:
-            gas_matrix = \
+            reapro_matrix = \
                 self._owner.parser.get_stoichiometry_matrices()[1]
         #gas_matrix *= -1
-        gas_matrix = abs(gas_matrix)
+        reapro_matrix = abs(reapro_matrix)
         rate_vector = np.matrix(net_rates)  # get rate vector
-        tof_list = (rate_vector*gas_matrix).tolist()[0]
+        tof_list = (rate_vector*reapro_matrix).tolist()[0]
         setattr(self, 'tof', tof_list)
         #archive
         self.logger.archive_data('tofs', tof_list)
@@ -554,6 +556,10 @@ class SolverBase(ModelShell):
         self.p_sym = \
             tuple([sym.Symbol('p_' + gas_name, real=True, positive=True)
                    for gas_name in self._owner.gas_names])
+        #get concentration symbols objects
+        self.c_sym = \
+            tuple([sym.Symbol('c_' + liquid_name, real=True, positive=True)
+                   for liquid_name in self._owner.liquid_names])
 
         #get coverage symnols objects
         #for adsorbates
@@ -601,12 +607,15 @@ class SolverBase(ModelShell):
         """
         Expect a species name string,
         symbol_tup must be in
-        ['pressure', 'ads_cvg', 'free_site_cvg', 'free_energy'],
+        ['pressure', 'concentration', 'ads_cvg', 'free_site_cvg', 'free_energy'],
         return corresponding symbol from symbol tuple.
         """
         if symbol_type == 'pressure':
             sp_list = self._owner.gas_names
             symbol_tup = self.p_sym
+        elif symbol_type == 'concentration':
+            sp_list = self._owner.liquid_names
+            symbol_tup = self.c_sym
         elif symbol_type == 'ads_cvg':
             sp_list = self._owner.adsorbate_names
             symbol_tup = self.ads_theta_sym
@@ -617,9 +626,11 @@ class SolverBase(ModelShell):
             sp_list = self.sp_list
             symbol_tup = self.G_sym
         else:
-            raise ValueError("illegal symbol_type. symbol_type must be in" +
-                             "['pressure', 'ads_cvg', 'free_site_cvg', " +
-                             "'free_energy']")
+            raise ValueError(
+                "illegal symbol_type. symbol_type must be in" +
+                "['pressure', 'concentration', 'ads_cvg', " +
+                "'free_site_cvg', 'free_energy']"
+            )
         #extract corresponding symbol from symbol tuple
         idx = sp_list.index(sp_name)
 
@@ -783,6 +794,8 @@ class SolverBase(ModelShell):
                 #set symbol_type
                 if sp_type == 'gas':
                     symbol_type = 'pressure'
+                elif sp_type == 'liquid':
+                    symbol_type = 'concentration'
                 elif sp_type == 'site':
                     symbol_type = 'free_site_cvg'
                 else:
@@ -815,14 +828,17 @@ class SolverBase(ModelShell):
             theta_subs_dict = self.get_theta_subs_dict(kwargs['cvgs_tuple'])
         #pressure substitution dict
         p_subs_dict = self.get_p_subs_dict()
+        #concentration substution dict
+        c_subs_dict = self.get_c_subs_dict()
         #constants substitution dict
         constants_subs_dict = self.constants_subs_dict
         #get dicts list
         if 'cvgs_tuple' in kwargs:
-            dicts_list = [G_subs_dict, theta_subs_dict,
-                          constants_subs_dict, p_subs_dict]
+            dicts_list = [G_subs_dict, theta_subs_dict, constants_subs_dict,
+                          p_subs_dict, c_subs_dict]
         else:
-            dicts_list = [G_subs_dict, constants_subs_dict, p_subs_dict]
+            dicts_list = [G_subs_dict, constants_subs_dict,
+                          p_subs_dict, c_subs_dict]
 
         #merge dicts
         subs_dict = {}
@@ -907,6 +923,14 @@ class SolverBase(ModelShell):
             p_dict.setdefault(self.p_sym[idx], self.p[gas_name])
 
         return p_dict
+
+    def get_c_subs_dict(self):
+        "Get values from solver's data dict."
+        c_dict = {}
+        for idx, liquid_name in enumerate(self._owner.liquid_names):
+            c_dict.setdefault(self.c_sym[idx], self.c[liquid_name])
+
+        return c_dict
 
     def get_net_rate_syms(self):
         "Go through rfs and rrs, to get net rate symbolic expressions."

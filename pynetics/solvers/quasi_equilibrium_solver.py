@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import copy
 
 import sympy as sym
@@ -27,7 +28,7 @@ class QuasiEquilibriumSolver(SolverBase):
         if not self.has_symbols:
             self.get_data_symbols()
 
-    def get_theta_f_sym(self):
+    def get_theta_f_sym(self):  # 请找个安静的地方读这段代码
         """
         Return a solved analytical expression of theta_f and
         theta_f symbol object.
@@ -281,6 +282,10 @@ class QuasiEquilibriumSolver(SolverBase):
                 elif species_name in self._owner.gas_names:
                     p_sym = self.extract_symbol(species_name, 'pressure')
                     sym_term = p_sym**stoichiometry  # add exponential
+                #liquid concentration
+                elif species_name in self._owner.liquid_names:
+                    c_sym = self.extract_symbol(species_name, 'concentration')
+                    sym_term = c_sym**stoichiometry
                 #classify the symbol term to left or right list
                 if state_idx == 0:
                     left_syms.append(sym_term)
