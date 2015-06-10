@@ -350,16 +350,17 @@ class ParserBase(ModelShell):
 
     def get_stoichiometry_matrices(self):
         """
-        Go through elementary_rxns_list,
-        return sites stoichiometry matrix and gas stoichiometry matrix.
+        Go through elementary_rxns_list, return sites stoichiometry matrix,
+        reactants and products stoichiometry matrix.
         """
         sites_names = ['*_'+site_name for site_name in self._owner.site_names] + \
             list(self._owner.adsorbate_names)
-        gas_names = list(self._owner.gas_names)
+        #reactant and product names
+        reapro_names = list(self._owner.gas_names + self._owner.liquid_names)
         #initialize matrices
         m = len(self._owner.elementary_rxns_list)
-        n_s, n_g = len(sites_names), len(gas_names)
-        site_matrix, gas_matrix = np.matrix(np.zeros((m, n_s))),\
+        n_s, n_g = len(sites_names), len(reapro_names)
+        site_matrix, reapro_matrix = np.matrix(np.zeros((m, n_s))),\
             np.matrix(np.zeros((m, n_g)))
         #go through all elementary equations
         for i in xrange(m):
@@ -369,21 +370,21 @@ class ParserBase(ModelShell):
                 if sp_name in sites_names:
                     j = sites_names.index(sp_name)
                     site_matrix[i, j] += stoichiometry
-                if sp_name in gas_names:
-                    j = gas_names.index(sp_name)
-                    gas_matrix[i, j] += stoichiometry
+                if sp_name in reapro_names:
+                    j = reapro_names.index(sp_name)
+                    reapro_matrix[i, j] += stoichiometry
             for sp in states_list[-1]:  # for final state
                 stoichiometry, sp_name = self.split_species(sp)
                 if sp_name in sites_names:
                     j = sites_names.index(sp_name)
                     site_matrix[i, j] -= stoichiometry
-                if sp_name in gas_names:
-                    j = gas_names.index(sp_name)
-                    gas_matrix[i, j] -= stoichiometry
-        setattr(self._owner, 'gas_matrix', gas_matrix)
+                if sp_name in reapro_names:
+                    j = reapro_names.index(sp_name)
+                    reapro_matrix[i, j] -= stoichiometry
+        setattr(self._owner, 'reapro_matrix', reapro_matrix)
         setattr(self._owner, 'site_matrix', site_matrix)
 
-        return site_matrix, gas_matrix
+        return site_matrix, reapro_matrix
 
     def get_total_rxn_equation(self):
         "Get total reaction expression of the kinetic model."
