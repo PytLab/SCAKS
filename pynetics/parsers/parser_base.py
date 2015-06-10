@@ -388,7 +388,7 @@ class ParserBase(ModelShell):
 
     def get_total_rxn_equation(self):
         "Get total reaction expression of the kinetic model."
-        site_matrix, gas_matrix = self.get_stoichiometry_matrices()
+        site_matrix, reapro_matrix = self.get_stoichiometry_matrices()
 
         def null(A, eps=1e-10):
             "get null space of transposition of site_matrix"
@@ -401,7 +401,7 @@ class ParserBase(ModelShell):
 #            null_space = scipy.compress(null_mask, vh, axis=0)
 #            return scipy.transpose(null_space)
         x = null(site_matrix.T)  # basis of null space
-        if not x:
+        if not x.any():  # x is not empty
             raise ValueError('Failed to get basis of nullspace.')
         x = map(abs, x.T.tolist()[0])
         #convert entries of x to integer
@@ -409,7 +409,7 @@ class ParserBase(ModelShell):
         x = [round(i/min_x, 1) for i in x]
         setattr(self._owner, 'trim_coeffients', x)
         x = np.matrix(x)
-        total_coefficients = (x*gas_matrix).tolist()[0]
+        total_coefficients = (x*reapro_matrix).tolist()[0]
 #        print total_coefficients
         #cope with small differences between coeffs
         abs_total_coefficients = map(abs, total_coefficients)
@@ -418,8 +418,9 @@ class ParserBase(ModelShell):
 #        print total_coefficients
         #create total rxn expression
         reactants_list, products_list = [], []
-        for sp_name in self._owner.gas_names:
-            idx = self._owner.gas_names.index(sp_name)
+        reapro_names = self._owner.gas_names + self._owner.liquid_names
+        for sp_name in reapro_names:
+            idx = reapro_names.index(sp_name)
             coefficient = total_coefficients[idx]
             if coefficient < 0:  # for products
                 coefficient = abs(int(coefficient))
@@ -441,6 +442,7 @@ class ParserBase(ModelShell):
         reactants_expr = ' + '.join(reactants_list)
         products_expr = ' + '.join(products_list)
         total_rxn_equation = reactants_expr + ' -> ' + products_expr
+#        print total_rxn_equation
 
         #check conservation
         states_dict = self.parse_single_elementary_rxn(total_rxn_equation)[0]
