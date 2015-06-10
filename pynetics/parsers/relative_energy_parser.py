@@ -124,8 +124,9 @@ class RelativeEnergyParser(ParserBase):
     ####### Use matrix to get generalized formation energy ########
     def get_unknown_species(self):
         "Get species whose free energy is unknown."
-        all_sp = self._owner.site_names + self._owner.gas_names + self._owner.liquid_names + \
-            self._owner.adsorbate_names + self._owner.transition_state_names
+        all_sp = self._owner.site_names + self._owner.gas_names + \
+            self._owner.liquid_names + self._owner.adsorbate_names + \
+            self._owner.transition_state_names
         all_sp = list(all_sp)
 
         for known_sp in self._owner.ref_species:

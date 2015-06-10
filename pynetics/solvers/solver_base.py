@@ -143,8 +143,15 @@ class SolverBase(ModelShell):
                 gas_name,
                 self._mpf(self._owner.species_definitions[gas_name]['pressure'])
             )
+        #get concentration dict
+        c_dict = {}
+        for liquid_name in self._owner.liquid_names:
+            c_dict.setdefault(
+                liquid_name,
+                self._mpf(self._owner.species_definitions[liquid_name]['concentration'])
+            )
 
-        #get energy, frequencies dict
+        #get energy for all species
         E_dict = {}
         for species in self._owner.species_definitions:
             if self._owner.species_definitions[species]['type'] == 'site':
@@ -156,14 +163,13 @@ class SolverBase(ModelShell):
             E_dict.setdefault(key, energy)
         setattr(self, 'energy_correction', False)
 
-        self.p, self.E = p_dict, E_dict
+        self.p, self.c, self.E = p_dict, c_dict, E_dict
         self.has_data = True
 
     def get_reaction_energies(self, elementary_rxn_list):
         """
         Analyse a single elementary rxn equation,
-        return list of reaction_barrier(delta_G) and
-        reaction energy for the elementary rxn.
+        return list of reaction_barrier(delta_G).
         """
         #get free energy for states
         G_IS, G_TS, G_FS = 0.0, 0.0, 0.0
@@ -286,11 +292,16 @@ class SolverBase(ModelShell):
                             sp_expr = "*theta['"+species_name+"']"
                         else:
                             sp_expr = "*theta['"+species_name+"']**"+str(stoichiometry)
-                    if sp_type == 'gas':
+                    elif sp_type == 'gas':
                         if stoichiometry == 1:
                             sp_expr = "*p['"+species_name+"']"
                         else:
                             sp_expr = "*p['"+species_name+"']**"+str(stoichiometry)
+                    elif sp_type == 'liquid':
+                        if stoichiometry == 1:
+                            sp_expr = "*c['"+species_name+"']"
+                        else:
+                            sp_expr = "*c['"+species_name+"']**"+str(stoichiometry)
                 rate_str += sp_expr
             return rate_str
 #        f_list, r_list = elementary_rxn_list[0], elementary_rxn_list[-1]

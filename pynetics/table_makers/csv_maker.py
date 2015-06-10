@@ -19,14 +19,15 @@ class CsvMaker(TableMakerBase):
         Add lines to input files
         """
         gas_lines = ''
+        liquid_lines = ''
         adsorbate_lines = ''
         transition_lines = ''
         site_lines = ''
 
         def update_line(line_tuple):
-            row_list = [''] * 6
+            row_list = [''] * 5
             #change row list
-            for idx in range(6):
+            for idx in range(5):
                 row_list[idx] = line_tuple[idx]
             return ','.join(row_list) + '\n'
 
@@ -43,6 +44,10 @@ class CsvMaker(TableMakerBase):
                     surface_name = 'None'
                     site_name = 'gas'
                     species_name = self.species_definitions[species]['name']
+                elif self.species_definitions[species]['type'] == 'liquid':
+                    surface_name = 'None'
+                    site_name = 'liquid'
+                    species_name = self.species_definitions[species]['name']
                 else:  # for adsorbate & transition state
                     surface_name = self.surface_name
                     site = self.species_definitions[species]['site']
@@ -56,21 +61,22 @@ class CsvMaker(TableMakerBase):
 
                 if self.species_definitions[species]['type'] == 'adsorbate':
                     adsorbate_lines += update_line(line_tuple)
-                if self.species_definitions[species]['type'] == \
-                        'transition_state':
+                elif self.species_definitions[species]['type'] == 'transition_state':
                     transition_lines += update_line(line_tuple)
-                if self.species_definitions[species]['type'] == 'site':
+                elif self.species_definitions[species]['type'] == 'site':
                     site_lines += update_line(line_tuple)
-                if self.species_definitions[species]['type'] == 'gas':
+                elif self.species_definitions[species]['type'] == 'gas':
                     gas_lines += update_line(line_tuple)
+                elif self.species_definitions[species]['type'] == 'liquid':
+                    liquid_lines += update_line(line_tuple)
 
-        return header_str + gas_lines + site_lines + \
+        return header_str + gas_lines + liquid_lines + site_lines + \
             adsorbate_lines + transition_lines
 
     def get_new_row(self, row_str, mode):
         """
         Analyse each line of 'energy.csv',
-        return a new line containing generalized formation energy.
+        return a new line containing 'generalized formation energy'.
         """
         striped_str = string.whitespace
         row_list = row_str.strip(string.whitespace).split(',')
@@ -82,7 +88,7 @@ class CsvMaker(TableMakerBase):
             species_name = species_name.replace('-', '')
             element_list = string2symbols(species_name)
 
-        if site_name == 'gas':
+        if site_name == 'gas' or site_name == 'liquid':
             for element in element_list:
                 energy -= self.ref_dict[element]
         else:  # for adsorbates, transition_state, slab

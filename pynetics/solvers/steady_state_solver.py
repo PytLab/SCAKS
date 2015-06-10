@@ -226,6 +226,8 @@ class SteadyStateSolver(SolverBase):
         kf, kr = self.get_rate_constants()
         #pressure
         p = self.p
+        #concentration
+        c = self.c
         #rate of coverage change(dtheta_dt)
         dtheta_dt = [0.0]*len(self._owner.adsorbate_names)
 
@@ -384,6 +386,8 @@ class SteadyStateSolver(SolverBase):
         kf, kr = self.get_rate_constants()
         #pressure
         p = self.p
+        #concentration
+        c = self.c
 
         #generate Jacobian matrix
         m, n = len(dtheta_dt_expressions), len(cvgs_tuple)
