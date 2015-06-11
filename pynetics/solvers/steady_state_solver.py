@@ -704,6 +704,7 @@ class SteadyStateSolver(SolverBase):
             self.logger.archive_data('steady_state_coverage',
                                      converged_cvgs)
             self.logger.archive_data('steady_state_error', error)
+            self.good_guess = c0
             #archive initial guess
             self.logger.archive_data('initial_guess', c0)
             return converged_cvgs
