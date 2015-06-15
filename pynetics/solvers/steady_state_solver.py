@@ -29,6 +29,9 @@ class SteadyStateSolver(SolverBase):
                                             '\n' + ' '*38 + 'dtheta/dt ${fx}' +
                                             '\n' + ' '*38 + 'coverage ${x}',
 
+           'rootfinding_in-process(brief)': 'iteration ${n_iter} with ' +
+                                            'residual ${resid}, norm ${norm}',
+
                      'rootfinding_success': 'iteration ${n_iter} with residual ' +
                                             '${resid}\n\nsteady_state_root:\n${root}',
 
@@ -549,11 +552,18 @@ class SteadyStateSolver(SolverBase):
         residual = max([abs(dtheta_dt) for dtheta_dt in dtheta_dts])
         return residual
 
-    def get_steady_state_cvgs(self, c0, single_pt=False):
+    def get_steady_state_cvgs(self, c0, single_pt=False, full_info=False):
         """
         Expect an inital coverages tuple,
         use Newton Method to solving nonlinear equations,
         return steady state coverages, if converged.
+
+        Parameters
+        ----------
+        single_pt : bool
+            if True, no initial guess check.
+        full_info : bool
+            if True, show full info instead of brief info.
         """
         #Oh, intial coverage must have physical meaning!
         c0 = self.constrain_converage(c0)
@@ -599,8 +609,7 @@ class SteadyStateSolver(SolverBase):
             #####    Sub LOOP for a c0    #####
             for x, error, fx in newton_iterator:
                 i += 1  # counter for loop
-                print i
-                #if iterations is larger than 100, log every 10 steps
+                #if iterations is larger than 100, log every 10 steps, full info
                 if i > 100 and i % 30 == 0:
                     self.logger.log(
                         log_type='iteration',
@@ -610,13 +619,21 @@ class SteadyStateSolver(SolverBase):
                         x=tuple(map(float, x))
                     )
                 elif i < 100:
-                    self.logger.log(
-                        log_type='iteration',
-                        event='rootfinding_in-process',
-                        n_iter=i, resid=float(f_resid(x)),
-                        norm=float(error), fx=tuple(map(float, fx)),
-                        x=tuple(map(float, x))
-                    )
+                    if full_info:  # show full information on screen
+                        self.logger.log(
+                            log_type='iteration',
+                            event='rootfinding_in-process',
+                            n_iter=i, resid=float(f_resid(x)),
+                            norm=float(error), fx=tuple(map(float, fx)),
+                            x=tuple(map(float, x))
+                        )
+                    else:  # show brief information on screen
+                        self.logger.log(
+                            log_type='iteration',
+                            event='rootfinding_in-process(brief)',
+                            n_iter=i, resid=float(f_resid(x)),
+                            norm=float(error)
+                        )
 
                 #less than tolerance
                 if error < self.tolerance:
