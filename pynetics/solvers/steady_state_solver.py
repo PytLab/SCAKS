@@ -470,6 +470,11 @@ class SteadyStateSolver(SolverBase):
         dtheta_dt_syms = tuple(dtheta_dt_syms)
         self.dtheta_dt_syms = dtheta_dt_syms
 
+        #latex strings
+        dtheta_dt_latexs = self.get_latex_strs(part1=r'\frac{d\theta_{', part2=r'}}{dt} ',
+                                               symbols=dtheta_dt_syms)
+        self.dtheta_dt_latex = tuple(dtheta_dt_latexs)
+
         return dtheta_dt_syms
 
     def steady_state_function_by_sym(self, cvgs_tuple):
