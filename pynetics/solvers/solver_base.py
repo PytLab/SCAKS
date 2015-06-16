@@ -702,7 +702,7 @@ class SolverBase(ModelShell):
 
         return delta_Gf_sym, delta_Gr_sym
 
-    def get_delta_G_symbols(self):
+    def get_delta_G_symbols(self, log_latex=False):
         "Go through elementary_rxns_list to get symbols of delta G."
         delta_Gf_syms, delta_Gr_syms = [], []
         for elementary_rxn_list in self.rxns_list:
@@ -720,9 +720,11 @@ class SolverBase(ModelShell):
         r_latexs = self.get_latex_strs(part1=r'\Delta G_{', part2=r'-}',
                                        symbols=delta_Gr_syms)
         self.delta_G_latex = (tuple(f_latexs), tuple(r_latexs))
-        #log it
-        self.logger.log_latex(f_latexs)
-        self.logger.log_latex(r_latexs)
+
+        if log_latex:
+            #log it
+            self.logger.log_latex(f_latexs)
+            self.logger.log_latex(r_latexs)
 
         return delta_Gf_syms, delta_Gr_syms
 
@@ -810,7 +812,7 @@ class SolverBase(ModelShell):
 
         return tuple(rate_syms)
 
-    def get_rate_syms(self):
+    def get_rate_syms(self, log_latex=False):
         rf_syms, rr_syms = [], []
         for elementary_rxn_list in self._owner.elementary_rxns_list:
             rf_sym, rr_sym = self.get_single_rate_sym(elementary_rxn_list)
@@ -826,9 +828,11 @@ class SolverBase(ModelShell):
         rr_latexs = self.get_latex_strs(part1=r'r_{r', part2=r'^{-}',
                                         symbols=rf_syms)
         self.r_latex = (tuple(rf_latexs), tuple(rr_latexs))
-        #log it
-        self.logger.log_latex(rf_latexs)
-        self.logger.log_latex(rr_latexs)
+
+        if log_latex:
+            #log it
+            self.logger.log_latex(rf_latexs)
+            self.logger.log_latex(rr_latexs)
 
         return rf_syms, rr_syms
 
