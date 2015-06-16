@@ -1,4 +1,6 @@
 import sys
+import os
+import cPickle as cpkl
 
 sys.path.append('D:\Dropbox\Code\Python\kinetic\Pynetics')
 from pynetics import model
@@ -35,9 +37,18 @@ if len(sys.argv) > 1:
             m.solver.correct_energies()
             print 'Ok.'
 
-        b_cvg = m.solver.boltzmann_coverages()
-#        init_cvg = (b_cvg[0]*(1e-2), b_cvg[1], b_cvg[-1]*(1e-2))
-        cvg = m.solver.get_steady_state_cvgs(b_cvg)
-        print m.adsorbate_names
-
-        #m.make_logfile()
+        #set initial guess(initial coverage)
+        #init_cvg = (0.0, 0.0, 0.0, 0.0, 0.0, 0.00, 0.0, 0.0, 0.99, 0.0, 0.0, 0.0, 0.0, 0.0)
+        #if there is converged coverage, use it as initial guess
+        if os.path.exists("./data.pkl"):
+            with open('data.pkl', 'rb') as f:
+                data = cpkl.load(f)
+            if 'steady_state_coverage' in data:
+                init_cvg = data['steady_state_coverage']
+            elif "initial_guess" in data:
+                init_cvg = data['initial_guess']
+            else:
+                init_cvg = m.solver.boltzmann_coverages()
+        else:  # use Boltzmann coverage
+            init_cvg = m.solver.boltzmann_coverages()
+        cvg = m.solver.get_steady_state_cvgs(init_cvg)
