@@ -77,6 +77,7 @@ class Logger(object):
             idx = str(idx).zfill(2)
             data = " %-5s     %-20s     %-30.5e\n" % (idx, ads_name, float(cvg))
             all_data += data
+        all_data += line_str
 
         print all_data
         self.write_logfile('event.log', all_data)
