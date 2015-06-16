@@ -720,6 +720,9 @@ class SolverBase(ModelShell):
         r_latexs = self.get_latex_strs(part1=r'\Delta G_{', part2=r'-}',
                                        symbols=delta_Gr_syms)
         self.delta_G_latex = (tuple(f_latexs), tuple(r_latexs))
+        #log it
+        self.logger.log_latex(f_latexs)
+        self.logger.log_latex(r_latexs)
 
         return delta_Gf_syms, delta_Gr_syms
 
@@ -823,6 +826,9 @@ class SolverBase(ModelShell):
         rr_latexs = self.get_latex_strs(part1=r'r_{r', part2=r'^{-}',
                                         symbols=rf_syms)
         self.r_latex = (tuple(rf_latexs), tuple(rr_latexs))
+        #log it
+        self.logger.log_latex(rf_latexs)
+        self.logger.log_latex(rr_latexs)
 
         return rf_syms, rr_syms
 

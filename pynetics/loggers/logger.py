@@ -83,3 +83,11 @@ class Logger(object):
         self.write_logfile('event.log', all_data)
 
         return all_data
+
+    def log_latex(self, latex_tup):
+        "Append latex strings to 'formulas.tex'."
+        latex_str = ''.join(latex_tup)
+        latex_str += '\n'
+
+        self.write_logfile('formulas.tex', latex_str)
+        return latex_str
