@@ -817,6 +817,13 @@ class SolverBase(ModelShell):
         self.rf_syms = rf_syms
         self.rr_syms = rr_syms
 
+        #latex strings
+        rf_latexs = self.get_latex_strs(part1=r'r_{f', part2=r'^{+}',
+                                        symbols=rf_syms)
+        rr_latexs = self.get_latex_strs(part1=r'r_{r', part2=r'^{-}',
+                                        symbols=rf_syms)
+        self.r_latex = (tuple(rf_latexs), tuple(rr_latexs))
+
         return rf_syms, rr_syms
 
     def get_subs_dict(self, **kwargs):
