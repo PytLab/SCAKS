@@ -474,6 +474,8 @@ class SteadyStateSolver(SolverBase):
         dtheta_dt_latexs = self.get_latex_strs(part1=r'\frac{d\theta_{', part2=r'}}{dt} ',
                                                symbols=dtheta_dt_syms)
         self.dtheta_dt_latex = tuple(dtheta_dt_latexs)
+        #log it
+        self.logger.log_latex(self.dtheta_dt_latex)
 
         return dtheta_dt_syms
 
@@ -590,9 +592,10 @@ class SteadyStateSolver(SolverBase):
 
         while not cancel:
             if f_resid(c0) <= self.tolerance and not single_pt:
-                self._coverage = c0
+                self._coverage = converged_cvgs = c0
                 print 'Good initial guess.'
-                return c0
+                #return c0
+                break
 
             newton_iterator = NewtonRoot(
                 f=f, J=J, x0=c0, constraint=constraint,
