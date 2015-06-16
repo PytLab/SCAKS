@@ -43,7 +43,7 @@ if os.path.exists("./data.pkl"):
         init_cvg = data['initial_guess']
     else:
         init_cvg = m.solver.boltzmann_coverages()
-else:
+else:  # use Boltzmann coverage
     init_cvg = m.solver.boltzmann_coverages()
 
 cvg = m.solver.get_steady_state_cvgs(init_cvg)
