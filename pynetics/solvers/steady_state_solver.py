@@ -724,6 +724,8 @@ class SteadyStateSolver(SolverBase):
             self.good_guess = c0
             #archive initial guess
             self.logger.archive_data('initial_guess', c0)
+            #log steady state coverages
+            self.logger.log_sscvg(converged_cvgs, self._owner.adsorbate_names)
             return converged_cvgs
 
     def modify_init_guess(self, c0, dtheta_dts):

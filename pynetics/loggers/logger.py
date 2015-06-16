@@ -64,3 +64,21 @@ class Logger(object):
             if self.data_dict:
                 with open(self.data_file, 'wb') as f:
                     cPickle.dump(self.data_dict, f)
+
+    def log_sscvg(self, cvgs_tuple, ads_names):
+        "Log steady state coverage of every species."
+        head_str = "\n %-5s     %-20s     %-30s\n" % \
+                   ("Index", "Intermediate Name", "Steady State Coverage")
+        line_str = '-'*60 + '\n'
+
+        all_data = ''
+        all_data += head_str + line_str
+        for idx, (ads_name, cvg) in enumerate(zip(ads_names, cvgs_tuple)):
+            idx = str(idx).zfill(2)
+            data = " %-5s     %-20s     %-30.5e\n" % (idx, ads_name, float(cvg))
+            all_data += data
+
+        print all_data
+        self.write_logfile('event.log', all_data)
+
+        return all_data
