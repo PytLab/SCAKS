@@ -39,7 +39,6 @@ if len(sys.argv) > 1 and 'c' in sys.argv[1]:
     print 'Ok.'
 
 #set initial guess(initial coverage)
-#init_cvg = (0.0, 0.0, 0.0, 0.0, 0.0, 0.00, 0.0, 0.0, 0.99, 0.0, 0.0, 0.0, 0.0, 0.0)
 #if there is converged coverage, use it as initial guess
 if os.path.exists("./data.pkl"):
     with open('data.pkl', 'rb') as f:
@@ -53,6 +52,7 @@ if os.path.exists("./data.pkl"):
 else:  # use Boltzmann coverage
     init_cvg = m.solver.boltzmann_coverages()
 
+#use custom initial guess
 #init_cvg = (0.0, 0.0, 0.99, 0.0, 0.0, 0.00, 0.0, 0.0, 0.00, 0.0, 0.0, 0.0, 0.0, 0.0)
 
 cvg = m.solver.get_steady_state_cvgs(init_cvg)
