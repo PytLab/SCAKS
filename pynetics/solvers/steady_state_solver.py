@@ -624,8 +624,8 @@ class SteadyStateSolver(SolverBase):
             #####    Sub LOOP for a c0    #####
             for x, error, fx in newton_iterator:
                 i += 1  # counter for loop
-                #if iterations is larger than 100, log every 10 steps, full info
-                if i > 100 and i % 30 == 0:
+                #if iterations is larger than 500, log every 30 steps, full info
+                if i > 500 and i % 30 == 0:
                     self.logger.log(
                         log_type='iteration',
                         event='rootfinding_in-process',
@@ -633,7 +633,7 @@ class SteadyStateSolver(SolverBase):
                         norm=float(error), fx=tuple(map(float, fx)),
                         x=tuple(map(float, x))
                     )
-                elif i < 100:
+                elif i < 500:
                     if full_info:  # show full information on screen
                         self.logger.log(
                             log_type='iteration',
