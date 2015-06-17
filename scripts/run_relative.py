@@ -37,14 +37,16 @@ if len(sys.argv) > 1 and 'c' in sys.argv[1]:
 if os.path.exists("./data.pkl"):
     with open('data.pkl', 'rb') as f:
         data = cpkl.load(f)
-    if 'steady_state_coverage' in data:
-        init_cvg = data['steady_state_coverage']
-    elif "initial_guess" in data:
-        init_cvg = data['initial_guess']
+    #init_guess = 'initial_guess'
+    init_guess = 'steady_state_coverage'
+    if init_guess in data:
+        init_cvg = data[init_guess]
     else:
         init_cvg = m.solver.boltzmann_coverages()
 else:  # use Boltzmann coverage
     init_cvg = m.solver.boltzmann_coverages()
+
+init_cvg = (0.0, 0.0, 0.99, 0.0, 0.0, 0.00, 0.0, 0.0, 0.00, 0.0, 0.0, 0.0, 0.0, 0.0)
 
 cvg = m.solver.get_steady_state_cvgs(init_cvg)
 
