@@ -59,7 +59,7 @@ perturbation_size = 0.01  # numerical jacobian perturbation size
 perturbation_direction = 'left'  # numerical jacobian perturbation direction
 initial_guess_scale_factor = 1e-2  # scaling factor for initial guess
 
-stable_criterion = 1e-20  # criterion for almost stagnated norm
+stable_criterion = 1e-30  # criterion for almost stagnated norm (around tolerance*e-10)
 
 #tools for model to use
 #parser = 'CsvParser'
