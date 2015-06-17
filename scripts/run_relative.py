@@ -47,3 +47,9 @@ else:  # use Boltzmann coverage
     init_cvg = m.solver.boltzmann_coverages()
 
 cvg = m.solver.get_steady_state_cvgs(init_cvg)
+
+#get latex file
+m.solver.get_data_symbols()
+m.solver.get_delta_G_symbols(log_latex=True)
+m.solver.get_rate_syms(log_latex=True)
+m.solver.get_dtheta_dt_syms(log_latex=True)
