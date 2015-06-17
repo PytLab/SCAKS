@@ -51,7 +51,9 @@ init_cvg = (0.0, 0.0, 0.99, 0.0, 0.0, 0.00, 0.0, 0.0, 0.00, 0.0, 0.0, 0.0, 0.0, 
 cvg = m.solver.get_steady_state_cvgs(init_cvg)
 
 #get latex file
+print "Generating TEX file..."
 m.solver.get_data_symbols()
 m.solver.get_delta_G_symbols(log_latex=True)
 m.solver.get_rate_syms(log_latex=True)
 m.solver.get_dtheta_dt_syms(log_latex=True)
+print "OK."
