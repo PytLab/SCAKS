@@ -596,7 +596,12 @@ class SteadyStateSolver(SolverBase):
             if f_resid(c0) <= self.tolerance and not single_pt:
                 self._coverage = converged_cvgs = c0
                 print 'Good initial guess.'
-                #return c0
+                #get error
+                fx = self.steady_state_function(c0)  # dtheta/dts
+                norm = self._norm(fx)
+                resid = self.get_residual(c0)
+                error = min(norm, resid)
+                self._error = error
                 break
 
             newton_iterator = NewtonRoot(
@@ -730,8 +735,7 @@ class SteadyStateSolver(SolverBase):
             #archive converged root and error
             self.logger.archive_data('steady_state_coverage',
                                      converged_cvgs)
-            if error:
-                self.logger.archive_data('steady_state_error', error)
+            self.logger.archive_data('steady_state_error', error)
             self.good_guess = c0
             #archive initial guess
             self.logger.archive_data('initial_guess', c0)
