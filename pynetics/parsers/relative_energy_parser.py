@@ -209,9 +209,9 @@ class RelativeEnergyParser(ParserBase):
 
         A, b = np.matrix(A), np.matrix(b).reshape(-1, 1)
 #        print A
-#        self.A = A
+        self.A = A
 #        print b
-#        self.b = b
+        self.b = b
 
         x = A.I*b  # values for unknowns
         #convert column vector to list
