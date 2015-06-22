@@ -3,7 +3,9 @@ import numpy as np
 import gmpy2
 import sympy as sym
 from scipy.integrate import odeint
+from scipy.integrate import ode
 from scipy.optimize import golden
+import matplotlib.pyplot as plt
 
 from pynetics import ModelShell
 from pynetics.functions import numerical_jacobian
@@ -424,6 +426,8 @@ class SolverBase(ModelShell):
         """
         #get net rates wrt the coverages c
         self.get_rate_constants()
+        if not hasattr(self, 'rate_expressions'):
+            self.get_rate_expressions(self.rxns_list)
         rfs, rrs = self.get_rates(self.rate_expressions, cvgs)
         net_rates = self.get_net_rates(rfs, rrs)
 
@@ -537,12 +541,26 @@ class SolverBase(ModelShell):
         def dtheta_dt(cvgs_tuple, t):
             return self.steady_state_function(cvgs_tuple)
 
-        t = np.arange(0, 30, 0.00001)
-        #initial_cvg = (mp.mpf(0.0), mp.mpf(0.0), mp.mpf(0.9), mp.mpf(0.0))
+        t = np.arange(0, 0.01, 0.000001)
+        #t = np.arange(0, 0.5, 0.0001)
         initial_cvg = self.boltzmann_coverages()
         track = odeint(dtheta_dt, initial_cvg, t)
 
         return track
+
+    def plot_ode(self, track):
+        pt_num, line_num = track.shape
+        #x = np.arange(0, 5000, 0.0005)
+        x = np.arange(0, 0.001, 0.000000001)
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        for i in xrange(line_num):
+            label = self._owner.adsorbate_names[i]
+            y = track[:, i]
+            ax.plot(x, y, label=label, linewidth=2)
+        plt.legend()
+
+        plt.show()
 
     ######################################################
     ######                                          ######
