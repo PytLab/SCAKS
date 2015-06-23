@@ -664,7 +664,7 @@ class SolverBase(ModelShell):
         for i, symbol in enumerate(symbols):
             left = part1 + str(i+1) + part2
             right = sym.latex(symbol)
-            latex_str = left + ' = ' + right + '\n'
+            latex_str = left + ' = ' + right + r'\\' + '\n'
             latex_strs.append(latex_str)
 
         return tuple(latex_strs)
@@ -841,9 +841,9 @@ class SolverBase(ModelShell):
         self.rr_syms = rr_syms
 
         #latex strings
-        rf_latexs = self.get_latex_strs(part1=r'r_{f', part2=r'^{+}',
+        rf_latexs = self.get_latex_strs(part1=r'r_{f', part2=r'^{+}}',
                                         symbols=rf_syms)
-        rr_latexs = self.get_latex_strs(part1=r'r_{r', part2=r'^{-}',
+        rr_latexs = self.get_latex_strs(part1=r'r_{r', part2=r'^{-}}',
                                         symbols=rf_syms)
         self.r_latex = (tuple(rf_latexs), tuple(rr_latexs))
 
