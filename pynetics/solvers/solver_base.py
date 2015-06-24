@@ -395,7 +395,10 @@ class SolverBase(ModelShell):
         #get net rates about new Gs
         self.get_rate_constants()
         #get initial guess
-        init_guess = self.initial_guess
+        if self._coverage:
+            init_guess = self._coverage
+        else:
+            init_guess = self.initial_guess
         steady_state_cvg = self.get_steady_state_cvgs(init_guess)
         #check whether solver has rate_expressions
         if not hasattr(self, 'rate_expressions'):  # if not, get it
