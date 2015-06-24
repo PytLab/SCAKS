@@ -89,9 +89,9 @@ class ParserBase(ModelShell):
         #get site number from species dict
         for species in state_dict['species_dict']:
             site = state_dict['species_dict'][species]['site']
-            if site == 'g' or site == 'l':  # neglect gas site when check conservation
+            if site == 'g' or site == 'l':  # neglect gas site and liquid site when check conservation
                 continue
-            number = state_dict['species_dict'][species]['number']
+            number = state_dict['species_dict'][species]['site_number']
             if site in total_site_dict:
                 total_site_dict[site] += number
             else:
