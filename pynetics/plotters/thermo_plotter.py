@@ -412,7 +412,8 @@ class ThermoPlotter(PlotterBase):
                     )
               ##############      annotates end      ################
          #################      Artist Mode End !      #######################
-        #plt.show()
+        #remove xticks
+        ax.set_xticks([])
         #save the figure object
         #if kwargs.has_key('fname'):
         if 'fname' in kwargs:
