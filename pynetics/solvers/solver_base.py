@@ -541,7 +541,7 @@ class SolverBase(ModelShell):
         def dtheta_dt(cvgs_tuple, t):
             return self.steady_state_function(cvgs_tuple)
 
-        t = np.arange(0, 0.01, 0.000001)
+        t = np.arange(0, 500, 0.00005)
         #t = np.arange(0, 0.5, 0.0001)
         initial_cvg = self.boltzmann_coverages()
         track = odeint(dtheta_dt, initial_cvg, t)
