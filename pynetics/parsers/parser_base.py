@@ -83,11 +83,12 @@ class ParserBase(ModelShell):
             site = state_dict['species_dict'][species]['site']
             if site == 'g' or site == 'l':  # neglect gas site and liquid site when check conservation
                 continue
-            number = state_dict['species_dict'][species]['site_number']
+            site_number = state_dict['species_dict'][species]['site_number']
+            sp_number = state_dict['species_dict'][species]['number']
             if site in total_site_dict:
-                total_site_dict[site] += number
+                total_site_dict[site] += sp_number*site_number
             else:
-                total_site_dict.setdefault(site, number)
+                total_site_dict.setdefault(site, sp_number*site_number)
         return total_site_dict
 
     def get_elements_num_dict(self, species_dict):
