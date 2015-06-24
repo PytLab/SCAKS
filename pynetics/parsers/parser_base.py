@@ -36,13 +36,9 @@ class ParserBase(ModelShell):
                 state_site_list.append(total_site_dict)
 
             if state_elements_list[0] != state_elements_list[1]:
-#                raise ValueError('Mass of chemical equation '+
-#                                 'is not conservative!')
                 return 'mass_nonconservative'
-#            if state_site_list[0] != state_site_list[1]:
-#                raise ValueError('Site of chemical equation '+
-#                                 'is not conservative!')
-#                return 'site_nonconservative'
+            if state_site_list[0] != state_site_list[1]:
+                return 'site_nonconservative'
         else:
             states_list = ['IS', 'TS', 'FS']
             state_elements_list = []
@@ -58,14 +54,10 @@ class ParserBase(ModelShell):
 
             if not(state_elements_list[0] == state_elements_list[1] ==
                     state_elements_list[2]):
-#                raise ValueError('Mass of chemical equation '+
-#                                 'is not conservative!')
                 return 'mass_nonconservative'
-#            if not(state_site_list[0] == state_site_list[1] ==
-#                    state_site_list[2]):
-#                raise ValueError('Site of chemical equation '+
-#                                 'is not conservative!')
-#                return 'site_nonconservative'
+            if not(state_site_list[0] == state_site_list[1] ==
+                    state_site_list[2]):
+                return 'site_nonconservative'
 
     def get_total_site_dict(self, state_dict):
         """
