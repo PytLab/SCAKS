@@ -1,9 +1,10 @@
+import copy
+
 import mpmath as mp
 import numpy as np
 import gmpy2
 import sympy as sym
 from scipy.integrate import odeint
-from scipy.integrate import ode
 from scipy.optimize import golden
 import matplotlib.pyplot as plt
 
@@ -407,15 +408,13 @@ class SolverBase(ModelShell):
         net_rates = self.get_net_rates(rfs, rrs)
 
         #get turnover frequencies
-        if hasattr(self._owner, 'gas_matrix'):
-            gas_matrix = self._owner.gas_matrix
-        else:
-            gas_matrix = \
-                self._owner.parser.get_stoichiometry_matrices()[1]
-        #gas_matrix *= -1
-        gas_matrix = abs(gas_matrix)
+        if not hasattr(self._owner, 'reapro_matrix'):
+            self._owner.parser.get_stoichiometry_matrices()
+        reapro_matrix = copy.copy(self._owner.reapro_matrix)
+        #reapro_matrix *= -1
+        reapro_matrix = abs(reapro_matrix)
         rate_vector = np.matrix(net_rates)  # get rate vector
-        tof_list = (rate_vector*gas_matrix).tolist()[0]
+        tof_list = (rate_vector*reapro_matrix).tolist()[0]
         setattr(self, 'tof', tof_list)
         #archive
         self.logger.archive_data('tofs', tof_list)
@@ -435,13 +434,11 @@ class SolverBase(ModelShell):
         net_rates = self.get_net_rates(rfs, rrs)
 
         #get turnover frequencies
-        if hasattr(self._owner, 'reapro_matrix'):
-            reapro_matrix = self._owner.reapro_matrix
-        else:
-            reapro_matrix = \
-                self._owner.parser.get_stoichiometry_matrices()[1]
-        #gas_matrix *= -1
-        reapro_matrix = abs(reapro_matrix)
+        if not hasattr(self._owner, 'reapro_matrix'):
+            self._owner.parser.get_stoichiometry_matrices()
+        reapro_matrix = copy.copy(self._owner.reapro_matrix)
+        reapro_matrix *= -1
+        #reapro_matrix = abs(reapro_matrix)
         rate_vector = np.matrix(net_rates)  # get rate vector
         tof_list = (rate_vector*reapro_matrix).tolist()[0]
         setattr(self, 'tof', tof_list)
