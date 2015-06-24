@@ -42,7 +42,7 @@ class ModelShell(object):
                 stoichiometry = 1
             else:
                 stoichiometry = int(m.group(1))
-            species_name = m.group(2) + '_' + m.group(3)
+            species_name = m.group(2) + '_' + m.group(3) + m.group(4)
             return stoichiometry, species_name
         else:  # for site
             m = self._owner.regex_dict['empty_site'][0].search(species_str)

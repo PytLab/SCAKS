@@ -61,9 +61,9 @@ class KineticModel(object):
                                   r'(?:([^\<\>]*)(?:\<?\-\>))?([^\<\>]*)')
         self.regex_dict['IS_TS_FS'] = [states_regex, ['IS', 'TS', 'FS']]
 
-        species_regex = re.compile(r'(\d*)([^\_\+\*\<\>]+)_(\w+)')
+        species_regex = re.compile(r'(\d*)([^\_\+\*\<\>]+)_(\d*)(\w+)')
         self.regex_dict['species'] = \
-            [species_regex, ['stoichiometry', 'name', 'site']]
+            [species_regex, ['stoichiometry', 'name', 'site_number', 'site']]
 
         site_regex = re.compile(r'(\d*)(?:\*\_)(\w+)')
         self.regex_dict['empty_site'] = \

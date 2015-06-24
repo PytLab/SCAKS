@@ -237,7 +237,6 @@ class ParserBase(ModelShell):
         state_dict['state_expression'] = state_expression
         if '+' in state_expression:
             species_list = state_expression.split('+')
-            #species_dict, empty_sites_dict = {}, {}
             #strip whitespace in sp_name
             species_list = [raw_sp.strip() for raw_sp in species_list]
 
@@ -288,8 +287,15 @@ class ParserBase(ModelShell):
         else:
             stoichiometry = 1
         species_name = m.group(2)
-        site = m.group(3)
-        total_name = species_name + '_' + site
+        if m.group(3):
+            site_number = int(m.group(3))
+        else:
+            site_number = 1
+        site = m.group(4)
+        if site_number == 1:
+            total_name = species_name + '_' + site
+        else:
+            total_name = species_name + '_' + str(site_number) + site
         #analyse elements
         if '-' in species_name:
             species_name = species_name.replace('-', '')
@@ -304,6 +310,7 @@ class ParserBase(ModelShell):
         sp_dict[total_name] = {
             'number': stoichiometry,
             'site': site,
+            'site_number': site_number,
             'elements': elements_dict}
 
         #below is species_definition part
