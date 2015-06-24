@@ -84,6 +84,26 @@ class Logger(object):
 
         return all_data
 
+    def log_rate_control(self, xtrcs, species_names):
+        "Log and print XTRCs."
+        head_str = "\n %-5s     %-20s     %-30s\n" % \
+                   ("Index", "Names", "XTRC")
+        line_str = '-'*55 + '\n'
+
+        xtrcs = xtrcs.tolist()[0]
+        all_data = ''
+        all_data += head_str + line_str
+        for idx, (species_name, xtrc) in enumerate(zip(species_names, xtrcs)):
+            idx = str(idx).zfill(2)
+            data = " %-5s     %-20s     %-30.5e\n" % (idx, species_name, float(xtrc))
+            all_data += data
+        all_data += line_str
+
+        print all_data
+        self.write_logfile('event.log', all_data)
+
+        return all_data
+
     def log_latex(self, latex_tup):
         "Append latex strings to 'formulas.tex'."
         latex_str = ''.join(latex_tup)
