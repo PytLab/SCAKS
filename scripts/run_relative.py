@@ -16,7 +16,7 @@ if os.path.exists('formulas.tex'):  # del old tex file
     os.remove('formulas.tex')
     print "OK."
 #create micro kinetic model instance
-m = model.KineticModel(setup_file='furfural.mkm')
+m = model.KineticModel(setup_file='template.mkm')
 
 m.parser.parse_data()  # parse data from rel_energy.py
 m.solver.get_data_dict()  # solver get data from parser
