@@ -188,18 +188,6 @@ class ThermoPlotter(PlotterBase):
             energy_list[i] = energy_list[i] - reference_energy
         return tuple(energy_list)
 
-#    @staticmethod
-#    def add_line_shadow(ax, x, y, depth, color, line_width=3):
-#        "add shadow to line in axes 'ax' by changing attribute of the object"
-#        for i in xrange(depth):
-#            offset = transforms.ScaledTranslation(i, -i,
-#                                                  transforms.IdentityTransform())
-#            shadow_trans = ax.transData + offset
-#            ax.plot(x, y, linewidth=line_width, color=color,
-#                    transform=shadow_trans,
-#                    alpha=(depth-i)/2.0/depth)
-#        return ax.lines
-
     @staticmethod
     def add_line_shadow(ax, x, y, depth, color, line_width=3):
         "add shadow to line in axes 'ax' by changing attribute of the object"
@@ -763,6 +751,8 @@ class ThermoPlotter(PlotterBase):
             ax.text(pt[0]+0.2*subsection_length, pt[-1]+y_scale/50,
                     r'$\bf{'+tex_state+r'}$',
                     fontdict={'fontsize': 13, 'color': '#1874CD'})
+        #remove xticks
+        ax.set_xticks([])
 
     #####################   Artist Mode End   #####################
 
