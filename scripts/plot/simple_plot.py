@@ -269,7 +269,7 @@ def plot_single_energy_diagram(energy_tuple, rxn_equation, n=100,
     ax.plot(x, y, color=line_color, linewidth=3)
 
     #energy latex string
-    if act_energy:
+    if 'act_energy' in dir():
         act_energy_latex = r'$\bf{G_{a} = ' + str(act_energy) + r' eV}$'
     rxn_energy_latex = r'$\bf{\Delta G = ' + str(rxn_energy) + r' eV}$'
 
