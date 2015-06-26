@@ -21,9 +21,7 @@ class ModelShell(object):
         self.set_logger()
 
     def set_logger(self):
-        #create a logger
         #import logger and get an instance of Logger class
-        #The 'BLACK MAGIC' is hacked from CatMap (catmap/model.py)
         #https://docs.python.org/2/library/functions.html#__import__
         basepath = os.path.dirname(
             inspect.getfile(inspect.currentframe()))
