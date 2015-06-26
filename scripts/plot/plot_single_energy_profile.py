@@ -1,18 +1,14 @@
 '''Script to plot energy profile'''
-import threading
-
 from simple_plot import *
-from plot_input import *
+from single_data import *  # get rxn_equations & energy_tuples
 
+#check data shape
+if len(rxn_equations) != len(energy_tuples):
+    raise ValueError("lengths of rxn_equations and energy_tuples " +
+                     "are different.")
 
-class SinglePlotThread(threading.Thread):
-    "Sub thread to plot single energy profile."
-    def __init__(self, func, args):
-        threading.Thread.__init__(self)
-        self.func = func
-        self.args = args
-
-    def run(self):
-        apply(self.func, self.args)
-
-
+for idx, args in enumerate(zip(energy_tuples, rxn_equations)):
+    fname = str(idx).zfill(2)
+    print "Plotting diagram " + fname + "..."
+    plot_single_energy_diagram(*args, show_mode='save', fname=fname)
+    print "Ok."
