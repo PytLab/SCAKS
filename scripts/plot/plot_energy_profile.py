@@ -1,6 +1,8 @@
-'''Script to plot energy profile'''
+'''
+    Script to plot energy profile
+'''
 from simple_plot import *
-from single_data import *  # get rxn_equations & energy_tuples
+from data import *  # get rxn_equations & energy_tuples
 
 #check data shape
 if len(rxn_equations) != len(energy_tuples):
