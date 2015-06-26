@@ -369,7 +369,7 @@ def plot_single_energy_diagram(energy_tuple, rxn_equation, n=100,
     ax.set_xticks([])
     #save the figure object
     if 'fname' in kwargs:
-        fname = kwargs['fname']
+        fname = kwargs['fname'] + '.' + fmt
     else:
         fname = rxn_equation + '.' + fmt
 

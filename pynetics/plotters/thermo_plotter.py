@@ -404,7 +404,7 @@ class ThermoPlotter(PlotterBase):
         ax.set_xticks([])
         #save the figure object
         if 'fname' in kwargs:
-            fname = kwargs['fname']
+            fname = kwargs['fname'] + '.' + fmt
         else:
             fname = str(self._owner.rxn_expressions.index(rxn_equation))+'.'+fmt
 
