@@ -234,6 +234,7 @@ def plot_single_energy_diagram(energy_tuple, rxn_equation, n=100,
     >>> <matplotlib.figure.Figure at 0x5659f30>
     """
     rxn_list = equation2list(rxn_equation)
+    energy_tuple = get_relative_energy_tuple(energy_tuple)
     #energy info
     rxn_energy = round(energy_tuple[-1] - energy_tuple[0], 2)
     if len(energy_tuple) == 3:
