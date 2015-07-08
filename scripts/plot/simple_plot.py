@@ -225,6 +225,8 @@ def plot_single_energy_diagram(energy_tuple, rxn_equation, n=100,
     ----------------
     kwargs :
         'fname' : str, optional
+        'offset_coeff' : float, default to be 1.0
+            shadow offset coefficient.
 
     Examples
     --------
@@ -372,9 +374,11 @@ def plot_single_energy_diagram(energy_tuple, rxn_equation, n=100,
     if 'fname' in kwargs:
         fname = kwargs['fname'] + '.' + fmt
     else:
-        fname = rxn_equation + '.' + fmt
+        fname = 'elementary_energy_diagram.' + fmt
 
     if show_mode == 'save':
+        if 'dpi' in kwargs:
+            fig.savefig(fname, dpi=kwargs['dpi'])
         fig.savefig(fname)
     if show_mode == 'show':
         plt.show()
@@ -438,6 +442,8 @@ def plot_multi_energy_diagram(rxn_equations_list, energy_tuples, n=100,
     kwargs :
         'fname' : str, optional
         'dpi' : int, default to be 80
+        'offset_coeff' : float, default to be 1.0
+            shadow offset coefficient.
 
     Examples
     --------
