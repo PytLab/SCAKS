@@ -1,6 +1,7 @@
 '''
     Data for energy profile plotting.
 '''
+#for a number of rxn equations
 '''
 #elementary reaction equations
 rxn_equations = [
@@ -20,13 +21,11 @@ energy_tuples = [
     (3.0, 4.7, 0.7),
 ]
 '''
-'''
 rxn_equations = [
     'HCOOH_g + 2*_s <-> HCOO-H_s + *_s -> HCOO_s + H_s',
     'HCOO_s + *_s -> COO_s + H_s',
     '2H_s -> H2_g + 2*_s'
 ]
-
 #relative energies
 energy_tuples = [
     # IS,  TS,  FS
@@ -35,9 +34,11 @@ energy_tuples = [
     (-0.26, -0.56),
     (-0.56, -0.42),
 ]
-'''
 
+#for a single rxn equation
+'''
 rxn_equation = 'HCOOH_g + 2*_s <-> HCOO-H_s + *_s -> HCOO_s + H_s'
 
 #relative energies
 energy_tuple = (0.0, 0.33, -0.26)
+'''
