@@ -75,10 +75,10 @@ def get_relative_energy_tuple(energy_tuple):
     return tuple(energy_list)
 
 
-def add_line_shadow(ax, x, y, depth, color, line_width=3):
-    "add shadow to line in axes 'ax' by changing attribute of the object"
+def add_line_shadow(ax, x, y, depth, color, line_width=3, offset_coeff=1.0):
+    "Add shadow to line in axes 'ax' by changing attribute of the object"
     def add_single_shadow(ax, x, y, order, depth, color, line_width):
-        offset = transforms.ScaledTranslation(order, -order,
+        offset = transforms.ScaledTranslation(offset_coeff*order, -offset_coeff*order,
                                               transforms.IdentityTransform())
         shadow_trans = ax.transData + offset
         ax.plot(x, y, linewidth=line_width, color=color,
@@ -379,7 +379,7 @@ def plot_single_energy_diagram(energy_tuple, rxn_equation, n=100,
     if show_mode == 'show':
         plt.show()
 
-    return fig
+    return fig, x, y
 
 
 def plot_multi_energy_diagram(rxn_equations_list, energy_tuples, n=100,
@@ -437,7 +437,7 @@ def plot_multi_energy_diagram(rxn_equations_list, energy_tuples, n=100,
     ----------------
     kwargs :
         'fname' : str, optional
-        'custom_energy_tuples': list of tuples
+        'dpi' : int, default to be 80
 
     Examples
     --------
@@ -657,6 +657,8 @@ def plot_multi_energy_diagram(rxn_equations_list, energy_tuples, n=100,
     if show_mode == 'show':
         fig.show()
     elif show_mode == 'save':
+        if 'dpi' in kwargs:
+            fig.savefig(fname, dpi=kwargs['dpi'])
         fig.savefig(fname)
     else:
         raise ValueError('Unrecognized show mode parameter : ' + show_mode)
