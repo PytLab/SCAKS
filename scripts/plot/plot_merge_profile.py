@@ -1,15 +1,20 @@
 '''
     Script to plot merged energy profile
 '''
+
 from simple_plot import *
 from merge_data import *  # get rxn_equations & energy_tuples
 import matplotlib.pyplot as plt
 
 points_list = []
-for energy_tuples in multi_energy_tuples:
+print "Plotting single multi-energy profile..."
+for idx, energy_tuples in enumerate(multi_energy_tuples):
+    fname = 'multi_energy_diagram_' + str(idx).zfill(2)
+    print "Plotting diagram " + fname + "..."
     fig, x_total, y_total = \
         plot_multi_energy_diagram(rxn_equations, energy_tuples,
-                                  n=10000, show_mode='save')
+                                  n=10000, show_mode='save', fname=fname)
+    print "Ok."
     points_list.append((x_total, y_total))
 
 #merge lines
