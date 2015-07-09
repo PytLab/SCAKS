@@ -1,6 +1,7 @@
 '''
     Script to plot merged energy profile
 '''
+import sys
 
 from simple_plot import *
 from merge_data import *  # get rxn_equations & energy_tuples
@@ -27,10 +28,13 @@ ax.set_xmargin(0.03)
 ax.set_ylim(-2.25, 0.25)
 ax.set_yticks(np.linspace(-2.25, 0.25, 11))
 ax.set_yticklabels(['', '-2.0', '', '-1.5', '', '-1.0', '', '-0.5', '', '0.0', ''])
-add_line_shadow(ax, *points_list[0], depth=7, color='#595959', line_width=3, offset_coeff=12.0)
-ax.plot(*points_list[0], linewidth=4.5, color='#A52A2A')
-add_line_shadow(ax, *points_list[1], depth=7, color='#595959', line_width=3, offset_coeff=12.0)
-ax.plot(*points_list[1], linewidth=4.5, color='#000000')
-#new_fig.show()
-new_fig.savefig('merged_energy_profile.png', dpi=1000)
+
+for color, points in zip(colors, points_list):
+    add_line_shadow(ax, *points, depth=7, color='#595959',
+                    line_width=3, offset_coeff=1.0)
+    ax.plot(*points, linewidth=4.5, color=color)
+if sys.argv[1] == '--show':
+    new_fig.show()
+elif sys.argv[1] == '--save':
+    new_fig.savefig('merged_energy_profile.png', dpi=1000)
 print 'Ok.'
