@@ -30,7 +30,7 @@ else:
 
 #if u want to customize your diagram
 #remove the comment symbols and modify codes below
-'''
+
 print "Custom plotting..."
 new_fig = plt.figure(figsize=(16, 9))
 ax = new_fig.add_subplot(111)
@@ -41,9 +41,8 @@ ax.set_yticks(np.linspace(-0.75, 0.5, 11))
 ax.set_yticklabels(['', '', '-0.5', '', '', '', '0.0', '', '', '', '0.5'])
 ax.set_xmargin(0.03)
 #add line shadow
-add_line_shadow(ax, x_total, y_total, depth=7, color='#595959', line_width=6, offset_coeff=12.0)
-ax.plot(x_total, y_total, linewidth=6, color='#A52A2A')
+add_line_shadow(ax, x_total, y_total, depth=7, color='#595959', line_width=5.4, offset_coeff=12.0)
+ax.plot(x_total, y_total, linewidth=5.4, color='#A52A2A')
 new_fig.savefig('energy_profile.png', dpi=1200)
 #new_fig.show()
 print 'Ok.'
-'''
