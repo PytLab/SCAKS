@@ -67,7 +67,7 @@ def quadratic_interp_poly(x1, y1, x2, y2):
     return a, b, c, poly_func
 
 
-def quadratic_interp_poly2(x1, y1, x3, y3, y2):
+def nonlinear_quadratic_interp_poly(x1, y1, x3, y3, y2):
     def f(x):
         a, b, c = x.tolist()
         return [
@@ -80,8 +80,8 @@ def quadratic_interp_poly2(x1, y1, x3, y3, y2):
     def j(x):
         a, b, c = x.tolist()
         return [
-            [x1**2, x1, 1],
-            [x3**2, x3, 1],
+            [x1**2,       x1,    1],
+            [x3**2,       x3,    1],
             [4*y2 - 4*c, 2*b, -4*a]
         ]
 
