@@ -41,6 +41,7 @@ for color, points in zip(colors, points_list):
     add_line_shadow(ax, *points, depth=7, color='#595959',
                     line_width=3, offset_coeff=1.0)
     ax.plot(*points, linewidth=4.5, color=color)
+
 if sys.argv[1] == '--show':
     new_fig.show()
 elif sys.argv[1] == '--save':
