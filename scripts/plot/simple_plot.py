@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.transforms as transforms
 from math import sqrt
 from matplotlib.patches import Ellipse
+from scipy.optimize import fsolve
 
 
 class ShadowThread(threading.Thread):
@@ -61,6 +62,30 @@ def quadratic_interp_poly(x1, y1, x2, y2):
     x.shape = (1, -1)
     a, b, c = x.tolist()[0]
 
+    poly_func = lambda x: a*x**2 + b*x + c
+
+    return a, b, c, poly_func
+
+
+def quadratic_interp_poly2(x1, y1, x3, y3, y2):
+    def f(x):
+        a, b, c = x.tolist()
+        return [
+            x1**2*a + x1*b + c - y1,
+            x3**2*a + x3*b + c - y3,
+            y2*4*a + b**2 - 4*a*c,
+        ]
+
+    #calculate jacobian matrix to speed up
+    def j(x):
+        a, b, c = x.tolist()
+        return [
+            [x1**2, x1, 1],
+            [x3**2, x3, 1],
+            [4*y2 - 4*c, 2*b, -4*a]
+        ]
+
+    a, b, c = fsolve(f, [1, 1, 1], fprime=j)
     poly_func = lambda x: a*x**2 + b*x + c
 
     return a, b, c, poly_func
