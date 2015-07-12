@@ -45,4 +45,4 @@ multi_energy_tuples = [
 ]
 
 #line colors
-colors = ['#A52A2A', '#000000', '#36648B']
+colors = ['#A52A2A', '#000000', '#36648B']  # '#A52A2A', '#000000', '#36648B', '#FF7256', '#008B8B', '#7A378B'
