@@ -1,6 +1,8 @@
 '''
     Script to plot energy profile
 '''
+import sys
+
 from simple_plot import *
 from data import *  # get rxn_equations & energy_tuples
 
@@ -33,7 +35,14 @@ else:
 
 print "Custom plotting..."
 new_fig = plt.figure(figsize=(16, 9))
+# transparent figure
+if len(sys.argv) > 2 and sys.argv[2] == '--trans':
+    new_fig.patch.set_alpha(0)
+
 ax = new_fig.add_subplot(111)
+# transparent axe
+if len(sys.argv) > 2 and sys.argv[2] == '--trans':
+    ax.patch.set_alpha(0)
 #remove xticks
 ax.set_xticks([])
 ax.set_ylim(-0.75, 0.5)
@@ -43,6 +52,8 @@ ax.set_xmargin(0.03)
 #add line shadow
 add_line_shadow(ax, x_total, y_total, depth=7, color='#595959', line_width=5.4, offset_coeff=12.0)
 ax.plot(x_total, y_total, linewidth=5.4, color='#A52A2A')
-new_fig.savefig('energy_profile.png', dpi=1200)
-#new_fig.show()
+if sys.argv[1] == '--show':
+    new_fig.show()
+elif sys.argv[1] == '--save':
+    new_fig.savefig('energy_profile.png', dpi=1000)
 print 'Ok.'
