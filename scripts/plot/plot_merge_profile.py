@@ -22,12 +22,12 @@ for idx, energy_tuples in enumerate(multi_energy_tuples):
 print 'Merge diagrams...'
 new_fig = plt.figure(figsize=(16, 9))
 # transparent figure
-if sys.argv[2] == '--trans':
+if len(sys.argv) > 2 and sys.argv[2] == '--trans':
     new_fig.patch.set_alpha(0)
 
 ax = new_fig.add_subplot(111)
 # transparent axe
-if sys.argv[2] == '--trans':
+if len(sys.argv) > 2 and sys.argv[2] == '--trans':
     ax.patch.set_alpha(0)
 
 #remove xticks
