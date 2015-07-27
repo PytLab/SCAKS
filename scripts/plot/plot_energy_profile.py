@@ -45,10 +45,13 @@ if len(sys.argv) > 2 and sys.argv[2] == '--trans':
     ax.patch.set_alpha(0)
 #remove xticks
 ax.set_xticks([])
-ax.set_ylim(-0.75, 0.5)
-ax.set_yticks(np.linspace(-0.75, 0.5, 11))
-ax.set_yticklabels(['', '', '-0.5', '', '', '', '0.0', '', '', '', '0.5'])
 ax.set_xmargin(0.03)
+
+#remove the comment symbols, set attributes of y-axis on your own need
+#ax.set_ylim(-0.75, 0.5)
+#ax.set_yticks(np.linspace(-0.75, 0.5, 11))
+#ax.set_yticklabels(['', '', '-0.5', '', '', '', '0.0', '', '', '', '0.5'])
+
 #add line shadow
 add_line_shadow(ax, x_total, y_total, depth=7, color='#595959', line_width=5.4, offset_coeff=12.0)
 ax.plot(x_total, y_total, linewidth=5.4, color='#A52A2A')
