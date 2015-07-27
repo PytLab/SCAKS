@@ -9,7 +9,8 @@ import matplotlib.pyplot as plt
 
 points_list = []
 print "Plotting single multi-energy profile..."
-for idx, energy_tuples in enumerate(multi_energy_tuples):
+for idx, (rxn_equations, energy_tuples) in \
+        enumerate(zip(multi_rxn_equations, multi_energy_tuples)):
     fname = 'multi_energy_diagram_' + str(idx).zfill(2)
     print "Plotting diagram " + fname + "..."
     fig, x_total, y_total = \
@@ -33,17 +34,19 @@ if len(sys.argv) > 2 and sys.argv[2] == '--trans':
 #remove xticks
 ax.set_xticks([])
 ax.set_xmargin(0.03)
-ax.set_ylim(-2.25, 0.25)
-ax.set_yticks(np.linspace(-2.25, 0.25, 11))
-ax.set_yticklabels(['', '-2.0', '', '-1.5', '', '-1.0', '', '-0.5', '', '0.0', ''])
+
+#remove the comment symbols, set attributes of y-axis on your own need
+#ax.set_ylim(-1.5, 2.0)
+#ax.set_yticks(np.linspace(-2.0, 2.0, 17))
+#ax.set_yticklabels(['-2.0', '', '-1.5', '', '-1.0', '', '--0.5', '', '0.0', '', '0.5', '', '1.0', '', '1.5', '', '2.0'])
 
 for color, points in zip(colors, points_list):
     add_line_shadow(ax, *points, depth=7, color='#595959',
-                    line_width=3, offset_coeff=1.0)
+                    line_width=3, offset_coeff=8.0)
     ax.plot(*points, linewidth=4.5, color=color)
 
 if sys.argv[1] == '--show':
     new_fig.show()
 elif sys.argv[1] == '--save':
-    new_fig.savefig('merged_energy_profile.png', dpi=1000)
+    new_fig.savefig('merged_energy_profile.png', dpi=500)
 print 'Ok.'
