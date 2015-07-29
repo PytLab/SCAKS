@@ -431,8 +431,10 @@ def plot_single_energy_diagram(*args, **kwargs):
         if 'dpi' in kwargs:
             fig.savefig(fullname, dpi=kwargs['dpi'])
         fig.savefig(fullname)
-    if show_mode == 'show':
+    elif show_mode == 'show':
         plt.show()
+    else:
+        raise ValueError('Unrecognized show mode parameter : ' + show_mode)
 
     return fig, x, y
 
