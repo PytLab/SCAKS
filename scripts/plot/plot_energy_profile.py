@@ -24,7 +24,7 @@ if 'rxn_equations' in dir() and 'energy_tuples' in dir():  # single rxn or multi
     fig, x_total, y_total = \
         plot_multi_energy_diagram(rxn_equations, energy_tuples, show_mode='save')
     print "Ok."
-else:
+else:  # single rxn
     print "Plotting multi-diagram..."
     fig, x_total, y_total = \
         plot_single_energy_diagram(energy_tuple, rxn_equation, show_mode='save')
@@ -53,10 +53,10 @@ ax.set_xmargin(0.03)
 #ax.set_yticklabels(['', '', '-0.5', '', '', '', '0.0', '', '', '', '0.5'])
 
 #add line shadow
-add_line_shadow(ax, x_total, y_total, depth=7, color='#595959', line_width=5.4, offset_coeff=12.0)
+add_line_shadow(ax, x_total, y_total, depth=7, color='#595959', line_width=5.4, offset_coeff=9.0)
 ax.plot(x_total, y_total, linewidth=5.4, color='#A52A2A')
 if sys.argv[1] == '--show':
     new_fig.show()
 elif sys.argv[1] == '--save':
-    new_fig.savefig('energy_profile.png', dpi=1000)
+    new_fig.savefig('./energy_profile/energy_profile.png', dpi=500)
 print 'Ok.'
