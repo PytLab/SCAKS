@@ -3,6 +3,7 @@
 '''
 import threading
 import re
+import os
 
 import numpy as np
 from scipy import interpolate
@@ -416,15 +417,20 @@ def plot_single_energy_diagram(*args, **kwargs):
     #remove xticks
     ax.set_xticks([])
     #save the figure object
+    #creat path
+    if not os.path.exists("./energy_profile"):
+        os.mkdir("./energy_profile")
+    #filename
     if 'fname' in kwargs:
         fname = kwargs['fname'] + '.' + fmt
     else:
         fname = 'elementary_energy_diagram.' + fmt
+    fullname = "./energy_profile/" + fname
 
     if show_mode == 'save':
         if 'dpi' in kwargs:
-            fig.savefig(fname, dpi=kwargs['dpi'])
-        fig.savefig(fname)
+            fig.savefig(fullname, dpi=kwargs['dpi'])
+        fig.savefig(fullname)
     if show_mode == 'show':
         plt.show()
 
