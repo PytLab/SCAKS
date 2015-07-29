@@ -721,19 +721,22 @@ def plot_multi_energy_diagram(*args, **kwargs):
     ax.set_xticks([])
 
 #####################   Artist Mode End   #####################
-
-    #if kwargs.has_key('fname'):
+    #creat path
+    if not os.path.exists("./energy_profile"):
+        os.mkdir("./energy_profile")
+    #filename
     if 'fname' in kwargs:
         fname = kwargs['fname'] + '.' + fmt
     else:
         fname = 'multi_energy_diagram.' + fmt
+    fullname = "./energy_profile/" + fname
 
     if show_mode == 'show':
         fig.show()
     elif show_mode == 'save':
         if 'dpi' in kwargs:
-            fig.savefig(fname, dpi=kwargs['dpi'])
-        fig.savefig(fname)
+            fig.savefig(fullname, dpi=kwargs['dpi'])
+        fig.savefig(fullname)
     else:
         raise ValueError('Unrecognized show mode parameter : ' + show_mode)
 
