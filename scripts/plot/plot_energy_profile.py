@@ -11,14 +11,12 @@ if 'rxn_equations' in dir() and 'energy_tuples' in dir():  # single rxn or multi
     if len(rxn_equations) != len(energy_tuples):
         raise ValueError("lengths of rxn_equations and energy_tuples " +
                          "are different.")
-
     #plot single diagrams
     for idx, args in enumerate(zip(energy_tuples, rxn_equations)):
         fname = str(idx).zfill(2)
         print "Plotting diagram " + fname + "..."
         plot_single_energy_diagram(*args, show_mode='save', fname=fname)
         print "Ok."
-
     #plot multi-diagram
     print "Plotting multi-diagram..."
     fig, x_total, y_total = \
@@ -50,7 +48,7 @@ ax.set_xmargin(0.03)
 #remove the comment symbols, set attributes of y-axis on your own need
 #ax.set_ylim(-0.75, 0.5)
 #ax.set_yticks(np.linspace(-0.75, 0.5, 11))
-#ax.set_yticklabels(['', '', '-0.5', '', '', '', '0.0', '', '', '', '0.5'])
+#ax.set_yticklabels([, '-0.5', '', '', '', '0.0', '', '', '', '0.5'])
 
 #add line shadow
 add_line_shadow(ax, x_total, y_total, depth=7, color='#595959', line_width=5.4, offset_coeff=9.0)

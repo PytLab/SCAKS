@@ -1,7 +1,9 @@
 '''
     Data for energy profile plotting.
 '''
+
 #for a number of rxn equations
+#COMMENT THEM OUT if not a number of rxn equations
 '''
 #elementary reaction equations
 rxn_equations = [
@@ -22,7 +24,8 @@ energy_tuples = [
 ]
 '''
 
-#for a single rxn equation
+#for a single rxn equation.
+#COMMENT THEM OUT if not single rxn equation
 '''
 rxn_equation = 'HCOOH_g + 2*_s <-> HCOO-H_s + *_s -> HCOO_s + H_s'
 
