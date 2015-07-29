@@ -102,6 +102,7 @@ def get_relative_energy_tuple(energy_tuple):
 
 def add_line_shadow(ax, x, y, depth, color, line_width=3, offset_coeff=1.0):
     "Add shadow to line in axes 'ax' by changing attribute of the object"
+
     def add_single_shadow(ax, x, y, order, depth, color, line_width):
         offset = transforms.ScaledTranslation(offset_coeff*order, -offset_coeff*order,
                                               transforms.IdentityTransform())
@@ -212,11 +213,7 @@ def equation2list(rxn_equation):
     return rxn_list
 
 
-def plot_single_energy_diagram(energy_tuple, rxn_equation, n=100,
-                               subsection_length=1.0,
-                               line_color='#000000',
-                               has_shadow=True, fmt='jpeg',
-                               show_mode='show', **kwargs):
+def plot_single_energy_diagram(*args, **kwargs):
     """
     Draw a potential energy diagram of a elementary reaction equation
     and save it.
@@ -224,7 +221,11 @@ def plot_single_energy_diagram(energy_tuple, rxn_equation, n=100,
 
     Parameters
     ----------
-    rxn_equation : str, optional
+    energy_tuple : tuple of float, essential
+        energy data for profile plotting.
+        e.g. (0.0, 1.2, 0.7)
+
+    rxn_equation : str, essential
         reaction equation string according to rules in setup file.
         e.g. 'HCOOH_g + 2*_s <-> HCOO-H_s + *_s -> HCOO_s + H_s'.
 
@@ -255,11 +256,27 @@ def plot_single_energy_diagram(energy_tuple, rxn_equation, n=100,
 
     Examples
     --------
-    >>> m.plotter.plot_single_energy_diagram('COO_s -> CO2_g + *_s',
+    >>> m.plotter.plot_single_energy_diagram((0.0, 1.2, 0.6),
+                                             'COO_s -> CO2_g + *_s',
                                              has_shadow=True,
                                              'fname'='pytlab')
     >>> <matplotlib.figure.Figure at 0x5659f30>
     """
+    #args setting
+    #for args
+    if len(args) != 2:
+        raise ValueError("Need at least 2 args: energy_tuple, rxn_equation.")
+    energy_tuple, rxn_equation = args
+    #for kwargs
+    n = kwargs['n'] if 'n' in kwargs else 100
+    subsection_length = \
+        kwargs['subsection_length'] if 'subsection_length' in kwargs else 1.0
+    line_color = kwargs['line_color'] if 'line_color' in kwargs else '#000000'
+    has_shadow = kwargs['has_shadow'] if 'has_shadow' in kwargs else True
+    fmt = kwargs['fmt'] if 'fmt' in kwargs else 'jpeg'
+    show_mode = kwargs['show_mode'] if 'show_mode' in kwargs else 'show'
+    #args setting END
+
     rxn_list = equation2list(rxn_equation)
     energy_tuple = get_relative_energy_tuple(energy_tuple)
     #energy info
@@ -288,7 +305,7 @@ def plot_single_energy_diagram(energy_tuple, rxn_equation, n=100,
                              'fontsize': 13,
                              'weight': 1000,
                              'verticalalignment': 'bottom'
-                             })
+                         })
 
     #add shadow
     if has_shadow:
@@ -413,7 +430,7 @@ def plot_single_energy_diagram(energy_tuple, rxn_equation, n=100,
 
 def plot_multi_energy_diagram(rxn_equations_list, energy_tuples, n=100,
                               subsection_length=1.0, line_color='#000000',
-                              fmt='jpeg', has_shadow=True,
+                              fmt='jpeg', init_y_offset=0.0, has_shadow=True,
                               show_note=True, show_aux_line=True,
                               show_mode='show', show_arrow=True,
                               **kwargs):
