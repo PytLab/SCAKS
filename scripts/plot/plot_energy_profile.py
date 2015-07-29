@@ -54,9 +54,14 @@ ax.set_xmargin(0.03)
 
 #add line shadow
 add_line_shadow(ax, x_total, y_total, depth=7, color='#595959', line_width=5.4, offset_coeff=9.0)
-ax.plot(x_total, y_total, linewidth=5.4, color='#A52A2A')
+if 'color' not in dir():
+    print "No custom color. \nUse default color: black."
+    color = '#000000'
+ax.plot(x_total, y_total, linewidth=5.4, color=color)
 if sys.argv[1] == '--show':
     new_fig.show()
 elif sys.argv[1] == '--save':
     new_fig.savefig('./energy_profile/energy_profile.png', dpi=500)
+else:
+    raise ValueError('Unrecognized show mode parameter : %s.', sys.argv[1])
 print 'Ok.'
