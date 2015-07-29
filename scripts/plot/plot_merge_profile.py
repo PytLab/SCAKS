@@ -42,7 +42,7 @@ ax.set_xmargin(0.03)
 
 for color, points in zip(colors, points_list):
     add_line_shadow(ax, *points, depth=7, color='#595959',
-                    line_width=3, offset_coeff=8.0)
+                    line_width=3, offset_coeff=9.0)
     ax.plot(*points, linewidth=4.5, color=color)
 
 if sys.argv[1] == '--show':

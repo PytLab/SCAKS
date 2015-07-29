@@ -104,7 +104,8 @@ def add_line_shadow(ax, x, y, depth, color, line_width=3, offset_coeff=1.0):
     "Add shadow to line in axes 'ax' by changing attribute of the object"
 
     def add_single_shadow(ax, x, y, order, depth, color, line_width):
-        offset = transforms.ScaledTranslation(offset_coeff*order, -offset_coeff*order,
+        offset = transforms.ScaledTranslation(offset_coeff*order,
+                                              -offset_coeff*order,
                                               transforms.IdentityTransform())
         shadow_trans = ax.transData + offset
         ax.plot(x, y, linewidth=line_width, color=color,
@@ -262,7 +263,8 @@ def plot_single_energy_diagram(*args, **kwargs):
                                              'fname'='pytlab')
     >>> <matplotlib.figure.Figure at 0x5659f30>
     """
-    #args setting
+    ###############  args setting before plotting  ################
+
     #for args
     if len(args) != 2:
         raise ValueError("Need at least 2 args: energy_tuple, rxn_equation.")
@@ -275,7 +277,8 @@ def plot_single_energy_diagram(*args, **kwargs):
     has_shadow = kwargs['has_shadow'] if 'has_shadow' in kwargs else True
     fmt = kwargs['fmt'] if 'fmt' in kwargs else 'jpeg'
     show_mode = kwargs['show_mode'] if 'show_mode' in kwargs else 'show'
-    #args setting END
+
+    #####################  args setting END  #######################
 
     rxn_list = equation2list(rxn_equation)
     energy_tuple = get_relative_energy_tuple(energy_tuple)
@@ -428,12 +431,7 @@ def plot_single_energy_diagram(*args, **kwargs):
     return fig, x, y
 
 
-def plot_multi_energy_diagram(rxn_equations_list, energy_tuples, n=100,
-                              subsection_length=1.0, line_color='#000000',
-                              fmt='jpeg', init_y_offset=0.0, has_shadow=True,
-                              show_note=True, show_aux_line=True,
-                              show_mode='show', show_arrow=True,
-                              **kwargs):
+def plot_multi_energy_diagram(*args, **kwargs):
     """
     Draw a potential energy diagram of a series of
     elementary reaction equation and save or show it.
@@ -491,11 +489,33 @@ def plot_multi_energy_diagram(rxn_equations_list, energy_tuples, n=100,
     --------
 
     """
+    ###############  args setting before plotting  ################
+    #for args
+    if len(args) != 2:
+        raise ValueError("Need at least 2 args: " +
+                         "rxn_equations_list, energy_tuples.")
+    rxn_equations_list, energy_tuples = args
+
+    #for kwargs
+    n = kwargs['n'] if 'n' in kwargs else 100
+    subsection_length = \
+        kwargs['subsection_length'] if 'subsection_length' in kwargs else 1.0
+    line_color = kwargs['line_color'] if 'line_color' in kwargs else '#000000'
+    has_shadow = kwargs['has_shadow'] if 'has_shadow' in kwargs else True
+    fmt = kwargs['fmt'] if 'fmt' in kwargs else 'jpeg'
+    init_y_offset = kwargs['init_y_offset'] if 'init_y_offset' in kwargs else 0.0
+    show_note = kwargs['show_note'] if 'show_note' in kwargs else True
+    show_aux_line = kwargs['show_aux_line'] if 'show_aux_line' in kwargs else True
+    show_arrow = kwargs['show_arrow'] if 'show_arrow' in kwargs else True
+    show_mode = kwargs['show_mode'] if 'show_mode' in kwargs else 'show'
+
+    #####################  args setting END  #######################
+
     #convert rxn_equation_list(str) to elementary_rxns_list alike list
     rxns_list = [equation2list(rxn_equation)
                  for rxn_equation in rxn_equations_list]
 
-    x_offset, y_offset = 0.0, 0.0
+    x_offset, y_offset = 0.0, init_y_offset
     total_x, total_y = [], []
     piece_points, ts_scales = [], []  # collectors
 
