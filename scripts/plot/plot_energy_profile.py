@@ -6,11 +6,16 @@ import sys
 from simple_plot import *
 from data import *  # get rxn_equations & energy_tuples
 
-if 'rxn_equations' in dir() and 'energy_tuples' in dir():  # single rxn or multi rxn
+if 'rxn_equations' in dir() and 'energy_tuples' in dir():  # multi rxn
     #check data shape
     if len(rxn_equations) != len(energy_tuples):
         raise ValueError("lengths of rxn_equations and energy_tuples " +
                          "are different.")
+    for rxn_equation, energy_tuple in zip(rxn_equations, energy_tuples):
+        equation_list = equation2list(rxn_equation)
+        if len(equation_list) != len(energy_tuple):
+            raise ValueError("unmatched shape: %d, %d" %
+                             (rxn_equation, str(energy_tuple)))
     #plot single diagrams
     for idx, args in enumerate(zip(energy_tuples, rxn_equations)):
         fname = str(idx).zfill(2)
@@ -22,11 +27,14 @@ if 'rxn_equations' in dir() and 'energy_tuples' in dir():  # single rxn or multi
     fig, x_total, y_total = \
         plot_multi_energy_diagram(rxn_equations, energy_tuples, show_mode='save')
     print "Ok."
-else:  # single rxn
+elif 'rxn_equation' in dir() and 'energy_tuple' in dir():  # single rxn
     print "Plotting multi-diagram..."
     fig, x_total, y_total = \
         plot_single_energy_diagram(energy_tuple, rxn_equation, show_mode='save')
     print "Ok."
+else:  # no equation and energy tuple
+    raise ValueError('No rxn equation and energy tuple is defined.\n' +
+                     'Please check you data file...')
 
 #customize your diagram
 if 'custom' in dir() and custom:
