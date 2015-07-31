@@ -1,8 +1,8 @@
 '''
     Module to plot energy profile.
 '''
+
 import threading
-import re
 import os
 
 import numpy as np
@@ -12,6 +12,8 @@ import matplotlib.transforms as transforms
 from math import sqrt
 from matplotlib.patches import Ellipse
 from scipy.optimize import fsolve
+
+from functions import get_relative_energy_tuple, equation2list
 
 
 class ShadowThread(threading.Thread):
@@ -90,15 +92,6 @@ def nonlinear_quadratic_interp_poly(x1, y1, x3, y3, y2):
     poly_func = lambda x: a*x**2 + b*x + c
 
     return a, b, c, poly_func
-
-
-def get_relative_energy_tuple(energy_tuple):
-    "Set is energy as 0, other energies are relative."
-    energy_list = list(energy_tuple)
-    reference_energy = energy_list[0]
-    for i in xrange(len(energy_list)):
-        energy_list[i] = energy_list[i] - reference_energy
-    return tuple(energy_list)
 
 
 def add_line_shadow(ax, x, y, depth, color, line_width=3, offset_coeff=1.0):
@@ -200,19 +193,6 @@ def get_potential_energy_points(energy_tuple, n=100,
     #plt.plot(x, y)
     #plt.show()
     return x, y, ts_scale
-
-
-def equation2list(rxn_equation):
-    "Convert rxn_equation string to rxn_list."
-    states_regex = re.compile(r'([^\<\>]*)(?:\<?\-\>)' +
-                              r'(?:([^\<\>]*)(?:\<?\-\>))?([^\<\>]*)')
-    m = states_regex.search(rxn_equation)
-    rxn_list = []
-    for idx in range(1, 4):
-        if m.group(idx):
-            rxn_list.append(m.group(idx))
-
-    return rxn_list
 
 
 def plot_single_energy_diagram(*args, **kwargs):
@@ -460,6 +440,9 @@ def plot_multi_energy_diagram(*args, **kwargs):
 
     line_color : str, optional
         Color code of the line. Default to be '#000000'/'black'.
+
+    init_y_offset : float, optional
+        Initial offset value on y axis.
 
     has_shadow : Bool
         Whether to add shadow effect to the main line.
