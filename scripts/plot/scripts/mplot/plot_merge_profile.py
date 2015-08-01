@@ -7,14 +7,19 @@ import matplotlib.pyplot as plt
 
 from catplot.en_profile import *
 from catplot.functions import verify_multi_shape, verify_attrlen
-from merge_data import *  # get rxn_equations & energy_tuples
+
+globs, locs = {}, {}
+execfile('input.txt', globs, locs)  # get input data
 
 #check the shape of input data
+multi_rxn_equations, multi_energy_tuples = \
+    locs['multi_rxn_equations'], locs['multi_energy_tuples']
 verify_multi_shape(multi_rxn_equations, multi_energy_tuples)
 
 nlines = len(multi_rxn_equations)  # number of lines
 
-if 'init_y_offsets' in dir():
+if 'init_y_offsets' in locs:
+    init_y_offsets = locs['init_y_offsets']
     verify_attrlen(init_y_offsets, nlines)
 else:
     init_y_offsets = [0.0]*nlines
@@ -52,16 +57,19 @@ ax.set_xmargin(0.03)
 
 #set attributes of y-axis
 ax.set_ymargin(0.03)
-if 'ylim' in dir():
-    ymin, ymax = ylim
+if 'ylim' in locs:
+    ymin, ymax = locs['ylim']
     ax.set_ylim(ymin, ymax)
-    if 'n_yticks' in dir():  # must set ylim befor setting n_yticks
+    if 'n_yticks' in locs:  # must set ylim befor setting n_yticks
+        n_yticks = locs['n_yticks']
         ax.set_yticks(np.linspace(ymin, ymax, n_yticks))
-if 'yticklabels' in dir():
+if 'yticklabels' in locs:
+    yticklabels = locs['yticklabels']
     ax.set_yticklabels(yticklabels)
 
 #colors setting
-if 'colors' in dir():
+if 'colors' in locs:
+    colors = locs['colors']
     verify_attrlen(colors, nlines)
 elif nlines <= 6:
     colors = ['#A52A2A', '#000000', '#36648B', '#FF7256', '#008B8B', '#7A378B']
@@ -69,12 +77,12 @@ else:
     raise ValueError('Line color is undefined.')
 
 #shadow attrs setting
-shadow_depth = shadow_depth if 'shadow_depth' in dir() else 7
-shadow_color = shadow_color if 'shadow_color' in dir() else '#595959'
-offset_coeff = offset_coeff if 'offset_coeff' in dir() else 9.0
+shadow_depth = locs['shadow_depth'] if 'shadow_depth' in locs else 7
+shadow_color = locs['shadow_color'] if 'shadow_color' in locs else '#595959'
+offset_coeff = locs['offset_coeff'] if 'offset_coeff' in locs else 9.0
 
 #line attr setting
-line_width = line_width if 'line_width' in dir() else 4.5
+line_width = locs['line_width'] if 'line_width' in locs else 4.5
 
 for color, points in zip(colors, points_list):
     add_line_shadow(ax, *points, depth=shadow_depth, color=shadow_color,
