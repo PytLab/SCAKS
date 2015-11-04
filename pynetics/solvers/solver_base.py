@@ -541,7 +541,7 @@ class SolverBase(ModelShell):
         def dtheta_dt(cvgs_tuple, t):
             return self.steady_state_function(cvgs_tuple)
 
-        t = np.arange(0, 500, 0.00005)
+        t = np.arange(0, 500000, 0.1)
         #t = np.arange(0, 0.5, 0.0001)
         initial_cvg = self.boltzmann_coverages()
         track = odeint(dtheta_dt, initial_cvg, t)
@@ -1108,9 +1108,10 @@ class NewtonRoot(object):  # Hacked from CatMap
                 s = self._Axb_solver(Jx, fxn)  # if use gmpy and numpy,
                 #print s                       # lose precision here
             except ZeroDivisionError:
-                print 'ZeroDivisionError!'
-                cancel = True
-                break
+                #print 'ZeroDivisionError!'
+                #cancel = True
+                #break
+                raise ValueError("ZeroDivisionError!")
 
             #use golden method to get optimal step size
 
