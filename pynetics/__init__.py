@@ -1,8 +1,7 @@
+import logging
+
 from functions import *
 
-
-__all__ = ['loggers', 'parsers', 'solvers', 'table_makers',
-           'correctors', 'plotters']
 
 __version__ = '0.0.1'
 
@@ -45,3 +44,17 @@ class ModelShell(object):
                     getattr(self._owner, parameter_name)
 
         return defaults
+
+    def set_logger(self):
+        # create handlers
+        std_hdlr = logging.FileHandler('out.log')
+        std_hdlr.setLevel(logging.DEBUG)
+        console_hdlr = logging.StreamHandler()
+        console_hdlr.setLevel(logging.INFO)
+        # iter formatters
+        formatter = logging.Formatter('%(name)s  %(levelname)s  %(message)s')
+        std_hdlr.setFormatter(formatter)
+        console_hdlr.setFormatter(formatter)
+        # add the handlers to logger
+        self.logger.addHandler(std_hdlr)
+        self.logger.addHandler(console_hdlr)

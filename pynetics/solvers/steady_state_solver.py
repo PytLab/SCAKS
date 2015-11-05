@@ -7,7 +7,9 @@ from solver_base import *
 class SteadyStateSolver(SolverBase):
     def __init__(self, owner):
         SolverBase.__init__(self, owner)
+        # set logger
         self.logger = logging.getLogger('model.solvers.SteadyStateSolver')
+        self.set_logger()
 
         #set default parameter dict
         defaults = dict(
