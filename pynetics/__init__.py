@@ -1,4 +1,4 @@
-import logging
+import cPickle
 
 from functions import *
 
@@ -13,6 +13,7 @@ class ModelShell(object):
     """
     def __init__(self, owner):
         self._owner = owner
+        self.archived_data_dict = {}
 
     def split_species(self, species_str):
         "Split species_str to number(int) and species_name(str)"
@@ -45,16 +46,18 @@ class ModelShell(object):
 
         return defaults
 
-    def set_logger(self):
-        # create handlers
-        std_hdlr = logging.FileHandler('out.log')
-        std_hdlr.setLevel(logging.DEBUG)
-        console_hdlr = logging.StreamHandler()
-        console_hdlr.setLevel(logging.INFO)
-        # iter formatters
-        formatter = logging.Formatter('%(name)s  %(levelname)s  %(message)s')
-        std_hdlr.setFormatter(formatter)
-        console_hdlr.setFormatter(formatter)
-        # add the handlers to logger
-        self.logger.addHandler(std_hdlr)
-        self.logger.addHandler(console_hdlr)
+    def archive_data(self, data_name, data):
+        "Update data dict and dump it to data file."
+        #update data dict
+        if data_name in self.archived_variables:
+            self.archived_data_dict[data_name] = data
+            #dump data dict to data file
+            if self.archived_data_dict:
+                with open(self._owner.data_file, 'wb') as f:
+                    cPickle.dump(self.archived_data_dict, f)
+
+    @staticmethod
+    def write2file(filename, line):
+        f = open(filename, 'a')
+        f.write(line)
+        f.close()

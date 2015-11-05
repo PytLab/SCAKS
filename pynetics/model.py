@@ -100,14 +100,14 @@ class KineticModel(object):
         """
         # create root logger
         logger = logging.getLogger('model')
-        logger.setLevel(logging.DEBUG)
+        logger.setLevel(logging.INFO)
         # create handlers
         std_hdlr = logging.FileHandler('out.log')
         std_hdlr.setLevel(logging.DEBUG)
         console_hdlr = logging.StreamHandler()
         console_hdlr.setLevel(logging.INFO)
         # create formatter and add it to the handlers
-        formatter = logging.Formatter('%(name)-8s %(levelname)-8s %(message)s')
+        formatter = logging.Formatter('%(name)s   %(levelname)-8s %(message)s')
         std_hdlr.setFormatter(formatter)
         console_hdlr.setFormatter(formatter)
         # add the handlers to logger
