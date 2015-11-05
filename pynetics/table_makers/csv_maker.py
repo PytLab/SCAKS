@@ -1,4 +1,5 @@
 import string
+import logging
 
 from table_maker_base import *
 from pynetics.functions import string2symbols
@@ -7,6 +8,7 @@ from pynetics.functions import string2symbols
 class CsvMaker(TableMakerBase):
     def __init__(self, owner):
         TableMakerBase.__init__(self, owner)
+        self.logger = logging.getLogger('model.table_maker.CsvMaker')
 
     def create_initial_table(self):
         #create input file

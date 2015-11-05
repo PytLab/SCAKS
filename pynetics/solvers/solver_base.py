@@ -118,6 +118,14 @@ class SolverBase(ModelShell):
 
         self.classify_adsorbates()
 
+    def log_latex(self, latex_tup):
+        "Append latex strings to 'formulas.tex'."
+        latex_str = ''.join(latex_tup)
+        latex_str += '\n'
+
+        self.write2file('formulas.tex', latex_str)
+        return latex_str
+
     def classify_adsorbates(self):
         "Classify coverages according to type of site, return a dict"
         classified_adsorbates = {}
@@ -353,7 +361,7 @@ class SolverBase(ModelShell):
         rfs, rrs = map(tuple, (rfs, rrs))
         setattr(self, '_rates', (rfs, rrs))
         #archive
-        self.logger.archive_data('rates', (rfs, rrs))
+        self.archive_data('rates', (rfs, rrs))
 
         return rfs, rrs
 
@@ -361,7 +369,7 @@ class SolverBase(ModelShell):
         net_rates = tuple([rf - rr for rf, rr in zip(rfs, rrs)])
         setattr(self, 'net_rates', net_rates)
         #archive
-        self.logger.archive_data('net_rates', net_rates)
+        self.archive_data('net_rates', net_rates)
         return net_rates
 
     def get_reversibilities(self, rfs, rrs):
@@ -374,7 +382,7 @@ class SolverBase(ModelShell):
                            for rate_tuple in zipped_rates]
         setattr(self, 'reversibilities', reversibilities)
         #archive
-        self.logger.archive_data('reversibilities', reversibilities)
+        self.archive_data('reversibilities', reversibilities)
 
         return reversibilities
 
@@ -417,7 +425,7 @@ class SolverBase(ModelShell):
         tof_list = (rate_vector*reapro_matrix).tolist()[0]
         setattr(self, 'tof', tof_list)
         #archive
-        self.logger.archive_data('tofs', tof_list)
+        self.archive_data('tofs', tof_list)
 
         return tof_list
 
@@ -443,7 +451,7 @@ class SolverBase(ModelShell):
         tof_list = (rate_vector*reapro_matrix).tolist()[0]
         setattr(self, 'tof', tof_list)
         #archive
-        self.logger.archive_data('tofs', tof_list)
+        self.archive_data('tofs', tof_list)
 
         return tof_list
 
@@ -519,7 +527,7 @@ class SolverBase(ModelShell):
         #covert it to list
         DTRC_list = DTRC.tolist()
         #archive
-        self.logger.archive_data('DTRC', DTRC_list)
+        self.archive_data('DTRC', DTRC_list)
 
         return DTRC
 
@@ -741,8 +749,8 @@ class SolverBase(ModelShell):
 
         if log_latex:
             #log it
-            self.logger.log_latex(f_latexs)
-            self.logger.log_latex(r_latexs)
+            self.log_latex(f_latexs)
+            self.log_latex(r_latexs)
 
         return delta_Gf_syms, delta_Gr_syms
 
@@ -849,8 +857,8 @@ class SolverBase(ModelShell):
 
         if log_latex:
             #log it
-            self.logger.log_latex(rf_latexs)
-            self.logger.log_latex(rr_latexs)
+            self.log_latex(rf_latexs)
+            self.log_latex(rr_latexs)
 
         return rf_syms, rr_syms
 
@@ -928,7 +936,7 @@ class SolverBase(ModelShell):
 
         self.rfs, self.rrs = tuple(rfs), tuple(rrs)
 
-        self.logger.archive_data('rates', (self.rfs, self.rrs))
+        self.archive_data('rates', (self.rfs, self.rrs))
 
         return tuple(rfs), tuple(rrs)
 
@@ -994,7 +1002,7 @@ class SolverBase(ModelShell):
 
         net_rates_tup = tuple(net_rates_vect)
         #archive
-        self.logger.archive_data('net_rates', net_rates_tup)
+        self.archive_data('net_rates', net_rates_tup)
 
         return net_rates_tup
 
