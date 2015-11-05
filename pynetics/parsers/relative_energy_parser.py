@@ -1,4 +1,5 @@
 import os
+import logging
 
 import sympy as sym
 
@@ -12,6 +13,8 @@ class RelativeEnergyParser(ParserBase):
         covert them to generalize formation energies.
         '''
         ParserBase.__init__(self, owner)
+        # set tools logger as child of model's
+        self.logger = logging.getLogger('model.parsers.RelativeEnergyParser')
 
         #intialize generalized formation energy dict
         self.G_dict = {}

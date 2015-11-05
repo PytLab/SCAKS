@@ -40,7 +40,6 @@ class ThermoPlotter(PlotterBase):
             'energy_tuple_warning': '${init_energy_tup} --> ' +
                                     '${modi_energy_tup}\n',
         }
-        self.logger._templates_dict.update(self.logger_template_dict)
 
     @staticmethod
     def quadratic_interp_poly(x1, y1, x2, y2):

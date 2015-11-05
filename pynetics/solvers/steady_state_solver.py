@@ -1,4 +1,5 @@
 import re
+import logging
 
 from solver_base import *
 
@@ -6,6 +7,7 @@ from solver_base import *
 class SteadyStateSolver(SolverBase):
     def __init__(self, owner):
         SolverBase.__init__(self, owner)
+        self.logger = logging.getLogger('model.solvers.SteadyStateSolver')
 
         #set default parameter dict
         defaults = dict(
@@ -53,7 +55,6 @@ class SteadyStateSolver(SolverBase):
                       'rootfinding_stable': 'iteration ${n_iter} with residual ' +
                                             '${resid}, \nstable_root (${root})\n',
         }
-        self.logger._templates_dict.update(self.logger_template_dict)
 
     def cvg_tuple2dict(self, cvgs_tuple):
         "Convert coverages list to coverages dict."

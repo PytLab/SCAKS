@@ -1,6 +1,4 @@
-import os
-import sys
-import inspect
+import logging
 
 from functions import *
 
@@ -18,19 +16,6 @@ class ModelShell(object):
     """
     def __init__(self, owner):
         self._owner = owner
-        self.set_logger()
-
-    def set_logger(self):
-        #import logger and get an instance of Logger class
-        #https://docs.python.org/2/library/functions.html#__import__
-        basepath = os.path.dirname(
-            inspect.getfile(inspect.currentframe()))
-        if basepath not in sys.path:
-            sys.path.append(basepath)
-        #from loggers import logger
-        _module = __import__('loggers.logger', globals(), locals())
-        logger_instance = getattr(_module, 'Logger')(owner=self)
-        setattr(self, 'logger', logger_instance)
 
     def split_species(self, species_str):
         "Split species_str to number(int) and species_name(str)"
