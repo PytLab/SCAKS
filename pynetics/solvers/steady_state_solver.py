@@ -95,12 +95,25 @@ class SteadyStateSolver(SolverBase):
             cvgs_dict.update(sub_cvgs_dict)
         #convert dict to tuple, and return
         constrained_cvgs_tuple = self.cvg_dict2tuple(cvgs_dict)
+
+        def compare_cvgs(cvgs1, cvgs2):
+            "Compare two coverage tuples."
+            if len(cvgs1) != len(cvgs2):
+                self.logger.warning('coverage length inconsistency is detected.')
+                return False
+            for cvg1, cvg2 in zip(cvgs1, cvgs2):
+                if abs(cvg1 - cvg2) > 10e-20:
+                    return False
+            return True
+
+        consistant = compare_cvgs(constrained_cvgs_tuple, cvgs_tuple)
         #log if constraint has been carried out
-        if constrained_cvgs_tuple != cvgs_tuple:
+        if not consistant:
             self.logger.warning('coverage constraining...\n')
             self.logger.debug('    initial coverage: %s', str(map(float, cvgs_tuple)))
             self.logger.debug('constrained coverage: %s\n',
                               str(map(float, constrained_cvgs_tuple)))
+
         return constrained_cvgs_tuple
 
     def get_elementary_dtheta_dt_expression(self, adsorbate_name,
