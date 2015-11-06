@@ -742,14 +742,14 @@ class SteadyStateSolver(SolverBase):
     def log_sscvg(self, cvgs_tuple, ads_names):
         "Log steady state coverage of every species."
         head_str = "\n\n %-5s     %-20s     %-30s\n" % \
-                   ("Index", "Intermediate Name", "Steady State Coverage")
+                   ("index", "intermediate name", "steady state coverage")
         line_str = '-'*60 + '\n'
 
         all_data = ''
         all_data += head_str + line_str
         for idx, (ads_name, cvg) in enumerate(zip(ads_names, cvgs_tuple)):
             idx = str(idx).zfill(2)
-            data = " %-5s     %-20s     %-30.10e\n" % (idx, ads_name, float(cvg))
+            data = " %-5s     %-20s     %-30.16e\n" % (idx, ads_name, float(cvg))
             all_data += data
         all_data += line_str
 
@@ -760,7 +760,7 @@ class SteadyStateSolver(SolverBase):
     def log_rate_control(self, xtrcs, species_names):
         "Log and print XTRCs."
         head_str = "\n %-5s     %-20s     %-30s\n" % \
-                   ("Index", "Names", "XTRC")
+                   ("index", "names", "XTRC")
         line_str = '-'*55 + '\n'
 
         xtrcs = xtrcs.tolist()[0]
@@ -768,7 +768,7 @@ class SteadyStateSolver(SolverBase):
         all_data += head_str + line_str
         for idx, (species_name, xtrc) in enumerate(zip(species_names, xtrcs)):
             idx = str(idx).zfill(2)
-            data = " %-5s     %-20s     %-30.10e\n" % (idx, species_name, float(xtrc))
+            data = " %-5s     %-20s     %-30.16e\n" % (idx, species_name, float(xtrc))
             all_data += data
         all_data += line_str
 
