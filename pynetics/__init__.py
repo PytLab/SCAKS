@@ -1,12 +1,7 @@
-import os
-import sys
-import inspect
+import cPickle
 
 from functions import *
 
-
-__all__ = ['loggers', 'parsers', 'solvers', 'table_makers',
-           'correctors', 'plotters']
 
 __version__ = '0.0.1'
 
@@ -18,19 +13,7 @@ class ModelShell(object):
     """
     def __init__(self, owner):
         self._owner = owner
-        self.set_logger()
-
-    def set_logger(self):
-        #import logger and get an instance of Logger class
-        #https://docs.python.org/2/library/functions.html#__import__
-        basepath = os.path.dirname(
-            inspect.getfile(inspect.currentframe()))
-        if basepath not in sys.path:
-            sys.path.append(basepath)
-        #from loggers import logger
-        _module = __import__('loggers.logger', globals(), locals())
-        logger_instance = getattr(_module, 'Logger')(owner=self)
-        setattr(self, 'logger', logger_instance)
+        self.archived_data_dict = {}
 
     def split_species(self, species_str):
         "Split species_str to number(int) and species_name(str)"
@@ -62,3 +45,19 @@ class ModelShell(object):
                     getattr(self._owner, parameter_name)
 
         return defaults
+
+    def archive_data(self, data_name, data):
+        "Update data dict and dump it to data file."
+        #update data dict
+        if data_name in self.archived_variables:
+            self.archived_data_dict[data_name] = data
+            #dump data dict to data file
+            if self.archived_data_dict:
+                with open(self._owner.data_file, 'wb') as f:
+                    cPickle.dump(self.archived_data_dict, f)
+
+    @staticmethod
+    def write2file(filename, line):
+        f = open(filename, 'a')
+        f.write(line)
+        f.close()

@@ -2,6 +2,8 @@ import os
 import sys
 import inspect
 import re
+import logging
+import logging.config
 
 from functions import *
 
@@ -34,14 +36,8 @@ class KineticModel(object):
 
         #set logger
         self.set_logger()
-        #update model's own logger template
-        self.logger_template_dict = {
-            'keyword_set_warning': 'redundant keyword ->' +
-                                   ' \'${keyword}=${value}\'',
-            }
-        self.logger._templates_dict.update(self.logger_template_dict)
 
-        #parse in keyword args
+        # parse in keyword args
         for key in kwargs:
             if key in self._attr_type_dict:
                 try:
@@ -51,8 +47,7 @@ class KineticModel(object):
                                          'is in wrong type.')
                 setattr(self, key, val)
             else:  # if key is not essential attr for model
-                self.logger.log(log_type='event', event='keyword_set_warning',
-                                keyword=key, value=kwargs[key])
+                self.logger.warning("redundant keyword - [ %s ]", str(key))
 
         #set elementary parse regex(compiled)
         self.regex_dict = {}
@@ -76,10 +71,13 @@ class KineticModel(object):
 
         #load setup file
         if hasattr(self, 'setup_file'):
+            self.logger.info('setup file [ %s ] is found', self.setup_file)
             model_name = self.setup_file.rsplit('.', 1)[0]
             setattr(self, 'model_name', model_name)
             self.load(self.setup_file)
-            #self.set_table_maker(self.table_maker_name)
+            self.logger.info('kinetic modeling, success!\n')
+        else:
+            self.logger.warning('setup file not read...')
 
     def set_parser(self, parser_name):
         """
@@ -95,19 +93,31 @@ class KineticModel(object):
         _module = __import__('parsers', globals(), locals())
         parser_instance = getattr(_module, parser_name)(owner=self)
         setattr(self, 'parser', parser_instance)
+        self.logger.info('parser is set.')
 
     def set_logger(self):
         """
-        import logger and get an instance of Logger class
+        Get logging.logger instance as logger of kinetic model.
         """
-        basepath = os.path.dirname(
-            inspect.getfile(inspect.currentframe()))
-        if basepath not in sys.path:
-            sys.path.append(basepath)
-        #from loggers import logger
-        _module = __import__('loggers.logger', globals(), locals())
-        logger_instance = getattr(_module, 'Logger')(owner=self)
-        setattr(self, 'logger', logger_instance)
+        logger = logging.getLogger('model')
+        if os.path.exists('./logging.conf'):
+            logging.config.fileConfig('./logging.conf')
+        else:
+            logger.setLevel(logging.INFO)
+            # create handlers
+            std_hdlr = logging.FileHandler('out.log')
+            std_hdlr.setLevel(logging.DEBUG)
+            console_hdlr = logging.StreamHandler()
+            console_hdlr.setLevel(logging.INFO)
+            # create formatter and add it to the handlers
+            formatter = logging.Formatter('%(name)s   %(levelname)-8s %(message)s')
+            std_hdlr.setFormatter(formatter)
+            console_hdlr.setFormatter(formatter)
+            # add the handlers to logger
+            logger.addHandler(std_hdlr)
+            logger.addHandler(console_hdlr)
+
+        self.logger = logger
 
     def load(self, setup_file):
         """
@@ -116,6 +126,7 @@ class KineticModel(object):
         For tools, create the instances of tool classes and
         assign them as the attrs of model.
         """
+        self.logger.info('Create Kinetic Model...\n')
         defaults = dict(
             data_file='data.pkl',
             decimal_precision=100,
@@ -135,6 +146,7 @@ class KineticModel(object):
         self.set_parser(locs['parser'])
 
         #assign other tools
+        self.logger.info('read in parameters...')
         for key in locs.keys():
             #ignore tools which will be loaded later
             if key in self._tools:
@@ -152,17 +164,19 @@ class KineticModel(object):
                                          str(self._attr_type_dict[key]) +
                                          ' object is expected.')
             setattr(self, key, locs[key])
+            self.logger.info('%s = %s', key, str(locs[key]))
 
         #use parser parse essential attrs for other tools
         #parse elementary rxns
         if self.rxn_expressions:
             self.parser.parse_elementary_rxns(self.rxn_expressions)
 
-        #load tools of model
+        # load tools of model
+        self.logger.info('instantiate model tools...')
         for key in self._tools:
             #black magic to auto-import classes
             #HACKED from CatMap
-            if key == 'parser':  # ignore parser loaded before
+            if key == 'parser':  # ignore parser which is loaded before
                 continue
             try:
                 if locs[key]:
@@ -179,51 +193,13 @@ class KineticModel(object):
                         __import__(pyfile, globals(), sublocs, [locs[key]])
                     tool_instance = getattr(_temp, locs[key])(owner=self)
                     setattr(self, key, tool_instance)
+                    self.logger.info('%s = %s', key, locs[key])
                 else:
                     setattr(self, key, None)
+                    self.logger.warning('%s is set to None.')
             except ImportError:
                 raise AttributeError(key.capitalize()+' '+locs[key] +
                                      ' could not be imported. ' +
                                      'Ensure that the class ' +
                                      'exists and is spelled properly.')
             #HACK END
-
-    def make_logfile(self):
-        #attributes log
-        log_line_list = []
-        #model's attributes
-        model_head = '#'*10 + ' '*3 + 'Info of Model' + ' '*3 + '#'*10
-        log_line_list.append(model_head)
-        for attr in self.__dict__:
-            if (not callable(self.__dict__[attr]) and
-                    not attr.startswith('_')):
-                log_line = attr + ' = ' + repr(self.__dict__[attr])
-                log_line_list.append(log_line)
-
-        #tools' log
-        event_line_list = []
-        for tool in self._tools:
-            tool_obj = getattr(self, tool)
-            #attr log
-            tool_head = '#'*10 + ' '*3 + 'Info of ' + tool + ' '*3 + '#'*10
-            log_line_list.append(tool_head)
-            for attr in getattr(self, tool).__dict__:
-                if (not callable(tool_obj.__dict__[attr]) and
-                        not attr.startswith('_')):
-                    log_line = attr + ' = ' + \
-                        repr(tool_obj.__dict__[attr])
-                    log_line_list.append(log_line)
-
-            #event log
-            for event_type in ['_warnings', '_event_lines', '_iter_lines']:
-                event_line_list.extend(getattr(tool_obj.logger, event_type))
-        event_content = '\n'.join(event_line_list)
-        log_content = '\n\n'.join(log_line_list)
-        #create log file
-        f = open('info.log', 'w')
-        f.write(log_content)
-        f.close()
-
-        f = open('event.log', 'w')
-        f.write(event_content)
-        f.close()

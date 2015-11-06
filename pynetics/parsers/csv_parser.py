@@ -1,9 +1,13 @@
+import logging
+
 from parser_base import *
 
 
 class CsvParser(ParserBase):
     def __init__(self, owner):
         ParserBase.__init__(self, owner)
+        # set tools logger as child of model's
+        self.logger = logging.getLogger('model.parsers.CsvParser')
 
     def parse_data(self):
         """

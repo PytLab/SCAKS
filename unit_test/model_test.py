@@ -1,6 +1,7 @@
 import unittest
 import sys
 
+
 class TestKineticModel(unittest.TestCase):
 
     def setUp(self):

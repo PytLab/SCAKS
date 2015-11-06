@@ -1,4 +1,5 @@
 import re
+import logging
 
 from solver_base import *
 
@@ -6,6 +7,8 @@ from solver_base import *
 class SteadyStateSolver(SolverBase):
     def __init__(self, owner):
         SolverBase.__init__(self, owner)
+        # set logger
+        self.logger = logging.getLogger('model.solvers.SteadyStateSolver')
 
         #set default parameter dict
         defaults = dict(
@@ -17,43 +20,6 @@ class SteadyStateSolver(SolverBase):
             )
         defaults = self.update_defaults(defaults)
         self.__dict__.update(defaults)
-
-        #update steady_state_solver's own logger template
-        self.logger_template_dict = {
-            'coverages_constraint_warning': '${initial_cvgs} --> ' +
-                                            '${constrained_cvgs}\n',
-
-                    'inital_guess_success': 'initial point (${initial_cvgs})\n',
-                  'rootfinding_in-process': 'iteration ${n_iter} with ' +
-                                            'residual ${resid}, norm ${norm}, '
-                                            '\n' + ' '*38 + 'dtheta/dt ${fx}' +
-                                            '\n' + ' '*38 + 'coverage ${x}',
-
-           'rootfinding_in-process(brief)': 'iteration ${n_iter} with ' +
-                                            'residual ${resid}, norm ${norm}',
-
-                     'rootfinding_success': 'iteration ${n_iter} with residual ' +
-                                            '${resid}\n\nsteady_state_root:\n${root}',
-
-                        'rootfinding_fail': '\niteration ${n_iter} with ' +
-                                            'residual ${resid}, norm ${norm}',
-
-                       'rootfinding_break': 'iteration ${n_iter} with residual ' +
-                                            '${resid}, \nstable_root (${root})\n',
-
-                     'rootfinding_maxiter': '\nout of iteration at iteration ' +
-                                            '{$n_iter} - residual ${resid}',
-
-            'modify_initial_guess_success': '\n${old_init_cvg} --> ' +
-                                            '${new_init_cvg}\n',
-
-                    'rootfinding_continue': 'Bad steady_state_root : ${bad_root}, ' +
-                                            'iteration continue.',
-
-                      'rootfinding_stable': 'iteration ${n_iter} with residual ' +
-                                            '${resid}, \nstable_root (${root})\n',
-        }
-        self.logger._templates_dict.update(self.logger_template_dict)
 
     def cvg_tuple2dict(self, cvgs_tuple):
         "Convert coverages list to coverages dict."
@@ -129,14 +95,25 @@ class SteadyStateSolver(SolverBase):
             cvgs_dict.update(sub_cvgs_dict)
         #convert dict to tuple, and return
         constrained_cvgs_tuple = self.cvg_dict2tuple(cvgs_dict)
+
+        def compare_cvgs(cvgs1, cvgs2):
+            "Compare two coverage tuples."
+            if len(cvgs1) != len(cvgs2):
+                self.logger.warning('coverage length inconsistency is detected.')
+                return False
+            for cvg1, cvg2 in zip(cvgs1, cvgs2):
+                if abs(cvg1 - cvg2) > 10e-20:
+                    return False
+            return True
+
+        consistant = compare_cvgs(constrained_cvgs_tuple, cvgs_tuple)
         #log if constraint has been carried out
-        if constrained_cvgs_tuple != cvgs_tuple:
-            self.logger.log(
-                log_type='event',
-                event='coverages_constraint_warning',
-                initial_cvgs=tuple(map(float, cvgs_tuple)),
-                constrained_cvgs=tuple(map(float, constrained_cvgs_tuple))
-            )
+        if not consistant:
+            self.logger.warning('coverage constraining...\n')
+            self.logger.debug('    initial coverage: %s', str(map(float, cvgs_tuple)))
+            self.logger.debug('constrained coverage: %s\n',
+                              str(map(float, constrained_cvgs_tuple)))
+
         return constrained_cvgs_tuple
 
     def get_elementary_dtheta_dt_expression(self, adsorbate_name,
@@ -477,7 +454,7 @@ class SteadyStateSolver(SolverBase):
 
         if log_latex:
             #log it
-            self.logger.log_latex(self.dtheta_dt_latex)
+            self.log_latex(self.dtheta_dt_latex)
 
         return dtheta_dt_syms
 
@@ -561,7 +538,7 @@ class SteadyStateSolver(SolverBase):
         residual = max([abs(dtheta_dt) for dtheta_dt in dtheta_dts])
         return residual
 
-    def get_steady_state_cvgs(self, c0, single_pt=False, full_info=False):
+    def get_steady_state_cvgs(self, c0, single_pt=False):
         """
         Expect an inital coverages tuple,
         use Newton Method to solving nonlinear equations,
@@ -571,8 +548,6 @@ class SteadyStateSolver(SolverBase):
         ----------
         single_pt : bool
             if True, no initial guess check.
-        full_info : bool
-            if True, show full info instead of brief info.
         """
         #Oh, intial coverage must have physical meaning!
         c0 = self.constrain_converage(c0)
@@ -589,13 +564,14 @@ class SteadyStateSolver(SolverBase):
             f_expression = self.get_dtheta_dt_expressions()
 
         ############    Main Loop with changed initial guess   ##############
-
+        self.logger.info('Entering main loop...')
+        icvg_counter = 1  # initial coverage counter, outer
         cancel = False
 
-        while not cancel:
+        while not cancel:  # outer loop
             if f_resid(c0) <= self.tolerance and not single_pt:
                 self._coverage = converged_cvgs = c0
-                print 'Good initial guess.'
+                self.logger.info('Good initial guess: \n%s', str(map(float, c0)))
                 #get error
                 fx = self.steady_state_function(c0)  # dtheta/dts
                 norm = self._norm(fx)
@@ -610,49 +586,31 @@ class SteadyStateSolver(SolverBase):
                 matrix=self._matrix, Axb_solver=self._Axb_solver,
                 dtheta_dt_expressions=f_expression
             )
-            i = 0
+            self.logger.info('Newton Iterator instantiation - success!')
             x = c0
             old_error = 1e99
-            #lambda func used when log
-            mpf2float = lambda x: [float(i) for i in x]
             if c0:
                 #log initial guess
-                self.logger.log(log_type='iteration',
-                                event='inital_guess_success',
-                                initial_cvgs=mpf2float(c0))
+                self.logger.info('initial guess coverage - success')
+                self.logger.debug(str(map(float, c0)))
 
             #####    Sub LOOP for a c0    #####
-            for x, error, fx in newton_iterator:
-                i += 1  # counter for loop
-                #if iterations is larger than 500, log every 30 steps, full info
-                if i > 500 and i % 30 == 0:
-                    self.logger.log(
-                        log_type='iteration',
-                        event='rootfinding_in-process',
-                        n_iter=i, resid=float(f_resid(x)),
-                        norm=float(error), fx=tuple(map(float, fx)),
-                        x=tuple(map(float, x))
-                    )
-                elif i < 500:
-                    if full_info:  # show full information on screen
-                        self.logger.log(
-                            log_type='iteration',
-                            event='rootfinding_in-process',
-                            n_iter=i, resid=float(f_resid(x)),
-                            norm=float(error), fx=tuple(map(float, fx)),
-                            x=tuple(map(float, x))
-                        )
-                    else:  # show brief information on screen
-                        self.logger.log(
-                            log_type='iteration',
-                            event='rootfinding_in-process(brief)',
-                            n_iter=i, resid=float(f_resid(x)),
-                            norm=float(error)
-                        )
 
+            nt_counter = 0    # newton loop counter, inner
+            self.logger.info('entering Newton Iteration( %d )...', icvg_counter)
+            # log title
+            self.logger.info('  %-10s   %5s  %18s  %18s',
+                             'status', 'N', 'residual', 'norm')
+            self.logger.info('-'*60)
+
+            for x, error, fx in newton_iterator:  # inner loop
+                nt_counter += 1
+                resid = f_resid(x)
+                self.logger.info('%-10s%10d%23.10e%23.10e', 'in_process',
+                                 nt_counter, float(resid), float(error))
                 #less than tolerance
                 if error < self.tolerance:
-                    if f_resid(x) < self.tolerance:
+                    if resid < self.tolerance:
                         #check whether there is minus value in x
                         for cvg in x:
                             if cvg < 0.0:
@@ -662,53 +620,36 @@ class SteadyStateSolver(SolverBase):
                                 lt_zero = False
                         # check END #
                         if not lt_zero:
-                            self.logger.log(
-                                log_type='iteration',
-                                event='rootfinding_success',
-                                n_iter=i,
-                                resid=float(f_resid(x)),
-                                root=mpf2float(x)
-                            )
+                            self.logger.info('%-10s%10d%23.10e%23.10e', 'success',
+                                             nt_counter, float(resid), float(error))
+                            # log steady state coverages
+                            self.log_sscvg(x, self._owner.adsorbate_names)
                             converged_cvgs = x
                             cancel = True
                             break
                         else:  # bad root, iteration continue...
-                            self.logger.log(
-                                log_type='iteration',
-                                event='rootfinding_continue',
-                                bad_root=mpf2float(x)
-                            )
+                            self.logger.warning('bad root: %s', str(map(float, x)))
+                            self.logger.warning('root finding continue...\n')
                     else:
-                        #No constraint when iterations less than 6
-#                        if x >= 5:
-#                            x = self.constrain_converage(x)
-                        error = f_resid(x)  # use residual as error
+                        error = f_resid(x)  # use residual as error and continue
 
                 #if convergence is slow when the norm is larger than 0.1
-                elif (i > self.max_rootfinding_iterations or
+                elif (nt_counter > self.max_rootfinding_iterations or
                       abs(error - old_error) < 1e-4) and error > 1e-1:
-                #elif i > self.max_rootfinding_iterations:
-                    #print "root stable"
-                    self.logger.log(
-                        log_type='iteration',
-                        event='rootfinding_break',
-                        n_iter=i, resid=float(f_resid(x)),
-                        root=mpf2float(x)
-                    )
+                    self.logger.info('%-10s%10d%23.10e%23.10e', 'break',
+                                     nt_counter, float(resid), float(error))
+                    self.logger.warning('slow convergence rate!')
+                    self.logger.warning('root finding break for this initial guess...\n')
                     #jump out of loop for this c0
                     cancel = False
                     break
 
                 #residual is almost stagnated
                 elif abs(error - old_error) < self.stable_criterion:
-
-                    self.logger.log(
-                        log_type='iteration',
-                        event='rootfinding_stable',
-                        n_iter=i, resid=float(f_resid(x)),
-                        root=mpf2float(x)
-                    )
-#                    print 'difference: ' + str(abs(error - old_error))
+                    self.logger.info('%-10s%10d%23.10e%23.10e', 'stable',
+                                     nt_counter, float(resid), float(error))
+                    self.logger.warning('stable root: %s', str(map(float, x)))
+                    self.logger.debug(' difference: %-24.16e', abs(error - old_error))
                     #jump out of loop for this c0
                     cancel = False
                     break
@@ -717,30 +658,30 @@ class SteadyStateSolver(SolverBase):
                 self._coverage = x
                 self._error = error
 
-                #archive
-                if i % 100 == 0:
-                    self.logger.archive_data('iter_coverage', x)
-                    self.logger.archive_data('iter_error', error)
-
+                # archive data every 100 steps
+                if nt_counter % 100 == 0:
+                    self.archive_data('iter_coverage', x)
+                    self.archive_data('iter_error', error)
             #####    Sub loop for a c0 END    #####
+
             #change the initial guess(c0)
             if not cancel:
                 #get a new initial guess coverage
                 c0 = self.modify_init_guess(x, fx)
+                icvg_counter += 1
 
         ##############    main loop end   #################
 
         if converged_cvgs:
             self._coverage = converged_cvgs
             #archive converged root and error
-            self.logger.archive_data('steady_state_coverage',
-                                     converged_cvgs)
-            self.logger.archive_data('steady_state_error', error)
+            self.archive_data('steady_state_coverage',
+                              converged_cvgs)
+            self.archive_data('steady_state_error', error)
             self.good_guess = c0
             #archive initial guess
-            self.logger.archive_data('initial_guess', c0)
-            #log steady state coverages
-            self.logger.log_sscvg(converged_cvgs, self._owner.adsorbate_names)
+            self.archive_data('initial_guess', c0)
+
             return converged_cvgs
 
     def modify_init_guess(self, c0, dtheta_dts):
@@ -754,7 +695,7 @@ class SteadyStateSolver(SolverBase):
                 coefficients.append(base_coefficient)
             else:
                 coefficients.append(1.0)
-        print 'coeff: ' + str(coefficients)
+        self.logger.debug('coeff: %s', str(coefficients))
         #if coeffs are all 1.0, break!
         #add later...
 
@@ -765,14 +706,8 @@ class SteadyStateSolver(SolverBase):
         new_c0 = (c0_diag*coefficients).reshape(1, -1)
         new_c0 = tuple(new_c0.tolist()[0])
         #add to log
-        #lambda func used when log
-        mpf2float = lambda x: [float(i) for i in x]
-        self.logger.log(
-            log_type='iteration',
-            event='modify_initial_guess_success',
-            old_init_cvg=mpf2float(c0),
-            new_init_cvg=mpf2float(new_c0),
-        )
+        self.logger.info('modify initial coverage - success')
+        self.logger.debug(str(map(float, c0)))
 
         #return self.constrain_converage(new_c0)
         return new_c0
@@ -799,13 +734,44 @@ class SteadyStateSolver(SolverBase):
         new_c0 = (c0_diag*coefficients).reshape(1, -1)
         new_c0 = tuple(new_c0.tolist()[0])
         #add to log
-        #lambda func used when log
-        mpf2float = lambda x: [float(i) for i in x]
-        self.logger.log(
-            log_type='iteration',
-            event='modify_initial_guess_success',
-            old_init_cvg=mpf2float(c0),
-            new_init_cvg=mpf2float(new_c0),
-        )
+        self.logger.info('modify initial coverage - success')
+        self.logger.debug(str(map(float, c0)))
 
         return new_c0
+
+    def log_sscvg(self, cvgs_tuple, ads_names):
+        "Log steady state coverage of every species."
+        head_str = "\n\n %-5s     %-20s     %-30s\n" % \
+                   ("Index", "Intermediate Name", "Steady State Coverage")
+        line_str = '-'*60 + '\n'
+
+        all_data = ''
+        all_data += head_str + line_str
+        for idx, (ads_name, cvg) in enumerate(zip(ads_names, cvgs_tuple)):
+            idx = str(idx).zfill(2)
+            data = " %-5s     %-20s     %-30.10e\n" % (idx, ads_name, float(cvg))
+            all_data += data
+        all_data += line_str
+
+        self.logger.info(all_data)
+
+        return all_data
+
+    def log_rate_control(self, xtrcs, species_names):
+        "Log and print XTRCs."
+        head_str = "\n %-5s     %-20s     %-30s\n" % \
+                   ("Index", "Names", "XTRC")
+        line_str = '-'*55 + '\n'
+
+        xtrcs = xtrcs.tolist()[0]
+        all_data = ''
+        all_data += head_str + line_str
+        for idx, (species_name, xtrc) in enumerate(zip(species_names, xtrcs)):
+            idx = str(idx).zfill(2)
+            data = " %-5s     %-20s     %-30.10e\n" % (idx, species_name, float(xtrc))
+            all_data += data
+        all_data += line_str
+
+        self.logger.info(all_data)
+
+        return all_data

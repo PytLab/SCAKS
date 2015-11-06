@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import copy
+import logging
 
 import sympy as sym
 
@@ -9,6 +10,7 @@ from solver_base import SolverBase
 class QuasiEquilibriumSolver(SolverBase):
     def __init__(self, owner):
         SolverBase.__init__(self, owner)
+        self.logger = logging.getLogger('model.solvers.QuasiEquilibriumSolver')
 
         #set default parameter dict
         defaults = dict(
