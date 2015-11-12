@@ -1,5 +1,6 @@
 import logging
 import random
+import operator
 
 
 #logging setting
@@ -172,3 +173,56 @@ class Adsorbate(object):
 
     def __str__(self):
         return self.name
+
+
+## functions ##
+
+def C(n, m):
+    '''
+    combinatorial number formula, euqal to
+      n
+    C m
+    '''
+    if n == 0:
+        return 1
+    else:
+        p_mn = reduce(operator.mul, range(m - n + 1, m + 1))
+        n_fact = reduce(operator.mul, range(1, n + 1))
+
+    return float(p_mn) / n_fact
+
+
+def count_neighbors(surface, x, y, name):
+    "Get the number of specific neighbor in NNs."
+    neighbor_indices = surface.get_NN_indices(x, y)
+    counter = 0
+    for nei_idx in neighbor_indices:
+        i, j = nei_idx
+        if surface.grid[i][j] and surface.grid[i][j].name == name:
+            counter += 1
+
+    return counter
+
+
+def get_probabilities(surface, center_name, nei_name, target_numbers):
+    '''
+    Go through grid, to get probabilities of
+    center_name has target_numbers nei_name in nearest neighbor.
+    return a list of probabilities.
+    '''
+    length = len(target_numbers)
+    if center_name not in surface.register_counter:
+        return [0.0]*length
+
+    m, n = surface.shape
+    nn_counters = [0]*length
+    for i in xrange(m):
+        for j in xrange(n):
+            adsorbate = surface.grid[i][j]
+            if adsorbate and adsorbate.name == center_name:
+                nei_number = count_neighbors(surface, i, j, nei_name)
+                nn_counters[nei_number] += 1
+    total_number = surface.register_counter[center_name]
+    probabilities = [float(nn_counter)/total_number
+                     for nn_counter in nn_counters]
+    return probabilities
