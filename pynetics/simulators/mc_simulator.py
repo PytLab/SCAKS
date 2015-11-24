@@ -42,6 +42,45 @@ class LatticeSurface(object):
 
         return s
 
+    def initialize_surface(self, ads, cvgs, symbols):
+        '''
+        Initialize surface randomly according to adsorbate coverage.
+
+        Parameters:
+        -----------
+        ads: tuple of strings, names of adsorbates.
+        cvgs: tuple of floats, coverages of adsorbates.
+        symbols: tuple of strings, symbols of adsorbates.
+        '''
+        if len(ads) != len(cvgs):
+            raise ValueError('shapes of ads and cvgs are not matched.')
+        if not symbols:
+            symbols = ads
+
+        # get coverage ranges, [0.1, 0.2, 0.4, 0.3] -> [0.1, 0.3, 0.7, 1.0]
+        l = len(cvgs)
+        ranges = [sum(cvgs[: idx+1]) for idx in xrange(l)]
+        ranges = [0.0] + ranges
+
+        def find_adsorbate(ranges, p):
+            for idx, r in enumerate(ranges):
+                if p <= r:
+                    return idx-1
+            return -1
+
+        m, n = self.shape
+        # loop to fill surface with adsorbates
+        for i in xrange(m):
+            for j in xrange(n):
+                p = random.random()
+                # decide which adsorbate
+                idx = find_adsorbate(ranges, p)
+                if idx < 0:  # no adsorbate
+                    continue
+                adsorbate = Adsorbate(ads[idx], self, i, j, symbols[idx])
+                self.register(adsorbate)
+        return
+
     def register(self, adsorbate):
         "Regist adsorbate to surface."
         x, y = adsorbate.x, adsorbate.y
@@ -84,45 +123,6 @@ class HexagonalSurface(LatticeSurface):
             s += '\n'
 
         return s
-
-    def initialize_surface(self, ads, cvgs, symbols):
-        '''
-        Initialize surface randomly according to adsorbate coverage.
-
-        Parameters:
-        -----------
-        ads: tuple of strings, names of adsorbates.
-        cvgs: tuple of floats, coverages of adsorbates.
-        symbols: tuple of strings, symbols of adsorbates.
-        '''
-        if len(ads) != len(cvgs):
-            raise ValueError('shapes of ads and cvgs are not matched.')
-        if not symbols:
-            symbols = ads
-
-        # get coverage ranges, [0.1, 0.2, 0.4, 0.3] -> [0.1, 0.3, 0.7, 1.0]
-        l = len(cvgs)
-        ranges = [sum(cvgs[: idx+1]) for idx in xrange(l)]
-        ranges = [0.0] + ranges
-
-        def find_adsorbate(ranges, p):
-            for idx, r in enumerate(ranges):
-                if p <= r:
-                    return idx-1
-            return -1
-
-        m, n = self.shape
-        # loop to fill surface with adsorbates
-        for i in xrange(m):
-            for j in xrange(n):
-                p = random.random()
-                # decide which adsorbate
-                idx = find_adsorbate(ranges, p)
-                if idx < 0:  # no adsorbate
-                    continue
-                adsorbate = Adsorbate(ads[idx], self, i, j, symbols[idx])
-                self.register(adsorbate)
-        return
 
     def get_NN_indices(self, x, y):
         '''
