@@ -1,12 +1,10 @@
-import logging
-import operator
+from math import sqrt
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-from mc_simulator import HexagonalSurface
+from mc_simulator import C
 
-ads = ('H', 'CO')
 colors = ['#000000', '#F08080', '#228B22', '#4169E1',
           '#EE7621', '#BA55D3', '#708090', '#FFFF00', '#EE00EE']
 co_cvg_list = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
@@ -18,13 +16,14 @@ for co_cvg in co_cvg_list:
     h_cvgs_list.append(h_cvgs)
     probabilities = []
     for h_cvg in h_cvgs:
-        surface = HexagonalSurface(200, 200)
-        surface.initialize_surface(ads, (h_cvg, co_cvg), ads)
-        ncouple = surface.count_couples(ads)
-        logging.info('ncouple = %d, h_cvg = %f', ncouple, h_cvg)
-        total_couple = operator.mul(*surface.shape)/2.0
-        p = float(ncouple)/total_couple
-        logging.info('p = %f, h_cvg = %f', p, h_cvg)
+#        a = co_cvg*(1 - (1 - h_cvg)**6)
+#        b = h_cvg*(1 - (1 - co_cvg)**6)
+#        p = h_cvg**2
+#        p = 0.0
+#        for i in xrange(1, 7):
+#            p += (i/6.0)*C(i, 6)*(h_cvg**i)*((1 - h_cvg)**(6 - i))  # h_cvg
+#        p = co_cvg*p
+        p = min(h_cvg, co_cvg)*(1 - (1 - max(h_cvg, co_cvg))**3)
         probabilities.append(p)
     line_list.append(probabilities)
 
