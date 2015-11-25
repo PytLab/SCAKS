@@ -1,3 +1,8 @@
+# -*- coding:utf-8 -*-
+'''
+Norskov每个原子周围有不同个数粒子的概率统计
+'''
+
 import logging
 
 import numpy as np
