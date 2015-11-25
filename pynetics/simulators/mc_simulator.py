@@ -127,6 +127,43 @@ class LatticeSurface(object):
 
         return adsorbate.x, adsorbate.y
 
+    def count_couples(self, couple):
+        '''
+        Count the number of adjacent atoms couples.
+        couple: tuple of strings, names of adsorbates couple.
+        '''
+        nrows, ncols = self.shape
+
+        def select_neighbor(NN_indices, target_name):
+            "select a taget neighbor randomly, return a Adsorbate object."
+            selected_neighbors = []
+            for nei_idx in NN_indices:
+                i, j = nei_idx
+                nei_ads = self.grid[i][j]
+                if nei_ads and nei_ads.name == target_name:
+                    selected_neighbors.append(nei_ads)
+            if selected_neighbors:
+                return random.choice(selected_neighbors)
+            else:
+                return None
+
+        ncouple = 0
+        for row in xrange(nrows):
+            for col in xrange(ncols):
+                adsorbate = self.grid[row][col]
+                if (not adsorbate) or (adsorbate.name not in couple):
+                    continue
+                center_name = adsorbate.name
+                neighbor_name = couple[0] if couple[0] != center_name else couple[-1]
+                NN_indices = self.get_NN_indices(row, col)
+                selected_neighbor = select_neighbor(NN_indices, neighbor_name)
+                if selected_neighbor:
+                    pos1 = self.logout(selected_neighbor)
+                    pos2 = self.logout(adsorbate)
+                    logging.debug('%s, %s are free.', str(pos1), str(pos2))
+                    ncouple += 1
+        return ncouple
+
 
 class SquareSurface(LatticeSurface):
     def __init__(self, m, n):
@@ -215,43 +252,6 @@ class HexagonalSurface(LatticeSurface):
         indices = [self.get_offseted_idx(x, y, offset) for offset in offsets]
 
         return tuple(indices)
-
-    def count_couples(self, couple):
-        '''
-        Count the number of adjacent atoms couples.
-        couple: tuple of strings, names of adsorbates couple.
-        '''
-        nrows, ncols = self.shape
-
-        def select_neighbor(NN_indices, target_name):
-            "select a taget neighbor randomly, return a Adsorbate object."
-            selected_neighbors = []
-            for nei_idx in NN_indices:
-                i, j = nei_idx
-                nei_ads = self.grid[i][j]
-                if nei_ads and nei_ads.name == target_name:
-                    selected_neighbors.append(nei_ads)
-            if selected_neighbors:
-                return random.choice(selected_neighbors)
-            else:
-                return None
-
-        ncouple = 0
-        for row in xrange(nrows):
-            for col in xrange(ncols):
-                adsorbate = self.grid[row][col]
-                if (not adsorbate) or (adsorbate.name not in couple):
-                    continue
-                center_name = adsorbate.name
-                neighbor_name = couple[0] if couple[0] != center_name else couple[-1]
-                NN_indices = self.get_NN_indices(row, col)
-                selected_neighbor = select_neighbor(NN_indices, neighbor_name)
-                if selected_neighbor:
-                    pos1 = self.logout(selected_neighbor)
-                    pos2 = self.logout(adsorbate)
-                    logging.debug('%s, %s are free.', str(pos1), str(pos2))
-                    ncouple += 1
-        return ncouple
 
 
 class Adsorbate(object):
