@@ -81,6 +81,30 @@ class LatticeSurface(object):
                 self.register(adsorbate)
         return
 
+    def get_offseted_idx(self, x, y, offset):
+        '''
+        Get index after offsetting operation.
+        '''
+        idx = [i + j for i, j in zip((x, y), offset)]
+        m, n = self.shape
+        # debug
+        logging.debug('idx before pbc: %s', str(idx))
+        # periodic boundary condition
+        # row
+        if idx[0] < 0:
+            idx[0] = m - 1
+        if idx[0] > m - 1:
+            idx[0] = 0
+        # column
+        if idx[1] < 0:
+            idx[1] = n - 1
+        if idx[1] > n - 1:
+            idx[1] = 0
+        # debug
+        logging.debug('idx after pbc: %s', str(idx))
+
+        return tuple(idx)
+
     def register(self, adsorbate):
         "Regist adsorbate to surface."
         x, y = adsorbate.x, adsorbate.y
@@ -104,8 +128,54 @@ class LatticeSurface(object):
         return adsorbate.x, adsorbate.y
 
 
+class SquareSurface(LatticeSurface):
+    def __init__(self, m, n):
+        '''
+        Class for a 2-dimensional square lattice surface
+        with periodic boundary condition.
+        '''
+        LatticeSurface.__init__(self, m, n)
+
+    def __str__(self):
+        s = ''
+        m, n = self.shape
+
+        for i in xrange(m):
+            for j in xrange(n):
+                if not self.grid[i][j]:
+                    s += ('%-4s' % '.')
+                else:
+                    s += ('%-4s' % str(self.grid[i][j].symbol))
+            s += '\n'
+
+        return s
+
+    def get_NN_indices(self, x, y):
+        '''
+        Get the nearest neighbors indices tuple.
+        '''
+        # debug
+        logging.debug('x, y = (%d, %d)', x, y)
+        m, n = self.shape
+        # NN positions order:
+        #     1
+        #   0 x 2
+        #     3
+        offsets = ((0, -1), (-1, 0), (0, 1), (1, 0))
+        # debug
+        logging.debug('offset = %s', str(offsets))
+
+        indices = [self.get_offseted_idx(x, y, offset) for offset in offsets]
+
+        return tuple(indices)
+
+
 class HexagonalSurface(LatticeSurface):
     def __init__(self, m, n):
+        '''
+        Class for a 2-dimensional hexagonal lattice surface
+        with periodic boundary condition.
+        '''
         LatticeSurface.__init__(self, m, n)
 
     def __str__(self):
@@ -142,27 +212,7 @@ class HexagonalSurface(LatticeSurface):
         # debug
         logging.debug('offset = %s', str(offsets))
 
-        # get nn indices
-        def get_idx(offset):
-            idx = [i + j for i, j in zip((x, y), offset)]
-            # debug
-            logging.debug('idx before pbc: %s', str(idx))
-            # periodic boundary condition
-            # row
-            if idx[0] < 0:
-                idx[0] = m - 1
-            if idx[0] > m - 1:
-                idx[0] = 0
-            # column
-            if idx[1] < 0:
-                idx[1] = n - 1
-            if idx[1] > n - 1:
-                idx[1] = 0
-            # debug
-            logging.debug('idx after pbc: %s', str(idx))
-            return tuple(idx)
-
-        indices = [get_idx(offset) for offset in offsets]
+        indices = [self.get_offseted_idx(x, y, offset) for offset in offsets]
 
         return tuple(indices)
 
