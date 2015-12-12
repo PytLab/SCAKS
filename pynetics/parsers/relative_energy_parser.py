@@ -29,14 +29,20 @@ class RelativeEnergyParser(ParserBase):
         else:
             raise ValueError("No rel_energy.py in current path.")
 
+        # check data validity
+        self.check_data_validity()
+
     def chk_data_validity(self):
         #check data validity
         if (not self.Ea or
                 not (len(self.Ea) == len(self._owner.elementary_rxns_list))):
             raise ValueError("No Ea or invalid shape of Ea.")
+
         elif (not self.G0 or
                 not (len(self.G0) == len(self._owner.elementary_rxns_list))):
             raise ValueError("No G0 or invalid shape of G0.")
+
+        return
 
     def get_energy_symbols(self):
         """
@@ -211,10 +217,13 @@ class RelativeEnergyParser(ParserBase):
             b.extend(value)
 
         A, b = np.matrix(A), np.matrix(b).reshape(-1, 1)
-#        print A
         self.A = A
-#        print b
         self.b = b
+        # output debug info
+        self.logger.debug('A = \n%s', str(A))
+        self.logger.debug('A.shape = %s', str(A.shape))
+        self.logger.debug('b = \n%s', str(b))
+        self.logger.debug('b.shape = %s', str(b.shape))
 
         x = A.I*b  # values for unknowns
         #convert column vector to list
