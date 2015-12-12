@@ -42,49 +42,6 @@ class LatticeSurface(object):
 
         return s
 
-    def register(self, adsorbate):
-        "Regist adsorbate to surface."
-        x, y = adsorbate.x, adsorbate.y
-        if not self.grid[x][y]:
-            self.grid[x][y] = adsorbate
-        else:
-            raise SurfaceSpaceError('(%d, %d) is occupied by %s already' %
-                                    (x, y, adsorbate.name))
-        # add register counter
-        if adsorbate.name in self.register_counter:
-            self.register_counter[adsorbate.name] += 1
-        else:
-            self.register_counter.setdefault(adsorbate.name, 1)
-
-        return
-
-    def logout(self, adsorbate):
-        "Remove adsorbate from surface site."
-        self.grid[adsorbate.x][adsorbate.y] = 0
-
-        return adsorbate.x, adsorbate.y
-
-
-class HexagonalSurface(LatticeSurface):
-    def __init__(self, m, n):
-        LatticeSurface.__init__(self, m, n)
-
-    def __str__(self):
-        s = ''
-        m, n = self.shape
-
-        for i in xrange(m):
-            if i % 2 != 0:  # translation
-                s += ' '*2
-            for j in xrange(n):
-                if not self.grid[i][j]:
-                    s += ('%-4s' % '.')
-                else:
-                    s += ('%-4s' % str(self.grid[i][j].symbol))
-            s += '\n'
-
-        return s
-
     def initialize_surface(self, ads, cvgs, symbols):
         '''
         Initialize surface randomly according to adsorbate coverage.
@@ -124,47 +81,51 @@ class HexagonalSurface(LatticeSurface):
                 self.register(adsorbate)
         return
 
-    def get_NN_indices(self, x, y):
+    def get_offseted_idx(self, x, y, offset):
         '''
-        Get the nearest neighbors indices tuple.
+        Get index after offsetting operation.
         '''
-        # debug
-        logging.debug('x, y = (%d, %d)', x, y)
+        idx = [i + j for i, j in zip((x, y), offset)]
         m, n = self.shape
-        # NN positions order:
-        #       1   2
-        #     0   x   3
-        #       5   4
-        if x % 2 != 0:
-            offsets = ((0, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0))
-        else:
-            offsets = ((0, -1), (-1, -1), (-1, 0), (0, 1), (1, 0), (1, -1))
         # debug
-        logging.debug('offset = %s', str(offsets))
+        logging.debug('idx before pbc: %s', str(idx))
+        # periodic boundary condition
+        # row
+        if idx[0] < 0:
+            idx[0] = m - 1
+        if idx[0] > m - 1:
+            idx[0] = 0
+        # column
+        if idx[1] < 0:
+            idx[1] = n - 1
+        if idx[1] > n - 1:
+            idx[1] = 0
+        # debug
+        logging.debug('idx after pbc: %s', str(idx))
 
-        # get nn indices
-        def get_idx(offset):
-            idx = [i + j for i, j in zip((x, y), offset)]
-            # debug
-            logging.debug('idx before pbc: %s', str(idx))
-            # periodic boundary condition
-            # row
-            if idx[0] < 0:
-                idx[0] = m - 1
-            if idx[0] > m - 1:
-                idx[0] = 0
-            # column
-            if idx[1] < 0:
-                idx[1] = n - 1
-            if idx[1] > n - 1:
-                idx[1] = 0
-            # debug
-            logging.debug('idx after pbc: %s', str(idx))
-            return tuple(idx)
+        return tuple(idx)
 
-        indices = [get_idx(offset) for offset in offsets]
+    def register(self, adsorbate):
+        "Regist adsorbate to surface."
+        x, y = adsorbate.x, adsorbate.y
+        if not self.grid[x][y]:
+            self.grid[x][y] = adsorbate
+        else:
+            raise SurfaceSpaceError('(%d, %d) is occupied by %s already' %
+                                    (x, y, adsorbate.name))
+        # add register counter
+        if adsorbate.name in self.register_counter:
+            self.register_counter[adsorbate.name] += 1
+        else:
+            self.register_counter.setdefault(adsorbate.name, 1)
 
-        return tuple(indices)
+        return
+
+    def logout(self, adsorbate):
+        "Remove adsorbate from surface site."
+        self.grid[adsorbate.x][adsorbate.y] = 0
+
+        return adsorbate.x, adsorbate.y
 
     def count_couples(self, couple):
         '''
@@ -202,6 +163,95 @@ class HexagonalSurface(LatticeSurface):
                     logging.debug('%s, %s are free.', str(pos1), str(pos2))
                     ncouple += 1
         return ncouple
+
+
+class SquareSurface(LatticeSurface):
+    def __init__(self, m, n):
+        '''
+        Class for a 2-dimensional square lattice surface
+        with periodic boundary condition.
+        '''
+        LatticeSurface.__init__(self, m, n)
+
+    def __str__(self):
+        s = ''
+        m, n = self.shape
+
+        for i in xrange(m):
+            for j in xrange(n):
+                if not self.grid[i][j]:
+                    s += ('%-4s' % '.')
+                else:
+                    s += ('%-4s' % str(self.grid[i][j].symbol))
+            s += '\n'
+
+        return s
+
+    def get_NN_indices(self, x, y):
+        '''
+        Get the nearest neighbors indices tuple.
+        '''
+        # debug
+        logging.debug('x, y = (%d, %d)', x, y)
+        m, n = self.shape
+        # NN positions order:
+        #     1
+        #   0 x 2
+        #     3
+        offsets = ((0, -1), (-1, 0), (0, 1), (1, 0))
+        # debug
+        logging.debug('offset = %s', str(offsets))
+
+        indices = [self.get_offseted_idx(x, y, offset) for offset in offsets]
+
+        return tuple(indices)
+
+
+class HexagonalSurface(LatticeSurface):
+    def __init__(self, m, n):
+        '''
+        Class for a 2-dimensional hexagonal lattice surface
+        with periodic boundary condition.
+        '''
+        LatticeSurface.__init__(self, m, n)
+
+    def __str__(self):
+        s = ''
+        m, n = self.shape
+
+        for i in xrange(m):
+            if i % 2 != 0:  # translation
+                s += ' '*2
+            for j in xrange(n):
+                if not self.grid[i][j]:
+                    s += ('%-4s' % '.')
+                else:
+                    s += ('%-4s' % str(self.grid[i][j].symbol))
+            s += '\n'
+
+        return s
+
+    def get_NN_indices(self, x, y):
+        '''
+        Get the nearest neighbors indices tuple.
+        '''
+        # debug
+        logging.debug('x, y = (%d, %d)', x, y)
+        m, n = self.shape
+        # NN positions order:
+        #       1   2
+        #     0   x   3
+        #       5   4
+        if x % 2 != 0:
+            offsets = ((0, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0))
+        else:
+            offsets = ((0, -1), (-1, -1), (-1, 0), (0, 1), (1, 0), (1, -1))
+        # debug
+        logging.debug('offset = %s', str(offsets))
+
+        indices = [self.get_offseted_idx(x, y, offset) for offset in offsets]
+
+        return tuple(indices)
 
 
 class Adsorbate(object):
