@@ -21,13 +21,13 @@ def couple_probability(thetaA, thetaB, thetaF):
 
     functions = [f0, f1, f2, f3]
 
-    p_tot = 2*thetaA*thetaB
+    p_tot = thetaA*thetaB*1*1/36
     p_correct = 0.0
     for i, alpha in enumerate(functions):
         for j, beta in enumerate(functions):
-            p_correct += (i*j+1)*(alpha(thetaA)*beta(thetaB) *
-                          (thetaF**2/((i+1)*(j+1)) + thetaA**2/((j+1)*(i+3)) +
-                           thetaB**2/((i+1)*(j+3)) + 2*thetaA*thetaB/((i+2)*(j+2))))
+            p_correct += (alpha(thetaA)*beta(thetaB) *
+                          i*j*thetaF**2 + (i+2)*j*thetaA**2 +
+                          i*(j+2)*thetaB**2 + 2*thetaA*thetaB*(i+1)*(j+1))
 
     return p_tot*p_correct
 

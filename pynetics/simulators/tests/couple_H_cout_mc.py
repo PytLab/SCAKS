@@ -4,7 +4,7 @@ import operator
 import numpy as np
 import matplotlib.pyplot as plt
 
-from mc_simulator import HexagonalSurface
+from mc_simulator import SquareSurface
 
 ads = ('H', )
 colors = ['#000000', '#F08080', '#228B22', '#4169E1',
@@ -13,13 +13,13 @@ h_cvgs = np.linspace(0.0, 1.0, 100)
 
 probabilities = []
 for h_cvg in h_cvgs:
-#    surface = HexagonalSurface(200, 200)
+#    surface = SquareSurface(200, 200)
 #    surface.initialize_surface(ads, (h_cvg, ), ads)
 #    ncouple = surface.count_couples(ads)
 #    logging.info('ncouple = %d, h_cvg = %f', ncouple, h_cvg)
 #    total_couple = operator.mul(*surface.shape)/2.0
 #    p = float(ncouple)/total_couple
-    p = h_cvg*(1 - (1 - h_cvg)**6)
+    p = h_cvg*(1 - (1 - h_cvg)**2)
     logging.info('p = %f, h_cvg = %f', p, h_cvg)
     probabilities.append(p)
 
