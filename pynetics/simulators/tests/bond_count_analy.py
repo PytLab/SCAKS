@@ -23,7 +23,7 @@ for co_cvg in co_cvg_list:
 #        for i in xrange(1, 7):
 #            p += (i/6.0)*C(i, 6)*(h_cvg**i)*((1 - h_cvg)**(6 - i))  # h_cvg
 #        p = co_cvg*p
-        p = min(h_cvg, co_cvg)*(1 - (1 - max(h_cvg, co_cvg))**3)
+        p = h_cvg*co_cvg
         probabilities.append(p)
     line_list.append(probabilities)
 

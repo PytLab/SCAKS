@@ -1,31 +1,31 @@
-import logging
-import operator
-
 import numpy as np
 import matplotlib.pyplot as plt
 
-from mc_simulator import SquareSurface
-ads = ('H', 'CO')
+from mc_simulator import C
+
+
+def F(theta):
+    p = 0.0
+    for i in xrange(1, 6):
+        p += i/6.0*C(i, 5)*theta**i*(1 - theta)**(5 - i)
+
+    return p
+
+
 colors = ['#000000', '#F08080', '#228B22', '#4169E1',
           '#EE7621', '#BA55D3', '#708090', '#FFFF00', '#EE00EE']
 co_cvg_list = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 line_list = []
 h_cvgs_list = []
-grid_length = 100
 
+D = [1, 1]
 for co_cvg in co_cvg_list:
     h_cvgs = np.linspace(0, 1 - co_cvg, 71)
     h_cvgs_list.append(h_cvgs)
     probabilities = []
     for h_cvg in h_cvgs:
-        surface = SquareSurface(grid_length, grid_length)
-        surface.initialize_surface(ads, (h_cvg, co_cvg), ads)
-        ncouple = surface.count_couples(ads)
-        logging.info('ncouple = %d, h_cvg = %f', ncouple, h_cvg)
-        #total_couple = operator.mul(*surface.shape)/2.0
-        total_couple = grid_length**2
-        p = float(ncouple)/total_couple
-        logging.info('p = %f, h_cvg = %f', p, h_cvg)
+#        p = h_cvg*co_cvg
+        p = D[0]*D[1]*(min(co_cvg, h_cvg)*F(max(co_cvg, h_cvg)))
         probabilities.append(p)
     line_list.append(probabilities)
 
