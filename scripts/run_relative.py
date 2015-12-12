@@ -1,42 +1,48 @@
 import sys
 import os
 import cPickle as cpkl
+import logging
 
 sys.path.append('D:\Dropbox\Code\Python\kinetic\Pynetics')
 from pynetics import model
 
-if os.path.exists('event.log'):  # del old log file
-    print "delete 'event.log'..."
-    os.remove('event.log')
-    print "OK."
+if os.path.exists('out.log'):  # del old log file
+    print 'delete [ out.log ]...'
+    os.remove('out.log')
+    print 'Ok.'
 
 
 if os.path.exists('formulas.tex'):  # del old tex file
-    print "delete 'formulas.tex'..."
+    print 'delete [ formulas.tex ]...'
     os.remove('formulas.tex')
-    print "OK."
-#create micro kinetic model instance
-m = model.KineticModel(setup_file='template.mkm')
+    print 'Ok.'
 
+#create micro kinetic model instance
+m = model.KineticModel(setup_file='model_setup.mkm')
+
+logging.info('parsing data...')
+m.parser.chk_data_validity()
 m.parser.parse_data()  # parse data from rel_energy.py
+logging.info('Ok.')
+
 m.solver.get_data_dict()  # solver get data from parser
 m.solver.get_rate_constants()
 m.solver.get_rate_expressions(m.solver.rxns_list)
 
 for i, rxn_equation in enumerate(m.rxn_expressions):
-    print 'Plotting diagram '+str(i)+'...'
+    logging.info('Plotting diagram '+str(i)+'...')
     m.plotter.plot_single_energy_diagram(rxn_equation, show_mode='save')
-    print 'Ok.'
+    logging.info('Ok.')
 
-print "Plotting multi_energy_diagram..."
+logging.info('Plotting multi_energy_diagram...')
 m.plotter.plot_multi_energy_diagram(m.rxn_expressions, show_mode='save')
-print 'Ok.\n'
+logging.info('Ok.\n')
 
 
 if len(sys.argv) > 1 and 'c' in sys.argv[1]:
-    print 'Correct free energies...'
+    logging.info('Correct free energies...')
     m.solver.correct_energies()
-    print 'Ok.'
+    logging.info('Ok.')
 
 #set initial guess(initial coverage)
 #if there is converged coverage, use it as initial guess
@@ -58,9 +64,9 @@ else:  # use Boltzmann coverage
 cvg = m.solver.get_steady_state_cvgs(init_cvg)
 
 #get latex file
-print "Generating TEX file..."
+logging.info('Generating TEX file...')
 m.solver.get_data_symbols()
 m.solver.get_delta_G_symbols(log_latex=True)
 m.solver.get_rate_syms(log_latex=True)
 m.solver.get_dtheta_dt_syms(log_latex=True)
-print "OK."
+logging.info('Ok.')
