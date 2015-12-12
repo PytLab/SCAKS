@@ -1,4 +1,5 @@
 import threading
+import logging
 
 import numpy as np
 from scipy import interpolate
@@ -35,11 +36,8 @@ class NoteThread(threading.Thread):
 class ThermoPlotter(PlotterBase):
     def __init__(self, owner):
         PlotterBase.__init__(self, owner)
-        #update plotter's own logger template
-        self.logger_template_dict = {
-            'energy_tuple_warning': '${init_energy_tup} --> ' +
-                                    '${modi_energy_tup}\n',
-        }
+        # set logger
+        self.logger = logging.getLogger('model.plotters.ThermoPlotter')
 
     @staticmethod
     def quadratic_interp_poly(x1, y1, x2, y2):
@@ -172,11 +170,11 @@ class ThermoPlotter(PlotterBase):
                 init_energy_tup = tuple(energy_list)
                 energy_list = [energy_list[0], energy_list[-1]]
                 #log the event
-                self.logger.log(log_type='event',
-                                event='energy_tuple_warning',
-                                init_energy_tup=init_energy_tup,
-                                modi_energy_tup=tuple(energy_list),
-                                )
+                self.logger.warning('Unreasonable energy tuple %s',
+                                    str(init_energy_tup))
+                self.logger.warning('               Convert to %s',
+                                    str(tuple(energy_list)))
+
         return tuple(energy_list)
 
     @staticmethod
