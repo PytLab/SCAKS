@@ -29,9 +29,6 @@ class RelativeEnergyParser(ParserBase):
         else:
             raise ValueError("No rel_energy.py in current path.")
 
-        # check data validity
-        self.check_data_validity()
-
     def chk_data_validity(self):
         #check data validity
         if (not self.Ea or
@@ -144,6 +141,10 @@ class RelativeEnergyParser(ParserBase):
 
         self.unknowns = all_sp
 
+        # debu info output
+        self.logger.debug('unknown species = %s', str(self.unknowns))
+        self.logger.debug('%d unknown species.', len(self.unknowns))
+
         return all_sp
 
     def list2dict(self, state_list):
@@ -164,6 +165,10 @@ class RelativeEnergyParser(ParserBase):
         e.g. [['O2_s', 'NO_g'], ['*_s', 'ON-OO_s'], ['*_s', 'ONOO_s']]
         return coefficient vectors, Ea, G0.
         e.g. ([[0, 0, -1, 0, 0, 0, 0, 0, 1], [0, 0, -1, 1, 0, 0, 0, 0, 0]], 0.655, -0.455)
+
+        Note:
+        -----
+        The shape of coefficient vector is the same with that of unknowns.
         """
         idx = self._owner.elementary_rxns_list.index(elementary_rxn_list)
         Ea, G0 = self.Ea[idx], self.G0[idx]
@@ -201,15 +206,22 @@ class RelativeEnergyParser(ParserBase):
             coeff_vect.append(coeff)
         coeff_vects.append(coeff_vect)
 
+        # debug info output
+        self.logger.debug('elementary rxn: %s', str(elementary_rxn_list))
+        self.logger.debug('unknown species coeffs: %s', str(coeff_vects))
+
         if Ea:
+            self.logger.debug('Ea, G0: %s', str([Ea, G0]))
             return coeff_vects, [Ea, G0]
         else:
+            self.logger.debug('G0: %s', str(G0))
             return coeff_vects, [G0]
 
     def parse_data(self):  # correspond with parse_data() in csv_parser.py
         """
         Solve Axb equation to get value of generalized free energies.
         """
+
         A, b = [], []
         for rxn_list in self._owner.elementary_rxns_list:
             coeff_vects, value = self.get_unknown_coeff_vector(rxn_list)
@@ -222,10 +234,18 @@ class RelativeEnergyParser(ParserBase):
         # output debug info
         self.logger.debug('A = \n%s', str(A))
         self.logger.debug('A.shape = %s', str(A.shape))
+        row, col = A.shape
+        if row != col:
+            self.logger.warning('!!! %d equations for %d variables !!!' +
+                                'please check your [ ref_species ] in [ %s ]',
+                                row, col, self._owner.setup_file)
         self.logger.debug('b = \n%s', str(b))
         self.logger.debug('b.shape = %s', str(b.shape))
 
         x = A.I*b  # values for unknowns
+        # output debug info
+        self.logger.debug('x = \n%s', str(x))
+        self.logger.debug('x.shape = %s', str(x.shape))
         #convert column vector to list
         x = x.reshape(1, -1).tolist()[0]
 
