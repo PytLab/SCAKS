@@ -134,7 +134,7 @@ class KineticModel(object):
             table_maker='CsvMaker',
             solver='SteadyStateSolver',
             corrector='ThermodynamicCorrector',
-            plotter='ThermoPlotter'
+            plotter='EnergyProfilePlotter'
         )
 
         #exec setup file set local variables as attrs of model
@@ -174,8 +174,8 @@ class KineticModel(object):
         # load tools of model
         self.logger.info('instantiate model tools...')
         for key in self._tools:
-            #black magic to auto-import classes
-            #HACKED from CatMap
+            # black magic to auto-import classes
+            # HACKED from CatMap
             if key == 'parser':  # ignore parser which is loaded before
                 continue
             try:
