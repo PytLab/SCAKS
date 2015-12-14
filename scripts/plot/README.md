@@ -1,1 +1,0 @@
-Moved to **catplot**, link: [https://github.com/PytLab/catplot](https://github.com/PytLab/catplot)
