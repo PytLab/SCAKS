@@ -73,7 +73,7 @@ class KineticModel(object):
             model_name = self.setup_file.rsplit('.', 1)[0]
             setattr(self, 'model_name', model_name)
             self.load(self.setup_file)
-            self.logger.info('kinetic modeling, success!\n')
+            self.logger.info('kinetic modeling...success!\n')
         else:
             self.logger.warning('setup file not read...')
 
@@ -154,6 +154,7 @@ class KineticModel(object):
             self.logger.info('tools = %s', str(self.tools))
 
         # assign parser ahead to provide essential attrs for other tools
+        self.logger.info('instantiate %s', str(locs['parser']))
         self.set_parser(locs['parser'])
 
         # assign other tools
@@ -177,6 +178,7 @@ class KineticModel(object):
 
         #use parser parse essential attrs for other tools
         #parse elementary rxns
+        self.logger.info('Parsing elementary rxns...')
         if self.rxn_expressions:
             self.parser.parse_elementary_rxns(self.rxn_expressions)
 
