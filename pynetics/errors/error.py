@@ -30,3 +30,8 @@ class Error(Exception):
 class ParameterError(Error):
     ''' Class for model paramter error. '''
     pass
+
+
+class SpeciesError(Error):
+    ''' Class for species error in reaction equation. '''
+    pass
