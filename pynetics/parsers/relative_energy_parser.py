@@ -1,8 +1,6 @@
 import os
 import logging
 
-import sympy as sym
-
 from parser_base import *
 
 
@@ -14,7 +12,6 @@ class RelativeEnergyParser(ParserBase):
         '''
         ParserBase.__init__(self, owner)
         # set tools logger as child of model's
-        class_name = self.__class__.__name__
         self.logger = logging.getLogger('model.parsers.RelativeEnergyParser')
 
         #intialize generalized formation energy dict
@@ -32,13 +29,13 @@ class RelativeEnergyParser(ParserBase):
 
     def chk_data_validity(self):
         #check data validity
-        if (not self.Ea or
-                not (len(self.Ea) == len(self._owner.elementary_rxns_list))):
-            raise ValueError("No Ea or invalid shape of Ea.")
+        if (not self.Ga or
+                not (len(self.Ga) == len(self._owner.elementary_rxns_list))):
+            raise ValueError("No Ga or invalid shape of Ga.")
 
-        elif (not self.G0 or
-                not (len(self.G0) == len(self._owner.elementary_rxns_list))):
-            raise ValueError("No G0 or invalid shape of G0.")
+        elif (not self.dG or
+                not (len(self.dG) == len(self._owner.elementary_rxns_list))):
+            raise ValueError("No dG or invalid shape of dG.")
 
         return
 
@@ -78,7 +75,7 @@ class RelativeEnergyParser(ParserBase):
         """
         Expect a elementary_rxn_list,
         e.g. [['O2_s', 'NO_g'], ['*_s', 'ON-OO_s'], ['*_s', 'ONOO_s']]
-        return coefficient vectors, Ea, G0.
+        return coefficient vectors, Ga, dG.
         e.g. ([[0, 0, -1, 0, 0, 0, 0, 0, 1], [0, 0, -1, 1, 0, 0, 0, 0, 0]], 0.655, -0.455)
 
         Note:
@@ -86,13 +83,13 @@ class RelativeEnergyParser(ParserBase):
         The shape of coefficient vector is the same with that of unknowns.
         """
         idx = self._owner.elementary_rxns_list.index(elementary_rxn_list)
-        Ea, G0 = self.Ea[idx], self.G0[idx]
+        Ga, dG = self.Ga[idx], self.dG[idx]
 
         if not hasattr(self, 'unknowns'):
             self.get_unknown_species()
 
         coeff_vects = []
-        if Ea != 0 and len(elementary_rxn_list) != 2:  # has barrier
+        if Ga != 0 and len(elementary_rxn_list) != 2:  # has barrier
             #get ts coefficient vector
             is_list, ts_list = elementary_rxn_list[0], elementary_rxn_list[1]
             is_dict, ts_dict = self.list2dict(is_list), self.list2dict(ts_list)
@@ -107,7 +104,7 @@ class RelativeEnergyParser(ParserBase):
                 coeff_vect.append(coeff)
             coeff_vects.append(coeff_vect)
 
-        #coefficient vector for G0
+        #coefficient vector for dG
         is_list, fs_list = elementary_rxn_list[0], elementary_rxn_list[-1]
         is_dict, fs_dict = self.list2dict(is_list), self.list2dict(fs_list)
         coeff_vect = []
@@ -125,19 +122,21 @@ class RelativeEnergyParser(ParserBase):
         self.logger.debug('elementary rxn: %s', str(elementary_rxn_list))
         self.logger.debug('unknown species coeffs: %s', str(coeff_vects))
 
-        if Ea:
-            self.logger.debug('Ea, G0: %s', str([Ea, G0]))
-            return coeff_vects, [Ea, G0]
+        if Ga:
+            self.logger.debug('Ga, dG: %s', str([Ga, dG]))
+            return coeff_vects, [Ga, dG]
         else:
-            self.logger.debug('G0: %s', str(G0))
-            return coeff_vects, [G0]
+            self.logger.debug('dG: %s', str(dG))
+            return coeff_vects, [dG]
 
-    def parse_data(self):  # correspond with parse_data() in csv_parser.py
+    def convert_data(self):  # correspond with parse_data() in csv_parser.py
         """
         Solve Axb equation to get value of generalized free energies.
+        Convert relative energies to absolute energies,
+        then pass values to its _owner.
         """
 
-        # get coefficients matrix A and 
+        # get coefficients matrix A and values vector b
         A, b = [], []
         for rxn_list in self._owner.elementary_rxns_list:
             coeff_vects, value = self.get_unknown_coeff_vector(rxn_list)
@@ -177,3 +176,14 @@ class RelativeEnergyParser(ParserBase):
         setattr(self._owner, 'hasdata', True)
 
         return
+
+    def parse_data(self):
+        self.convert_data()
+
+    def get_reversed_barrier(self):
+        '''
+        Get reversed energy barriers of elementary reactions.
+        '''
+        Gar = [Gaf - dG for Gaf, dG in zip(self.Ga, self.dG)]
+
+        return Gar
