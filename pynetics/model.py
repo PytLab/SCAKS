@@ -126,7 +126,7 @@ class KineticModel(object):
         For tools, create the instances of tool classes and
         assign them as the attrs of model.
         """
-        self.logger.info('Create Kinetic Model...\n')
+        self.logger.info('Loading Kinetic Model...\n')
         defaults = dict(
             data_file='data.pkl',
             decimal_precision=100,
