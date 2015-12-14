@@ -1,4 +1,5 @@
 import cPickle
+from math import exp
 
 from functions import *
 from errors.error import *
@@ -68,3 +69,26 @@ class ModelShell(object):
         f = open(filename, 'a')
         f.write(line)
         f.close()
+
+
+class KineticCoreComponent(ModelShell):
+    '''
+    Base class to be herited by core components of micro kinetic model,
+    e.g. solver, simulator...
+    '''
+    def __init__(self, owner):
+        ModelShell.__init__(self, owner)
+
+    def get_kTST(Ga, kB, h, T):
+        '''
+        Function to get rate constants according to Transition State Theory.
+
+        Parameters:
+        -----------
+        Gas: free energy barrier, float.
+
+        kB, h, T: thermodynamics constants, floats.
+        '''
+
+        kTST = kB*T/h*exp(Ga)
+        return kTST
