@@ -7,12 +7,11 @@ rxn_expressions = [
 ]
 
 #reference dict for generating 'generalized formation energy'
-ref_dict = {}
-ref_dict['H'] = 0.5 * -7.246
-ref_dict['O'] = -14.776 - 2*ref_dict['H']
-ref_dict['C'] = -30.491 - 2*ref_dict['H'] - 2*ref_dict['O']
-ref_dict['111'] = -303.55
-#ref_dict['sub_111'] = -271.54
+#ref_dict = {}
+#ref_dict['H'] = 0.5 * -7.246
+#ref_dict['O'] = -14.776 - 2*ref_dict['H']
+#ref_dict['C'] = -30.491 - 2*ref_dict['H'] - 2*ref_dict['O']
+#ref_dict['111'] = -303.55
 
 #reference species names
 ref_species = []  # energies of reference species will be set to 0
