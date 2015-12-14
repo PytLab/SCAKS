@@ -139,6 +139,9 @@ class ParserBase(ModelShell):
         transition_state_names = []
 
         for equation in self._owner.rxn_expressions:
+            # debug info
+            self.logger.debug('parsing [ %s ]', equation)
+
             states_dict, elementary_rxn = \
                 self.parse_single_elementary_rxn(equation)
             #check conservation firstly

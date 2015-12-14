@@ -14,6 +14,7 @@ class RelativeEnergyParser(ParserBase):
         '''
         ParserBase.__init__(self, owner)
         # set tools logger as child of model's
+        class_name = self.__class__.__name__
         self.logger = logging.getLogger('model.parsers.RelativeEnergyParser')
 
         #intialize generalized formation energy dict

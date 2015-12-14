@@ -6,6 +6,7 @@ import logging
 import logging.config
 
 from functions import *
+from errors.error import *
 
 
 class KineticModel(object):
@@ -31,10 +32,7 @@ class KineticModel(object):
             'rxn_expression': list
         }
 
-        self._tools = \
-            ['parser', 'table_maker', 'solver', 'corrector', 'plotter']
-
-        #set logger
+        # set logger
         self.set_logger()
 
         # parse in keyword args
@@ -69,13 +67,13 @@ class KineticModel(object):
 
         self.hasdata = False
 
-        #load setup file
+        # load setup file
         if hasattr(self, 'setup_file'):
             self.logger.info('setup file [ %s ] is found', self.setup_file)
             model_name = self.setup_file.rsplit('.', 1)[0]
             setattr(self, 'model_name', model_name)
             self.load(self.setup_file)
-            self.logger.info('kinetic modeling, success!\n')
+            self.logger.info('kinetic modeling...success!\n')
         else:
             self.logger.warning('setup file not read...')
 
@@ -83,13 +81,13 @@ class KineticModel(object):
         """
         Import parser and set the instance of it as attr of model
         """
-        #hacked from CatMap (catmap/model.py)
-        #https://docs.python.org/2/library/functions.html#__import__
+        # hacked from CatMap (catmap/model.py)
+        # https://docs.python.org/2/library/functions.html#__import__
         basepath = os.path.dirname(
             inspect.getfile(inspect.currentframe()))
         if basepath not in sys.path:
             sys.path.append(basepath)
-        #from loggers import logger
+        # from  loggers import logger
         _module = __import__('parsers', globals(), locals())
         parser_instance = getattr(_module, parser_name)(owner=self)
         setattr(self, 'parser', parser_instance)
@@ -126,33 +124,45 @@ class KineticModel(object):
         For tools, create the instances of tool classes and
         assign them as the attrs of model.
         """
-        self.logger.info('Create Kinetic Model...\n')
+        self.logger.info('Loading Kinetic Model...\n')
+
         defaults = dict(
             data_file='data.pkl',
             decimal_precision=100,
+            tools=['parser', 'plotter'],
             parser='RelativeEnergyParser',
             table_maker='CsvMaker',
             solver='SteadyStateSolver',
             corrector='ThermodynamicCorrector',
-            plotter='ThermoPlotter'
+            plotter='EnergyProfilePlotter',
         )
+
+        self.logger.info('read in parameters...')
 
         #exec setup file set local variables as attrs of model
         globs = {}
         locs = defaults
         execfile(setup_file, globs, locs)
 
-        #assign parser ahead to provide essential attrs for other tools
+        # customize model tools
+        if 'tools' in locs:
+            if 'parser' not in locs['tools']:
+                raise ParameterError('[ parser ] must be in tools.')
+            self.tools = locs['tools']
+            del locs['tools']
+
+            self.logger.info('tools = %s', str(self.tools))
+
+        # assign parser ahead to provide essential attrs for other tools
+        self.logger.info('instantiate %s', str(locs['parser']))
         self.set_parser(locs['parser'])
 
-        #assign other tools
-        self.logger.info('read in parameters...')
+        # assign other tools
         for key in locs.keys():
-            #ignore tools which will be loaded later
-            if key in self._tools:
-                #setattr(self, 'table_maker_name', locs[key])
+            # ignore tools which will be loaded later
+            if key in self.tools:
                 continue
-            #check type of variables
+            # check type of variables
             if key in self._attr_type_dict:
                 #chech attr type
                 if type(locs[key]) != self._attr_type_dict[key]:
@@ -168,14 +178,14 @@ class KineticModel(object):
 
         #use parser parse essential attrs for other tools
         #parse elementary rxns
+        self.logger.info('Parsing elementary rxns...')
         if self.rxn_expressions:
             self.parser.parse_elementary_rxns(self.rxn_expressions)
 
         # load tools of model
         self.logger.info('instantiate model tools...')
-        for key in self._tools:
-            #black magic to auto-import classes
-            #HACKED from CatMap
+        for key in self.tools:
+            # auto-import classes (HACKED from CatMap)
             if key == 'parser':  # ignore parser which is loaded before
                 continue
             try:

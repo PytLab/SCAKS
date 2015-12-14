@@ -1,6 +1,7 @@
 import cPickle
 
 from functions import *
+from errors.error import *
 
 
 __version__ = '0.0.2'
@@ -19,6 +20,12 @@ class ModelShell(object):
         "Split species_str to number(int) and species_name(str)"
         if not '*' in species_str:  # for species adsorbated on surface
             m = self._owner.regex_dict['species'][0].search(species_str)
+
+            # check successful match or not
+            if not m:
+                msg = 'Unsuccessful spit for species: %s' % species_str
+                raise SpeciesError(msg)
+
             if not m.group(1):
                 stoichiometry = 1
             else:

@@ -33,11 +33,11 @@ class NoteThread(threading.Thread):
         apply(self.func, self.args)
 
 
-class ThermoPlotter(PlotterBase):
+class EnergyProfilePlotter(PlotterBase):
     def __init__(self, owner):
         PlotterBase.__init__(self, owner)
         # set logger
-        self.logger = logging.getLogger('model.plotters.ThermoPlotter')
+        self.logger = logging.getLogger('model.plotters.EnProfilePlotter')
 
     @staticmethod
     def quadratic_interp_poly(x1, y1, x2, y2):

@@ -7,12 +7,11 @@ rxn_expressions = [
 ]
 
 #reference dict for generating 'generalized formation energy'
-ref_dict = {}
-ref_dict['H'] = 0.5 * -7.246
-ref_dict['O'] = -14.776 - 2*ref_dict['H']
-ref_dict['C'] = -30.491 - 2*ref_dict['H'] - 2*ref_dict['O']
-ref_dict['111'] = -303.55
-#ref_dict['sub_111'] = -271.54
+#ref_dict = {}
+#ref_dict['H'] = 0.5 * -7.246
+#ref_dict['O'] = -14.776 - 2*ref_dict['H']
+#ref_dict['C'] = -30.491 - 2*ref_dict['H'] - 2*ref_dict['O']
+#ref_dict['111'] = -303.55
 
 #reference species names
 ref_species = []  # energies of reference species will be set to 0
@@ -30,6 +29,21 @@ surface_name = 'Pd'
 temperature = 500  # Temperature of the reaction
 
 gas_thermo_mode = 'shomate_gas'
+
+# model attributes
+
+# tools for model
+tools = ['parser', 'solver', 'corrector', 'plotter']
+# specify tools for model to use
+#parser = 'CsvParser'
+parser = 'RelativeEnergyParser'  # default
+solver = 'SteadyStateSolver'     # default
+#solver = 'QuasiEquilibriumSolver'
+
+
+#---------------------------------------------------------
+# Parameters for solve kinetic model using Newton method |
+#---------------------------------------------------------
 
 numerical_representation = 'mpmath'  # 'gmpy', 'mpmath', 'sympy'
 
@@ -49,20 +63,14 @@ must be in
 archived_variables = ['steady_state_coverage', 'rates', 'initial_guess']
 
 #parameters for solver
-tolerance = 1e-20  # convergence criterion
+tolerance = 1e-20                 # convergence criterion
 max_rootfinding_iterations = 100  # maximum iterations
-residual_threshold = 1.2  # divergent root criterion
+residual_threshold = 1.2          # divergent root criterion
 
 
 #parameters for advanced use
-perturbation_size = 0.01  # numerical jacobian perturbation size
-perturbation_direction = 'left'  # numerical jacobian perturbation direction
+perturbation_size = 0.01           # numerical jacobian perturbation size
+perturbation_direction = 'left'    # numerical jacobian perturbation direction
 initial_guess_scale_factor = 1e-2  # scaling factor for initial guess
 
 stable_criterion = 1e-30  # criterion for almost stagnated norm (around tolerance*e-10)
-
-#tools for model to use
-#parser = 'CsvParser'
-parser = 'RelativeEnergyParser'  # default
-solver = 'SteadyStateSolver'  # default
-#solver = 'QuasiEquilibriumSolver'
