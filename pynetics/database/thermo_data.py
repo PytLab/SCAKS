@@ -1,3 +1,17 @@
+'''
+   Module store thermodynamic data.
+'''
+# themodynamic constants
+
+# Boltzmann constants
+kB_J = 1.38064852e-23  # J/K
+kB_eV = 8.6173324e-5   # eV/K
+
+# Planck constants
+h_J = 6.626070040e-34   # J s
+h_eV = 4.135667662e-15  # eV s
+
+
 #Define default shomate parameters
 shomate_params = {}
 shomate_params['H2_g:298-1000'] = [

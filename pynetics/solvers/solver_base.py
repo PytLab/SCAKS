@@ -8,17 +8,17 @@ from scipy.integrate import odeint
 from scipy.optimize import golden
 import matplotlib.pyplot as plt
 
-from pynetics import ModelShell
+from pynetics import KineticCoreComponent
 from pynetics.functions import numerical_jacobian
 
 
-class SolverBase(ModelShell):
+class SolverBase(KineticCoreComponent):
     def __init__(self, owner):
         """
         A class acts as a base class to be inherited by other
         solver classes, it is not functional on its own.
         """
-        ModelShell.__init__(self, owner)
+        KineticCoreComponent.__init__(self, owner)
         #mp.mp.dps = self._owner.decimal_precision
 
         #set default parameter dict
