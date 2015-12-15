@@ -15,9 +15,9 @@ class KineticModel(object):
     """
     def __init__(self, **kwargs):
 
-        #set physical constants
-        self._kB = 8.617332478e-5  # Boltzmann constant from NIST
-        self._h = 4.135667516e-15  # Planck constant from NIST
+        # set physical constants
+        self._kB = 8.617332478e-5  # Boltzmann constant from NIST, eV/K
+        self._h = 4.135667516e-15  # Planck constant from NIST, eV s
 
         #set kinetic attrs
         self._attr_type_dict = {
