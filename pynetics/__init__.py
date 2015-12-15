@@ -8,6 +8,8 @@ from .database.thermo_data import kB_J, kB_eV, h_eV
 
 __version__ = '0.0.2'
 
+#
+# Some base classes for kinetic model are defined below
 
 class ModelShell(object):
     """
@@ -121,7 +123,7 @@ class KineticCoreComponent(ModelShell):
         '''
         # check parameters
         if Auc < Ast:
-            msg = 'Active site area must be less than unit cell area.'
+            msg = 'Unitcell area(Auc) must be larger than active area(Ast).'
             raise ParameterError(msg)
 
         S = f*(Ast/Auc)*exp(-Ga/(kB_J*T))    # sticking coefficient
