@@ -1,8 +1,9 @@
 import cPickle
-from math import exp
+from math import exp, pi
 
 from functions import *
 from errors.error import *
+from .database.thermo_data import kB_J, kB_eV, h_eV
 
 
 __version__ = '0.0.2'
@@ -79,16 +80,51 @@ class KineticCoreComponent(ModelShell):
     def __init__(self, owner):
         ModelShell.__init__(self, owner)
 
-    def get_kTST(Ga, kB, h, T):
+    @staticmethod
+    def get_kTST(Ga, T):
         '''
         Function to get rate constants according to Transition State Theory.
 
         Parameters:
         -----------
-        Gas: free energy barrier, float.
+        Ga: free energy barrier, float.
 
-        kB, h, T: thermodynamics constants, floats.
+        T: thermodynamics constants, floats.
         '''
 
-        kTST = kB*T/h*exp(Ga)
+        kTST = kB_eV*T/h_eV*exp(Ga)
+
         return kTST
+
+    @staticmethod
+    def get_kCT(Ga, Auc, Ast, p, m, f, T):
+        '''
+        Function to get rate constant/collision rate according to Collision Theory.
+
+        Parameters:
+        -----------
+        Ga: free energy barrier, float.
+
+        Auc: area of unitcell (m^-2), float.
+
+        Ast: area of active sites (m^-2), float.
+
+        p: partial pressure of gas, float.
+
+        m: absolute mass of molecule (kg), float.
+
+        f: factor accounts for a further reduction in the sticking probability,
+           if particle with certain initial statesare not efficiently steered
+           along the MEP, and reflected by a higher barrier, float.
+
+        T: temperature (K), float.
+        '''
+        # check parameters
+        if Auc < Ast:
+            msg = 'Active site area must be less than unit cell area.'
+            raise ParameterError(msg)
+
+        S = f*(Ast/Auc)*exp(-Ga/(kB_J*T))    # sticking coefficient
+        k = S*(p*Auc)/(sqrt(2*pi*m*kB_J*T))  # rate
+
+        return k
