@@ -10,6 +10,7 @@ class RelativeEnergyParser(ParserBase):
         A class to parse relative energies
         covert them to generalize formation energies.
         '''
+
         ParserBase.__init__(self, owner)
         # set tools logger as child of model's
         self.logger = logging.getLogger('model.parsers.RelativeEnergyParser')
@@ -21,11 +22,13 @@ class RelativeEnergyParser(ParserBase):
         if os.path.exists('rel_energy.py'):
             globs, locs = {}, {}
             execfile('rel_energy.py', globs, locs)
-            #set variables in data file as attr of parser
+            # set variables in data file as attr of parser
             for key in locs:
                 setattr(self, key, locs[key])
+            # pass relative energies to owner
+            setattr(self._owner, 'relative_energies', locs)
         else:
-            raise ValueError("No rel_energy.py in current path.")
+            raise IOError("No rel_energy.py in current path.")
 
     def chk_data_validity(self):
         #check data validity
@@ -129,12 +132,12 @@ class RelativeEnergyParser(ParserBase):
             self.logger.debug('dG: %s', str(dG))
             return coeff_vects, [dG]
 
-    def parse_data(self):  # correspond with parse_data() in csv_parser.py
-        """
+    def convert_data(self):
+        '''
         Solve Axb equation to get value of generalized free energies.
         Convert relative energies to absolute energies,
-        then pass values to its _owner.
-        """
+        then pass values to its owner.
+        '''
 
         # get coefficients matrix A and values vector b
         A, b = [], []
@@ -158,6 +161,7 @@ class RelativeEnergyParser(ParserBase):
         self.logger.debug('b.shape = %s', str(b.shape))
 
         x = A.I*b  # values for unknowns
+
         # output debug info
         self.logger.debug('x = \n%s', str(x))
         self.logger.debug('x.shape = %s', str(x.shape))
@@ -168,7 +172,16 @@ class RelativeEnergyParser(ParserBase):
         for sp_name, G in zip(self.unknowns, x):
             self.G_dict.setdefault(sp_name, G)
 
-        #put generalized formation energy into species_definition
+        return
+
+    def parse_data(self):
+        '''
+        put generalized formation energy into species_definition.
+        '''
+
+        if not self.G_dict:
+            self.convert_data()
+
         for sp_name in self.G_dict:
             sp_dict = self._owner.species_definitions
             sp_dict[sp_name].setdefault('formation_energy', self.G_dict[sp_name])
@@ -177,10 +190,20 @@ class RelativeEnergyParser(ParserBase):
 
         return
 
-    def get_reversed_barrier(self):
+    @staticmethod
+    def get_reversed_barrier(Gafs=None, dGs=None):
         '''
         Get reversed energy barriers of elementary reactions.
+
+        Parameters:
+        -----------
+        Gafs: forward energy barriers of elementary reactions,
+              list of float.
+
+        dGs: reaction energies of elementary reactions,
+             list of float.
         '''
-        Gar = [Gaf - dG for Gaf, dG in zip(self.Ga, self.dG)]
+
+        Gar = [Gaf - dG for Gaf, dG in zip(Gafs, dGs)]
 
         return Gar
