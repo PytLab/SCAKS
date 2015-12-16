@@ -8,20 +8,30 @@ from .database.thermo_data import kB_J, kB_eV, h_eV
 
 __version__ = '0.0.2'
 
-#
-# Some base classes for kinetic model are defined below
+#-------------------------------------------------------
+# Some base classes for kinetic model are defined below |
+#-------------------------------------------------------
+
 
 class ModelShell(object):
-    """
+    '''
     A non-functional parent class to be inherited by
     other tools class of kinetic model.
-    """
+    '''
+
     def __init__(self, owner):
         self._owner = owner
         self.archived_data_dict = {}
 
     def split_species(self, species_str):
-        "Split species_str to number(int) and species_name(str)"
+        '''
+        Split species_str to number(int) and species_name(str)
+
+        Parameters:
+        -----------
+        species_str: species string, e.g. '2CH4_g', str
+        '''
+
         if not '*' in species_str:  # for species adsorbated on surface
             m = self._owner.regex_dict['species'][0].search(species_str)
 
@@ -46,10 +56,15 @@ class ModelShell(object):
             return stoichiometry, site_name
 
     def update_defaults(self, defaults):
-        """
+        '''
         Update values in defaults dict,
         if there are custom parameters in setup file.
-        """
+
+        Parameters:
+        -----------
+        default: default attributes dict, dict.
+        '''
+
         for parameter_name in defaults:
             if hasattr(self._owner, parameter_name):
                 defaults[parameter_name] = \
@@ -58,7 +73,16 @@ class ModelShell(object):
         return defaults
 
     def archive_data(self, data_name, data):
-        "Update data dict and dump it to data file."
+        '''
+        Update data dict and dump it to data file.
+
+        Parameters:
+        -----------
+        data_name: key in data dict, str.
+
+        data: value in data dict, any data type.
+        '''
+
         #update data dict
         if data_name in self.archived_variables:
             self.archived_data_dict[data_name] = data
@@ -79,6 +103,7 @@ class KineticCoreComponent(ModelShell):
     Base class to be herited by core components of micro kinetic model,
     e.g. solver, simulator...
     '''
+
     def __init__(self, owner):
         ModelShell.__init__(self, owner)
 
