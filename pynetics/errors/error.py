@@ -35,3 +35,8 @@ class ParameterError(Error):
 class SpeciesError(Error):
     ''' Class for species error in reaction equation. '''
     pass
+
+
+class ToolsImportError(Error):
+    ''' Class for errors in instantiation of model tools. '''
+    pass

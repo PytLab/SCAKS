@@ -8,18 +8,30 @@ from .database.thermo_data import kB_J, kB_eV, h_eV
 
 __version__ = '0.0.2'
 
+#-------------------------------------------------------
+# Some base classes for kinetic model are defined below |
+#-------------------------------------------------------
+
 
 class ModelShell(object):
-    """
+    '''
     A non-functional parent class to be inherited by
     other tools class of kinetic model.
-    """
+    '''
+
     def __init__(self, owner):
         self._owner = owner
         self.archived_data_dict = {}
 
     def split_species(self, species_str):
-        "Split species_str to number(int) and species_name(str)"
+        '''
+        Split species_str to number(int) and species_name(str)
+
+        Parameters:
+        -----------
+        species_str: species string, e.g. '2CH4_g', str
+        '''
+
         if not '*' in species_str:  # for species adsorbated on surface
             m = self._owner.regex_dict['species'][0].search(species_str)
 
@@ -44,10 +56,15 @@ class ModelShell(object):
             return stoichiometry, site_name
 
     def update_defaults(self, defaults):
-        """
+        '''
         Update values in defaults dict,
         if there are custom parameters in setup file.
-        """
+
+        Parameters:
+        -----------
+        default: default attributes dict, dict.
+        '''
+
         for parameter_name in defaults:
             if hasattr(self._owner, parameter_name):
                 defaults[parameter_name] = \
@@ -56,7 +73,16 @@ class ModelShell(object):
         return defaults
 
     def archive_data(self, data_name, data):
-        "Update data dict and dump it to data file."
+        '''
+        Update data dict and dump it to data file.
+
+        Parameters:
+        -----------
+        data_name: key in data dict, str.
+
+        data: value in data dict, any python data type.
+        '''
+
         #update data dict
         if data_name in self.archived_variables:
             self.archived_data_dict[data_name] = data
@@ -77,6 +103,7 @@ class KineticCoreComponent(ModelShell):
     Base class to be herited by core components of micro kinetic model,
     e.g. solver, simulator...
     '''
+
     def __init__(self, owner):
         ModelShell.__init__(self, owner)
 
@@ -97,13 +124,13 @@ class KineticCoreComponent(ModelShell):
         return kTST
 
     @staticmethod
-    def get_kCT(Ga, Auc, Ast, p, m, f, T):
+    def get_kCT(Ea, Auc, Ast, p, m, f, T):
         '''
         Function to get rate constant/collision rate according to Collision Theory.
 
         Parameters:
         -----------
-        Ga: free energy barrier, float.
+        Ea: energy barrier( NOT free energy barrier), float.
 
         Auc: area of unitcell (m^-2), float.
 
@@ -114,17 +141,17 @@ class KineticCoreComponent(ModelShell):
         m: absolute mass of molecule (kg), float.
 
         f: factor accounts for a further reduction in the sticking probability,
-           if particle with certain initial statesare not efficiently steered
+           if particle with certain initial states are not efficiently steered
            along the MEP, and reflected by a higher barrier, float.
 
         T: temperature (K), float.
         '''
         # check parameters
         if Auc < Ast:
-            msg = 'Active site area must be less than unit cell area.'
+            msg = 'Unitcell area(Auc) must be larger than active area(Ast).'
             raise ParameterError(msg)
 
-        S = f*(Ast/Auc)*exp(-Ga/(kB_J*T))    # sticking coefficient
-        k = S*(p*Auc)/(sqrt(2*pi*m*kB_J*T))  # rate
+        S = f*(Ast/Auc)*exp(-Ea/(kB_J*T))      # sticking coefficient
+        kCT = S*(p*Auc)/(sqrt(2*pi*m*kB_J*T))  # rate
 
-        return k
+        return kCT

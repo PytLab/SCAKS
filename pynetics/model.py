@@ -209,8 +209,8 @@ class KineticModel(object):
                     setattr(self, key, None)
                     self.logger.warning('%s is set to None.')
             except ImportError:
-                raise AttributeError(key.capitalize()+' '+locs[key] +
-                                     ' could not be imported. ' +
-                                     'Ensure that the class ' +
-                                     'exists and is spelled properly.')
+                raise ToolsImportError(key.capitalize()+' '+locs[key] +
+                                       ' could not be imported. ' +
+                                       'Ensure that the class ' +
+                                       'exists and is spelled properly.')
             #HACK END
