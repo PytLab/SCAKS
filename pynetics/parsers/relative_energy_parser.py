@@ -129,7 +129,7 @@ class RelativeEnergyParser(ParserBase):
             self.logger.debug('dG: %s', str(dG))
             return coeff_vects, [dG]
 
-    def convert_data(self):  # correspond with parse_data() in csv_parser.py
+    def parse_data(self):  # correspond with parse_data() in csv_parser.py
         """
         Solve Axb equation to get value of generalized free energies.
         Convert relative energies to absolute energies,
@@ -176,9 +176,6 @@ class RelativeEnergyParser(ParserBase):
         setattr(self._owner, 'hasdata', True)
 
         return
-
-    def parse_data(self):
-        self.convert_data()
 
     def get_reversed_barrier(self):
         '''

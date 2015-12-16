@@ -80,7 +80,7 @@ class ModelShell(object):
         -----------
         data_name: key in data dict, str.
 
-        data: value in data dict, any data type.
+        data: value in data dict, any python data type.
         '''
 
         #update data dict
@@ -124,13 +124,13 @@ class KineticCoreComponent(ModelShell):
         return kTST
 
     @staticmethod
-    def get_kCT(Ga, Auc, Ast, p, m, f, T):
+    def get_kCT(Ea, Auc, Ast, p, m, f, T):
         '''
         Function to get rate constant/collision rate according to Collision Theory.
 
         Parameters:
         -----------
-        Ga: free energy barrier, float.
+        Ea: energy barrier( NOT free energy barrier), float.
 
         Auc: area of unitcell (m^-2), float.
 
@@ -151,7 +151,7 @@ class KineticCoreComponent(ModelShell):
             msg = 'Unitcell area(Auc) must be larger than active area(Ast).'
             raise ParameterError(msg)
 
-        S = f*(Ast/Auc)*exp(-Ga/(kB_J*T))    # sticking coefficient
-        k = S*(p*Auc)/(sqrt(2*pi*m*kB_J*T))  # rate
+        S = f*(Ast/Auc)*exp(-Ea/(kB_J*T))    # sticking coefficient
+        kCT = S*(p*Auc)/(sqrt(2*pi*m*kB_J*T))  # rate
 
-        return k
+        return kCT
