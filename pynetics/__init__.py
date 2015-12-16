@@ -141,7 +141,7 @@ class KineticCoreComponent(ModelShell):
         m: absolute mass of molecule (kg), float.
 
         f: factor accounts for a further reduction in the sticking probability,
-           if particle with certain initial statesare not efficiently steered
+           if particle with certain initial states are not efficiently steered
            along the MEP, and reflected by a higher barrier, float.
 
         T: temperature (K), float.
@@ -151,7 +151,7 @@ class KineticCoreComponent(ModelShell):
             msg = 'Unitcell area(Auc) must be larger than active area(Ast).'
             raise ParameterError(msg)
 
-        S = f*(Ast/Auc)*exp(-Ea/(kB_J*T))    # sticking coefficient
+        S = f*(Ast/Auc)*exp(-Ea/(kB_J*T))      # sticking coefficient
         kCT = S*(p*Auc)/(sqrt(2*pi*m*kB_J*T))  # rate
 
         return kCT
