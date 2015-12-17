@@ -129,6 +129,7 @@ class KineticModel(object):
 
         defaults = dict(
             data_file='data.pkl',
+            grid_type='square',
             decimal_precision=100,
             tools=['parser', 'plotter'],
             parser='RelativeEnergyParser',

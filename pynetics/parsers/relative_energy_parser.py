@@ -26,23 +26,36 @@ class RelativeEnergyParser(ParserBase):
             for key in locs:
                 setattr(self, key, locs[key])
             # pass relative energies to owner
-            setattr(self._owner, 'relative_energies', locs)
+            setattr(self._owner, 'relative_energies', {})
+            for key in ['Ga', 'Ea', 'dG', 'dE']:
+                if key in locs:
+                    self._owner.relative_energies.setdefault(key, locs[key])
         else:
             raise IOError("No rel_energy.py in current path.")
 
     def chk_data_validity(self):
-        #check data validity
-        if (not self.Ga or
-                not (len(self.Ga) == len(self._owner.elementary_rxns_list))):
-            raise ValueError("No Ga or invalid shape of Ga.")
+        '''check data validity.'''
 
-        elif (not self.dG or
+        if (hasattr(self, 'Ga') and
+                not (len(self.Ga) == len(self._owner.elementary_rxns_list))):
+            raise ValueError("Invalid shape of Ga.")
+
+        if (hasattr(self, 'Ea') and
+                not (len(self.Ea) == len(self._owner.elementary_rxns_list))):
+            raise ValueError("Invalid shape of Ea.")
+
+        if (hasattr(self, 'dG') and
                 not (len(self.dG) == len(self._owner.elementary_rxns_list))):
-            raise ValueError("No dG or invalid shape of dG.")
+            raise ValueError("Invalid shape of dG.")
+
+        if (hasattr(self, 'dE') and
+                not (len(self.dE) == len(self._owner.elementary_rxns_list))):
+            raise ValueError("Invalid shape of dE.")
 
         return
 
     ####### Use matrix to get generalized formation energy ########
+
     def get_unknown_species(self):
         "Get species whose free energy is unknown."
         all_sp = self._owner.site_names + self._owner.gas_names + \
@@ -191,7 +204,7 @@ class RelativeEnergyParser(ParserBase):
         return
 
     @staticmethod
-    def get_reversed_barrier(Gafs=None, dGs=None):
+    def get_reversed_barrier(Gafs, dGs):
         '''
         Get reversed energy barriers of elementary reactions.
 

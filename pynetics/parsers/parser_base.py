@@ -195,9 +195,9 @@ class ParserBase(ModelShell):
         """
         elementary_rxn = []
 
-        #begin to parse single equation
+        # begin to parse single equation
 
-        #extract IS, TS, FS expressions
+        # extract IS, TS, FS expressions
         states_dict = {'IS': {}, 'TS': {}, 'FS': {}}
         m = self._owner.regex_dict['IS_TS_FS'][0].search(equation)
 
@@ -254,21 +254,20 @@ class ParserBase(ModelShell):
             #Ok! we get a new merged species list
 
             for sp in merged_species_list:
-#                sp = sp.strip()
-#                clean_species_list.append(sp)
                 if not '*' in sp:
                     species_dict.update(self.parse_species_expression(sp))
                 else:
                     empty_sites_dict.update(self.parse_site_expression(sp))
         else:
             sp = state_expression.strip()
-            merged_species_list.append(sp)
+            #merged_species_list.append(sp)
+            species_list = [sp]
             if not '*' in sp:
                 species_dict.update(self.parse_species_expression(sp))
             else:
                 empty_sites_dict.update(self.parse_site_expression(sp))
 
-        return species_dict, empty_sites_dict, merged_species_list
+        return species_dict, empty_sites_dict, species_list
 
     def parse_species_expression(self, species_expression):
         """
