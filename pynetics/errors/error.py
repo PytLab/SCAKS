@@ -27,16 +27,23 @@ class Error(Exception):
         return self.__msg
 
 
+# kinetic model errors
 class ParameterError(Error):
     ''' Class for model paramter error. '''
     pass
 
 
-class SpeciesError(Error):
-    ''' Class for species error in reaction equation. '''
+class ToolsImportError(Error):
+    ''' Class for errors in instantiation of model tools. '''
     pass
 
 
-class ToolsImportError(Error):
-    ''' Class for errors in instantiation of model tools. '''
+# parser errors
+class ProcessParsingError(Error):
+    ''' Class for errors in parsing kMC process/event. '''
+    pass
+
+
+class SpeciesError(Error):
+    ''' Class for species error in reaction equation. '''
     pass
