@@ -195,9 +195,9 @@ class ParserBase(ModelShell):
         """
         elementary_rxn = []
 
-        #begin to parse single equation
+        # begin to parse single equation
 
-        #extract IS, TS, FS expressions
+        # extract IS, TS, FS expressions
         states_dict = {'IS': {}, 'TS': {}, 'FS': {}}
         m = self._owner.regex_dict['IS_TS_FS'][0].search(equation)
 
