@@ -254,8 +254,6 @@ class ParserBase(ModelShell):
             #Ok! we get a new merged species list
 
             for sp in merged_species_list:
-#                sp = sp.strip()
-#                clean_species_list.append(sp)
                 if not '*' in sp:
                     species_dict.update(self.parse_species_expression(sp))
                 else:
