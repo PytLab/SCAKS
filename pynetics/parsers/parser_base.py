@@ -262,13 +262,14 @@ class ParserBase(ModelShell):
                     empty_sites_dict.update(self.parse_site_expression(sp))
         else:
             sp = state_expression.strip()
-            merged_species_list.append(sp)
+            #merged_species_list.append(sp)
+            species_list = [sp]
             if not '*' in sp:
                 species_dict.update(self.parse_species_expression(sp))
             else:
                 empty_sites_dict.update(self.parse_site_expression(sp))
 
-        return species_dict, empty_sites_dict, merged_species_list
+        return species_dict, empty_sites_dict, species_list
 
     def parse_species_expression(self, species_expression):
         """
