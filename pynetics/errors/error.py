@@ -47,3 +47,8 @@ class ProcessParsingError(Error):
 class SpeciesError(Error):
     ''' Class for species error in reaction equation. '''
     pass
+
+
+class ElementSearchingError(Error):
+    ''' Class for errors of element info searching in database. '''
+    pass
