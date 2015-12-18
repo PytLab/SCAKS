@@ -202,21 +202,3 @@ class RelativeEnergyParser(ParserBase):
         setattr(self._owner, 'hasdata', True)
 
         return
-
-    @staticmethod
-    def get_reversed_barrier(Gafs, dGs):
-        '''
-        Get reversed energy barriers of elementary reactions.
-
-        Parameters:
-        -----------
-        Gafs: forward energy barriers of elementary reactions,
-              list of float.
-
-        dGs: reaction energies of elementary reactions,
-             list of float.
-        '''
-
-        Gar = [Gaf - dG for Gaf, dG in zip(Gafs, dGs)]
-
-        return Gar
