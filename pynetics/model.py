@@ -159,6 +159,11 @@ class KineticModel(object):
         self.logger.info('instantiate %s', str(locs['parser']))
         self.set_parser(locs['parser'])
 
+        # if parser is kmc_parser use kmc_solver correspondingly
+        if locs['parser'] == 'KMCParser':
+            locs['solver'] = 'KMCSolver'
+            self.logger.info('set solver [ KMCSolver ].')
+
         # assign other tools
         for key in locs.keys():
             # ignore tools which will be loaded later
