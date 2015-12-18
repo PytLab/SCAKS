@@ -12,7 +12,7 @@ h_J = 6.626070040e-34   # J s
 h_eV = 4.135667662e-15  # eV s
 
 # statistic thermodynamics data
-# 'Tien C L, Lienhard J H. Statistical Thermodynamics, 1979, p178'
+# Tien C L, Lienhard J H. Statistical Thermodynamics, 1979, p178
 
 # rotation and vibration temperature
 rotation_temperatures = {
@@ -34,13 +34,13 @@ rotation_temperatures = {
     'N2O': {'sigma': 1, 'theta': 0.6100},
 
     # nonlinear molecules
-    'H2O': {'sigma': 2, 'thetaA': 40.40, 'thetaB': 21.10, 'thetaC': 13.5},
-    'D2O': {'sigma': 2, 'thetaA': 22.49, 'thetaB': 10.56, 'thetaC': 6.70},
-    'H2S': {'sigma': 2, 'thetaA': 15.10, 'thetaB': 13.09, 'thetaC': 6.89},
-    'SO2': {'sigma': 2, 'thetaA': 3.270, 'thetaB': 0.550, 'thetaC': 0.47},
-    'NH3': {'sigma': 3, 'thetaA': 14.30, 'thetaB': 14.30, 'thetaC': 9.08},
-    'CH4': {'sigma': 12, 'thetaA': 7.60, 'thetaB': 7.600, 'thetaC': 7.60},
-    'CCl4': {'sigma': 12, 'thetaA': 0.0826, 'thetaB': 0.0826, 'thetaC': 0.0826},
+    'H2O': {'sigma': 2, 'theta': (40.40, 21.10, 13.5)},
+    'D2O': {'sigma': 2, 'theta': (22.49, 10.56, 6.70)},
+    'H2S': {'sigma': 2, 'theta': (15.10, 13.09, 6.89)},
+    'SO2': {'sigma': 2, 'theta': (3.270, 0.550, 0.47)},
+    'NH3': {'sigma': 3, 'theta': (14.30, 14.30, 9.08)},
+    'CH4': {'sigma': 12, 'theta': (7.60, 7.600, 7.60)},
+    'CCl4': {'sigma': 12, 'theta': (0.0826, 0.0826, 0.0826)},
 }
 
 # vibration temperature
