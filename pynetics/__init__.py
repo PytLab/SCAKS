@@ -3,7 +3,7 @@ from math import exp, pi
 
 from functions import *
 from errors.error import *
-from .database.thermo_data import kB_J, kB_eV, h_eV
+from .database.thermo_data import kB_J, kB_eV, kB_eV, h_eV
 
 
 __version__ = '0.0.2'
@@ -119,12 +119,12 @@ class KineticCoreComponent(ModelShell):
         T: thermodynamics constants, floats.
         '''
 
-        kTST = kB_eV*T/h_eV*exp(Ga)
+        kTST = kB_eV*T/h_eV*exp(Ga/(kB_eV*T))
 
         return kTST
 
     @staticmethod
-    def get_kCT(Ea, Auc, Ast, p, m, f, T):
+    def get_kCT(Ea, Auc, act_ratio, p, m, T, f=1.0):
         '''
         Function to get rate constant/collision rate according to Collision Theory.
 
@@ -134,7 +134,7 @@ class KineticCoreComponent(ModelShell):
 
         Auc: area of unitcell (m^-2), float.
 
-        Ast: area of active sites (m^-2), float.
+        act_ratio: area of active sites/area of unitcell, float(<= 1.0).
 
         p: partial pressure of gas, float.
 
@@ -142,16 +142,19 @@ class KineticCoreComponent(ModelShell):
 
         f: factor accounts for a further reduction in the sticking probability,
            if particle with certain initial states are not efficiently steered
-           along the MEP, and reflected by a higher barrier, float.
+           along the MEP, and reflected by a higher barrier, float(<= 1.0).
 
         T: temperature (K), float.
         '''
         # check parameters
-        if Auc < Ast:
-            msg = 'Unitcell area(Auc) must be larger than active area(Ast).'
+        if act_ratio > 1.0:
+            msg = 'active area ratio must be less than 1.0'
+            raise ParameterError(msg)
+        if f > 1.0:
+            msg = 'factor f must be less than 1.0'
             raise ParameterError(msg)
 
-        S = f*(Ast/Auc)*exp(-Ea/(kB_J*T))      # sticking coefficient
+        S = f*act_ratio*exp(-Ea/(kB_eV*T))      # sticking coefficient
         kCT = S*(p*Auc)/(sqrt(2*pi*m*kB_J*T))  # rate
 
         return kCT
