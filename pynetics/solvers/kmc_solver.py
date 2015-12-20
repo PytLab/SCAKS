@@ -1,9 +1,20 @@
 import logging
 from math import exp
 
+try:
+    from KMCLib import *
+except ImportError:
+    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    print "!!!                                                   !!!"
+    print "!!!          WARNING: KMCLib is not installed         !!!"
+    print "!!! Any kMC calculation using KMCLib will be disabled !!!"
+    print "!!!                                                   !!!"
+    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+
 from .. import KineticCoreComponent
 from ..errors.error import *
 from ..database.thermo_data import kB_eV
+from ..database.lattice_data import *
 
 
 class KMCSolver(KineticCoreComponent):
@@ -270,3 +281,66 @@ class KMCSolver(KineticCoreComponent):
         R = self.get_kTST(Ga, T)
 
         return R
+
+
+class KMCLibSolver(KMCSolver):
+    def __init__(self, owner):
+        '''
+        Class for kinetic Monte Carlo simulation process using KMCLib.
+        '''
+        KMCSolver.__init__(self, owner)
+
+        # set logger
+        self.logger = logging.getLogger('model.solvers.KMCLibSolver')
+
+    def get_elementary_processes(self, elementary_rxn_list):
+        '''
+        Function to get KMCLib processes for an elementary reaction.
+        '''
+        rxn_expression = self.elementary_rxn_list2str(elementary_rxn_list)
+        self.logger.info('getting process for [ %s ]', rxn_expression)
+
+        # get center site and neighbors coordinates
+        grid_type = self._owner.grid_type
+        if grid_type not in grid_neighbor_offsets:
+            raise GridTypeError('Unsupported grid type [ %s ]' % grid_type)
+        neighbor_offsets = grid_neighbor_offsets[grid_type]
+        coordinates = [(0.0, 0.0, 0.0)]
+        coordinates.extend(neighbor_offsets)
+
+        # get rate constants
+        kf, kr = self.get_elementary_rate(elementary_rxn_list)
+
+        # get elements changes
+        get_elements_changes = self._owner.parser.get_elementary_elements_changes
+
+        def get_single_direction_processes(elementary_rxn_list):
+            ''' get single direction process objects '''
+            elements_changes = get_elements_changes(elementary_rxn_list)
+            processes = []
+            for elements_change in elements_changes:
+                elements_before, elements_after = elements_change
+                self.logger.info('%s -> %s',
+                                 str(elements_before),
+                                 str(elements_after))
+                p = KMCProcess(coordinates=coordinates,
+                               elements_before=elements_before,
+                               elements_after=elements_after,
+                               basis_sites=[0],
+                               rate_constant=kf)
+                processes.append(p)
+
+            return processes
+
+        # forward direction
+        self.logger.info('instantiating forward reaction processes...')
+        fprocesses = get_single_direction_processes(elementary_rxn_list)
+
+        # reversed direction
+        self.logger.info('instantiating reversed reaction processes...')
+        elementary_rxn_list.reverse()
+        rprocesses = get_single_direction_processes(elementary_rxn_list)
+
+        processes = fprocesses + rprocesses
+
+        return processes
