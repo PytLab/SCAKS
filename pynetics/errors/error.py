@@ -57,3 +57,9 @@ class ElementSearchingError(Error):
 class ReactionEquationError(Error):
     ''' Class for errors in reaction equations.'''
     pass
+
+
+# solvers errors
+class GridTypeError(Error):
+    ''' Class for errors in grid type of lattice. '''
+    pass

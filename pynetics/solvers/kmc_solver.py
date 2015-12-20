@@ -1,9 +1,20 @@
 import logging
 from math import exp
 
+try:
+    from KMCLib import *
+except ImportError:
+    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    print "!!!                                                   !!!"
+    print "!!!          WARNING: KMCLib is not installed         !!!"
+    print "!!! Any kMC calculation using KMCLib will be disabled !!!"
+    print "!!!                                                   !!!"
+    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+
 from .. import KineticCoreComponent
 from ..errors.error import *
 from ..database.thermo_data import kB_eV
+from ..database.lattice_data import *
 
 
 class KMCSolver(KineticCoreComponent):
@@ -38,8 +49,10 @@ class KMCSolver(KineticCoreComponent):
         >>> (2262.3375403296886, 0.022775493982398507)
 
         '''
-        self.logger.info('getting elementary reaction rates for %s',
-                         str(elementary_rxn_list))
+        rxn_expression = self.elementary_rxn_list2str(elementary_rxn_list)
+
+        self.logger.info('getting elementary reaction rates for [ %s ]',
+                         rxn_expression)
         # check input validity
         try:
             idx = self._owner.elementary_rxns_list.index(elementary_rxn_list)
@@ -130,18 +143,20 @@ class KMCSolver(KineticCoreComponent):
 
         Ea: elementary reaction enengy barrier, float
         '''
-        self.logger.info('getting forward rate for %s', str(elementary_rxn_list))
+        rxn_expression = self.elementary_rxn_list2str(elementary_rxn_list)
+
+        self.logger.info('getting forward rate for [ %s ]', rxn_expression)
         reactants = elementary_rxn_list[0]
 
         gas_name = self.extract_gas_name(reactants)
 
         if gas_name:
-            self.logger.info('%s is adsorption process, use Collision Theory.',
-                             str(elementary_rxn_list))
+            self.logger.info('[ %s ] is adsorption process, use Collision Theory.',
+                             rxn_expression)
             Rf = self.get_adsorption_rate(gas_name, Ea)
         else:
-            self.logger.info('%s is not adsorption process, use TST.',
-                             str(elementary_rxn_list))
+            self.logger.info('[ %s ] is not adsorption process, use TST.',
+                             rxn_expression)
             Rf = self.get_reaction_rate(Ea)
 
         return Rf
@@ -170,7 +185,8 @@ class KMCSolver(KineticCoreComponent):
         >>> 0.022775493982398507
 
         '''
-        self.logger.info('getting reversed rate for %s', str(elementary_rxn_list))
+        rxn_expression = self.elementary_rxn_list2str(elementary_rxn_list)
+        self.logger.info('getting reversed rate for [ %s ]', rxn_expression)
 
         Ear = Ea - dE  # reversed reaction barrier
         reactants = elementary_rxn_list[0]
@@ -178,13 +194,13 @@ class KMCSolver(KineticCoreComponent):
         is_desorption = self.check_gas_participating(reactants)
         if is_desorption:
             # use balance condition
-            self.logger.info('%s is adsorption process, use balance condition.',
-                             str(elementary_rxn_list))
+            self.logger.info('[ %s ] is adsorption process, use balance condition.',
+                             rxn_expression)
             gas_name = self.extract_gas_name(reactants)
             Rr = self.get_desorption_rate(gas_name, dE, free_energy=free_energy)
         else:
-            self.logger.info('%s is not adsorption process, reverse reaction equation ' +
-                             'and get forward rate of it', str(elementary_rxn_list))
+            self.logger.info('[ %s ] is not adsorption process, reverse reaction equation ' +
+                             'and get forward rate of it', rxn_expression)
             reversed_rxn_list = list(reversed(elementary_rxn_list))
             Rr = self.get_forward_rate(reversed_rxn_list, Ear)
 
@@ -270,3 +286,74 @@ class KMCSolver(KineticCoreComponent):
         R = self.get_kTST(Ga, T)
 
         return R
+
+
+class KMCLibSolver(KMCSolver):
+    def __init__(self, owner):
+        '''
+        Class for kinetic Monte Carlo simulation process using KMCLib.
+        '''
+        KMCSolver.__init__(self, owner)
+
+        # set logger
+        self.logger = logging.getLogger('model.solvers.KMCLibSolver')
+
+    def get_elementary_processes(self, elementary_rxn_list):
+        '''
+        Function to get KMCLib processes for an elementary reaction.
+
+        Parameters:
+        -----------
+        elementary_rxn_list: elementary reaction states list, list of lists of str.
+
+        Returns:
+        --------
+        processes: list of KMCLib.Processe object
+        '''
+        rxn_expression = self.elementary_rxn_list2str(elementary_rxn_list)
+        self.logger.info('getting process for [ %s ]', rxn_expression)
+
+        # get center site and neighbors coordinates
+        grid_type = self._owner.grid_type
+        if grid_type not in grid_neighbor_offsets:
+            raise GridTypeError('Unsupported grid type [ %s ]' % grid_type)
+        neighbor_offsets = grid_neighbor_offsets[grid_type]
+        coordinates = [(0.0, 0.0, 0.0)]
+        coordinates.extend(neighbor_offsets)
+
+        # get rate constants
+        kf, kr = self.get_elementary_rate(elementary_rxn_list)
+
+        # get elements changes
+        get_elements_changes = self._owner.parser.get_elementary_elements_changes
+
+        def get_single_direction_processes(elementary_rxn_list):
+            ''' get single direction process objects '''
+            elements_changes = get_elements_changes(elementary_rxn_list)
+            processes = []
+            for elements_change in elements_changes:
+                elements_before, elements_after = elements_change
+                self.logger.info('%s -> %s',
+                                 str(elements_before),
+                                 str(elements_after))
+                p = KMCProcess(coordinates=coordinates,
+                               elements_before=elements_before,
+                               elements_after=elements_after,
+                               basis_sites=[0],
+                               rate_constant=kf)
+                processes.append(p)
+
+            return processes
+
+        # forward direction
+        self.logger.info('instantiating forward reaction processes...')
+        fprocesses = get_single_direction_processes(elementary_rxn_list)
+
+        # reversed direction
+        self.logger.info('instantiating reversed reaction processes...')
+        elementary_rxn_list.reverse()
+        rprocesses = get_single_direction_processes(elementary_rxn_list)
+
+        processes = fprocesses + rprocesses
+
+        return processes

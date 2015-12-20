@@ -91,6 +91,19 @@ class ModelShell(object):
                 with open(self._owner.data_file, 'wb') as f:
                     cPickle.dump(self.archived_data_dict, f)
 
+    def elementary_rxn_list2str(self, elementary_rxn_list):
+        '''
+        Convert elementary_rxn_list to rxn_expression.
+        '''
+        try:
+            idx = self._owner.elementary_rxns_list.index(elementary_rxn_list)
+        except ValueError:
+            raise ReactionEquationError('%s is not in elementary_rxns_list' %
+                                        str(elementary_rxn_list))
+        rxn_expression = self._owner.rxn_expressions[idx]
+
+        return rxn_expression
+
     @staticmethod
     def write2file(filename, line):
         f = open(filename, 'a')
