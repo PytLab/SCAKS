@@ -52,3 +52,7 @@ class SpeciesError(Error):
 class ElementSearchingError(Error):
     ''' Class for errors of element info searching in database. '''
     pass
+
+
+class ReactionEquationError(Error):
+    ''' Class for errors in reaction equations.'''
