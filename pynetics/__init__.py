@@ -1,5 +1,5 @@
 import cPickle
-from math import exp, pi
+from math import exp, pi, sqrt
 
 from functions import *
 from errors.error import *
@@ -119,7 +119,7 @@ class KineticCoreComponent(ModelShell):
         T: thermodynamics constants, floats.
         '''
 
-        kTST = kB_eV*T/h_eV*exp(Ga/(kB_eV*T))
+        kTST = kB_eV*T/h_eV*exp(-Ga/(kB_eV*T))
 
         return kTST
 
