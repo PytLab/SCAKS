@@ -688,6 +688,8 @@ class ParserBase(ModelShell):
         --------
         >>> m.parser.get_molecular_mass('CH4')
         >>> 16.04246
+        >>> m.parser.get_molecular_mass('CH4', absolute=True)
+        >>> 2.6639131127638393e-26
         '''
         elements = string2symbols(species_name)
 
