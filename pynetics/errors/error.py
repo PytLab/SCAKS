@@ -56,3 +56,4 @@ class ElementSearchingError(Error):
 
 class ReactionEquationError(Error):
     ''' Class for errors in reaction equations.'''
+    pass
