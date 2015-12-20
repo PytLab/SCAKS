@@ -159,6 +159,8 @@ class KMCSolver(KineticCoreComponent):
                              rxn_expression)
             Rf = self.get_reaction_rate(Ea)
 
+        self.logger.info('Rf = %.3e', Rf)
+
         return Rf
 
     def get_reversed_rate(self, elementary_rxn_list, Ea, dE, free_energy=False):
@@ -203,6 +205,8 @@ class KMCSolver(KineticCoreComponent):
                              'and get forward rate of it', rxn_expression)
             reversed_rxn_list = list(reversed(elementary_rxn_list))
             Rr = self.get_forward_rate(reversed_rxn_list, Ear)
+
+        self.logger.info('Rr = %.3e', Rr)
 
         return Rr
 
