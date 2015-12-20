@@ -11,8 +11,60 @@ kB_eV = 8.6173324e-5   # eV/K
 h_J = 6.626070040e-34   # J s
 h_eV = 4.135667662e-15  # eV s
 
+# statistic thermodynamics data
+# Tien C L, Lienhard J H. Statistical Thermodynamics, 1979, p178
 
-#Define default shomate parameters
+# rotation and vibration temperature
+rotation_temperatures = {
+    # linear molecules
+    'H2' : {'sigma': 2., 'theta': (87.500, )},
+    'D2' : {'sigma': 2., 'theta': (43.800, )},
+    'N2' : {'sigma': 2., 'theta': (2.8900, )},
+    'O2' : {'sigma': 2., 'theta': (2.0800, )},
+    'Cl2': {'sigma': 2., 'theta': (0.3510, )},
+    'Br2': {'sigma': 2., 'theta': (0.1160, )},
+    'I2' : {'sigma': 2., 'theta': (0.0537, )},
+    'CO' : {'sigma': 1., 'theta': (2.7800, )},
+    'NO' : {'sigma': 1., 'theta': (2.4500, )},
+    'HCl': {'sigma': 1., 'theta': (15.200, )},
+    'HBr': {'sigma': 1., 'theta': (12.200, )},
+    'HI' : {'sigma': 1., 'theta': (9.4300, )},
+    'CO2': {'sigma': 2., 'theta': (0.6600, )},
+    'CS2': {'sigma': 2., 'theta': (0.0643, )},
+    'N2O': {'sigma': 1., 'theta': (0.6100, )},
+
+    # nonlinear molecules
+    'H2O': {'sigma': 2., 'theta': (40.40, 21.10, 13.5)},
+    'D2O': {'sigma': 2., 'theta': (22.49, 10.56, 6.70)},
+    'H2S': {'sigma': 2., 'theta': (15.10, 13.09, 6.89)},
+    'SO2': {'sigma': 2., 'theta': (3.270, 0.550, 0.47)},
+    'NH3': {'sigma': 3., 'theta': (14.30, 14.30, 9.08)},
+    'CH4': {'sigma': 12., 'theta': (7.60, 7.600, 7.60)},
+    'CCl4': {'sigma': 12., 'theta': (0.0826, 0.0826, 0.0826)},
+}
+
+# vibration temperature
+vibration_temperatures = {
+    # diatomic molecule
+    'H2': (6320.0, ),
+    'N2': (3390.0, ),
+    'O2': (2278.0, ),
+    'CO': (3120.0, ),
+    'HCl': (4330.0, ),
+    'I2': (309.0, ),
+    'NO': (2745.0, ),
+
+    # polyatomic molecule
+    'CO2': (954.0, 1890.0, 3360.0),
+    'N2O': (850.0, 1840.0, 3200.0),
+    'C2H2': (911.0, 1044.0, 2820.0, 4690.0, 4830.0),
+    'H2O': (2290.0, 5160.0, 5360.0),
+    'NH3': (1360.0, 2330.0, 4780.0, 4880.0),
+    'CH4': (1870.0, 2180.0, 4170.0, 4320.0),
+    'CHCl3': (374.0, 523.0, 938.0, 1090.0, 1745.0, 4330.0)
+}
+
+# Define default shomate parameters
 shomate_params = {}
 shomate_params['H2_g:298-1000'] = [
     33.066178, -11.363417, 11.432816, -2.772874,

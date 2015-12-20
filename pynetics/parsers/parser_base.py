@@ -4,6 +4,8 @@ import numpy as np
 
 from pynetics import ModelShell
 from pynetics.functions import *
+from ..errors.error import *
+from ..database.elements_data import *
 
 
 class ParserBase(ModelShell):
@@ -276,7 +278,10 @@ class ParserBase(ModelShell):
         {'CH3_s': {'number': 2, 'site': 's', 'elements': {'C': 1, 'H':3}}}
         """
         m = self._owner.regex_dict['species'][0].search(species_expression)
-        #['stoichiometry','name','site']
+        # match check
+        if not m:
+            raise SpeciesError('Matching failure for [ %s ]' % species_expression)
+
         if m.group(1):
             stoichiometry = int(m.group(1))
         else:
@@ -668,3 +673,36 @@ class ParserBase(ModelShell):
         self._owner.related_adsorbate_names = related_adsorbate_names
 
         return related_adsorbates
+
+    def get_molecular_mass(self, species_name, absolute=False):
+        '''
+        Function to get relative/absolute molecular mass.
+
+        Parameters:
+        -----------
+        species_name: name of the molecule species, str.
+
+        absolute: return absolute mass or not(default), bool.
+
+        Example:
+        --------
+        >>> m.parser.get_molecular_mass('CH4')
+        >>> 16.04246
+        >>> m.parser.get_molecular_mass('CH4', absolute=True)
+        >>> 2.6639131127638393e-26
+        '''
+        elements = string2symbols(species_name)
+
+        # get molecular total relative mass
+        molecular_mass = 0.0
+        for element in elements:
+            if not element in chem_elements:
+                msg = 'Element [ %s ] not in database' % element
+                raise ElementSearchingError(msg)
+            element_mass = chem_elements[element]['mass']
+            molecular_mass += element_mass
+
+        if absolute:
+            return amu*molecular_mass
+        else:
+            return molecular_mass
