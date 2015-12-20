@@ -147,6 +147,7 @@ class ThermodynamicCorrector(CorrectorBase):
         # rotation partition function
         sigma = rotation_temperatures[species_name]['sigma']
         thetas = rotation_temperatures[species_name]['theta']
+
         # linear molecule
         if len(thetas) == 1:
             theta, = thetas
@@ -166,6 +167,7 @@ class ThermodynamicCorrector(CorrectorBase):
 
         # vibration partition functions
         thetas = vibration_temperatures[species_name]
+
         # linear molecule
         if len(thetas) == 1:
             theta, = thetas
