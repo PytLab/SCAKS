@@ -6,7 +6,7 @@ from errors.error import *
 from .database.thermo_data import kB_J, kB_eV, kB_eV, h_eV
 
 
-__version__ = '0.0.2'
+__version__ = '0.3.0'
 
 #-------------------------------------------------------
 # Some base classes for kinetic model are defined below |
