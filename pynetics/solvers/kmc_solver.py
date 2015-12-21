@@ -300,16 +300,105 @@ class KMCSolver(KineticCoreComponent):
 
         return R
 
+#--------------------------------------------------------------#
+#                KMC Solver class using KMCLib                 #
+#--------------------------------------------------------------#
+
 
 class KMCLibSolver(KMCSolver):
     def __init__(self, owner):
         '''
         Class for kinetic Monte Carlo simulation process using KMCLib.
         '''
+
         KMCSolver.__init__(self, owner)
 
         # set logger
         self.logger = logging.getLogger('model.solvers.KMCLibSolver')
+
+    def run(self,
+            scripting=True,
+            analysis=None,
+            trajectory_filename='trajectory.py'):
+        '''
+        Run the KMC lattice model simulation with specified parameters.
+
+        Parameters:
+        -----------
+        scripting: generate lattice script or not, True by default, bool.
+
+        analysis: a list of instantiated analysis objects that
+                  should be used for on-the-fly analysis, list.
+
+        trajectory_filename: The filename of the trajectory. If not given
+                            no trajectory will be saved, str.
+        '''
+        # get KMCLib KMCControlParameters object
+        control_parameters = self.get_control_parameters()
+        # get KMCLib KMCLatticeModel object
+        model = self.get_lattice_model()
+
+        if scripting:
+            self.script_lattice_model('kmc_model.py')
+            self.logger.info('script kmc_model.py created.')
+
+        # run KMC main loop
+        model.run(control_parameters=control_parameters,
+                  trajectory_filename=trajectory_filename,
+                  trajectory_type='lattice',
+                  analysis=analysis)
+
+    def get_lattice_model(self):
+        '''
+        Function to get KMCLib KMCLatticeModel object.
+        '''
+        # KMCLib configuration object
+        configuration = self.initialize_configuration()
+        # KMCLib interactions object
+        interactions = self.get_interactions()
+        # KMCLib model object
+        model = KMCLatticeModel(configuration, interactions)
+
+        return model
+
+    def initialize_configuration(self):
+        '''
+        Method to initializing a KMCLib Configuration object.
+        '''
+        # get lattice unit cell basis
+        grid_type = self._owner.grid_type.strip().lower()
+        cell_vectors = lattice_cell_vectors[grid_type]
+
+        # basis point of unit cell
+        basis_points = [[0.0, 0.0, 0.0]]
+
+        # KMCLib Unitcell instantiation
+        unit_cell = KMCUnitCell(cell_vectors=cell_vectors,
+                                basis_points=basis_points)
+
+        # KMCLib Lattice instantiation
+        repetition = self._owner.grid_shape + (1, )
+        pbc = self._owner.pbc
+        if pbc:
+            periodic = (True, True, False)
+        else:
+            periodic = (False, False, False)
+        lattice = KMCLattice(unit_cell=unit_cell,
+                             repetitions=repetition,
+                             periodic=periodic)
+
+        # initialize elements types
+        nsite = reduce(lambda x, y: x*y, repetition)
+        types = ['Vac']*nsite
+        adsorbate_names = [ads.split('_')[0] for ads in self._owner.adsorbate_names]
+        possible_types = adsorbate_names + ['Vac']
+
+        # KMCLib configuration instantiation
+        configuration = KMCConfiguration(lattice=lattice,
+                                         types=types,
+                                         possible_types=possible_types)
+
+        return configuration
 
     def get_interactions(self):
         '''
@@ -322,73 +411,22 @@ class KMCLibSolver(KMCSolver):
 
         return interactions
 
-    def script_interactions(self, script_name=None):
+    def get_control_parameters(self):
         '''
-        Generate a script representation of interactions instances.
-
-        Parameters:
-        -----------
-        script_name: filename into which script written, str.
-                     set to None by default and no file will be generated.
-
-        Returns:
-        --------
-        A script that can generate this interactions object, str.
-
+        Function to get KMCLib KMCControlParameters instance.
         '''
-        proc_content = self.script_processes()
+        # get parameters in model
+        nstep = self._owner.nstep
+        dump_interval = self._owner.dump_interval
+        seed = self._owner.seed
 
-        # get interactions instantiating string
-        content = (proc_content +
-                   'interactions = KMCInteractions(\n' +
-                   ' '*4 + 'processes=processes,\n' +
-                   ' '*4 + 'implicit_wildcards=True)\n\n')
+        # KMCLib control parameter instantiation
+        control_parameters = KMCControlParameters(
+            number_of_steps=nstep,
+            dump_interval=dump_interval,
+            seed=seed)
 
-        if script_name:
-            script_name += 'auto_'
-            with open(script_name, 'w') as f:
-                f.write(content)
-            self.logger.info('interactions script written to %s', script_name)
-
-        return content
-
-    def script_processes(self, script_name=None):
-        '''
-        Generate a script representation of processes instances.
-
-        Parameters:
-        -----------
-        script_name: filename into which script written, str.
-                     set to None by default and no file will be generated.
-
-        Returns:
-        --------
-        A script that can generate this process object, str.
-
-        '''
-        # get processes objects
-        processes = self.get_processes()
-
-        # get content string
-        content = self.script_header + 'from KMCLib import *\n\n'
-        for idx, proc in enumerate(processes):
-            proc_str = proc._script('process_%d' % idx)
-            content += proc_str
-        # gather processes
-        proc_str = 'processes = [\n'
-        for idx in xrange(len(processes)):
-            proc_str += (' '*4 + 'process_%d,\n' % idx)
-        proc_str += ']\n\n'
-
-        content += proc_str
-
-        if script_name:
-            script_name += 'auto_'
-            with open(script_name, 'w') as f:
-                f.write(content)
-            self.logger.info('processes script written to %s', script_name)
-
-        return content
+        return control_parameters
 
     def get_processes(self):
         '''
@@ -475,3 +513,120 @@ class KMCLibSolver(KMCSolver):
         coordinates.extend(neighbor_offsets)
 
         return coordinates
+
+    #-----------------------
+    # script KMCLib objects |
+    #-----------------------
+
+    def script_decorator(func):
+        '''
+        Decorator for KMCLib objects scripting.
+        Add some essential import statements and save operation.
+        '''
+        def wrapper(self, script_name=None):
+            content = self.script_header + 'from KMCLib import *\n\n'
+            content += func(self, script_name)
+
+            # write to file
+            if script_name:
+                script_name = 'auto_' + script_name
+                with open(script_name, 'w') as f:
+                    f.write(content)
+                self.logger.info('interactions script written to %s', script_name)
+
+            return content
+
+        return wrapper
+
+    @script_decorator
+    def script_lattice_model(self, script_name=None):
+        '''
+        Generate a script representation of lattice model instances.
+
+        Parameters:
+        -----------
+        script_name: filename into which script written, str.
+                     set to None by default and no file will be generated.
+
+        Returns:
+        --------
+        A script that can generate this lattice model object, str.
+
+        '''
+        lattice_model = self.get_lattice_model()
+        content = lattice_model._script()
+
+        return content
+
+    @script_decorator
+    def script_configuration(self, script_name=None):
+        '''
+        Generate a script representation of interactions instances.
+
+        Parameters:
+        -----------
+        script_name: filename into which script written, str.
+                     set to None by default and no file will be generated.
+
+        Returns:
+        --------
+        A script that can generate this configuration object, str.
+
+        '''
+        configuration = self.initialize_configuration()
+        content = configuration._script()
+
+        return content
+
+    @script_decorator
+    def script_interactions(self, script_name=None):
+        '''
+        Generate a script representation of interactions instances.
+
+        Parameters:
+        -----------
+        script_name: filename into which script written, str.
+                     set to None by default and no file will be generated.
+
+        Returns:
+        --------
+        A script that can generate this interactions object, str.
+
+        '''
+        interactions = self.get_interactions()
+        content = interactions._script()
+
+        return content
+
+    @script_decorator
+    def script_processes(self, script_name=None):
+        '''
+        Generate a script representation of processes instances.
+
+        Parameters:
+        -----------
+        script_name: filename into which script written, str.
+                     set to None by default and no file will be generated.
+
+        Returns:
+        --------
+        A script that can generate this process object, str.
+
+        '''
+        # get processes objects
+        processes = self.get_processes()
+
+        # get content string
+        content = ''
+        for idx, proc in enumerate(processes):
+            proc_str = proc._script('process_%d' % idx)
+            content += proc_str
+        # gather processes
+        proc_str = 'processes = [\n'
+        for idx in xrange(len(processes)):
+            proc_str += (' '*4 + 'process_%d,\n' % idx)
+        proc_str += ']\n\n'
+
+        content += proc_str
+
+        return content
