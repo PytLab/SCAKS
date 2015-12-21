@@ -95,12 +95,27 @@ class ModelShell(object):
         '''
         Convert elementary_rxn_list to rxn_expression.
         '''
-        try:
-            idx = self._owner.elementary_rxns_list.index(elementary_rxn_list)
-        except ValueError:
-            raise ReactionEquationError('%s is not in elementary_rxns_list' %
-                                        str(elementary_rxn_list))
-        rxn_expression = self._owner.rxn_expressions[idx]
+#        try:
+#            idx = self._owner.elementary_rxns_list.index(elementary_rxn_list)
+#        except ValueError:
+#            raise ReactionEquationError('%s is not in elementary_rxns_list' %
+#                                        str(elementary_rxn_list))
+#        rxn_expression = self._owner.rxn_expressions[idx]
+
+        def state2str(state):
+            return ' + '.join(state)
+
+        state_strs = []
+        for state in elementary_rxn_list:
+            state_str = state2str(state)
+            state_strs.append(state_str)
+
+        if len(state_strs) == 3:
+            IS, TS, FS = state_strs
+            rxn_expression = IS + ' <-> ' + TS + ' -> ' + FS
+        elif len(state_strs) == 2:
+            IS, FS = state_strs
+            rxn_expression = IS + ' -> ' + FS
 
         return rxn_expression
 
