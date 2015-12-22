@@ -31,8 +31,8 @@ class ModelShell(object):
         -----------
         species_str: species string, e.g. '2CH4_g', str
         '''
-
-        if not '*' in species_str:  # for species adsorbated on surface
+        # for species adsorbated on surface
+        if not '*' in species_str:
             m = self._owner.regex_dict['species'][0].search(species_str)
 
             # check successful match or not
@@ -46,7 +46,9 @@ class ModelShell(object):
                 stoichiometry = int(m.group(1))
             species_name = m.group(2) + '_' + m.group(3) + m.group(4)
             return stoichiometry, species_name
-        else:  # for site
+
+        # for site
+        else:
             m = self._owner.regex_dict['empty_site'][0].search(species_str)
             if not m.group(1):
                 stoichiometry = 1
