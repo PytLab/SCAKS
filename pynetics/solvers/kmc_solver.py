@@ -470,7 +470,7 @@ class KMCLibSolver(KMCSolver):
         # get elements changes
         get_elements_changes = self._owner.parser.get_elementary_elements_changes
 
-        def get_single_direction_processes(elementary_rxn_list):
+        def get_single_direction_processes(elementary_rxn_list, k):
             ''' get single direction process objects '''
             elements_changes = get_elements_changes(elementary_rxn_list)
             processes = []
@@ -483,19 +483,19 @@ class KMCLibSolver(KMCSolver):
                                elements_before=elements_before,
                                elements_after=elements_after,
                                basis_sites=[0],
-                               rate_constant=kf)
+                               rate_constant=k)
                 processes.append(p)
 
             return processes
 
         # forward direction
         self.logger.info('instantiating forward reaction processes...')
-        fprocesses = get_single_direction_processes(elementary_rxn_list)
+        fprocesses = get_single_direction_processes(elementary_rxn_list, kf)
 
         # reversed direction
         self.logger.info('instantiating reversed reaction processes...')
         reversed_rxn_list = list(reversed(elementary_rxn_list))
-        rprocesses = get_single_direction_processes(reversed_rxn_list)
+        rprocesses = get_single_direction_processes(reversed_rxn_list, kr)
 
         processes = fprocesses + rprocesses
 
