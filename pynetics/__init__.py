@@ -3,10 +3,10 @@ from math import exp, pi, sqrt
 
 from functions import *
 from errors.error import *
-from .database.thermo_data import kB_J, kB_eV, kB_eV, h_eV
+from .database.thermo_data import kB_J, kB_eV, h_eV
 
 
-__version__ = '0.3.0'
+__version__ = '0.3.1'
 
 #-------------------------------------------------------
 # Some base classes for kinetic model are defined below |

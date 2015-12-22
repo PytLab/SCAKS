@@ -151,14 +151,14 @@ def plot_grid(shape, types, possible_types, color_dict,
 
     # add lines
     for endpt in endpts:
-        ax.plot(*endpt, color='#ABABAB', linestyle='dashed', linewidth=1.2)
+        ax.plot(*endpt, color='#ABABAB', linestyle='dotted', linewidth=0.2)
 
     # set axes attrs
     ax.set_xlim(0.5, shape[0]+0.5)
     ax.set_ylim(0.5, shape[1]+0.5)
     ax.set_xticks([])
     ax.set_yticks([])
-    ax.set_title('Step = %d   Time = %.2e' % (step, time))
+    ax.set_title('Step = %d   Time = %fs' % (step, time))
 
     return fig
 
@@ -240,9 +240,9 @@ class KMCPlotter(PlotterBase):
                 os.mkdir(path)
             fname = path + str(step)+'.png'
 
-            logging.info('creating %s ...', fname)
+            self.logger.info('creating %s ...', fname)
             fig.savefig(fname)
-            logging.info('Ok.')
+            self.logger.info('Ok.')
 
             # gather pic to generate animated gif
             if PIL_installed:
@@ -252,6 +252,6 @@ class KMCPlotter(PlotterBase):
         # make animated gif
         if PIL_installed:
             gif_name = path + 'traj_movie.gif'
-            logging.info('creating %s ...', gif_name)
+            self.logger.info('creating %s ...', gif_name)
             images2gif.writeGif(gif_name, images, duration=0.2)
-            logging.info('Ok.')
+            self.logger.info('Ok.')
