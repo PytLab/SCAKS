@@ -63,3 +63,8 @@ class ReactionEquationError(Error):
 class GridTypeError(Error):
     ''' Class for errors in grid type of lattice. '''
     pass
+
+
+class FilesError(Error):
+    ''' Class for errors in files. '''
+    pass
