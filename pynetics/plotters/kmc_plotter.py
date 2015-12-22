@@ -158,7 +158,7 @@ def plot_grid(shape, types, possible_types, color_dict,
     ax.set_ylim(0.5, shape[1]+0.5)
     ax.set_xticks([])
     ax.set_yticks([])
-    ax.set_title('Step = %d   Time = %.2e' % (step, time))
+    ax.set_title('Step = %d   Time = %fs' % (step, time))
 
     return fig
 
