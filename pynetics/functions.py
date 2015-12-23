@@ -111,6 +111,10 @@ def get_list_string(var_name, list_obj):
     >>> get_list_string('a', a)
     >>> 'a = [\n    (1, 2, 3),\n    (2, 3, 4),\n]\n\n'
 
+    Called:
+    -------
+    kmc_plugins.CoveragesAnalysis()
+
     '''
     begin = var_name + ' = ['
     indent = ' '*4
@@ -123,7 +127,12 @@ def get_list_string(var_name, list_obj):
         # 5 items a line by default
         if idx % 5 == 0:
             data += ('\n' + indent)
-        data += str(elem) + ', '
+
+        # add single quotes for string
+        if isinstance(elem, str):
+            data += ("'" + elem + "', ")
+        else:
+            data += (str(elem) + ', ')
     end = '\n]\n\n'
 
     content = begin + data + end
