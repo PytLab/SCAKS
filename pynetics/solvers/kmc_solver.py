@@ -420,10 +420,16 @@ class KMCLibSolver(KMCSolver):
         dump_interval = self._owner.dump_interval
         seed = self._owner.seed
 
+        if hasattr(self._owner, 'analysis_interval'):
+            analysis_interval = self._owner.analysis_interval
+        else:
+            analysis_interval = None
+
         # KMCLib control parameter instantiation
         control_parameters = KMCControlParameters(
             number_of_steps=nstep,
             dump_interval=dump_interval,
+            analysis_interval=analysis_interval,
             seed=seed)
 
         return control_parameters
