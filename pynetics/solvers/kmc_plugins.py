@@ -9,6 +9,7 @@ except ImportError:
     print "!!! Any kMC calculation using KMCLib will be disabled !!!"
     print "!!!                                                   !!!"
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+
 from ..functions import get_list_string
 from .. import file_header
 
@@ -37,7 +38,11 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
     '''
     Sub-class of KMCLib KMCAnalysisPlugin to do on-the-fly coverage analysis.
     '''
-    def __init__(self, possible_types):
+    def __init__(self, kinetic_model):
+        # get possible elements type
+        adsorbate_names = [ads.split('_')[0] for ads in
+                           kinetic_model.adsorbate_names]
+        possible_types = adsorbate_names + ['Vac']
         self.possible_types = possible_types
 
         # initialize recorder variables
