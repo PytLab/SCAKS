@@ -4,8 +4,6 @@ import logging
 import numpy as np
 import matplotlib.pyplot as plt
 
-logging.basicConfig(level=logging.INFO)
-
 
 def get_square_circle_pts(nx, ny):
     '''
@@ -15,11 +13,20 @@ def get_square_circle_pts(nx, ny):
 
     Parameters:
     -----------
-    :param nx: The number of circle along x axis.
-    :type nx: int
+    nx: The number of circle along x axis, int
 
-    :param ny: The number of circle along y axis.
-    :type ny: int
+    ny: The number of circle along y axis, int
+
+    Returns:
+    --------
+    map1d: a list of coordinates of grid,
+           from left to right, from bottom to top,
+           list of tuples of int.
+
+    Example:
+    --------
+    >>> get_square_circle_pts(2, 2)
+    >>> [(1, 1), (2, 1), (1, 2), (2, 2)]
     '''
     y, x = np.mgrid[1: nx+1, 1: ny+1]
     # use combination to get circle map
@@ -38,10 +45,23 @@ def get_square_lines_endpts(nx, ny):
 
     Parameters:
     -----------
-    :param nx: The number of circle along x axis.
-    :type nx: int
-    :param ny: The number of circle along y axis.
-    :type ny: int
+    nx: The number of circle along x axis, int
+    ny: The number of circle along y axis, int
+
+    Returns:
+    --------
+    endpts: a list of tuples, contains x and y endpts for a line.
+            e.g. ((0.5, 2.5), (1.0, 1.0)) means x range is 0.5~2.5
+            and y range is 1.0~1.0.
+
+    Example:
+    --------
+    >>> get_square_lines_endpts(2,2)
+    >>> [((0.5, 2.5), (1.0, 1.0)),
+         ((0.5, 2.5), (2.0, 2.0)),
+         ((1.0, 1.0), (0.5, 2.5)),
+         ((2.0, 2.0), (0.5, 2.5))]
+
     '''
     # horizontal and vertical lines end points
     horizontal_endpts = [((0.5, ny+0.5), (float(y), float(y)))
@@ -53,8 +73,6 @@ def get_square_lines_endpts(nx, ny):
     endpts.extend(horizontal_endpts)
     endpts.extend(vertical_endpts)
 
-    # debug
-    logging.debug('line end points = ')
     for endpt in endpts:
         logging.debug(str(endpt))
 
@@ -68,28 +86,22 @@ def plot_grid(shape, types, possible_types, color_dict,
 
     Parameters:
     -----------
-    :param shape: The grid shape.
-    :type shape: tuple of two int.
+    shape: The grid shape, tuple of two int.
 
-    :param types: The site types at the lattice points as a list.
-    :type types: list of strings.
+    types: The site types at the lattice points as a list,
+           list of strings.
 
-    :param possible_types: A list of possible types.
-    :type possible_types: list of strings.
+    possible_types: A list of possible types, list of strings.
 
-    :param color_dict: circle color for different types.
-                       e.g. {type: color_code}
-    :type color_dict: dict.
+    color_dict: circle color for different types.
+                e.g. {type: color_code}, dict.
 
-    :param time: time for the configure.
-    :type time: float.
+    time: time for the configure, float.
 
-    :param grid_type: type of grid, 'square' or 'hexagonal'
-    :type grid_type: str.
+     grid_type: type of grid, 'square' or 'hexagonal', str.
 
-    :param **circle_attrs: same as **kwargs in plt.patch()
-                           (http://matplotlib.org/api/patches_api.html)
-    :type **circle_attrs: dict.
+    circle_attrs: same as **kwargs in plt.patch()
+                  (http://matplotlib.org/api/patches_api.html), dict.
     '''
     if grid_type == 'square':
         get_lines_endpts = get_square_lines_endpts
@@ -123,26 +135,26 @@ def plot_grid(shape, types, possible_types, color_dict,
 
     # add lines
     for endpt in endpts:
-        ax.plot(*endpt, color='#ABABAB', linestyle='dashed', linewidth=1.2)
+        ax.plot(*endpt, color='#ABABAB', linestyle='dotted', linewidth=0.2)
 
     # set axes attrs
     ax.set_xlim(0.5, shape[0]+0.5)
     ax.set_ylim(0.5, shape[1]+0.5)
     ax.set_xticks([])
     ax.set_yticks([])
-    ax.set_title('Step = %d   Time = %.2e' % (step, time))
+    ax.set_title('Step = %d   Time = %fs' % (step, time))
 
     return fig
 
 if __name__ == '__main__':
 
     shape = (10, 10)
-    types = ["O","O","C","O","O","C","O","C","C","C","C","C","C","O","O","C","O","C","C",
-             "C","C","C","C","C","C","C","C","C","O","O","C","C","C","C","C","C","C","C",
-             "C","C","C","O","O","C","C","O","O","C","O","O","C","V","C","C","C","C","C",
-             "C","C","C","C","C","C","C","C","O","O","V","C","C","O","C","C","C","C","C",
-             "C","C","C","O","C","C","C","C","O","O","C","C","O","C","C","C","C","O","O",
-             "C","C","C","O","V"]
+    types = ["O", "O", "C", "O", "O", "C", "O", "C", "C", "C", "C", "C", "C", "O", "O", "C", "O", "C", "C",
+             "C", "C", "C", "C", "C", "C", "C", "C", "C", "O", "O", "C", "C", "C", "C", "C", "C", "C", "C",
+             "C", "C", "C", "O", "O", "C", "C", "O", "O", "C", "O", "O", "C", "V", "C", "C", "C", "C", "C",
+             "C", "C", "C", "C", "C", "C", "C", "C", "O", "O", "V", "C", "C", "O", "C", "C", "C", "C", "C",
+             "C", "C", "C", "O", "C", "C", "C", "C", "O", "O", "C", "C", "O", "C", "C", "C", "C", "O", "O",
+             "C", "C", "C", "O", "V"]
     possible_types = ('V', 'O', 'C')
     color_dict = dict(
         V='#FFFFFF',
