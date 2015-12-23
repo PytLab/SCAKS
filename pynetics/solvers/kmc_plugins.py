@@ -108,12 +108,16 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         cvgs_str = get_list_string('coverages', cvgs)
         times_str = get_list_string('times', self.times)
         steps_str = get_list_string('steps', self.steps)
+        # get possible types
+        possible_types_str = get_list_string('possible_types',
+                                             self.possible_types)
 
         # write to file
-        content = file_header + times_str + steps_str + cvgs_str
+        content = (file_header + times_str + steps_str +
+                   cvgs_str + possible_types_str)
         with open('auto_coverages.py', 'w') as f:
             f.write(content)
 
-        self.logger.info('write coverages info to auto_coverages.py.')
+        self.logger.info('coverages info are wirtten to auto_coverages.py.')
 
         return
