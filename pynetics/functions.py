@@ -93,3 +93,48 @@ def numerical_jacobian(f, x, matrix, num_repr='gmpy', h=1e-10, direction='right'
         for i in xrange(m):
             J[i, j] = Jj[i]
     return J
+
+
+def get_list_string(var_name, list_obj):
+    '''
+    Function to get string format of a list object.
+
+    Parameters:
+    -----------
+    var_name: name of variable, str.
+
+    list_obj: object of variable.
+
+    Example:
+    --------
+    >>> a = [(1,2,3), (2,3,4)]
+    >>> get_list_string('a', a)
+    >>> 'a = [\n    (1, 2, 3),\n    (2, 3, 4),\n]\n\n'
+
+    Called:
+    -------
+    kmc_plugins.CoveragesAnalysis()
+
+    '''
+    begin = var_name + ' = ['
+    indent = ' '*4
+    data = ''
+    for idx, elem in enumerate(list_obj):
+        # if item is iterable, one a line
+        if hasattr(elem, '__iter__'):
+            data += ('\n' + indent + str(elem) + ',')
+            continue
+        # 5 items a line by default
+        if idx % 5 == 0:
+            data += ('\n' + indent)
+
+        # add single quotes for string
+        if isinstance(elem, str):
+            data += ("'" + elem + "', ")
+        else:
+            data += (str(elem) + ', ')
+    end = '\n]\n\n'
+
+    content = begin + data + end
+
+    return content

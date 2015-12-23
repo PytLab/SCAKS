@@ -318,7 +318,6 @@ class KMCLibSolver(KMCSolver):
 
     def run(self,
             scripting=True,
-            analysis=None,
             trajectory_filename='trajectory.py'):
         '''
         Run the KMC lattice model simulation with specified parameters.
@@ -327,20 +326,28 @@ class KMCLibSolver(KMCSolver):
         -----------
         scripting: generate lattice script or not, True by default, bool.
 
-        analysis: a list of instantiated analysis objects that
-                  should be used for on-the-fly analysis, list.
-
         trajectory_filename: The filename of the trajectory. If not given
                             no trajectory will be saved, str.
         '''
         # get KMCLib KMCControlParameters object
         control_parameters = self.get_control_parameters()
+
+        # get analysis objects
+        if hasattr(self._owner, 'analysis') and self._owner.analysis:
+            analysis = []
+            for classname in self._owner.analysis:
+                _module = __import__('kmc_plugins', globals(), locals())
+                analysis_object = getattr(_module, classname)(self._owner)
+                analysis.append(analysis_object)
+        else:
+            analysis = None
+
         # get KMCLib KMCLatticeModel object
         model = self.get_lattice_model()
 
         if scripting:
             self.script_lattice_model('kmc_model.py')
-            self.logger.info('script kmc_model.py created.')
+            self.logger.info('script auto_kmc_model.py created.')
 
         # run KMC main loop
         model.run(control_parameters=control_parameters,
@@ -420,10 +427,16 @@ class KMCLibSolver(KMCSolver):
         dump_interval = self._owner.dump_interval
         seed = self._owner.seed
 
+        if hasattr(self._owner, 'analysis_interval'):
+            analysis_interval = self._owner.analysis_interval
+        else:
+            analysis_interval = None
+
         # KMCLib control parameter instantiation
         control_parameters = KMCControlParameters(
             number_of_steps=nstep,
             dump_interval=dump_interval,
+            analysis_interval=analysis_interval,
             seed=seed)
 
         return control_parameters
