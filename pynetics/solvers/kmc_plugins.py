@@ -219,7 +219,8 @@ class TOFAnalysis(KMCAnalysisPlugin):
         # info output
         self.analysis_counter += 1
         self.logger.info('-------- Entering TOF analysis ( %d ) --------',
-                         self.analysis_counter)
+                         self.anaysis_counter)
+        self.logger.info('collect statistics about possible reaction:')
 
         # get current types
         types = configuration.types()
@@ -279,7 +280,7 @@ class TOFAnalysis(KMCAnalysisPlugin):
         current_tofs = self.append_TOFs()
         self.logger.info('current TOFs = ')
         for tof_list in current_tofs:
-            self.logger.info('    %s', str(tof_list))
+            self.logger.info('%17.10e(+), %e(-)', *tof_list)
         self.logger.info(' ')
 
     def finalize(self):
