@@ -46,3 +46,9 @@ Temporary Items
 .apdisk
 *.png
 *.jpeg
+
+# C
+*.exe
+*.o
+*so
+*.a
