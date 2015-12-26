@@ -155,6 +155,7 @@ class TOFAnalysis(KMCAnalysisPlugin):
         :param configuration: The up to date configuration of the simulation.
         :type configuration: KMCConfiguration
         '''
+        self.logger.info(' ')
         self.logger.info('TOFAnalysis setting up...')
         parser = self.kinetic_model.parser
 
@@ -163,6 +164,7 @@ class TOFAnalysis(KMCAnalysisPlugin):
         elements_changes_list = []
         for idx in self.rxn_indices:
             # output rxn expression info
+            self.logger.info('-'*20)
             rxn_expression = self.kinetic_model.rxn_expressions[idx]
             self.logger.info('[ %s ]', rxn_expression)
 
@@ -178,7 +180,7 @@ class TOFAnalysis(KMCAnalysisPlugin):
             # elements change info output
             self.logger.info('elements changes =')
             for elements_change in elements_changes:
-                self.logger.info('%s', str(elements_change))
+                self.logger.info('    %s', str(elements_change))
 
         # set attrs
         self.rates_list = rates_list
@@ -273,10 +275,12 @@ class TOFAnalysis(KMCAnalysisPlugin):
             self.logger.info('[ %s ] n_forward = %d, n_reversed = %d, dt = %e',
                              rxn_expression, n_forward, n_reversed, dt)
 
-        self.logger.info(' ')
-
         # collect TOFs for this step
-        self.append_TOFs()
+        current_tofs = self.append_TOFs()
+        self.logger.info('current TOFs = ')
+        for tof_list in current_tofs:
+            self.logger.info('    %s', str(tof_list))
+        self.logger.info(' ')
 
     def finalize(self):
         '''
@@ -298,15 +302,20 @@ class TOFAnalysis(KMCAnalysisPlugin):
         with open('auto_TOFs.py', 'w') as f:
             f.write(content)
 
-        self.logger.info('TOFs info are wirtten to auto_TOFs.py.')
+        self.logger.info('TOFs info are written to auto_TOFs.py.')
 
     def append_TOFs(self):
         '''
-        Function to calculate TOF values from statistic number.
+        Function to calculate TOF values from statistic number, and
+        append them to self.TOFs, return current_tofs list.
         '''
+        current_tofs = []
         for idx, rate_list in enumerate(self.total_rates):
             tof_list = [rate/(self.Ntot*self.end_time) for rate in rate_list]
             self.TOFs[idx].append(tof_list)
+            current_tofs.append(tof_list)
+
+        return current_tofs
 
 
 def match_elements_list(types,
