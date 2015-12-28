@@ -52,3 +52,8 @@ Temporary Items
 *.o
 *so
 *.a
+
+# swig auto-generated files
+*_wrap.c
+pynetics/solvers/plugin_backends/data.py
+plugin_backends.py

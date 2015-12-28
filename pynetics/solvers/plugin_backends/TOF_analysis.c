@@ -2,11 +2,8 @@
 
 int main(void)
 {
-    char * elements_list[2][2] = {
-        {"CO", "O"},
-        {"CO", "O"}
-    };
-    float coordinates_list[2][2][3] = {
+    char * elements_list[4] = {"CO", "O", "CO", "O"};
+    double coordinates_list[2][2][3] = {
         {{0.0, 0.0, 0.0},
          {0.0, 1.0, 0.0}},
         {{0.0, 0.0, 0.0},
@@ -30,13 +27,14 @@ int main(void)
     int grid_shape[2] = {10, 10};
     int n_success;
 
-    n_success = match_elements_list(types, 2, 2, elements_list, coordinates_list, grid_shape);
+    n_success = match_elements_list(types, 2, 2, elements_list,
+                                    2, 2, 3,
+                                    coordinates_list, grid_shape);
 
     printf("n_success = %d\n", n_success);
 
     return 0;
 }
-
 
 /**************************************************************
   * Function   : match_elements
@@ -59,20 +57,19 @@ int main(void)
 
   * Date  : 2015.12.26
 ***************************************************************/
-int match_elements(char ** types, int n_local,
-                   char ** elements, 
-                   float (*coordinates)[3],
-                   const int * grid_shape)
+int match_elements(char ** types, char ** elements,
+                   int nlocal, int ncomp, double coordinates[nlocal][ncomp],
+                   const int grid_shape[2])
 {
-    int nrow, ncol;            // grid shape, number rows and columns
-    int n_success;             // number of successful matching
-    int i, j;                  // counters for row and column
-    int ilocal;                // counter for local elements
-    bool match_fail;           // matching failure ?
-    float x_offset, y_offset;  // position offset vector
-    int x, y;                  // offseted coordinates components
-    int idx;                   // index of types
-    char element[STRLEN];      // element type
+    int nrow, ncol;             // grid shape, number rows and columns
+    int n_success;              // number of successful matching
+    int i, j;                   // counters for row and column
+    int ilocal;                 // counter for local elements
+    bool match_fail;            // matching failure ?
+    double x_offset, y_offset;  // position offset vector
+    int x, y;                   // offseted coordinates components
+    int idx;                    // index of types
+    char element[STRLEN];       // element type
 
     nrow = grid_shape[0];
     ncol = grid_shape[1];
@@ -83,7 +80,7 @@ int match_elements(char ** types, int n_local,
         for(j = 0; j < ncol; ++j)
         {
             match_fail = false;
-            for(ilocal = 0; ilocal < n_local; ++ilocal)
+            for(ilocal = 0; ilocal < nlocal; ++ilocal)
             {
                 // get offset vector components
                 x_offset = coordinates[ilocal][0];
@@ -136,40 +133,49 @@ int match_elements(char ** types, int n_local,
 
   * Input:
         @types      : The site types at the lattice points
-        @grid_shape : shape of lattice surface grid
         @nrow : length of 0th dimesion of elements_list and coordinates_list
         @ncol : length of 1st dimesion of elements_list and coordinates_list
-        @elements_list   : a list of elements in local configuration
+        @elements_list: a 1D array of elements in local configuration
+        @dim0 : length of 0th dimension of coordinates_list
+        @dim1 : length of 1st dimension of coordinates_list
+        @dim2 : length of 2nd dimension of coordinates_list
         @coordinates_list: a list of relative coordinates of local configuration
+        @grid_shape : shape of lattice surface grid
 
   * Return:
         @total_success: total number of successful matching
 
   * Author: shaozhengjiang<shaozhengjiang@gmail.com>
 
-  * Date  : 2015.12.26
+  * CreateDate: 2015.12.26
+
+  * ModifyDate: 2015.12.28
 *********************************************************************************/
 int match_elements_list(char ** types, int nrow, int ncol,
-                        char * elements_list[nrow][ncol],
-                        float coordinates_list[nrow][ncol][3],
-                        const int * grid_shape)
+                        char ** elements_list,
+                        int dim0, int dim1, int dim2,
+                        double coordinates_list[dim0][dim1][dim2],
+                        const int grid_shape[2])
 {
     int total_success;  // total number of successful matching
     int n_success;      // number of successful matching for a local config
     int irow;           // row counter
     char ** elements;   // elements in local configuration
-    float (*coordinates)[3];
+    int index;          // index number in 1D char * array -- elements_list
+    double (*coordinates)[dim2];  // point to a 2D int array
 
     for(total_success = 0, irow = 0; irow < nrow; ++irow)
     {
         // get elements
-        elements = elements_list[irow];
+        index = ncol * irow;
+        elements = &elements_list[index];
 
         // get coordinates
         coordinates = coordinates_list[irow];
 
         // match that local configuration
-        n_success = match_elements(types, ncol, elements, coordinates, grid_shape);
+        n_success = match_elements(types, elements, ncol, dim2,
+                                   coordinates, grid_shape);
 
         // add to total success number
         total_success += n_success;
