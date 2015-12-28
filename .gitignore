@@ -56,4 +56,4 @@ Temporary Items
 # swig auto-generated files
 *_wrap.c
 pynetics/solvers/plugin_backends/data.py
-plugin_backends.py
+pynetics/solvers/plugin_backends/kmc_functions.py
