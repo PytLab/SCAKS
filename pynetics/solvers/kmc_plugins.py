@@ -13,6 +13,13 @@ except ImportError:
 
 from ..functions import get_list_string
 from .. import file_header
+try:
+    from .plugin_backends.kmc_functions import *
+except ImportError:
+    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    print "!!!   WARNING: plugin backends extension not found.   !!!"
+    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    from kmc_functions import *
 
 
 def collect_coverage(types, possible_types):
@@ -219,7 +226,7 @@ class TOFAnalysis(KMCAnalysisPlugin):
         # info output
         self.analysis_counter += 1
         self.logger.info('-------- Entering TOF analysis ( %d ) --------',
-                         self.anaysis_counter)
+                         self.analysis_counter)
         self.logger.info('collect statistics about possible reaction:')
 
         # get current types
@@ -232,6 +239,31 @@ class TOFAnalysis(KMCAnalysisPlugin):
         self.last_time = current_time
         self.end_time = time
 
+        def collect_statistics(species_configs):
+            "collect all possible reaction number for a list of configurations."
+            # strip reactant elements and coordinates
+            stripped_species = [strip_local_configuration(species_config,
+                                                          self.coordinates)
+                                for species_config in species_configs]
+            stripped_species_elems, stripped_species_coords = zip(*stripped_species)
+
+            # datatype conversion before statistics
+            stripped_species_elems = np.array(stripped_species_elems)
+            nrow, ncol = stripped_species_elems.shape
+            # elements_list to 1D list
+            stripped_species_elems, = stripped_species_elems.reshape(1, -1).tolist()
+            # coordinates list to 3D numpy.array
+            stripped_species_coords = np.array(stripped_species_coords)
+
+            # number of successfule matching for forward
+            n = match_elements_list(types,
+                                    nrow, ncol,
+                                    stripped_species_elems,
+                                    stripped_species_coords,
+                                    grid_shape)
+
+            return n
+
         # count available reaction number in the current configuration
         for idx, (rates, elements_changes) in \
                 enumerate(zip(self.rates_list, self.elements_changes_list)):
@@ -243,29 +275,13 @@ class TOFAnalysis(KMCAnalysisPlugin):
 
             # get elements changes for both direction
             reactant_configs, product_configs = zip(*elements_changes)
-            # strip reactant elements and coordinates
-            stripped_reactants = [strip_local_configuration(reactant_config,
-                                                            self.coordinates)
-                                  for reactant_config in reactant_configs]
-            stripped_reactant_elems, stripped_reactant_coords = zip(*stripped_reactants)
-            # strip product elements and coordinates
-            stripped_products = [strip_local_configuration(product_config,
-                                                           self.coordinates)
-                                 for product_config in product_configs]
-            stripped_product_elems, stripped_product_coords = zip(*stripped_products)
 
-            # number of successfule matching for forward
-            n_forward = match_elements_list(types,
-                                            stripped_reactant_elems,
-                                            stripped_reactant_coords,
-                                            grid_shape)
+            # get total sum of ka of forward reaction
+            n_forward = collect_statistics(reactant_configs)
             total_forward_rate = Rf*n_forward*dt
 
-            # number of successfule matching for reversed
-            n_reversed = match_elements_list(types,
-                                             stripped_product_elems,
-                                             stripped_product_coords,
-                                             grid_shape)
+            # get total sum of ka of reversed reaction
+            n_reversed = collect_statistics(reactant_configs)
             total_reversed_rate = Rr*n_reversed*dt
 
             # add total rate to total rates list
@@ -280,7 +296,7 @@ class TOFAnalysis(KMCAnalysisPlugin):
         current_tofs = self.append_TOFs()
         self.logger.info('current TOFs = ')
         for tof_list in current_tofs:
-            self.logger.info('%17.10e(+), %e(-)', *tof_list)
+            self.logger.info('   %17.10e(+), %e(-)', *tof_list)
         self.logger.info(' ')
 
     def finalize(self):
@@ -319,108 +335,32 @@ class TOFAnalysis(KMCAnalysisPlugin):
         return current_tofs
 
 
-def match_elements_list(types,
-                        stripped_elements_list,
-                        stripped_coordinates_list,
-                        grid_shape):
-    '''
-    Function to get total matching success number for,
-    a list of stripped elements list and coordinates.
-    '''
-    total_nsuccess = 0
-    for stripped_elements, stripped_coordinates in \
-            zip(stripped_elements_list, stripped_coordinates_list):
-        n_success = match_elements(types,
-                                   stripped_elements,
-                                   stripped_coordinates,
-                                   grid_shape)
-        total_nsuccess += n_success
-
-    return total_nsuccess
-
-
 def strip_local_configuration(elements, coordinates):
     '''
     Function to strip wild cards off from elements and corresponding coordinates.
 
     Parameters:
     -----------
-    elements: local elements around a center elements, numpy.array.
+    elements: local elements around a center elements, list of strings.
 
-    coordinates: corresponding coordinates of elements, 2d numpy.array.
+    coordinates: corresponding coordinates of elements, 2d list of float.
 
     Example:
     --------
-    >>> e = np.array(['CO', '*', '*', 'O', '*'])
+    >>> e = ['CO', '*', '*', 'O', '*']
     >>> c = array([[ 0.,  0.,  0.],
                    [ 0., -1.,  0.],
                    [-1.,  0.,  0.],
                    [ 0.,  1.,  0.],
                    [ 1.,  0.,  0.]])
 
-    >>> (array(['CO', 'O'], dtype='|S2'),
-         array([[ 0.,  0.,  0.], [ 0.,  1.,  0.]]))
+    >>> (['CO', 'O'], [[ 0.,  0.,  0.], [ 0.,  1.,  0.]])
 
     '''
     indices = [idx for idx, elem in enumerate(elements) if elem != '*']
     # mask elements
-    stripped_elements = np.array([elements[idx] for idx in indices])
+    stripped_elements = [elements[idx] for idx in indices]
     # mask coordinates
-    stripped_coordinates = np.array([coordinates[idx] for idx in indices])
+    stripped_coordinates = [coordinates[idx] for idx in indices]
 
     return stripped_elements, stripped_coordinates
-
-
-def match_elements(types, stripped_elements, stripped_coordinates, grid_shape):
-    '''
-    Function to go through grid to match elements local configuration.
-
-    Parameters:
-    -----------
-    types: The site types at the lattice points as a list, list of str.
-
-    stripped_elements: stripped elements list(without wildcards),
-                       numpy.array of str.
-
-    stripped_coordinates: stripped relative coordinates list(without wildcards),
-                          2d numpy.array of float.
-
-    grid_shape: shape of grid, tuple of int.
-
-    Returns:
-    --------
-    n_success: number of successful matching, int
-
-    '''
-    m, n = grid_shape
-    # loop through types
-    n_success = 0
-    for i in xrange(m):
-        for j in xrange(n):
-            # check all elements
-            match_fail = False
-            for element, coordinate in zip(stripped_elements, stripped_coordinates):
-                x_offset, y_offset = coordinate[: 2]
-                # do pdc check
-                x, y = i + int(x_offset), j + int(y_offset)
-                # check x
-                if x < 0:
-                    x = m - 1
-                elif x > m-1:
-                    x = 0
-                # check y
-                if y < 0:
-                    y = n - 1
-                elif y > n-1:
-                    y = 0
-
-                idx = x*n + y
-
-                if types[idx] != element:
-                    match_fail = True
-                    break
-
-            if not match_fail:
-                n_success += 1
-
-    return n_success

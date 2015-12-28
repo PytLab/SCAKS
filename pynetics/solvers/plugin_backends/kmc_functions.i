@@ -7,7 +7,7 @@
   *ModifyDate: 2015.12.28
 */
 
-%module plugin_backends
+%module kmc_functions
 
 %{
     #define  SWIG_FILE_WITH_INIT

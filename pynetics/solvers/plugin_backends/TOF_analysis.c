@@ -133,8 +133,8 @@ int match_elements(char ** types, char ** elements,
 
   * Input:
         @types      : The site types at the lattice points
-        @nrow : length of 0th dimesion of elements_list and coordinates_list
-        @ncol : length of 1st dimesion of elements_list and coordinates_list
+        @nrow : length of 0th dimesion of elements_list
+        @ncol : length of 1st dimesion of elements_list
         @elements_list: a 1D array of elements in local configuration
         @dim0 : length of 0th dimension of coordinates_list
         @dim1 : length of 1st dimension of coordinates_list
