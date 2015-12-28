@@ -77,7 +77,39 @@
     }
 }
 
+/* python list of string to 1D string array*/
+%typemap(in) char * [ANY](char * temp[$1_dim0]){
+    int i;
+    if(!PySequence_Check($input))
+    {
+        PyErr_SetString(PyExc_TypeError, "Expecting a sequence witeh $1_dim0 elements");
+        return NULL;
+    }
+    if (PyObject_Length($input) != $1_dim0)
+    {
+        PyErr_SetString(PyExc_ValueError,"Expecting a sequence with $1_dim0 elements");
+        return NULL;
+    }
+
+    int size = PyObject_Length($input);
+
+    for(i = 0; i < size; i++)
+    {
+        PyObject * o = PySequence_GetItem($input, i);
+        if(!PyString_Check(o))
+        {
+            Py_XDECREF(o);
+            PyErr_SetString(PyExc_ValueError,"Expecting a sequence of strings");
+            return NULL;
+        }
+        temp[i] = PyString_AsString(o);
+        Py_DECREF(o);
+    }
+    $1 = &temp[0];
+}
+
 /* declaration of C functions*/
+
 %define MATCH_ELEMENTS_DOCSTRING
 "Function to go through grid to match elements local configuration.
 
@@ -107,3 +139,37 @@ n_success: number of successful matching, int
 int match_elements(char ** types, char ** elements,
                    int DIM1, int DIM2, double * IN_ARRAY2,
                    const int grid_shape[2]);
+
+%define MATCH_ELEMENTS_LIST_DOCSTRING
+"Function to get total matching success number for,
+a list of stripped elements list and coordinates.
+
+Python function prototype:
+--------------------------
+match_elements_list(types,
+                    stripped_elements_list,
+                    stripped_coordinates_list,
+                    grid_shape)
+
+Parameters:
+-----------
+types: The site types at the lattice points as a list, list of str.
+
+stripped_elements_list: a list of stripped_elements, a **1D** string list.
+
+stripped_coordinates_list: a list of stripped coordinates, 2D string list.
+
+grid_shape: shape of grid, tuple of int.
+
+Returns:
+--------
+total_nsuccess: total number of successful matching, int
+"
+%enddef
+
+%feature("autodoc", MATCH_ELEMENTS_LIST_DOCSTRING);
+int match_elements_list(char ** types, int nrow, int ncol,
+                        char ** elements_list,
+                        int DIM1, int DIM2, int DIM3,
+                        double * IN_ARRAY3,
+                        const int grid_shape[2]);

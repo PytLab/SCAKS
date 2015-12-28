@@ -2,10 +2,7 @@
 
 int main(void)
 {
-    char * elements_list[2][2] = {
-        {"CO", "O"},
-        {"CO", "O"}
-    };
+    char * elements_list[4] = {"CO", "O", "CO", "O"};
     double coordinates_list[2][2][3] = {
         {{0.0, 0.0, 0.0},
          {0.0, 1.0, 0.0}},
@@ -30,7 +27,9 @@ int main(void)
     int grid_shape[2] = {10, 10};
     int n_success;
 
-    n_success = match_elements_list(types, 2, 2, elements_list, coordinates_list, grid_shape);
+    n_success = match_elements_list(types, 2, 2, elements_list,
+                                    2, 2, 3,
+                                    coordinates_list, grid_shape);
 
     printf("n_success = %d\n", n_success);
 
@@ -134,40 +133,49 @@ int match_elements(char ** types, char ** elements,
 
   * Input:
         @types      : The site types at the lattice points
-        @grid_shape : shape of lattice surface grid
         @nrow : length of 0th dimesion of elements_list and coordinates_list
         @ncol : length of 1st dimesion of elements_list and coordinates_list
-        @elements_list   : a list of elements in local configuration
+        @elements_list: a 1D array of elements in local configuration
+        @dim0 : length of 0th dimension of coordinates_list
+        @dim1 : length of 1st dimension of coordinates_list
+        @dim2 : length of 2nd dimension of coordinates_list
         @coordinates_list: a list of relative coordinates of local configuration
+        @grid_shape : shape of lattice surface grid
 
   * Return:
         @total_success: total number of successful matching
 
   * Author: shaozhengjiang<shaozhengjiang@gmail.com>
 
-  * Date  : 2015.12.26
+  * CreateDate: 2015.12.26
+
+  * ModifyDate: 2015.12.28
 *********************************************************************************/
 int match_elements_list(char ** types, int nrow, int ncol,
-                        char * elements_list[nrow][ncol],
-                        double coordinates_list[nrow][ncol][3],
+                        char ** elements_list,
+                        int dim0, int dim1, int dim2,
+                        double coordinates_list[dim0][dim1][dim2],
                         const int grid_shape[2])
 {
     int total_success;  // total number of successful matching
     int n_success;      // number of successful matching for a local config
     int irow;           // row counter
     char ** elements;   // elements in local configuration
-    double (*coordinates)[3];
+    int index;          // index number in 1D char * array -- elements_list
+    double (*coordinates)[dim2];  // point to a 2D int array
 
     for(total_success = 0, irow = 0; irow < nrow; ++irow)
     {
         // get elements
-        elements = elements_list[irow];
+        index = ncol * irow;
+        elements = &elements_list[index];
 
         // get coordinates
         coordinates = coordinates_list[irow];
 
         // match that local configuration
-        n_success = match_elements(types, elements, ncol, 3, coordinates, grid_shape);
+        n_success = match_elements(types, elements, ncol, dim2,
+                                   coordinates, grid_shape);
 
         // add to total success number
         total_success += n_success;
