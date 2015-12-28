@@ -219,7 +219,7 @@ class TOFAnalysis(KMCAnalysisPlugin):
         # info output
         self.analysis_counter += 1
         self.logger.info('-------- Entering TOF analysis ( %d ) --------',
-                         self.anaysis_counter)
+                         self.analysis_counter)
         self.logger.info('collect statistics about possible reaction:')
 
         # get current types
@@ -232,6 +232,31 @@ class TOFAnalysis(KMCAnalysisPlugin):
         self.last_time = current_time
         self.end_time = time
 
+        def collect_statistics(species_configs):
+            "collect all possible reaction number for a list of configurations."
+            # strip reactant elements and coordinates
+            stripped_species = [strip_local_configuration(species_config,
+                                                          self.coordinates)
+                                for species_config in species_configs]
+            stripped_species_elems, stripped_species_coords = zip(*stripped_species)
+
+            # datatype conversion before statistics
+            stripped_species_elems = np.array(stripped_species_elems)
+            nrow, ncol = stripped_species_elems.shape
+            # elements_list to 1D list
+            stripped_species_elems, = stripped_species_elems.reshape(1, -1).tolist()
+            # coordinates list to 3D numpy.array
+            stripped_species_coords = np.array(stripped_species_coords)
+
+            # number of successfule matching for forward
+            n = match_elements_list(types,
+                                    nrow, ncol,
+                                    stripped_species_elems,
+                                    stripped_species_coords,
+                                    grid_shape)
+
+            return n
+
         # count available reaction number in the current configuration
         for idx, (rates, elements_changes) in \
                 enumerate(zip(self.rates_list, self.elements_changes_list)):
@@ -243,29 +268,13 @@ class TOFAnalysis(KMCAnalysisPlugin):
 
             # get elements changes for both direction
             reactant_configs, product_configs = zip(*elements_changes)
-            # strip reactant elements and coordinates
-            stripped_reactants = [strip_local_configuration(reactant_config,
-                                                            self.coordinates)
-                                  for reactant_config in reactant_configs]
-            stripped_reactant_elems, stripped_reactant_coords = zip(*stripped_reactants)
-            # strip product elements and coordinates
-            stripped_products = [strip_local_configuration(product_config,
-                                                           self.coordinates)
-                                 for product_config in product_configs]
-            stripped_product_elems, stripped_product_coords = zip(*stripped_products)
 
-            # number of successfule matching for forward
-            n_forward = match_elements_list(types,
-                                            stripped_reactant_elems,
-                                            stripped_reactant_coords,
-                                            grid_shape)
+            # get total sum of ka of forward reaction
+            n_forward = collect_statistics(reactant_configs)
             total_forward_rate = Rf*n_forward*dt
 
-            # number of successfule matching for reversed
-            n_reversed = match_elements_list(types,
-                                             stripped_product_elems,
-                                             stripped_product_coords,
-                                             grid_shape)
+            # get total sum of ka of reversed reaction
+            n_reversed = collect_statistics(reactant_configs)
             total_reversed_rate = Rr*n_reversed*dt
 
             # add total rate to total rates list
@@ -280,7 +289,7 @@ class TOFAnalysis(KMCAnalysisPlugin):
         current_tofs = self.append_TOFs()
         self.logger.info('current TOFs = ')
         for tof_list in current_tofs:
-            self.logger.info('%17.10e(+), %e(-)', *tof_list)
+            self.logger.info('   %17.10e(+), %e(-)', *tof_list)
         self.logger.info(' ')
 
     def finalize(self):
@@ -320,6 +329,7 @@ class TOFAnalysis(KMCAnalysisPlugin):
 
 
 def match_elements_list(types,
+                        nrow, ncol,
                         stripped_elements_list,
                         stripped_coordinates_list,
                         grid_shape):
@@ -327,6 +337,10 @@ def match_elements_list(types,
     Function to get total matching success number for,
     a list of stripped elements list and coordinates.
     '''
+    # elements_list reshape
+    stripped_elements_list = np.array(stripped_elements_list)
+    stripped_elements_list.shape = (nrow, ncol)
+
     total_nsuccess = 0
     for stripped_elements, stripped_coordinates in \
             zip(stripped_elements_list, stripped_coordinates_list):
@@ -345,28 +359,27 @@ def strip_local_configuration(elements, coordinates):
 
     Parameters:
     -----------
-    elements: local elements around a center elements, numpy.array.
+    elements: local elements around a center elements, list of strings.
 
-    coordinates: corresponding coordinates of elements, 2d numpy.array.
+    coordinates: corresponding coordinates of elements, 2d list of float.
 
     Example:
     --------
-    >>> e = np.array(['CO', '*', '*', 'O', '*'])
+    >>> e = ['CO', '*', '*', 'O', '*']
     >>> c = array([[ 0.,  0.,  0.],
                    [ 0., -1.,  0.],
                    [-1.,  0.,  0.],
                    [ 0.,  1.,  0.],
                    [ 1.,  0.,  0.]])
 
-    >>> (array(['CO', 'O'], dtype='|S2'),
-         array([[ 0.,  0.,  0.], [ 0.,  1.,  0.]]))
+    >>> (['CO', 'O'], [[ 0.,  0.,  0.], [ 0.,  1.,  0.]])
 
     '''
     indices = [idx for idx, elem in enumerate(elements) if elem != '*']
     # mask elements
-    stripped_elements = np.array([elements[idx] for idx in indices])
+    stripped_elements = [elements[idx] for idx in indices]
     # mask coordinates
-    stripped_coordinates = np.array([coordinates[idx] for idx in indices])
+    stripped_coordinates = [coordinates[idx] for idx in indices]
 
     return stripped_elements, stripped_coordinates
 
