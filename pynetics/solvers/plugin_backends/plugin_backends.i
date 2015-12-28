@@ -3,7 +3,8 @@
   *SWIG interface code for C extesion generation of TOFAnalysis Plugin.
   
   *Author: shaozhengjiang<shaozhengjiang@gmail.com>
-  *Date  : 2015.12.27
+  *CreateDate: 2015.12.27
+  *ModifyDate: 2015.12.28
 */
 
 %module plugin_backends
@@ -77,6 +78,32 @@
 }
 
 /* declaration of C functions*/
+%define MATCH_ELEMENTS_DOCSTRING
+"Function to go through grid to match elements local configuration.
+
+Python function:
+----------------
+match_elements(types, stripped_elements, stripped_coordinates, grid_shape)
+
+Parameters:
+-----------
+types: The site types at the lattice points as a list, list of str.
+
+stripped_elements: stripped elements list(without wildcards),
+                   numpy.array of str.
+
+stripped_coordinates: stripped relative coordinates list(without wildcards),
+                      2d numpy.array of float.
+
+grid_shape: shape of grid, tuple of int.
+
+Returns:
+--------
+n_success: number of successful matching, int
+"
+%enddef
+
+%feature("autodoc", MATCH_ELEMENTS_DOCSTRING);
 int match_elements(char ** types, char ** elements,
                    int DIM1, int DIM2, double * IN_ARRAY2,
                    const int grid_shape[2]);
