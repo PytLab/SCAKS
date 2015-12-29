@@ -32,7 +32,7 @@
         int size = PyList_Size($input);
         int i = 0;
         $1 = (char **)malloc((size + 1)*sizeof(char *));
-        for(i = 0; i < size; i++)
+        for(i = 0; i < size; ++i)
         {
             PyObject * o = PyList_GetItem($input, i);
             if(PyString_Check(o))
@@ -58,6 +58,63 @@
 }
 
 
+/* typemaps for collect_coverage function */
+/* 
+   treat string list as a C string array, 
+   just take one input in collect_coverage
+*/
+%typemap(in, numinputs=1) (char ** TYPES, int NTYPES){
+    int i;
+    assert(PyList_Check($input));
+    $2 = PyList_Size($input);
+    $1 = (char **)malloc(($2 + 1)*sizeof(char *));
+
+    for(i = 0; i < $2; ++i)
+    {
+        PyObject * o = PyList_GetItem($input, i);
+        if(PyString_Check(o))
+            $1[i] = PyString_AsString(o);
+        else
+        {
+            PyErr_SetString(PyExc_TypeError, "list must contain strings");
+            free($1);
+            return NULL;
+        }
+    }
+}
+
+// clean up the char ** array
+%typemap(freearg) (char ** TYPES, int NTYPES) {
+    free((char *) $1);
+}
+
+
+%typemap(in, numinputs=1) (char ** POSSIBLE_TYPES, int NSP){
+    int i;
+    assert(PyList_Check($input));
+    $2 = PyList_Size($input);
+    $1 = (char **)malloc(($2 + 1)*sizeof(char *));
+
+    for(i = 0; i < $2; ++i)
+    {
+        PyObject * o = PyList_GetItem($input, i);
+        if(PyString_Check(o))
+            $1[i] = PyString_AsString(o);
+        else
+        {
+            PyErr_SetString(PyExc_TypeError, "list must contain strings");
+            free($1);
+            return NULL;
+        }
+    }
+}
+
+// clean up the char ** array
+%typemap(freearg) (char ** POSSIBLE_TYPES, int NSP) {
+    free((char *) $1);
+}
+
+
 /* treat int[2] as a tuple of int in python */
 %typemap(in) int[2](int temp[2]) {   // temp[4] becomes a local variable
     int i;
@@ -77,39 +134,9 @@
     }
 }
 
-/* python list of string to 1D string array*/
-%typemap(in) char * [ANY](char * temp[$1_dim0]){
-    int i;
-    if(!PySequence_Check($input))
-    {
-        PyErr_SetString(PyExc_TypeError, "Expecting a sequence witeh $1_dim0 elements");
-        return NULL;
-    }
-    if (PyObject_Length($input) != $1_dim0)
-    {
-        PyErr_SetString(PyExc_ValueError,"Expecting a sequence with $1_dim0 elements");
-        return NULL;
-    }
-
-    int size = PyObject_Length($input);
-
-    for(i = 0; i < size; i++)
-    {
-        PyObject * o = PySequence_GetItem($input, i);
-        if(!PyString_Check(o))
-        {
-            Py_XDECREF(o);
-            PyErr_SetString(PyExc_ValueError,"Expecting a sequence of strings");
-            return NULL;
-        }
-        temp[i] = PyString_AsString(o);
-        Py_DECREF(o);
-    }
-    $1 = &temp[0];
-}
-
 /* declaration of C functions*/
 
+/* TOF Analysis */
 %define MATCH_ELEMENTS_DOCSTRING
 "Function to go through grid to match elements local configuration.
 
@@ -173,3 +200,30 @@ int match_elements_list(char ** types, int nrow, int ncol,
                         int DIM1, int DIM2, int DIM3,
                         double * IN_ARRAY3,
                         const int grid_shape[2]);
+
+
+/* Coverage Analysis */
+%define COLLECT_COVERAGE_DOCSTRING
+"Function to get current coverages of possible types.
+
+Python function prototype:
+--------------------------
+collect_coverage(types, possible_types, ncvgs)
+
+Parameters:
+-----------
+types: The site types at the lattice points as a list, list of str.
+
+possible_types: possible species type in grid.
+
+ncvgs: number of possible species type.
+
+Returns:
+--------
+cvgs: coverages of possible types, numpy.array int
+"
+%enddef
+
+%feature("autodoc", COLLECT_COVERAGE_DOCSTRING);
+void collect_coverage(char ** TYPES, int NTYPES, char ** POSSIBLE_TYPES,
+                      int NSP, double * ARGOUT_ARRAY1, int DIM1);
