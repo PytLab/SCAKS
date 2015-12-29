@@ -22,26 +22,6 @@ except ImportError:
     from kmc_functions import *
 
 
-def collect_coverage(types, possible_types):
-    '''
-    Function to get current coverages of possible types.
-
-    '''
-    # total number of sites
-    nsite = len(types)
-    # numbers of different types
-    ntypes = [0]*len(possible_types)
-
-    # go through all site to get species numbers
-    for sp in types:
-        idx = possible_types.index(sp)
-        ntypes[idx] += 1
-
-    cvgs = [float(ntype)/nsite for ntype in ntypes]
-
-    return cvgs
-
-
 class CoveragesAnalysis(KMCAnalysisPlugin):
     '''
     Sub-class of KMCLib KMCAnalysisPlugin to do on-the-fly coverage analysis.
@@ -52,6 +32,7 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
                            kinetic_model.adsorbate_names]
         possible_types = adsorbate_names + ['Vac']
         self.possible_types = possible_types
+        self.ncvgs = len(possible_types)
 
         # initialize recorder variables
         self.steps = []
@@ -82,7 +63,7 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
 
         # get species coverages
         types = configuration.types()
-        cvgs = collect_coverage(types, self.possible_types)
+        cvgs = collect_coverage(types, self.possible_types, self.ncvgs)
         self.species_cvgs.append(cvgs)
 
     def registerStep(self, step, time, configuration):
@@ -103,7 +84,7 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
 
         # get species coverages
         types = configuration.types()
-        cvgs = collect_coverage(types, self.possible_types)
+        cvgs = collect_coverage(types, self.possible_types, self.ncvgs)
         self.species_cvgs.append(cvgs)
 
     def finalize(self):
