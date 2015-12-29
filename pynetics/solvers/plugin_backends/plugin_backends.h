@@ -14,3 +14,6 @@ extern int match_elements_list(char ** types, int nrow, int ncol,
                                int dim0, int dim1, int dim2,
                                double coordinates_list[dim0][dim1][dim2],
                                const int grid_shape[2]);
+
+extern void collect_coverage(char ** types, int ntot, char ** possible_types,
+                             int nsp, double * cvgs, int ncvgs);

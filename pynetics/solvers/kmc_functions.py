@@ -1,6 +1,37 @@
 import numpy as np
 
 
+def collect_coverage(types, possible_types, ncvgs):
+    '''
+    Function to get current coverages of possible types.
+
+    Parameters:
+    -----------
+    types: The site types at the lattice points as a list, list of str.
+
+    possible_types: possible species type in grid.
+
+    ncvgs: number of possible species type.
+
+    Returns:
+    --------
+    cvgs: coverages of possible types, numpy.array int
+    '''
+    # total number of sites
+    nsite = len(types)
+    # numbers of different types
+    ntypes = [0]*len(possible_types)
+
+    # go through all site to get species numbers
+    for sp in types:
+        idx = possible_types.index(sp)
+        ntypes[idx] += 1
+
+    cvgs = np.array([float(ntype)/nsite for ntype in ntypes])
+
+    return cvgs
+
+
 def match_elements_list(types,
                         nrow, ncol,
                         stripped_elements_list,
@@ -9,6 +40,20 @@ def match_elements_list(types,
     '''
     Function to get total matching success number for,
     a list of stripped elements list and coordinates.
+
+    Parameters:
+    -----------
+    types: The site types at the lattice points as a list, list of str.
+
+    stripped_elements_list: a list of stripped_elements, a **1D** string list.
+
+    stripped_coordinates_list: a list of stripped coordinates, 2D string list.
+
+    grid_shape: shape of grid, tuple of int.
+
+    Returns:
+    --------
+    total_nsuccess: total number of successful matching, int
     '''
     # elements_list reshape
     stripped_elements_list = np.array(stripped_elements_list)
