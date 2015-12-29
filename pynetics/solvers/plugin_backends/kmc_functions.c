@@ -3,6 +3,7 @@
 int main(void)
 {
     char * elements_list[4] = {"CO", "O", "CO", "O"};
+    char * possible_types[3] = {"CO", "O", "Vac"};
     double coordinates_list[2][2][3] = {
         {{0.0, 0.0, 0.0},
          {0.0, 1.0, 0.0}},
@@ -25,16 +26,72 @@ int main(void)
         "CO", "CO", "O", "Vac"
     };
     int grid_shape[2] = {10, 10};
-    int n_success;
+    int n_success, i;
+    double * cvgs;
 
-    n_success = match_elements_list(types, 2, 2, elements_list,
-                                    2, 2, 3,
-                                    coordinates_list, grid_shape);
+//   n_success = match_elements_list(types, 2, 2, elements_list,
+//                                   2, 2, 3,
+//                                   coordinates_list, grid_shape);
+//
+//   printf("n_success = %d\n", n_success);
 
-    printf("n_success = %d\n", n_success);
+    cvgs = (double *)malloc(3*sizeof(double));
+    collect_coverage(types, 100, possible_types, 3, cvgs, 3);
+    for(i = 0; i < 3; ++i)
+        printf("%d\n", cvgs[i]);
 
     return 0;
 }
+
+
+/**************************************************************
+  * Function   : collect_coverage
+
+  * Description: collect statistic about species coverages on a grid.
+
+  * Called By  : CoveragesAnalysis.setup(),
+                 CoveragesAnalysis.registerStep()
+
+  * Input:
+        @types: The site types at the lattice points
+        @ntot : total number of site on grid
+        @possible_types: all possible species type
+        @nsp  : number of possible species type
+        @cvgs : result, species coverages on this grid
+        @ncvgs: equal to nsp
+
+  * Return:
+        None
+
+  * Author: shaozhengjiang<shaozhengjiang@gmail.com>
+
+  * Date  : 2015.12.29
+***************************************************************/
+void collect_coverage(char ** types, int ntot, char ** possible_types,
+                      int nsp, double * cvgs, int ncvgs)
+{
+    int itype, isp;  // loop counter for types and nspecies
+    bool same;
+
+    // initialize coverages
+    for(isp = 0; isp < nsp; ++isp)
+        cvgs[isp] = 0.0;
+
+    // collect species
+    for(itype = 0; itype < ntot; ++itype)
+    {
+        for(isp = 0; isp < nsp; ++isp)
+        {
+            same = (strcmp(types[itype], possible_types[isp]) == 0);
+            if(same) cvgs[isp] += 1.0;
+        }
+    }
+
+    // get coverges
+    for(isp = 0; isp < nsp; ++isp)
+        cvgs[isp] = cvgs[isp]/(float)ntot;
+}
+
 
 /**************************************************************
   * Function   : match_elements
