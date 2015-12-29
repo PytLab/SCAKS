@@ -71,7 +71,7 @@ void collect_coverage(char ** types, int ntot, char ** possible_types,
                       int nsp, double * cvgs, int ncvgs)
 {
     int itype, isp;  // loop counter for types and nspecies
-    bool same;
+    bool same;       // species matching successful or not
 
     // initialize coverages
     for(isp = 0; isp < nsp; ++isp)
