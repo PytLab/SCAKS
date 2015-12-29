@@ -7,7 +7,11 @@
   *ModifyDate: 2015.12.28
 */
 
-%module kmc_functions
+%define DOCSTR
+"C extension module for kMC Analysis providing key functions."
+%enddef
+
+%module(docstring=DOCSTR) kmc_functions
 
 %{
     #define  SWIG_FILE_WITH_INIT
