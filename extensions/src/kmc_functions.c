@@ -1,48 +1,6 @@
-#include "plugin_backends.h"
-
-int main(void)
-{
-    char * elements_list[4] = {"CO", "O", "CO", "O"};
-    char * possible_types[3] = {"CO", "O", "Vac"};
-    double coordinates_list[2][2][3] = {
-        {{0.0, 0.0, 0.0},
-         {0.0, 1.0, 0.0}},
-        {{0.0, 0.0, 0.0},
-         {0.0, 1.0, 0.0}}
-    };
-    char * types[100] = {
-        "O", "O", "CO", "O", "O", "CO", "O", "CO", 
-        "CO", "CO", "CO", "CO", "CO", "O", "O", "CO", 
-        "O", "CO", "CO", "CO", "CO", "CO", "CO", "CO", 
-        "CO", "CO", "CO", "CO", "O", "O", "CO", "CO", 
-        "CO", "CO", "CO", "CO", "CO", "CO", "CO", "CO", 
-        "CO", "O", "O", "CO", "CO", "O", "O", "CO", 
-        "O", "O", "CO", "Vac", "CO", "CO", "CO", "CO", 
-        "CO", "CO", "CO", "CO", "CO", "CO", "CO", "CO", 
-        "CO", "O", "O", "Vac", "CO", "CO", "O", "CO", 
-        "CO", "CO", "CO", "CO", "CO", "CO", "CO", "O", 
-        "CO", "CO", "CO", "CO", "O", "O", "CO", "CO", 
-        "O", "CO", "CO", "CO", "CO", "O", "O", "CO", 
-        "CO", "CO", "O", "Vac"
-    };
-    int grid_shape[2] = {10, 10};
-    int n_success, i;
-    double * cvgs;
-
-//   n_success = match_elements_list(types, 2, 2, elements_list,
-//                                   2, 2, 3,
-//                                   coordinates_list, grid_shape);
-//
-//   printf("n_success = %d\n", n_success);
-
-    cvgs = (double *)malloc(3*sizeof(double));
-    collect_coverage(types, 100, possible_types, 3, cvgs, 3);
-    for(i = 0; i < 3; ++i)
-        printf("%d\n", cvgs[i]);
-
-    return 0;
-}
-
+#ifndef PLUGIN_BACKENDS_
+    #include "plugin_backends.h"
+#endif
 
 /**************************************************************
   * Function   : collect_coverage
