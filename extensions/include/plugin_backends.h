@@ -1,3 +1,7 @@
+#ifndef PLUGIN_BACKENDS_
+    #define PLUGIN_BACKENDS_
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>

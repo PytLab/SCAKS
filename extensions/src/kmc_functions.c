@@ -1,4 +1,6 @@
-#include "plugin_backends.h"
+#ifndef PLUGIN_BACKENDS_
+    #include "plugin_backends.h"
+#endif
 
 int main(void)
 {

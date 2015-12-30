@@ -15,7 +15,9 @@
 
 %{
     #define  SWIG_FILE_WITH_INIT
-    #include "plugin_backends.h"
+    #ifndef PLUGIN_BACKENDS_
+        #include "plugin_backends.h"
+    #endif
 %}
 
 %include "numpy.i"
