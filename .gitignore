@@ -50,10 +50,11 @@ Temporary Items
 # C
 *.exe
 *.o
-*so
+*.so
 *.a
 
 # swig auto-generated files
 *_wrap.c
 pynetics/solvers/plugin_backends/data.py
 pynetics/solvers/plugin_backends/kmc_functions.py
+CExtension/*.py
