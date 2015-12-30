@@ -52,6 +52,7 @@ Temporary Items
 *.o
 *.so
 *.a
+*.x
 
 # swig auto-generated files
 *_wrap.c
