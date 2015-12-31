@@ -424,6 +424,9 @@ class SolverBase(KineticCoreComponent):
         rate_vector = np.matrix(net_rates)  # get rate vector
         tof_list = (rate_vector*reapro_matrix).tolist()[0]
         setattr(self, 'tof', tof_list)
+
+        # log TOFs
+        self.log_tof(tof_list, self._owner.gas_names)
         #archive
         self.archive_data('tofs', tof_list)
 
@@ -450,10 +453,31 @@ class SolverBase(KineticCoreComponent):
         rate_vector = np.matrix(net_rates)  # get rate vector
         tof_list = (rate_vector*reapro_matrix).tolist()[0]
         setattr(self, 'tof', tof_list)
+
+        # log TOFs
+        self.log_tof(tof_list, self._owner.gas_names)
         #archive
         self.archive_data('tofs', tof_list)
 
         return tof_list
+
+    def log_tof(self, tof_list, gas_names):
+        "Log turnover frequencies of every gas species."
+        head_str = "\n\n %-5s     %-20s     %-30s\n" % \
+                   ("index", "gas name", "TOF")
+        line_str = '-'*60 + '\n'
+
+        all_data = ''
+        all_data += head_str + line_str
+        for idx, (gas_name, tof) in enumerate(zip(gas_names, tof_list)):
+            idx = str(idx).zfill(2)
+            data = " %-5s     %-20s     %-30.16e\n" % (idx, gas_name, float(tof))
+            all_data += data
+        all_data += line_str
+
+        self.logger.info(all_data)
+
+        return all_data
 
     def get_intermediates_Gs(self):
         #get Gs
@@ -542,24 +566,25 @@ class SolverBase(KineticCoreComponent):
 
         return self.E
 
-    def solve_ode(self):
+    def solve_ode(self, time_span=1.0, nticks=1000, initial_cvgs=None):
         """
         Solve the differetial equations, return points of coverages.
         """
         def dtheta_dt(cvgs_tuple, t):
             return self.steady_state_function(cvgs_tuple)
 
-        t = np.arange(0, 500000, 0.1)
-        #t = np.arange(0, 0.5, 0.0001)
-        initial_cvg = self.boltzmann_coverages()
-        track = odeint(dtheta_dt, initial_cvg, t)
+        t = np.arange(0, nticks, time_span)
+
+        if not initial_cvgs:
+            initial_cvgs = self.boltzmann_coverages()
+        track = odeint(dtheta_dt, initial_cvgs, t)
 
         return track
 
-    def plot_ode(self, track):
+    def plot_ode(self, track, time_span=1.0, nticks=1000):
         pt_num, line_num = track.shape
         #x = np.arange(0, 5000, 0.0005)
-        x = np.arange(0, 0.001, 0.000000001)
+        x = np.arange(0, time_span, nticks)
         fig = plt.figure()
         ax = fig.add_subplot(111)
         for i in xrange(line_num):
@@ -1034,6 +1059,9 @@ class SolverBase(KineticCoreComponent):
         tof_vect = tof_syms_vect.evalf(subs=subs_dict)
         #keep precision
         tof_vect = [self._mpf(float(tof)) for tof in tof_vect]
+
+        # log TOFs
+        self.log_tof(tof_vect, self._owner.gas_names)
 
         return tuple(tof_vect)
 
