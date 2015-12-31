@@ -5,3 +5,6 @@ FUNCDIR = ../src
 
 test.x: $(FUNCDIR)/kmc_functions.c test_kmc_functions.c
 	$(CC) -o $@ $(INC) $(LIB) $^ -lcunit
+
+clean:
+	rm -f test.x
