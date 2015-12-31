@@ -126,16 +126,16 @@
     int i;
     if (PyTuple_Check($input))
     {
-        if (!PyArg_ParseTuple($input,"ii",temp,temp+1))
+        if (!PyArg_ParseTuple($input, "ii", temp, temp+1))
         {
-            PyErr_SetString(PyExc_TypeError,"tuple must have 2 elements");
+            PyErr_SetString(PyExc_TypeError, "tuple must have 2 elements");
             return NULL;
         }
         $1 = &temp[0];
     }
     else
     {
-        PyErr_SetString(PyExc_TypeError,"expected a tuple.");
+        PyErr_SetString(PyExc_TypeError, "expected a tuple.");
         return NULL;
     }
 }
