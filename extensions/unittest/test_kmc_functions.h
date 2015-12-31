@@ -23,24 +23,25 @@ struct My_TestInfo{
     void (*pfunc)(void);
 };
 typedef struct My_TestInfo My_TestInfo;
-typedef My_TestInfo * My_pTestInfo;
+
+typedef My_TestInfo* My_pTestInfo;
 
 
 /* Global Varibales: */
 char * types[100] = {
-    "O", "O", "CO", "O", "O", "CO", "O", "CO", 
-    "CO", "CO", "CO", "CO", "CO", "O", "O", "CO", 
-    "O", "CO", "CO", "CO", "CO", "CO", "CO", "CO", 
-    "CO", "CO", "CO", "CO", "O", "O", "CO", "CO", 
-    "CO", "CO", "CO", "CO", "CO", "CO", "CO", "CO", 
-    "CO", "O", "O", "CO", "CO", "O", "O", "CO", 
-    "O", "O", "CO", "Vac", "CO", "CO", "CO", "CO", 
-    "CO", "CO", "CO", "CO", "CO", "CO", "CO", "CO", 
-    "CO", "O", "O", "Vac", "CO", "CO", "O", "CO", 
-    "CO", "CO", "CO", "CO", "CO", "CO", "CO", "O", 
-    "CO", "CO", "CO", "CO", "O", "O", "CO", "CO", 
-    "O", "CO", "CO", "CO", "CO", "O", "O", "CO", 
-    "CO", "CO", "O", "Vac"
+    "O" , "O" , "CO", "O"  , "O" , "CO", "O" , "CO",
+    "CO", "CO", "CO", "CO" , "CO", "O" , "O" , "CO",
+    "O" , "CO", "CO", "CO" , "CO", "CO", "CO", "CO",
+    "CO", "CO", "CO", "CO" , "O" , "O" , "CO", "CO",
+    "CO", "CO", "CO", "CO" , "CO", "CO", "CO", "CO",
+    "CO", "O" , "O" , "CO" , "CO", "O" , "O" , "CO",
+    "O" , "O" , "CO", "Vac", "CO", "CO", "CO", "CO",
+    "CO", "CO", "CO", "CO" , "CO", "CO", "CO", "CO",
+    "CO", "O" , "O" , "Vac", "CO", "CO", "O" , "CO",
+    "CO", "CO", "CO", "CO" , "CO", "CO", "CO", "O" ,
+    "CO", "CO", "CO", "CO" , "O" , "O" , "CO", "CO",
+    "O" , "CO", "CO", "CO" , "CO", "O" , "O" , "CO",
+    "CO", "CO", "O" , "Vac"
 };
 
 int grid_shape[2] = {10, 10};

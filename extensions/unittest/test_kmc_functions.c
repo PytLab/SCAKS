@@ -1,16 +1,15 @@
 /*******************************************************************************
-    * Filename  : test_kmc_functions.c
+  * Filename  : test_kmc_functions.c
 
-    * Description: testcase for kmc functions.
+  * Description: testcase for kmc functions.
 
-    * Author: shaozhengjiang<shaozhengjiang@gmail.com>
+  * Author: shaozhengjiang<shaozhengjiang@gmail.com>
 
-    * CreateDate: 2015.12.30
+  * CreateDate: 2015.12.30
 
-    * ModifyDate: 2015.12.30
+  * ModifyDate: 2015.12.30
 *********************************************************************************/
 
-/* Code: */
 #ifndef TEST_KMC_FUNCTIONS_
     #include "test_kmc_functions.h"
 #endif
@@ -128,11 +127,10 @@ int main(void)
     }
 
     // run all tests using CUnit
-    /*Automated mode
+    /*Automated mode*/
     CU_set_output_filename("Test_kmc_functions");
     CU_list_tests_to_file();
     CU_automated_run_tests();
-    */
 
     /*Basic mode*/
     CU_basic_set_mode(CU_BRM_VERBOSE);

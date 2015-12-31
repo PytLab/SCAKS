@@ -318,7 +318,7 @@ class KMCLibSolver(KMCSolver):
 
     def run(self,
             scripting=True,
-            trajectory_filename='trajectory.py'):
+            trajectory_filename='auto_trajectory.py'):
         '''
         Run the KMC lattice model simulation with specified parameters.
 
