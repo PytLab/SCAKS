@@ -58,4 +58,7 @@ Temporary Items
 *_wrap.c
 pynetics/solvers/plugin_backends/data.py
 pynetics/solvers/plugin_backends/kmc_functions.py
-CExtension/*.py
+extensions/*.py
+
+# unittest files
+extensions/unittest/*.xml
