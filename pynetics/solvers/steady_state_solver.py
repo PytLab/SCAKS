@@ -572,6 +572,8 @@ class SteadyStateSolver(SolverBase):
             if f_resid(c0) <= self.tolerance and not single_pt:
                 self._coverage = converged_cvgs = c0
                 self.logger.info('Good initial guess: \n%s', str(map(float, c0)))
+                # log steady state coverages
+                self.log_sscvg(c0, self._owner.adsorbate_names)
                 #get error
                 fx = self.steady_state_function(c0)  # dtheta/dts
                 norm = self._norm(fx)

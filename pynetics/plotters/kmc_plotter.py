@@ -65,7 +65,7 @@ class KMCPlotter(PlotterBase):
 
         # locate trajectory file
         if not filename:
-            filename = 'trajectory.py'
+            filename = 'auto_trajectory.py'
         if not os.path.exists(filename):
             self.logger.error('No trajectory file found.')
             raise FilesError('No trajectory file found.')

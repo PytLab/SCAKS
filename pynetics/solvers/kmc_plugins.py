@@ -187,6 +187,14 @@ class TOFAnalysis(KMCAnalysisPlugin):
         # TOF collection
         self.TOFs = [[] for i in xrange(len(rates_list))]
 
+        # variables for TOF analysis delay
+        self.start = False
+        self.start_time = 0.0
+        if not hasattr(self.kinetic_model, 'TOF_start_step'):
+            self.start_step = 0
+        else:
+            self.start_step = self.kinetic_model.TOF_start_step
+
     def registerStep(self, step, time, configuration):
         '''
         Called from the KMC loop after each step.
@@ -200,14 +208,27 @@ class TOFAnalysis(KMCAnalysisPlugin):
         :param configuration: The up to date configuration of the simulation.
         :type configuration: KMCConfiguration
         '''
+        # TOF analysis start when coverage is converged
+        if step < self.start_step:
+            self.logger.info("TOf analysis passed ( %d )", step)
+            return
+
+        # TOF start stamp
+        if not self.start:
+            self.start = True
+            self.start_time = time
+            self.logger.info('TOF analysis starts (%d) at time = %e s\n',
+                             step, self.start_time)
+            return
+
         # collect step and time
         self.steps.append(step)
         self.times.append(time)
 
         # info output
         self.analysis_counter += 1
-        self.logger.info('-------- Entering TOF analysis ( %d ) --------',
-                         self.analysis_counter)
+        self.logger.info('-------- Entering TOF analysis %d ( %d ) --------',
+                         self.analysis_counter, step)
         self.logger.info('collect statistics about possible reaction:')
 
         # get current types
@@ -308,8 +329,9 @@ class TOFAnalysis(KMCAnalysisPlugin):
         append them to self.TOFs, return current_tofs list.
         '''
         current_tofs = []
+        time_span = self.end_time - self.start_time
         for idx, rate_list in enumerate(self.total_rates):
-            tof_list = [rate/(self.Ntot*self.end_time) for rate in rate_list]
+            tof_list = [rate/(self.Ntot*time_span) for rate in rate_list]
             self.TOFs[idx].append(tof_list)
             current_tofs.append(tof_list)
 
