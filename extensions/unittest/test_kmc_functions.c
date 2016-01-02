@@ -70,7 +70,6 @@ void test_match_elements(void)
 
 /* 
   The suite initialization function.
-  opens the temporary file used by the tests
   returns 0.
 */
 int init_suite(void)
@@ -81,7 +80,6 @@ int init_suite(void)
 
 /*
   The suite cleanup function.
-  close the temporary file used by the tests.
   returns 0.
 */
 int clean_suite(void)
@@ -100,9 +98,8 @@ My_TestInfo tests[NTESTS] = {
 
 int main(void)
 {
-    int i;  // loop counter
-
-    CU_pSuite pSuite = NULL;
+    int i;                    // loop counter
+    CU_pSuite pSuite = NULL;  // suit struct pointer
 
     // initialize the CUnit test registry
     if(CUE_SUCCESS != CU_initialize_registry())
