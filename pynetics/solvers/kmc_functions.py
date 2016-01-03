@@ -45,6 +45,8 @@ def match_elements_list(types,
     -----------
     types: The site types at the lattice points as a list, list of str.
 
+    nrow, ncol: numbers of row and column of lattice grid.
+
     stripped_elements_list: a list of stripped_elements, a **1D** string list.
 
     stripped_coordinates_list: a list of stripped coordinates, 2D string list.

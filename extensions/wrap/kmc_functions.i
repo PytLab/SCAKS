@@ -8,7 +8,7 @@
 */
 
 %define DOCSTR
-"C extension module for kMC Analysis providing key functions."
+"C extension module for kMC Analysis key functions."
 %enddef
 
 %module(docstring=DOCSTR) kmc_functions
@@ -180,6 +180,7 @@ a list of stripped elements list and coordinates.
 Python function prototype:
 --------------------------
 match_elements_list(types,
+                    nrow, ncol,
                     stripped_elements_list,
                     stripped_coordinates_list,
                     grid_shape)
@@ -187,6 +188,8 @@ match_elements_list(types,
 Parameters:
 -----------
 types: The site types at the lattice points as a list, list of str.
+
+nrow, ncol: numbers of row and column of lattice grid.
 
 stripped_elements_list: a list of stripped_elements, a **1D** string list.
 
