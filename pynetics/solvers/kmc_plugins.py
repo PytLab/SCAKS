@@ -369,9 +369,9 @@ def strip_local_configuration(elements, coordinates):
     return stripped_elements, stripped_coordinates
 
 
-class TOFCoveragesAnalysis(KMCAnalysisPlugin):
+class TOFCoveragesAnalysis(TOFAnalysis):
     '''
-    Sub-class of KMCLib KMCAnalysisPlugin to do on-the-fly TOF analysis.
+    Sub-class of TOFAnalysis to do on-the-fly TOF and coverages analysis.
     '''
     def __init__(self, kinetic_model):
         self.kinetic_model = kinetic_model
@@ -649,17 +649,3 @@ class TOFCoveragesAnalysis(KMCAnalysisPlugin):
             f.write(content)
 
         self.logger.info('coverages info are wirtten to auto_coverages.py.')
-
-    def append_TOFs(self):
-        '''
-        Function to calculate TOF values from statistic number, and
-        append them to self.TOFs, return current_tofs list.
-        '''
-        current_tofs = []
-        time_span = self.end_time - self.start_time
-        for idx, rate_list in enumerate(self.total_rates):
-            tof_list = [rate/(self.Ntot*time_span) for rate in rate_list]
-            self.TOFs[idx].append(tof_list)
-            current_tofs.append(tof_list)
-
-        return current_tofs
