@@ -182,7 +182,7 @@ int match_elements_list(char ** types, int nrow, int ncol,
     double (*coordinates)[dim2];  // point to a 2D int array
 
     total_success = 0;
-#pragma omp parallel for 
+#pragma omp parallel for
     for(irow = 0; irow < nrow; ++irow)
     {
         // get elements
