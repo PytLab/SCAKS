@@ -6,20 +6,19 @@
 CC = gcc
 SWIG = swig
 SWIGFLAGS = -python 
-CCFLAGS = -O3 -fPIC -c 
+CCFLAGS = -O3 -fPIC -c # -fopenmp 
 LDFLAGS = -shared
-OMPFLAG = -fopenmp
 EXTNAME = kmc_functions
 EXTDIR = ../pynetics/solvers/plugin_backends
 
 _kmc_functions.so: build/kmc_functions.o build/kmc_functions_wrap.o
-	$(CC) $(OMPFLAG) $(LDFLAGS) $^ -o $@
+	$(CC) $(LDFLAGS) $^ -o $@
 
 build/kmc_functions.o: src/kmc_functions.c
-	$(CC) $(OMPFLAG) $(CCFLAGS) -I include $< -o $@
+	$(CC) $(CCFLAGS) -I include $< -o $@
 
 build/kmc_functions_wrap.o: wrap/kmc_functions_wrap.c
-	$(CC) $(OMPFLAG) $(CCFLAGS) -I include $< -o $@
+	$(CC) $(CCFLAGS) -I include $< -o $@
 
 wrap/kmc_functions_wrap.c: wrap/kmc_functions.i
 	$(SWIG) $(SWIGFLAGS) $^

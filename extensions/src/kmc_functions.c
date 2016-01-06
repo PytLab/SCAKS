@@ -1,6 +1,7 @@
 #ifndef PLUGIN_BACKENDS_
     #include "plugin_backends.h"
 #endif
+#include <omp.h>
 
 /**************************************************************
   * Function   : collect_coverage
@@ -27,18 +28,15 @@
 ***************************************************************/
 void collect_coverage(char ** types, int ntot, char ** possible_types,
                       int nsp, double * cvgs, int ncvgs)
-#pragma omp parallel
 {
     int itype, isp;  // loop counter for types and nspecies
     bool same;       // species matching successful or not
 
     // initialize coverages
-#pragma omp for
     for(isp = 0; isp < nsp; ++isp)
         cvgs[isp] = 0.0;
 
     // collect species
-#pragma omp for
     for(itype = 0; itype < ntot; ++itype)
     {
         for(isp = 0; isp < nsp; ++isp)
@@ -49,7 +47,6 @@ void collect_coverage(char ** types, int ntot, char ** possible_types,
     }
 
     // get coverges
-#pragma omp for
     for(isp = 0; isp < nsp; ++isp)
         cvgs[isp] = cvgs[isp]/(float)ntot;
 }
@@ -95,7 +92,6 @@ int match_elements(char ** types, char ** elements,
 
     // go through every site on grid
     n_success = 0; 
-#pragma omp parallel for
     for(i = 0; i < nrow; ++i)
     {
         for(j = 0; j < ncol; ++j)
@@ -186,7 +182,7 @@ int match_elements_list(char ** types, int nrow, int ncol,
     double (*coordinates)[dim2];  // point to a 2D int array
 
     total_success = 0;
-#pragma omp parallel for
+#pragma omp parallel for 
     for(irow = 0; irow < nrow; ++irow)
     {
         // get elements
@@ -203,6 +199,7 @@ int match_elements_list(char ** types, int nrow, int ncol,
         // add to total success number
         total_success += n_success;
     }
+
 
     return total_success;
 }
