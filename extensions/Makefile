@@ -7,8 +7,8 @@ CC = gcc
 SWIG = swig
 SWIGFLAGS = -python 
 CCFLAGS = -O3 -fPIC -c 
+OMPFLAG = # -fopenmp
 LDFLAGS = -shared
-OMPFLAG = -fopenmp
 EXTNAME = kmc_functions
 EXTDIR = ../pynetics/solvers/plugin_backends
 
