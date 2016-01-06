@@ -62,3 +62,7 @@ extensions/*.py
 
 # unittest files
 extensions/unittest/*.xml
+
+# vim temp files
+*.swp
+*un~
