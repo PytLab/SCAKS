@@ -90,9 +90,9 @@ int clean_suite(void)
 
 /* test case array */
 My_TestInfo tests[NTESTS] = {
-    {"test of test_collect_coverage", test_collect_coverage},
-    {"test of match elements", test_match_elements},
-    {"test of match_elements_list", test_match_elements_list}
+    {"test collect_coverage", test_collect_coverage},
+    {"test match elements", test_match_elements},
+    {"test match_elements_list", test_match_elements_list}
 };
 
 
