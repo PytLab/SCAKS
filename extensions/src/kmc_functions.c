@@ -27,15 +27,18 @@
 ***************************************************************/
 void collect_coverage(char ** types, int ntot, char ** possible_types,
                       int nsp, double * cvgs, int ncvgs)
+#pragma omp parallel
 {
     int itype, isp;  // loop counter for types and nspecies
     bool same;       // species matching successful or not
 
     // initialize coverages
+#pragma omp for
     for(isp = 0; isp < nsp; ++isp)
         cvgs[isp] = 0.0;
 
     // collect species
+#pragma omp for
     for(itype = 0; itype < ntot; ++itype)
     {
         for(isp = 0; isp < nsp; ++isp)
@@ -46,6 +49,7 @@ void collect_coverage(char ** types, int ntot, char ** possible_types,
     }
 
     // get coverges
+#pragma omp for
     for(isp = 0; isp < nsp; ++isp)
         cvgs[isp] = cvgs[isp]/(float)ntot;
 }
@@ -90,7 +94,9 @@ int match_elements(char ** types, char ** elements,
     ncol = grid_shape[1];
 
     // go through every site on grid
-    for(i = 0, n_success = 0; i < nrow; ++i)
+    n_success = 0; 
+#pragma omp parallel for
+    for(i = 0; i < nrow; ++i)
     {
         for(j = 0; j < ncol; ++j)
         {
@@ -179,7 +185,9 @@ int match_elements_list(char ** types, int nrow, int ncol,
     int index;          // index number in 1D char * array -- elements_list
     double (*coordinates)[dim2];  // point to a 2D int array
 
-    for(total_success = 0, irow = 0; irow < nrow; ++irow)
+    total_success = 0;
+#pragma omp parallel for
+    for(irow = 0; irow < nrow; ++irow)
     {
         // get elements
         index = ncol * irow;
