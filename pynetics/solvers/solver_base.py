@@ -6,7 +6,15 @@ import gmpy2
 import sympy as sym
 from scipy.integrate import odeint
 from scipy.optimize import golden
-import matplotlib.pyplot as plt
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    print "!!!                                                   !!!"
+    print "!!!       WARNING: Matplotlib is not installed        !!!"
+    print "!!!       Any plot functions will be disabled         !!!"
+    print "!!!                                                   !!!"
+    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
 from .. import KineticCoreComponent
 from ..functions import numerical_jacobian

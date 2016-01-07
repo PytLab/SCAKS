@@ -33,6 +33,7 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         possible_types = adsorbate_names + ['Vac']
         self.possible_types = possible_types
         self.ncvgs = len(possible_types)
+        self.total_step = self.kinetic_model.nstep
 
         # initialize recorder variables
         self.steps = []
@@ -122,6 +123,8 @@ class TOFAnalysis(KMCAnalysisPlugin):
         # get total site number
         grid_shape = self.kinetic_model.grid_shape
         self.Ntot = reduce(lambda x, y: x*y, grid_shape)
+        
+        self.total_step = self.kinetic_model.nstep
 
         # set logger
         self.logger = logging.getLogger('model.solvers.TOFAnalysis')
@@ -208,17 +211,19 @@ class TOFAnalysis(KMCAnalysisPlugin):
         :param configuration: The up to date configuration of the simulation.
         :type configuration: KMCConfiguration
         '''
+        percentage = int(float(step)/float(self.total_step)*100)
         # TOF analysis start when coverage is converged
         if step < self.start_step:
-            self.logger.info("TOf analysis passed ( %d )", step)
+            self.logger.info("[ %d%% ] TOf analysis skipped ( step: %d, time: %e s )",
+                             percentage, step, time)
             return
 
         # TOF start stamp
         if not self.start:
             self.start = True
             self.start_time = time
-            self.logger.info('TOF analysis starts (%d) at time = %e s\n',
-                             step, self.start_time)
+            self.logger.info('[ %d%% ] TOF analysis starts (%d) at time = %e s\n',
+                             percentage, step, self.start_time)
             return
 
         # collect step and time
@@ -227,9 +232,9 @@ class TOFAnalysis(KMCAnalysisPlugin):
 
         # info output
         self.analysis_counter += 1
-        self.logger.info('-------- Entering TOF analysis %d ( %d ) --------',
-                         self.analysis_counter, step)
-        self.logger.info('collect statistics about possible reaction:')
+        self.logger.info('[ %d%% ] Entering TOF analysis %d ( step: %d, time: %e s ) ',
+                         percentage, self.analysis_counter, step, time)
+        self.logger.info('collect statistics about possible reactions:')
 
         # get current types
         types = configuration.types()
@@ -395,6 +400,8 @@ class TOFCoveragesAnalysis(TOFAnalysis):
         # initialize surface species cvg
         self.species_cvgs = []
 
+        self.total_step = self.kinetic_model.nstep
+
         # set logger
         self.logger = logging.getLogger('model.solvers.TOFCoveragesAnalysis')
 
@@ -495,6 +502,8 @@ class TOFCoveragesAnalysis(TOFAnalysis):
         :param configuration: The up to date configuration of the simulation.
         :type configuration: KMCConfiguration
         '''
+        percentage = int(float(step)/float(self.total_step)*100)
+
         #-----------------------------------------------
         #    do coverage analysis before tof analysis
         #-----------------------------------------------
@@ -514,16 +523,16 @@ class TOFCoveragesAnalysis(TOFAnalysis):
 
         # TOF analysis start when coverage is converged
         if not converged and not self.start:
-            self.logger.info("Coverages not converged, TOf analysis passed ( %d )",
-                             step)
+            self.logger.info("[ %d%% ] Coverages not converged, TOf analysis skipped " +
+                             "( step: %d, time: %e s )", percentage, step, time)
             return
 
         # TOF start stamp
         if not self.start:
             self.start = True
             self.start_time = time
-            self.logger.info('TOF analysis starts (%d) at time = %e s\n',
-                             step, self.start_time)
+            self.logger.info('[ %d%% ] TOF analysis starts (%d) at time = %e s\n',
+                             percentage, step, self.start_time)
             return
 
         # collect step and time
@@ -532,8 +541,8 @@ class TOFCoveragesAnalysis(TOFAnalysis):
 
         # info output
         self.tof_analysis_counter += 1
-        self.logger.info('-------- Entering TOF analysis %d ( %d ) --------',
-                         self.tof_analysis_counter, step)
+        self.logger.info('[ %d%% ] Entering TOF analysis %d ( step: %d, time: %e s )',
+                         percentage, self.tof_analysis_counter, step, time)
         self.logger.info('collect statistics about possible reaction:')
 
         # get current types
