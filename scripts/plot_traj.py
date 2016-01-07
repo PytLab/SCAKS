@@ -29,10 +29,10 @@ circle_attrs = dict(
 if len(sys.argv) > 1:
         filename = str(sys.argv[1])
 else:
-    if os.path.exists('./fixed_traj.py'):
-        filename = 'fixed_traj.py'
+    if os.path.exists('./auto_trajectory.py'):
+        filename = 'auto_trajectory.py'
     else:
-        logging.error('No traj file supplied.')
+        logging.error('No trajectory file supplied.')
 
 # load traj info
 globs = {}
