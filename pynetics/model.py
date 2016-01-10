@@ -219,4 +219,47 @@ class KineticModel(object):
                                        ' could not be imported. ' +
                                        'Ensure that the class ' +
                                        'exists and is spelled properly.')
-            #HACK END
+        #HACK END
+
+        # kMC control parameters
+        if 'kmc_continue' in locs and locs['kmc_continue']:
+            # read in step and time info
+            self.logger.info('reading in kMC control parameters...')
+            # read from auto_coverages.py
+            if not os.path.exists('./auto_coverages.py'):
+                raise FilesError('No auto_coverages.py in current path.')
+            cvg_globs, cvg_locs = {}, {}
+            execfile('./auto_coverages.py', cvg_globs, cvg_locs)
+            step1, time1 = cvg_locs['steps'][-1], cvg_locs['times'][-1]
+
+            # read from auto_TOFs.py
+            if not os.path.exists('./auto_TOFs.py'):
+                raise FilesError('No auto_TOFs.py in current path.')
+            tof_globs, tof_locs = {}, {}
+            execfile('./auto_TOFs.py', tof_globs, tof_locs)
+            step2, time2 = tof_locs['steps'][-1], tof_locs['times'][-1]
+            # get total_rates calculated from last loop
+            total_rates = tof_locs['total_rates']
+
+            # read from auto_last_types.py
+            if not os.path.exists('auto_last_types.py'):
+                raise FilesError('No auto_last_types.py in current path.')
+            types_globs, types_locs = {}, {}
+            execfile('auto_last_types.py', types_globs, types_locs)
+            last_types = types_locs['types']
+
+            # check data consistency
+            if not step1 == step2:
+                raise FilesError('Steps(%d, %d) are not consistent.' %
+                                 (step1, step2))
+            if not (abs(time1 - time2) < 1e-5):
+                raise FilesError('Times(%s, %s) are not consistent.' %
+                                 (time1, time2)) 
+
+            # set model attributes
+            self.start_step, self.start_time = step1, time1
+            self.start_types = last_types  # used in kmc_solver when initialize configuration
+            self.total_rates = total_rates
+            self.logger.info('kMC analysis starts from step = %d, time = %e s',
+                             self.start_step, self.start_time)
+
