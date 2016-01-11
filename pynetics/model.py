@@ -260,12 +260,13 @@ class KineticModel(object):
 
             # set model attributes
             # -------------------------------------------------------------------
-            # Note: **start_time** is the time when all analysis object end
-            #       in last kmc loop which is the start point in current kmc loop.
+            #                        >>> Note <<<
+            # **start_time** is the time when all analysis object end
+            # in last kmc loop which is the start point in current kmc loop.
             #
-            #       **tof_start_time** is the time when true TOF analysis
-            #       begins(no TOF calculation at this point) in last kmc loop
-            #       which is also used in continous kmc loop.
+            # **tof_start_time** is the time when true TOF analysis
+            # begins(no TOF calculation at this point) in last kmc loop
+            # which is also used in continous kmc loop.
             # -------------------------------------------------------------------
             self.start_step, self.start_time = step1, time1
             self.tof_start_time = tof_start_time
