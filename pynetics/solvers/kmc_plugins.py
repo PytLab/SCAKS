@@ -1,7 +1,9 @@
 #####################################################################
 #           KMC plugins for coverages and TOF analysis
-# * CoveragesAnalysis and TOFAnalysis is sub-class of KynetixPlugin, 
+#
+# * CoveragesAnalysis and TOFAnalysis are sub-classes of KynetixPlugin, 
 #   and support continuous job calculations.
+#
 # * TOFCoveragesAnalysis is sub-class of TOFAnalysis,
 #   dose not support continuous job calculations.
 #####################################################################
@@ -43,7 +45,7 @@ def reset_step_and_time(func):
 
 class KynetixPlugin(KMCAnalysisPlugin):
     '''
-    Base class analysis classes in kynetix inherit from.
+    Base class from which analysis classes in kynetix inherit.
     '''
     def __init__(self, kinetic_model):
         self.kinetic_model = kinetic_model
@@ -623,6 +625,9 @@ class TOFCoveragesAnalysis(TOFAnalysis):
                              "( step: %d, time: %e s )", percentage, step, time)
             return
 
+        # -----------------------------------------------
+        # TOF analysis starts when coverages converged
+        # -----------------------------------------------
         # TOF start stamp
         if not self.start:
             self.start = True
