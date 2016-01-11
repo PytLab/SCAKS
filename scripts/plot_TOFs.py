@@ -1,6 +1,8 @@
 '''
-    Module to plot auto_TOFs.py
+    Script to plot auto_TOFs.py
 '''
+
+import sys
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -35,48 +37,72 @@ for var in locs:
         labels.append(idx + '^{-}')
         log_labels.append(idx + '^{-}')
 
-# TOFs vs steps
-plt.subplot(221)
-for label, pts in zip(labels, line_pts):
-    label = r'$\bf{' + label + r'}$'
-    plt.plot(steps, pts, label=label, linewidth=2.5)
+if '--log' in sys.argv:
+    # TOFs logrithm vs steps
+    plt.subplot(121)
+    for label, pts in zip(log_labels, log_line_pts):
+        label = r'$\bf{' + label + r'}$'
+        plt.plot(steps, pts, label=label, linewidth=2.5)
 
-plt.ylabel(r'$\bf{TOFs}$', fontsize=16)
-plt.xlabel(r'$\bf{kMC step}$', fontsize=16)
-plt.legend()
-plt.grid(True)
+    plt.ylabel(r'$\bf{log(TOF)}$', fontsize=16)
+    plt.xlabel(r'$\bf{kMC step}$', fontsize=16)
+    plt.legend()
+    plt.grid(True)
 
-# TOFs vs time
-plt.subplot(222)
-for label, pts in zip(labels, line_pts):
-    label = r'$\bf{' + label + r'}$'
-    plt.plot(times, pts, label=label, linewidth=2.5)
+    # TOFs logrithm vs time
+    plt.subplot(122)
+    for label, pts in zip(log_labels, log_line_pts):
+        label = r'$\bf{' + label + r'}$'
+        plt.plot(times, pts, label=label, linewidth=2.5)
 
-plt.ylabel(r'$\bf{TOFs}$', fontsize=16)
-plt.xlabel(r'$\bf{Time (s)}$', fontsize=16)
-plt.legend()
-plt.grid(True)
+    plt.ylabel(r'$\bf{log(TOF)}$', fontsize=16)
+    plt.xlabel(r'$\bf{Time (s)}$', fontsize=16)
+    plt.legend()
+    plt.grid(True)
 
-# TOFs logrithm vs steps
-plt.subplot(223)
-for label, pts in zip(log_labels, log_line_pts):
-    label = r'$\bf{' + label + r'}$'
-    plt.plot(steps, pts, label=label, linewidth=2.5)
+else:
+    # TOFs vs steps
+    plt.subplot(221)
+    for label, pts in zip(labels, line_pts):
+        label = r'$\bf{' + label + r'}$'
+        plt.plot(steps, pts, label=label, linewidth=2.5)
 
-plt.ylabel(r'$\bf{log(TOF)}$', fontsize=16)
-plt.xlabel(r'$\bf{kMC step}$', fontsize=16)
-plt.legend()
-plt.grid(True)
+    plt.ylabel(r'$\bf{TOF}$', fontsize=16)
+    plt.xlabel(r'$\bf{kMC step}$', fontsize=16)
+    plt.legend()
+    plt.grid(True)
 
-# TOFs logrithm vs time
-plt.subplot(224)
-for label, pts in zip(log_labels, log_line_pts):
-    label = r'$\bf{' + label + r'}$'
-    plt.plot(times, pts, label=label, linewidth=2.5)
+    # TOFs vs time
+    plt.subplot(222)
+    for label, pts in zip(labels, line_pts):
+        label = r'$\bf{' + label + r'}$'
+        plt.plot(times, pts, label=label, linewidth=2.5)
 
-plt.ylabel(r'$\bf{log(TOF)}$', fontsize=16)
-plt.xlabel(r'$\bf{Time (s)}$', fontsize=16)
-plt.legend()
-plt.grid(True)
+    plt.ylabel(r'$\bf{TOF}$', fontsize=16)
+    plt.xlabel(r'$\bf{Time (s)}$', fontsize=16)
+    plt.legend()
+    plt.grid(True)
+
+    # TOFs logrithm vs steps
+    plt.subplot(223)
+    for label, pts in zip(log_labels, log_line_pts):
+        label = r'$\bf{' + label + r'}$'
+        plt.plot(steps, pts, label=label, linewidth=2.5)
+
+    plt.ylabel(r'$\bf{log(TOF)}$', fontsize=16)
+    plt.xlabel(r'$\bf{kMC step}$', fontsize=16)
+    plt.legend()
+    plt.grid(True)
+
+    # TOFs logrithm vs time
+    plt.subplot(224)
+    for label, pts in zip(log_labels, log_line_pts):
+        label = r'$\bf{' + label + r'}$'
+        plt.plot(times, pts, label=label, linewidth=2.5)
+
+    plt.ylabel(r'$\bf{log(TOF)}$', fontsize=16)
+    plt.xlabel(r'$\bf{Time (s)}$', fontsize=16)
+    plt.legend()
+    plt.grid(True)
 
 plt.show()
