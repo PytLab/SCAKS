@@ -240,6 +240,8 @@ class KineticModel(object):
             step2, time2 = tof_locs['steps'][-1], tof_locs['times'][-1]
             # get total_rates calculated from last loop
             total_rates = tof_locs['total_rates']
+            # get time when the first TOF analysis start
+            tof_start_time = tof_locs['start_time']
 
             # read from auto_last_types.py
             if not os.path.exists('auto_last_types.py'):
@@ -257,9 +259,20 @@ class KineticModel(object):
                                  (time1, time2)) 
 
             # set model attributes
+            # -------------------------------------------------------------------
+            # Note: **start_time** is the time when all analysis object end
+            #       in last kmc loop which is the start point in current kmc loop.
+            #
+            #       **tof_start_time** is the time when true TOF analysis
+            #       begins(no TOF calculation at this point) in last kmc loop
+            #       which is also used in continous kmc loop.
+            # -------------------------------------------------------------------
             self.start_step, self.start_time = step1, time1
-            self.start_types = last_types  # used in kmc_solver when initialize configuration
+            self.tof_start_time = tof_start_time
+            self.start_types = last_types
             self.total_rates = total_rates
             self.logger.info('kMC analysis starts from step = %d, time = %e s',
                              self.start_step, self.start_time)
+            # update random seed
+            #self.seed += 6
 
