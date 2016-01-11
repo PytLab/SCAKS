@@ -1,3 +1,10 @@
+#####################################################################
+#           KMC plugins for coverages and TOF analysis
+# * CoveragesAnalysis and TOFAnalysis is sub-class of KynetixPlugin, 
+#   and support continuous job calculations.
+# * TOFCoveragesAnalysis is sub-class of TOFAnalysis,
+#   dose not support continuous job calculations.
+#####################################################################
 import logging
 
 import numpy as np
@@ -22,18 +29,72 @@ except ImportError:
     from kmc_functions import *
 
 
-class CoveragesAnalysis(KMCAnalysisPlugin):
+def reset_step_and_time(func):
     '''
-    Sub-class of KMCLib KMCAnalysisPlugin to do on-the-fly coverage analysis.
+    Decorator function to decorate analysis plugin methods.
+    '''
+    def wrapped_func(self, step, time, configuration):
+        step = step + self.step_base
+        time = time + self.time_base
+        func(self, step, time, configuration)
+
+    return wrapped_func
+
+
+class KynetixPlugin(KMCAnalysisPlugin):
+    '''
+    Base class analysis classes in kynetix inherit from.
     '''
     def __init__(self, kinetic_model):
+        self.kinetic_model = kinetic_model
+
+        # -----------------------------------------------------
+        # base point is used to get correct time and step value
+        # when the job is a continuous job
+        # -----------------------------------------------------
+        # set step base point
+        if hasattr(self.kinetic_model, 'start_step'):
+            self.step_base = self.kinetic_model.start_step
+        else:
+            self.step_base = 0
+
+        # set time base point
+        if hasattr(self.kinetic_model, 'start_time'):
+            self.time_base = self.kinetic_model.start_time
+        else:
+            self.time_base = 0.0
+
+        # total step number for kMC loop
+        self.total_step = self.kinetic_model.nstep
+
+        # condition for continuous job or not
+        self.continuous_job = (hasattr(self.kinetic_model, 'kmc_continue') and
+                               self.kinetic_model.kmc_continue)
+
+    def store_last_types(self):
+        '''
+        Archive self.last_types by writting it to file.
+        '''
+        last_types_str = get_list_string('types', self.last_types)
+        content = file_header + last_types_str
+
+        with open('auto_last_types.py', 'w') as f:
+            f.write(content)
+        self.logger.info('types info written into auto_last_types.py')
+
+
+class CoveragesAnalysis(KynetixPlugin):
+    '''
+    Sub-class of KMCLib KynetixPlugin to do on-the-fly coverage analysis.
+    '''
+    def __init__(self, kinetic_model):
+        KynetixPlugin.__init__(self, kinetic_model)
         # get possible elements type
         adsorbate_names = [ads.split('_')[0] for ads in
                            kinetic_model.adsorbate_names]
         possible_types = adsorbate_names + ['Vac']
         self.possible_types = possible_types
         self.ncvgs = len(possible_types)
-        self.total_step = self.kinetic_model.nstep
 
         # initialize recorder variables
         self.steps = []
@@ -45,6 +106,7 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         # set logger
         self.logger = logging.getLogger('model.solvers.CoveragesAnalysis')
 
+    @reset_step_and_time
     def setup(self, step, time, configuration):
         '''
         Function called right before the start of the KMC loop to allow for
@@ -67,6 +129,7 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         cvgs = collect_coverage(types, self.possible_types, self.ncvgs)
         self.species_cvgs.append(cvgs)
 
+    @reset_step_and_time
     def registerStep(self, step, time, configuration):
         '''
         Called from the KMC loop after each step.
@@ -87,6 +150,7 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         types = configuration.types()
         cvgs = collect_coverage(types, self.possible_types, self.ncvgs)
         self.species_cvgs.append(cvgs)
+        self.last_types = configuration.types()
 
     def finalize(self):
         '''
@@ -102,33 +166,39 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         possible_types_str = get_list_string('possible_types',
                                              self.possible_types)
 
-        # write to file
+        # write to coverages file
         content = (file_header + times_str + steps_str +
                    cvgs_str + possible_types_str)
-        with open('auto_coverages.py', 'w') as f:
+        if self.continuous_job:
+            filename = 'auto_coverages_ctn.py'
+        else:
+            filename = 'auto_coverages.py'
+        with open(filename, 'w') as f:
             f.write(content)
+        self.logger.info('coverages info are written to ' + filename + '.')
 
-        self.logger.info('coverages info are wirtten to auto_coverages.py.')
+        # write to last types file
+        self.store_last_types()
 
         return
 
 
-class TOFAnalysis(KMCAnalysisPlugin):
+class TOFAnalysis(KynetixPlugin):
     '''
-    Sub-class of KMCLib KMCAnalysisPlugin to do on-the-fly TOF analysis.
+    Sub-class of KMCLib KynetixPlugin to do on-the-fly TOF analysis.
     '''
     def __init__(self, kinetic_model):
-        self.kinetic_model = kinetic_model
+        KynetixPlugin.__init__(self, kinetic_model)
+
         self.rxn_indices = kinetic_model.TOF_indices
         # get total site number
         grid_shape = self.kinetic_model.grid_shape
         self.Ntot = reduce(lambda x, y: x*y, grid_shape)
-        
-        self.total_step = self.kinetic_model.nstep
 
         # set logger
         self.logger = logging.getLogger('model.solvers.TOFAnalysis')
 
+    @reset_step_and_time
     def setup(self, step, time, configuration):
         '''
         Function called right before the start of the KMC loop to allow for
@@ -181,9 +251,11 @@ class TOFAnalysis(KMCAnalysisPlugin):
         self.coordinates = self.kinetic_model.solver.get_coordinates()
         # set delta t
         self.last_time = time
-        # set temp total rate
-        self.total_rates = [[0.0, 0.0] for i in xrange(len(rates_list))]
-        # set counter
+        # set total rate
+        if hasattr(self.kinetic_model, 'total_rates'):
+            self.total_rates = self.kinetic_model.total_rates
+        else:
+            self.total_rates = [[0.0, 0.0] for i in xrange(len(rates_list))] # set counter
         self.analysis_counter = 0
         # step and time collection ccontainers
         self.steps, self.times = [], []
@@ -191,13 +263,27 @@ class TOFAnalysis(KMCAnalysisPlugin):
         self.TOFs = [[] for i in xrange(len(rates_list))]
 
         # variables for TOF analysis delay
-        self.start = False
-        self.start_time = 0.0
-        if not hasattr(self.kinetic_model, 'TOF_start_step'):
+        # if it's a continuous job, start at the first step
+        if self.continuous_job:
+            self.start = True
+        else:
+            self.start = False
+
+        # if it's a continuous job, taf start time is the same as
+        # that in last kmc job
+        if hasattr(self.kinetic_model, 'tof_start_time'):
+            self.start_time = self.kinetic_model.tof_start_time
+        else:
+            self.start_time = 0.0
+
+        # use TOF_start_step value if set in setup file
+        # or if it's a continuous job, start at the first step(set to 0)
+        if self.continuous_job or not hasattr(self.kinetic_model, 'TOF_start_step'):
             self.start_step = 0
         else:
             self.start_step = self.kinetic_model.TOF_start_step
 
+    @reset_step_and_time
     def registerStep(self, step, time, configuration):
         '''
         Called from the KMC loop after each step.
@@ -211,7 +297,9 @@ class TOFAnalysis(KMCAnalysisPlugin):
         :param configuration: The up to date configuration of the simulation.
         :type configuration: KMCConfiguration
         '''
-        percentage = int(float(step)/float(self.total_step)*100)
+        # process percentage
+        percentage = int(float(step - self.step_base)/float(self.total_step)*100)
+
         # TOF analysis start when coverage is converged
         if step < self.start_step:
             self.logger.info("[ %d%% ] TOf analysis skipped ( step: %d, time: %e s )",
@@ -241,9 +329,8 @@ class TOFAnalysis(KMCAnalysisPlugin):
         grid_shape = self.kinetic_model.grid_shape
 
         # get elapsed time
-        current_time = time
-        dt = current_time - self.last_time
-        self.last_time = current_time
+        dt = time - self.last_time
+        self.last_time = time
         self.end_time = time
 
         def collect_statistics(species_configs):
@@ -288,7 +375,7 @@ class TOFAnalysis(KMCAnalysisPlugin):
             total_forward_rate = Rf*n_forward*dt
 
             # get total sum of ka of reversed reaction
-            n_reversed = collect_statistics(reactant_configs)
+            n_reversed = collect_statistics(product_configs)
             total_reversed_rate = Rr*n_reversed*dt
 
             # add total rate to total rates list
@@ -313,20 +400,28 @@ class TOFAnalysis(KMCAnalysisPlugin):
 
         Write steps, time, tof trajectories to file.
         '''
+        start_time_str = '\nstart_time = %e\n\n' % self.start_time  # time when TOF analysis begins
         times_str = get_list_string('times', self.times)
         steps_str = get_list_string('steps', self.steps)
+        total_rates_str = get_list_string('total_rates', self.total_rates)
         # get TOFs string
         TOFs_str = ''
         for idx, tofs in enumerate(self.TOFs):
             elementary_str = get_list_string('TOFs_'+str(idx), tofs)
             TOFs_str += elementary_str
 
-        content = file_header + times_str + steps_str + TOFs_str
+        content = (file_header + start_time_str + times_str +
+                   steps_str + TOFs_str + total_rates_str)
 
-        with open('auto_TOFs.py', 'w') as f:
+        if self.continuous_job: 
+            filename = 'auto_TOFs_ctn.py'
+        else:
+            filename = 'auto_TOFs.py'
+
+        with open(filename, 'w') as f:
             f.write(content)
 
-        self.logger.info('TOFs info are written to auto_TOFs.py.')
+        self.logger.info('TOFs info are written to ' + filename + '.')
 
     def append_TOFs(self):
         '''
@@ -503,6 +598,7 @@ class TOFCoveragesAnalysis(TOFAnalysis):
         :type configuration: KMCConfiguration
         '''
         percentage = int(float(step)/float(self.total_step)*100)
+        self.last_types = configuration.types()
 
         #-----------------------------------------------
         #    do coverage analysis before tof analysis
@@ -550,9 +646,8 @@ class TOFCoveragesAnalysis(TOFAnalysis):
         grid_shape = self.kinetic_model.grid_shape
 
         # get elapsed time
-        current_time = time
-        dt = current_time - self.last_time
-        self.last_time = current_time
+        dt = time - self.last_time
+        self.last_time = time
         self.end_time = time
 
         def collect_statistics(species_configs):
@@ -625,15 +720,18 @@ class TOFCoveragesAnalysis(TOFAnalysis):
         #----------------------------------------------
         #          generate TOF analysis file
         #----------------------------------------------
+        start_time_str = '\nstart_time = %e\n\n' % self.start_time  # time when TOF analysis begins
         times_str = get_list_string('times', self.tof_times)
         steps_str = get_list_string('steps', self.tof_steps)
+        total_rates_str = get_list_string('total_rates', self.total_rates)
         # get TOFs string
         TOFs_str = ''
         for idx, tofs in enumerate(self.TOFs):
             elementary_str = get_list_string('TOFs_'+str(idx), tofs)
             TOFs_str += elementary_str
 
-        content = file_header + times_str + steps_str + TOFs_str
+        content = (file_header + start_time_str + times_str +
+                   steps_str + TOFs_str + total_rates_str)
 
         with open('auto_TOFs.py', 'w') as f:
             f.write(content)
@@ -658,3 +756,6 @@ class TOFCoveragesAnalysis(TOFAnalysis):
             f.write(content)
 
         self.logger.info('coverages info are wirtten to auto_coverages.py.')
+
+        self.store_last_types()
+
