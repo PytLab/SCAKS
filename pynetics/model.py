@@ -260,7 +260,6 @@ class KineticModel(object):
 
             # set model attributes
             # -------------------------------------------------------------------
-            #                        >>> Note <<<
             # **start_time** is the time when all analysis object end
             # in last kmc loop which is the start point in current kmc loop.
             #
