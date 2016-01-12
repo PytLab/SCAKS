@@ -7,11 +7,18 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
-globs, locs = {}, {}
-execfile('auto_TOFs.py', globs, locs)
+# get filename
+if len(sys.argv) <= 2:
+    filename = 'auto_TOFs.py' if len(sys.argv) == 1 else sys.argv[1]
+    # get time and steps
+    globs, locs = {}, {}
+    execfile(filename, globs, locs)
+    times, steps = locs['times'], locs['steps']
 
-# time and steps
-times, steps = locs['times'], locs['steps']
+else:
+    print "Usage: python plot_TOFs.py filename"
+    sys.exit(1)
+
 
 # get TOFs
 line_pts = []
