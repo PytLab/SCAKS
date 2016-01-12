@@ -697,7 +697,7 @@ class TOFCoveragesAnalysis(TOFAnalysis):
             total_forward_rate = Rf*n_forward*dt
 
             # get total sum of ka of reversed reaction
-            n_reversed = collect_statistics(reactant_configs)
+            n_reversed = collect_statistics(product_configs)
             total_reversed_rate = Rr*n_reversed*dt
 
             # add total rate to total rates list
