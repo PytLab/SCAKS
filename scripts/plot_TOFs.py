@@ -1,5 +1,9 @@
 '''
     Script to plot auto_TOFs.py
+
+    Usage example:
+    --------------
+    >>> python plot_TOFs.py auto_TOFs.py auto_TOFs_ctn.py
 '''
 
 import sys
@@ -8,15 +12,30 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # get filename
-if len(sys.argv) <= 2:
+if len(sys.argv) < 2:
     filename = 'auto_TOFs.py' if len(sys.argv) == 1 else sys.argv[1]
     # get time and steps
     globs, locs = {}, {}
     execfile(filename, globs, locs)
     times, steps = locs['times'], locs['steps']
 
+elif len(sys.argv) >= 2:
+    globs, locs = {}, {}
+    filename_1 = sys.argv[1]
+    execfile(filename_1, globs, locs)
+
+    # go through all the other files to append data
+    for filename in sys.argv[2: ]:
+        temp_globs, temp_locs = {}, {}
+        execfile(filename, temp_globs, temp_locs)
+        # for different data
+        for var in temp_locs:
+            if var == 'times' or var == 'steps' or var.startswith('TOFs_'):
+                locs[var].extend(temp_locs[var])
+    times, steps = locs['times'], locs['steps']
+    
 else:
-    print "Usage: python plot_TOFs.py filename"
+    print "Usage: python plot_TOFs.py file1 file2 ..."
     sys.exit(1)
 
 
