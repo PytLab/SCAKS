@@ -425,6 +425,9 @@ class TOFAnalysis(KynetixPlugin):
 
         self.logger.info('TOFs info are written to ' + filename + '.')
 
+        # write to last types file
+        self.store_last_types()
+
     def append_TOFs(self):
         '''
         Function to calculate TOF values from statistic number, and

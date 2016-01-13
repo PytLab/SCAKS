@@ -221,42 +221,60 @@ class KineticModel(object):
                                        'exists and is spelled properly.')
         #HACK END
 
+        # kMC parameters check
+
+        # pseudo random generator
+        if 'random_generator' not in locs:
+            self.logger.info('pseudo random generator type was not set.\n' +
+                             'use Mersenne-Twister by default.')
+
         # kMC control parameters
         if 'kmc_continue' in locs and locs['kmc_continue']:
             # read in step and time info
             self.logger.info('reading in kMC control parameters...')
+
             # read from auto_coverages.py
-            if not os.path.exists('./auto_coverages.py'):
-                raise FilesError('No auto_coverages.py in current path.')
-            cvg_globs, cvg_locs = {}, {}
-            execfile('./auto_coverages.py', cvg_globs, cvg_locs)
-            step1, time1 = cvg_locs['steps'][-1], cvg_locs['times'][-1]
+            self.logger.info('reading auto_coverages.py...')
+            has_auto_coverages = os.path.exists('./auto_coverages.py')
+            if has_auto_coverages:
+                #raise FilesError('No auto_coverages.py in current path.')
+                cvg_globs, cvg_locs = {}, {}
+                execfile('./auto_coverages.py', cvg_globs, cvg_locs)
+                cvg_step, cvg_time = cvg_locs['steps'][-1], cvg_locs['times'][-1]
+                self.logger.info('auto_coverages.py was read.')
+            else:
+                self.logger.info('auto_coverages.py not read.')
 
             # read from auto_TOFs.py
+            self.logger.info('reading auto_TOFs.py...')
             if not os.path.exists('./auto_TOFs.py'):
                 raise FilesError('No auto_TOFs.py in current path.')
             tof_globs, tof_locs = {}, {}
             execfile('./auto_TOFs.py', tof_globs, tof_locs)
-            step2, time2 = tof_locs['steps'][-1], tof_locs['times'][-1]
+            tof_step, tof_time = tof_locs['steps'][-1], tof_locs['times'][-1]
             # get total_rates calculated from last loop
             total_rates = tof_locs['total_rates']
             # get time when the first TOF analysis start
             tof_start_time = tof_locs['start_time']
+            self.logger.info('auto_TOFs.py was read.')
 
             # read from auto_last_types.py
+            self.logger.info('reading auto_last_types.py...')
             if not os.path.exists('auto_last_types.py'):
                 raise FilesError('No auto_last_types.py in current path.')
             types_globs, types_locs = {}, {}
             execfile('auto_last_types.py', types_globs, types_locs)
             last_types = types_locs['types']
+            self.logger.info('auto_last_types.py was read.')
 
             # check data consistency
-            if not step1 == step2:
-                raise FilesError('Steps(%d, %d) are not consistent.' %
-                                 (step1, step2))
-            if not (abs(time1 - time2) < 1e-5):
-                raise FilesError('Times(%s, %s) are not consistent.' %
-                                 (time1, time2)) 
+            if has_auto_coverages:
+                if not cvg_step == tof_step:
+                    raise FilesError('Steps(%d, %d) are not consistent.' %
+                                     (cvg_step, tof_step))
+                if not (abs(cvg_time - tof_time) < 1e-5):
+                    raise FilesError('Times(%s, %s) are not consistent.' %
+                                     (cvg_time, tof_time)) 
 
             # set model attributes
             # -------------------------------------------------------------------
@@ -267,12 +285,10 @@ class KineticModel(object):
             # begins(no TOF calculation at this point) in last kmc loop
             # which is also used in continous kmc loop.
             # -------------------------------------------------------------------
-            self.start_step, self.start_time = step1, time1
+            self.start_step, self.start_time = tof_step, tof_time
             self.tof_start_time = tof_start_time
             self.start_types = last_types
             self.total_rates = total_rates
             self.logger.info('kMC analysis starts from step = %d, time = %e s',
                              self.start_step, self.start_time)
-            # update random seed
-            #self.seed += 6
 
