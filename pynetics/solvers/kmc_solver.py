@@ -432,6 +432,12 @@ class KMCLibSolver(KMCSolver):
         dump_interval = self._owner.dump_interval
         seed = self._owner.seed
 
+        # get pseudo random number generator type
+        if not hasattr(self._owner, 'random_generator'):
+            rng_type = None
+        else:
+            rng_type = self._owner.random_generator
+
         if hasattr(self._owner, 'analysis_interval'):
             analysis_interval = self._owner.analysis_interval
         else:
@@ -442,7 +448,8 @@ class KMCLibSolver(KMCSolver):
             number_of_steps=nstep,
             dump_interval=dump_interval,
             analysis_interval=analysis_interval,
-            seed=seed)
+            seed=seed,
+            rng_type=rng_type)
 
         return control_parameters
 
