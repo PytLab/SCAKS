@@ -18,6 +18,7 @@ import images2gif
 from plotter_base import PlotterBase
 from ..errors.error import *
 from .grid_plot import *
+from .scatter_plot import *
 
 
 class KMCPlotter(PlotterBase):
@@ -29,6 +30,27 @@ class KMCPlotter(PlotterBase):
         # set logger
         self.logger = logging.getLogger('model.plotters.KMCPlotter')
 
+    def get_parameters(func):
+        '''
+        Decorator to extract attrs values from model,
+        and set them as parameters for kmc plotting.
+        '''
+        def wrapped_func(self, types, time, step, circle_attrs={}):
+            # get essential parameters
+            shape = self._owner.grid_shape
+            adsorbate_names = [ads.split('_')[0] for ads in self._owner.adsorbate_names]
+            possible_types = adsorbate_names + ['Vac']
+            color_dict = self._owner.color_dict
+            grid_type = self._owner.grid_type
+            circle_attrs = self._owner.circle_attrs
+
+            fig = func(self, types, time, step, circle_attrs={})
+            
+            return fig
+        
+        return wrapped_func
+
+    @get_parameters
     def plot_grid(self, types, time, step, circle_attrs={}):
         '''
         Function to plot lattice grid of a specified configure.
@@ -38,13 +60,7 @@ class KMCPlotter(PlotterBase):
         fig: plt.figure object contains grid plot.
 
         '''
-        # get essential parameters
-        shape = self._owner.grid_shape
-        adsorbate_names = [ads.split('_')[0] for ads in self._owner.adsorbate_names]
-        possible_types = adsorbate_names + ['Vac']
-        color_dict = self._owner.color_dict
-        grid_type = self._owner.grid_type
-        circle_attrs = self._owner.circle_attrs
+        # parameters are get by decorator @get_parameters
 
         # plot grid
         fig = plot_grid(shape, types, possible_types, color_dict,
@@ -52,11 +68,30 @@ class KMCPlotter(PlotterBase):
 
         return fig
 
-    def plot_traj(self, filename=None):
+    @get_parameters
+    def plot_scatter(self, types, time, step, circle_attrs={}):
+        '''
+        Function to plot lattice grid of a specified configure using scatter plot.
+
+        Returns:
+        --------
+        fig: plt.figure object contains grid plot.
+
+        '''
+        # parameters are get by decorator @get_parameters
+
+        # plot grid
+        fig = plot_scatter(shape, types, possible_types, color_dict,
+                           time, step, grid_type, circle_attrs)
+
+        return fig
+
+    def plot_traj(self, mode='grid', filename=None):
         '''
         Function plot trajectory pictures and create animated gif.
         '''
         # get essential parameters
+        shape = self._owner.grid_shape
         adsorbate_names = [ads.split('_')[0] for ads in self._owner.adsorbate_names]
         possible_types = adsorbate_names + ['Vac']
         color_dict = self._owner.color_dict
@@ -69,6 +104,14 @@ class KMCPlotter(PlotterBase):
         if not os.path.exists(filename):
             self.logger.error('No trajectory file found.')
             raise FilesError('No trajectory file found.')
+
+        # get plot function
+        if mode == 'grid':
+            plot_func = plot_grid
+        elif mode == "scatter":
+            plot_func = plot_scatters
+        else:
+            raise ParameterError('mode must be \'grid\' or \'scatter\'.')
 
         # load traj info
         globs = {}
@@ -89,7 +132,7 @@ class KMCPlotter(PlotterBase):
         images = []
         path = './trajplots/'
         for tp, step, simu_time in zip(types, steps, times):
-            fig = plot_grid(shape, tp, possible_types, color_dict,
+            fig = plot_func(shape, tp, possible_types, color_dict,
                             time=simu_time, step=step,
                             grid_type=grid_type,
                             circle_attrs=circle_attrs)

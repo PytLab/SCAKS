@@ -1,15 +1,13 @@
 from operator import mul
-import logging
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 
-def get_square_circle_pts(nx, ny):
+def get_square_scatter_pts(nx, ny):
     '''
-    Function to get positions of circles in grid,
+    Function to get positions of scatters in grid,
     from left to right, from bottom to top.
-    All number start from 1 instead of 0.
 
     Parameters:
     -----------
@@ -19,68 +17,32 @@ def get_square_circle_pts(nx, ny):
 
     Returns:
     --------
-    map1d: a list of coordinates of grid,
+    map1d: a list of coordinates of scatter,
            from left to right, from bottom to top,
-           list of tuples of int.
+           list of tuples of float.
 
     Example:
     --------
-    >>> get_square_circle_pts(2, 2)
-    >>> [(1, 1), (2, 1), (1, 2), (2, 2)]
+    >>> get_square_scatter_pts(2, 2)
+    >>> [(0.0, 0.0), (0.0, 0.1), (0.1, 0.0), (0.1, 0.1)]
     '''
-    y, x = np.mgrid[1: nx+1, 1: ny+1]
-    # use combination to get circle map
-    map2d = [zip(a, b) for a, b in zip(x, y)]
-    # reshape
-    map1d = []
-    for pts in map2d:
-        map1d.extend(pts)
+    # get possible x and y values
+    xv = np.arange(0.0, 0.1*nx, 0.1)  # start from 0.0
+    yv = np.arange(0.0, 0.1*ny, 0.1)
 
-    return map1d
+    # get all x values of points
+    x = xv.repeat(ny, axis=0)
 
+    # get all y valus of points
+    yv = yv.reshape(-1, 1)
+    y = yv.repeat(nx, axis=1)
+    y = y.reshape(-1, order='F')
 
-def get_square_lines_endpts(nx, ny):
-    '''
-    Function to get end points of square box line for plot use.
-
-    Parameters:
-    -----------
-    nx: The number of circle along x axis, int
-    ny: The number of circle along y axis, int
-
-    Returns:
-    --------
-    endpts: a list of tuples, contains x and y endpts for a line.
-            e.g. ((0.5, 2.5), (1.0, 1.0)) means x range is 0.5~2.5
-            and y range is 1.0~1.0.
-
-    Example:
-    --------
-    >>> get_square_lines_endpts(2,2)
-    >>> [((0.5, 2.5), (1.0, 1.0)),
-         ((0.5, 2.5), (2.0, 2.0)),
-         ((1.0, 1.0), (0.5, 2.5)),
-         ((2.0, 2.0), (0.5, 2.5))]
-
-    '''
-    # horizontal and vertical lines end points
-    horizontal_endpts = [((0.5, ny+0.5), (float(y), float(y)))
-                         for y in xrange(1, ny+1)]
-    vertical_endpts = [((float(x), (float(x))), (0.5, nx+0.5))
-                       for x in xrange(1, nx+1)]
-
-    endpts = []
-    endpts.extend(horizontal_endpts)
-    endpts.extend(vertical_endpts)
-
-    for endpt in endpts:
-        logging.debug(str(endpt))
-
-    return endpts
+    return zip(x, y)
 
 
-def plot_grid(shape, types, possible_types, color_dict,
-              time, step, grid_type='square', circle_attrs={}):
+def plot_scatters(shape, types, possible_types, color_dict,
+                  time, step, grid_type='square', circle_attrs={}):
     '''
     Function to plot lattice grid.
 
@@ -104,8 +66,7 @@ def plot_grid(shape, types, possible_types, color_dict,
                   (http://matplotlib.org/api/patches_api.html), dict.
     '''
     if grid_type == 'square':
-        get_lines_endpts = get_square_lines_endpts
-        get_circle_pts = get_square_circle_pts
+        get_scatter_pts = get_square_scatter_pts
 
     # check consistency of color_dict and types
     consistent = np.array([t in color_dict for t in possible_types]).all()
@@ -118,31 +79,40 @@ def plot_grid(shape, types, possible_types, color_dict,
         raise ValueError('points number in grid is not equal to types number.')
 
     # get grid lines end points & circle positions
-    endpts = get_lines_endpts(*shape)
-    cirpts = get_circle_pts(*shape)
+    scatter_pts = get_scatter_pts(*shape)
 
     # set containers
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.set_aspect('equal', adjustable='box')
 
-    # loop through type and points to add circle to axes
-    for t, pt in zip(types, cirpts):  # t, pt <-> type, circle_point
-        color = color_dict[t]
-        # get circle object
-        cir = plt.Circle(pt, radius=0.4, fc=color, **circle_attrs)
-        ax.add_patch(cir)
+    # classify points
+    scatter_dict = {}  # {adsorbate string: list of points}
+    for t in possible_types:
+        scatter_dict.setdefault(t, [])
 
-    # add lines
-    for endpt in endpts:
-        ax.plot(*endpt, color='#ABABAB', linestyle='dotted', linewidth=0.2)
+    for t, pt in zip(types, scatter_pts):  # t, pt <-> type, scatter_pt
+        color = color_dict[t]
+        scatter_dict[t].append(pt)        
+
+    # plot scatter points
+    for t, pts in scatter_dict.iteritems():
+        if not pts:
+            continue
+        x, y = zip(*pts)
+        color = color_dict[t]
+        alpha = circle_attrs['alpha']
+        edgecolor = circle_attrs['edgecolor']
+        area = circle_attrs['area']
+        ax.scatter(x, y, s=area, c=color, alpha=alpha, edgecolor=edgecolor)
 
     # set axes attrs
-    ax.set_xlim(0.5, shape[0]+0.5)
-    ax.set_ylim(0.5, shape[1]+0.5)
+    ax.set_xlim(-0.1, shape[0]*0.1)
+    ax.set_ylim(-0.1, shape[-1]*0.1)
     ax.set_xticks([])
     ax.set_yticks([])
     ax.set_title('Step = %d   Time = %fs' % (step, time))
+    ax.grid(True)
 
     return fig
 
@@ -162,12 +132,14 @@ if __name__ == '__main__':
         C='#607B8B',
         )
     circle_attrs = dict(
+        area=20,
         alpha=0.7,
         antialiased=True,
         edgecolor='#FFFFFF',
         )
 
-    fig = plot_grid(shape, types, possible_types, color_dict,
-                    time=0.01, step=2, circle_attrs=circle_attrs)
+    fig = plot_scatters(shape, types, possible_types, color_dict,
+                        time=0.01, step=2, circle_attrs=circle_attrs)
 
     plt.show()
+
