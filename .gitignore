@@ -66,3 +66,4 @@ extensions/unittest/*.xml
 # vim temp files
 *.swp
 *un~
+*swo
