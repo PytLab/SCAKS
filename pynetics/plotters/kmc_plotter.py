@@ -86,9 +86,21 @@ class KMCPlotter(PlotterBase):
 
         return fig
 
-    def plot_traj(self, mode='grid', filename=None):
+    def plot_traj(self, mode='grid', gif=True, filename=None):
         '''
         Function plot trajectory pictures and create animated gif.
+
+        Parameters:
+        -----------
+        mode: grid plotting mode, | 'grid' | 'scatter' |, defaults to be 'grid', str.
+
+        gif: generate GIF animation or not, defaults to be True, bool.
+
+        filename: input trajectory filename, use 'auto_trajectory.py' to be default, str.
+
+        Example:
+        >>> m.plotter.plot_traj(mode='scatter', gif=False, filename='traj.py')
+
         '''
         # get essential parameters
         shape = self._owner.grid_shape
@@ -150,8 +162,8 @@ class KMCPlotter(PlotterBase):
                 images.append(im)
 
         # make animated gif
-        if PIL_installed:
+        if PIL_installed and gif:
             gif_name = path + 'traj_movie.gif'
             self.logger.info('creating %s ...', gif_name)
-            images2gif.writeGif(gif_name, images, duration=0.2)
+            images2gif.writeGif(gif_name, images, duration=0.5)
             self.logger.info('Ok.')
