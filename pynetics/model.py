@@ -225,8 +225,8 @@ class KineticModel(object):
 
         # pseudo random generator
         if 'random_generator' not in locs:
-            self.logger.info('pseudo random generator type was not set.\n' +
-                             'use Mersenne-Twister by default.')
+            self.logger.info('pseudo random generator type was not set.')
+            self.logger.info('use Mersenne-Twister by default.')
 
         # kMC control parameters
         if 'kmc_continue' in locs and locs['kmc_continue']:
