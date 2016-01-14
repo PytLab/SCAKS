@@ -120,7 +120,7 @@ def plot_scatters(shape, types, possible_types, color_dict,
         time = '%es' % time
     else:
         time = '%dh %dmin %.2fsec' % convert_time(time)
-    ax.set_title('Step = %d  %s' % (step, time))
+    ax.set_title('Step = %d  ( %s )' % (step, time))
     ax.grid(True)
 
     return fig
