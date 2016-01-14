@@ -138,3 +138,15 @@ def get_list_string(var_name, list_obj):
     content = begin + data + end
 
     return content
+
+
+def convert_time(sec):
+    '''
+    Convert format of time from seconds to *h *min *sec.
+    '''
+    hours = int(sec/(3600.0))
+    minutes = int((sec - hours*3600)/60.0)
+    seconds = sec - hours*3600 - minutes*60
+
+    return hours, minutes, seconds  # int, int, float
+

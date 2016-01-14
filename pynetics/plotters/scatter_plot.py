@@ -3,6 +3,8 @@ from operator import mul
 import numpy as np
 import matplotlib.pyplot as plt
 
+from ..functions import convert_time
+
 
 def get_square_scatter_pts(nx, ny):
     '''
@@ -113,7 +115,12 @@ def plot_scatters(shape, types, possible_types, color_dict,
     ax.set_ylim(-0.1, shape[-1]*0.1)
     ax.set_xticks([])
     ax.set_yticks([])
-    ax.set_title('Step = %d   Time = %fs' % (step, time))
+    # get proper time format
+    if time < 1e-2:
+        time = '%es' % time
+    else:
+        time = '%dh %dmin %.2fsec' % convert_time(time)
+    ax.set_title('Step = %d  %s' % (step, time))
     ax.grid(True)
 
     return fig
