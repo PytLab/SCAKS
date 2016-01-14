@@ -285,6 +285,9 @@ class TOFAnalysis(KynetixPlugin):
         else:
             self.start_step = self.kinetic_model.TOF_start_step
 
+        # archive current types
+        self.last_types = configuration.types()
+
     @reset_step_and_time
     def registerStep(self, step, time, configuration):
         '''
