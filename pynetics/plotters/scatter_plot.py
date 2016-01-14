@@ -100,10 +100,12 @@ def plot_scatters(shape, types, possible_types, color_dict,
         if not pts:
             continue
         x, y = zip(*pts)
+        # get scatter attrs
         color = color_dict[t]
-        alpha = circle_attrs['alpha']
-        edgecolor = circle_attrs['edgecolor']
-        area = circle_attrs['area']
+        alpha = circle_attrs['alpha'] if 'alpha' in circle_attrs else 0.7
+        edgecolor = circle_attrs['edgecolor'] if 'edgecolor' in circle_attrs else color
+        area = circle_attrs['area'] if 'area' in circle_attrs else 60.0**2/mul(*shape)*20
+        marker = circle_attrs['marker'] if 'marker' in circle_attrs else 'o'
         ax.scatter(x, y, s=area, c=color, alpha=alpha, edgecolor=edgecolor)
 
     # set axes attrs
@@ -132,6 +134,7 @@ if __name__ == '__main__':
         C='#607B8B',
         )
     circle_attrs = dict(
+        marker='s',
         area=20,
         alpha=0.7,
         antialiased=True,

@@ -138,7 +138,7 @@ class KMCPlotter(PlotterBase):
                             circle_attrs=circle_attrs)
             if not os.path.exists(path):
                 os.mkdir(path)
-            fname = path + str(step)+'.png'
+            fname = path + str(step) + '.png'
 
             self.logger.info('creating %s ...', fname)
             fig.savefig(fname)
