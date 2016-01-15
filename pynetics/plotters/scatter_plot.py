@@ -115,13 +115,17 @@ def plot_scatters(shape, types, possible_types, color_dict,
     ax.set_ylim(-0.1, shape[-1]*0.1)
     ax.set_xticks([])
     ax.set_yticks([])
+    # attrs of axis
+    for spine in ax.spines.values():
+        spine.set_linestyle('dashed')
+        spine.set_alpha(0.5)
+        spine.set_color('#AAAAAA')
     # get proper time format
     if time < 1e-2:
         time = '%es' % time
     else:
         time = '%dh %dmin %.2fsec' % convert_time(time)
     ax.set_title('Step = %d  ( %s )' % (step, time))
-    ax.axis('off')
     ax.grid(True)
 
     return fig
