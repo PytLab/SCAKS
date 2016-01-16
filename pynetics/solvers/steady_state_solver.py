@@ -636,13 +636,19 @@ class SteadyStateSolver(SolverBase):
                 self.logger.info('error = %e', error)
                 break
 
-            newton_iterator = NewtonRoot(
-                f=f, J=J, x0=c0, constraint=constraint,
-                norm=self._norm, mpfloat=self._mpf,
-                matrix=self._matrix, Axb_solver=self._Axb_solver,
+            # instantiate rootfinding iterator
+            iterator_parameters = dict(
+                J=J,
+                constraint=constraint,
+                norm=self._norm,
+                mpfloat=self._mpf,
+                matrix=self._matrix,
+                Axb_solver=self._Axb_solver,
                 dtheta_dt_expressions=f_expression
             )
+            newton_iterator = ConstrainedNewton(f, c0, **iterator_parameters)
             self.logger.info('Newton Iterator instantiation - success!')
+
             x = c0
             old_error = 1e99
             if c0:

@@ -1,52 +1,62 @@
 '''
     Iterators for system of nonlinear equations roots finding.
 '''
+from ..errors.error import *
+
 
 class RootfindingIterator(object):
     def __init__(self, f, x0, **kwargs):
-        pass
+        # set attributes
+        self.f, self.x0 = f, x0        
+        for key in kwargs:
+            setattr(self, '_' + key, kwargs[key])
 
     def __iter__(self):
         pass
 
 
-class NewtonRoot(object):
+class ConstrainedNewton(RootfindingIterator):
     """
     Hacked from MDNewton in mpmath/calculus/optimization.py in order
     to allow for constraints on the solution.
     Find the root of a vector function numerically using Newton's method.
 
+    Parameters:
+    -----------
     f is a vector function representing a nonlinear equation system.
 
     x0 is the starting point close to the root.
 
-    J is a function returning the Jacobian matrix for a point.
+    **kwargs MUST contains: **
+    J: a function returning the Jacobian matrix for a point.
 
-    constraint is function to limit x.
+    constraint: a coverages tuple constraint function to set limit to x.
+
+    norm: a function to get a norm.
+
+    mpfloat: high-precision float type, e.g. mpmath.mpfloat
+
+    matrix: matrix type, e.g. mpmath.matrix
+
+    Axb_solver: a function to solve system of linear equations by solving Ax=b.
+
     """
-    def __init__(self, f, J, x0, constraint, norm,
-                 mpfloat, matrix, Axb_solver, **kwargs):
-        self.f, self.x0, self.J = f, x0, J
-        #below are all function objects
-        self._norm = norm
-        self._mpf = mpfloat
-        self._matrix = matrix
-        self._Axb_solver = Axb_solver
+    def __init__(self, f, x0, **kwargs):
+        RootfindingIterator.__init__(self, f, x0, **kwargs)
 
-#        if 'constraint' in kwargs:
-#            self.constraint = kwargs['constraint']
-#        else:
-#            def constraint(x):
-#                return x
-#            self.constraint = constraint
-        self.real_constraint = constraint
+        # check essential parameters reading
+        for param in ['J', 'constraint', 'norm', 'mpfloat', 'matrix',
+                      'Axb_solver', 'dtheta_dt_expressions']:
+            if not hasattr(self, '_' + param):
+                msg = 'parameter \'%s\' must be supplied.' % param
+                raise ParameterError(msg)
 
-        def quasi_constraint(x):
+        # set constraint function
+        self.real_constraint = self._constraint
+
+        def pseudo_constraint(x):
             return x
-        self.quasi_constraint = quasi_constraint
-
-        if 'dtheta_dt_expressions' in kwargs:
-            self.dtheta_dt_expressions = kwargs['dtheta_dt_expressions']
+        self.pseudo_constraint = pseudo_constraint
 
     def __iter__(self):
 
@@ -63,8 +73,8 @@ class NewtonRoot(object):
 
         iter_counter = 0
         f = self.f
-        J = self.J
-        x0 = self.quasi_constraint(self.x0)
+        J = self._J
+        x0 = self.pseudo_constraint(self.x0)
         norm = self._norm
         fx = self._matrix(f(x0))
         fxnorm = norm(fx)
@@ -73,13 +83,13 @@ class NewtonRoot(object):
         while not cancel:
             iter_counter += 1
             if iter_counter <= 5:
-                self.constraint = self.quasi_constraint
+                self.constraint = self.pseudo_constraint
             else:
                 self.constraint = self.real_constraint
             #get direction of descent
             fx = self._matrix(f(x0))
             fxn = -fx
-            Jx = J(self.dtheta_dt_expressions, x0)
+            Jx = J(self._dtheta_dt_expressions, x0)
             try:
                 s = self._Axb_solver(Jx, fxn)  # if use gmpy and numpy,
                 #print s                       # lose precision here
