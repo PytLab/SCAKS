@@ -16,6 +16,7 @@ class SteadyStateSolver(SolverBase):
 
         #set default parameter dict
         defaults = dict(
+            rootfinding='MDNewton',
             tolerance=1e-8,
             max_rootfinding_iterations=100,
             residual_threshold=1.0,
@@ -637,21 +638,29 @@ class SteadyStateSolver(SolverBase):
                 break
 
             # instantiate rootfinding iterator
-#            iterator_parameters = dict(
-#                J=J,
-#                constraint=constraint,
-#                norm=self._norm,
-#                mpfloat=self._mpf,
-#                matrix=self._matrix,
-#                Axb_solver=self._Axb_solver,
-#            )
-#            newton_iterator = ConstrainedNewton(f, c0, **iterator_parameters)
-            iterator_parameters = dict(
-                J=J,
-                verbose=True,
-            )
-            newton_iterator = MDNewton(f, c0, **iterator_parameters)
-            self.logger.info('Newton Iterator instantiation - success!')
+            # for MDNewton iterator
+            if self.rootfinding == 'ConstrainedNewton':
+                iterator_parameters = dict(
+                    J=J,
+                    constraint=constraint,
+                    norm=self._norm,
+                    mpfloat=self._mpf,
+                    matrix=self._matrix,
+                    Axb_solver=self._Axb_solver,
+                    )
+                newton_iterator = ConstrainedNewton(f, c0, **iterator_parameters)
+            # ConstrainedNewton iterator
+            elif self.rootfinding == 'MDNewton':
+                iterator_parameters = dict(
+                    J=J,
+                    verbose=True,
+                    )
+                newton_iterator = MDNewton(f, c0, **iterator_parameters)
+            else:
+                msg='Unrecognized rootfinding iterator name [%s]' % self.rootfinding
+                raise ParameterError(msg)
+
+            self.logger.info('%s Iterator instantiation - success!', self.rootfinding)
 
             x = c0
             old_error = 1e99
