@@ -5,6 +5,7 @@ from scipy.optimize import fsolve
 from scipy.linalg import norm
 
 from solver_base import *
+from rootfinding_iterators import *
 
 
 class SteadyStateSolver(SolverBase):
@@ -556,17 +557,18 @@ class SteadyStateSolver(SolverBase):
         '''
         self.logger.info('using fsolve to get steady state coverages...')
 
-        def j(c0):
+        def get_jacobian(c0):
             dtheta_dt_expressions = self.get_dtheta_dt_expressions()
-            J = self.analytical_jacobian(dtheta_dt_expressions, c0).tolist()
+            # jacobian matrix
+            jm = self.analytical_jacobian(dtheta_dt_expressions, c0).tolist()
             # convert to floats
-            J = [[float(df) for df in dfs] for dfs in J]
+            jm = [[float(df) for df in dfs] for dfs in jm]
                     
-            return J
+            return jm
 
         # main hotpot
-        c0 = map(float, c0)
-        converged_cvgs = fsolve(self.steady_state_function, c0, fprime=j)
+        c0 = map(float, c0)  # covert to float
+        converged_cvgs = fsolve(self.steady_state_function, c0, fprime=get_jacobian)
         # get error
         errors = self.steady_state_function(converged_cvgs)
         error = norm(errors)
