@@ -1,6 +1,9 @@
 import re
 import logging
 
+from scipy.optimize import fsolve
+from scipy.linalg import norm
+
 from solver_base import *
 
 
@@ -538,6 +541,52 @@ class SteadyStateSolver(SolverBase):
         residual = max([abs(dtheta_dt) for dtheta_dt in dtheta_dts])
         return residual
 
+    def fsolve_steady_state_cvgs(self, c0):
+        '''
+        Use scipy.optimize.fsolve to solve non-linear equations.
+
+        Parameters:
+        -----------
+        c0: initial coverages, a list or tuple of float
+
+        Return:
+        -------
+        steady_state_coverages: in the order of self._owner.adsorbate_names,
+                                tuple of float
+        '''
+        self.logger.info('using fsolve to get steady state coverages...')
+
+        def j(c0):
+            dtheta_dt_expressions = self.get_dtheta_dt_expressions()
+            J = self.analytical_jacobian(dtheta_dt_expressions, c0).tolist()
+            # convert to floats
+            J = [[float(df) for df in dfs] for dfs in J]
+                    
+            return J
+
+        # main hotpot
+        c0 = map(float, c0)
+        converged_cvgs = fsolve(self.steady_state_function, c0, fprime=j)
+        # get error
+        errors = self.steady_state_function(converged_cvgs)
+        error = norm(errors)
+        self._error = error
+
+        self._coverage = converged_cvgs
+        # log steady state coverages
+        self.log_sscvg(converged_cvgs, self._owner.adsorbate_names)
+        self.logger.info('error = %e', error)
+
+        #archive converged root and error
+        self.archive_data('steady_state_coverage',
+                          converged_cvgs)
+        self.archive_data('steady_state_error', error)
+        self.good_guess = c0
+        #archive initial guess
+        self.archive_data('initial_guess', c0)
+
+        return converged_cvgs
+
     def get_steady_state_cvgs(self, c0, single_pt=False):
         """
         Expect an inital coverages tuple,
@@ -546,8 +595,10 @@ class SteadyStateSolver(SolverBase):
 
         Parameters
         ----------
+        c0: initial coverages, tuple of float.
+
         single_pt : bool
-            if True, no initial guess check.
+            if True, no initial guess check will be done.
         """
         #Oh, intial coverage must have physical meaning!
         c0 = self.constrain_converage(c0)
@@ -580,6 +631,7 @@ class SteadyStateSolver(SolverBase):
                 resid = self.get_residual(c0)
                 error = min(norm, resid)
                 self._error = error
+                self.logger.info('error = %e', error)
                 break
 
             newton_iterator = NewtonRoot(
@@ -627,6 +679,7 @@ class SteadyStateSolver(SolverBase):
                             # log steady state coverages
                             self.log_sscvg(x, self._owner.adsorbate_names)
                             converged_cvgs = x
+                            self.logger.info('error = %e', min(error, resid))
                             cancel = True
                             break
                         else:  # bad root, iteration continue...
