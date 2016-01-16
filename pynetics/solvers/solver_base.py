@@ -5,7 +5,6 @@ import numpy as np
 import gmpy2
 import sympy as sym
 from scipy.integrate import odeint
-from scipy.optimize import golden
 try:
     import matplotlib.pyplot as plt
 except ImportError:

@@ -609,12 +609,12 @@ class SteadyStateSolver(SolverBase):
         #start root finding algorithm
         f = self.steady_state_function
         f_resid = self.get_residual
-        J = self.analytical_jacobian
         constraint = self.constrain_converage
         if hasattr(self, 'dtheta_dt_expressions'):
             f_expression = self.dtheta_dt_expressions
         else:
             f_expression = self.get_dtheta_dt_expressions()
+        J = lambda x: self.analytical_jacobian(f_expression, x)
 
         ############    Main Loop with changed initial guess   ##############
         self.logger.info('Entering main loop...')
@@ -637,16 +637,20 @@ class SteadyStateSolver(SolverBase):
                 break
 
             # instantiate rootfinding iterator
+#            iterator_parameters = dict(
+#                J=J,
+#                constraint=constraint,
+#                norm=self._norm,
+#                mpfloat=self._mpf,
+#                matrix=self._matrix,
+#                Axb_solver=self._Axb_solver,
+#            )
+#            newton_iterator = ConstrainedNewton(f, c0, **iterator_parameters)
             iterator_parameters = dict(
                 J=J,
-                constraint=constraint,
-                norm=self._norm,
-                mpfloat=self._mpf,
-                matrix=self._matrix,
-                Axb_solver=self._Axb_solver,
-                dtheta_dt_expressions=f_expression
+                verbose=True,
             )
-            newton_iterator = ConstrainedNewton(f, c0, **iterator_parameters)
+            newton_iterator = MDNewton(f, c0, **iterator_parameters)
             self.logger.info('Newton Iterator instantiation - success!')
 
             x = c0
