@@ -1,7 +1,11 @@
 import re
 import logging
 
+from scipy.optimize import fsolve
+from scipy.linalg import norm
+
 from solver_base import *
+from rootfinding_iterators import *
 
 
 class SteadyStateSolver(SolverBase):
@@ -12,6 +16,7 @@ class SteadyStateSolver(SolverBase):
 
         #set default parameter dict
         defaults = dict(
+            rootfinding='MDNewton',
             tolerance=1e-8,
             max_rootfinding_iterations=100,
             residual_threshold=1.0,
@@ -538,6 +543,53 @@ class SteadyStateSolver(SolverBase):
         residual = max([abs(dtheta_dt) for dtheta_dt in dtheta_dts])
         return residual
 
+    def fsolve_steady_state_cvgs(self, c0):
+        '''
+        Use scipy.optimize.fsolve to solve non-linear equations.
+
+        Parameters:
+        -----------
+        c0: initial coverages, a list or tuple of float
+
+        Return:
+        -------
+        steady_state_coverages: in the order of self._owner.adsorbate_names,
+                                tuple of float
+        '''
+        self.logger.info('using fsolve to get steady state coverages...')
+
+        def get_jacobian(c0):
+            dtheta_dt_expressions = self.get_dtheta_dt_expressions()
+            # jacobian matrix
+            jm = self.analytical_jacobian(dtheta_dt_expressions, c0).tolist()
+            # convert to floats
+            jm = [[float(df) for df in dfs] for dfs in jm]
+                    
+            return jm
+
+        # main hotpot
+        c0 = map(float, c0)  # covert to float
+        converged_cvgs = fsolve(self.steady_state_function, c0, fprime=get_jacobian)
+        # get error
+        errors = self.steady_state_function(converged_cvgs)
+        error = norm(errors)
+        self._error = error
+
+        self._coverage = converged_cvgs
+        # log steady state coverages
+        self.log_sscvg(converged_cvgs, self._owner.adsorbate_names)
+        self.logger.info('error = %e', error)
+
+        #archive converged root and error
+        self.archive_data('steady_state_coverage',
+                          converged_cvgs)
+        self.archive_data('steady_state_error', error)
+        self.good_guess = c0
+        #archive initial guess
+        self.archive_data('initial_guess', c0)
+
+        return converged_cvgs
+
     def get_steady_state_cvgs(self, c0, single_pt=False):
         """
         Expect an inital coverages tuple,
@@ -546,8 +598,10 @@ class SteadyStateSolver(SolverBase):
 
         Parameters
         ----------
+        c0: initial coverages, tuple of float.
+
         single_pt : bool
-            if True, no initial guess check.
+            if True, no initial guess check will be done.
         """
         #Oh, intial coverage must have physical meaning!
         c0 = self.constrain_converage(c0)
@@ -556,12 +610,12 @@ class SteadyStateSolver(SolverBase):
         #start root finding algorithm
         f = self.steady_state_function
         f_resid = self.get_residual
-        J = self.analytical_jacobian
         constraint = self.constrain_converage
         if hasattr(self, 'dtheta_dt_expressions'):
             f_expression = self.dtheta_dt_expressions
         else:
             f_expression = self.get_dtheta_dt_expressions()
+        J = lambda x: self.analytical_jacobian(f_expression, x)
 
         ############    Main Loop with changed initial guess   ##############
         self.logger.info('Entering main loop...')
@@ -580,15 +634,34 @@ class SteadyStateSolver(SolverBase):
                 resid = self.get_residual(c0)
                 error = min(norm, resid)
                 self._error = error
+                self.logger.info('error = %e', error)
                 break
 
-            newton_iterator = NewtonRoot(
-                f=f, J=J, x0=c0, constraint=constraint,
-                norm=self._norm, mpfloat=self._mpf,
-                matrix=self._matrix, Axb_solver=self._Axb_solver,
-                dtheta_dt_expressions=f_expression
-            )
-            self.logger.info('Newton Iterator instantiation - success!')
+            # instantiate rootfinding iterator
+            # for MDNewton iterator
+            if self.rootfinding == 'ConstrainedNewton':
+                iterator_parameters = dict(
+                    J=J,
+                    constraint=constraint,
+                    norm=self._norm,
+                    mpfloat=self._mpf,
+                    matrix=self._matrix,
+                    Axb_solver=self._Axb_solver,
+                    )
+                newton_iterator = ConstrainedNewton(f, c0, **iterator_parameters)
+            # ConstrainedNewton iterator
+            elif self.rootfinding == 'MDNewton':
+                iterator_parameters = dict(
+                    J=J,
+                    verbose=True,
+                    )
+                newton_iterator = MDNewton(f, c0, **iterator_parameters)
+            else:
+                msg='Unrecognized rootfinding iterator name [%s]' % self.rootfinding
+                raise ParameterError(msg)
+
+            self.logger.info('%s Iterator instantiation - success!', self.rootfinding)
+
             x = c0
             old_error = 1e99
             if c0:
@@ -627,6 +700,7 @@ class SteadyStateSolver(SolverBase):
                             # log steady state coverages
                             self.log_sscvg(x, self._owner.adsorbate_names)
                             converged_cvgs = x
+                            self.logger.info('error = %e', min(error, resid))
                             cancel = True
                             break
                         else:  # bad root, iteration continue...

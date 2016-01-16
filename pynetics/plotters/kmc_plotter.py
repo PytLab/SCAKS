@@ -165,5 +165,5 @@ class KMCPlotter(PlotterBase):
         if PIL_installed and gif:
             gif_name = path + 'traj_movie.gif'
             self.logger.info('creating %s ...', gif_name)
-            images2gif.writeGif(gif_name, images, duration=0.5)
+            images2gif.writeGif(gif_name, images, duration=0.3)
             self.logger.info('Ok.')

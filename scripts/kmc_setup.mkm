@@ -41,7 +41,7 @@ nstep = 500000         # number of KMC loop step
 dump_interval = nstep/50  # number of steps between subsequent trajectory dumps
 seed = 13996           # seed for random number generator
 random_generator = 'MT'  # type of pseudo random number generator, 'MT' | 'MINSTD' | 'RANLUX24' | 'RANLUX48'
-analysis = []  # ['CoveragesAnalysis', 'TOFAnalysis', 'TOFCoveragesAnalysis']
+analysis = []  # ['CoveragesAnalysis', 'TOFAnalysis']
 analysis_interval = 500
 TOF_indices = (0, 1, 2)  # reactions do TOF anlaysis
 TOF_start_step = 0   # step number when start to do TOF analysis
@@ -50,13 +50,13 @@ cvgs_convergency = 1e-3
 # plot parameters setting
 color_dict = dict(
     Vac='#FFFFFF',
-    O='#CD3333',
-    CO='#D4D4D4',
+    O='#CD5555',
+    CO='#363636',
     )
 
 circle_attrs = dict(
-    area=60.0**2/(grid_shape[0]*grid_shape[-1])*20,
-    alpha=0.7,
+    marker='s',
+    alpha=0.5,
     antialiased=True,
-    edgecolor='#FFFFFF',
+#    edgecolor='#FFFFFF',
 )
