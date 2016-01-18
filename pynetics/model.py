@@ -126,18 +126,22 @@ class KineticModel(object):
                 msg = ('init_cvgs must have %d elements, but %d is supplied' %
                        (len(self.adsorbate_names), len(init_cvgs)))
                 raise ParameterError(msg)
+            self.logger.info('use user-defined coverages as initial guess...')
 
         elif os.path.exists("./data.pkl"):
             with open('data.pkl', 'rb') as f:
                 data = cpkl.load(f)
             init_guess = 'steady_state_coverage'
             if init_guess in data:
+                self.logger.info('use coverages in data.pkl as initial guess...')
                 init_cvgs = data[init_guess]
                 coarse_guess = False
             else:
+                self.logger.info('use Boltzmann coverages as initial guess...')
                 init_cvgs = self.solver.boltzmann_coverages()
 
         else:  # use Boltzmann coverage
+            self.logger.info('use Boltzmann coverages as initial guess...')
             init_cvgs = self.solver.boltzmann_coverages()
 
         # solve steady state coverages
