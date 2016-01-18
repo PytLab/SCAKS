@@ -167,7 +167,6 @@ class MDNewton(RootfindingIterator):
 
     [2] http://openopt.org/Welcome
     """
-    maxsteps = 10
 
     def __init__(self, f, x0, **kwargs):
         self.f = f

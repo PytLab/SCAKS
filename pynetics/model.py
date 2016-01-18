@@ -4,6 +4,7 @@ import inspect
 import re
 import logging
 import logging.config
+import cPickle as cpkl
 
 from functions import *
 from errors.error import *
@@ -77,6 +78,84 @@ class KineticModel(object):
             self.logger.info('kinetic modeling...success!\n')
         else:
             self.logger.warning('setup file not read...')
+
+    def run_mkm(self, init_cvgs=None, correct_energy=False, fsolve=False, coarse_guess=True):
+        '''
+        Function to solve Micro-kinetic model using Steady State Approxmiation
+        to get steady state coverages and turnover frequencies.
+
+        Parameters:
+        -----------
+        correct_energy: add free energy corrections to energy data or not, bool
+
+        fsolve: use scipy.optimize.fsolve to get low-precision root or not, bool
+
+        coarse_guess: use fsolve to do initial coverages preprocessing or not, bool
+
+        '''
+        self.logger.info('--- Solve Micro-kinetic model ---')
+        
+        # parse data
+        self.logger.info('reading data...')
+        self.parser.chk_data_validity()
+        self.parser.parse_data()
+
+        # solve steady state coverages
+        self.logger.info('passing data to solver...')
+        self.solver.get_data_dict()
+        self.logger.info('getting rate constants...')
+        self.solver.get_rate_constants()
+        self.logger.info('geting rate expressions...')
+        self.solver.get_rate_expressions(self.solver.rxns_list)
+
+        # energy correction
+        if correct_energy:
+            self.logger.info('free energy correction...')
+            self.solver.correct_energies()
+        
+        # set initial guess(initial coverage)
+        # if there is converged coverage in current path,
+        # use it as initial guess
+        if init_cvgs:
+            # check init_cvgs validity
+            if not isinstance(init_cvgs, (tuple, list)):
+                msg = ('init_cvgs must be a list or tuple, but %s supplied.' %
+                       str(type(init_cvgs)))
+                raise ParameterError(msg)
+            if len(init_cvgs) != len(self.adsorbate_names):
+                msg = ('init_cvgs must have %d elements, but %d is supplied' %
+                       (len(self.adsorbate_names), len(init_cvgs)))
+                raise ParameterError(msg)
+
+        elif os.path.exists("./data.pkl"):
+            with open('data.pkl', 'rb') as f:
+                data = cpkl.load(f)
+            init_guess = 'steady_state_coverage'
+            if init_guess in data:
+                init_cvgs = data[init_guess]
+                coarse_guess = False
+            else:
+                init_cvgs = self.solver.boltzmann_coverages()
+
+        else:  # use Boltzmann coverage
+            init_cvgs = self.solver.boltzmann_coverages()
+
+        # solve steady state coverages
+        # use scipy.optimize.fsolve or not (fast but low-precision)
+        if fsolve:
+            self.logger.info('using fsolve to get steady state coverages...')
+            ss_cvgs = self.solver.fsolve_steady_state_cvgs(init_cvgs)
+        else:
+            if coarse_guess:
+                self.logger.info('getting coarse steady state coverages...')
+                init_cvgs = self.solver.coarse_steady_state_cvgs(init_cvgs)  # coarse root
+            self.logger.info('getting precise steady state coverages...')
+            ss_cvgs = self.solver.get_steady_state_cvgs(init_cvgs)
+
+        # get TOFs for gases
+        tofs = self.solver.get_cvg_tof(ss_cvgs)
+
+        return
 
     def set_parser(self, parser_name):
         """

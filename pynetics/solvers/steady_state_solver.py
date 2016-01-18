@@ -561,7 +561,6 @@ class SteadyStateSolver(SolverBase):
         steady_state_coverages: in the order of self._owner.adsorbate_names,
                                 tuple of float
         '''
-        self.logger.info('using fsolve to get steady state coverages...')
 
         def get_jacobian(c0):
             dtheta_dt_expressions = self.get_dtheta_dt_expressions()
@@ -691,7 +690,7 @@ class SteadyStateSolver(SolverBase):
             elif self.rootfinding == 'MDNewton':
                 iterator_parameters = dict(
                     J=J,
-                    verbose=True,
+                    verbose=False,
                     )
                 newton_iterator = MDNewton(f, c0, **iterator_parameters)
             else:
