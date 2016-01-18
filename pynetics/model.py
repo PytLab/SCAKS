@@ -305,9 +305,9 @@ class KineticModel(object):
         #HACK END
 
         # kMC parameters check
-
+        solver_type = repr(self.solver).split('.')[2]
         # pseudo random generator
-        if 'random_generator' not in locs:
+        if solver_type == 'kmc_solver' and 'random_generator' not in locs:
             self.logger.info('pseudo random generator type was not set.')
             self.logger.info('use Mersenne-Twister by default.')
 
