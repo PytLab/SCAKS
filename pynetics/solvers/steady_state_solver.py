@@ -1,5 +1,6 @@
 import re
 import logging
+import random
 
 from scipy.optimize import fsolve
 from scipy.linalg import norm
@@ -598,6 +599,7 @@ class SteadyStateSolver(SolverBase):
             converged_cvgs = func(*args)
             # archive data
             # get error
+            self = args[0]
             errors = self.steady_state_function(converged_cvgs)
             error = norm(errors)
             self._error = error
@@ -611,9 +613,9 @@ class SteadyStateSolver(SolverBase):
             self.archive_data('steady_state_coverage',
                               converged_cvgs)
             self.archive_data('steady_state_error', error)
-            self.good_guess = c0
+            self.good_guess = args[1]
             #archive initial guess
-            self.archive_data('initial_guess', c0)
+            self.archive_data('initial_guess', args[1])
             return converged_cvgs
 
         return wrapped_func
@@ -748,7 +750,7 @@ class SteadyStateSolver(SolverBase):
 
                 #if convergence is slow when the norm is larger than 0.1
                 elif (nt_counter > self.max_rootfinding_iterations or
-                      abs(error - old_error) < 1e-4) and error > 1e-1:
+                      abs(error - old_error) < 1e-4) and error > 1e-10:
                     self.logger.info('%-10s%10d%23.10e%23.10e', 'break',
                                      nt_counter, float(resid), float(error))
                     self.logger.warning('slow convergence rate!')
@@ -797,7 +799,25 @@ class SteadyStateSolver(SolverBase):
 
             return converged_cvgs
 
-    def modify_init_guess(self, c0, dtheta_dts):
+    def modify_init_guess(self, *args):
+        '''
+        return a list of random coverages.
+        '''
+        n_adsorbates = len(self._owner.adsorbate_names)
+        random_cvgs = []
+
+        sum_cvgs = 0.0
+        for i in xrange(n_adsorbates):
+            cvg = random.random()*(1.0 - sum_cvgs)
+            random_cvgs.append(cvg)
+            sum_cvgs += cvg
+        #add to log
+        self.logger.info('modify initial coverage - success')
+        self.logger.debug(str(random_cvgs))
+
+        return tuple(random_cvgs)
+
+    def modify_init_guess_old(self, c0, dtheta_dts):
         "Return a new initial guess according to dthe_dts."
 #        max_dtheta_dt = np.max(np.abs(dtheta_dts))
         base_coefficient = self.initial_guess_scale_factor
