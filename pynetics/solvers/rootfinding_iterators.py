@@ -13,6 +13,9 @@ from ..errors.error import *
 
 
 class RootfindingIterator(object):
+    '''
+    Class base for rootfinding iterator sub-classes to inherit from.
+    '''
     def __init__(self, f, x0, **kwargs):
         # set attributes
         self.f, self.x0 = f, x0
@@ -20,7 +23,17 @@ class RootfindingIterator(object):
             setattr(self, '_' + key, kwargs[key])
 
     def __iter__(self):
+        '''
+        Returns:
+        -------
+        x0: current x vector, tuple of float.
+
+        fxnorm: norm of f(x), float
+
+        fx: value of f(x), sequence of float
+        '''
         pass
+        return (x0, fxnorm, fx) 
 
 
 class ConstrainedNewton(RootfindingIterator):
@@ -53,8 +66,9 @@ class ConstrainedNewton(RootfindingIterator):
         RootfindingIterator.__init__(self, f, x0, **kwargs)
 
         # check essential parameters reading
-        for param in ['J', 'constraint', 'norm', 'mpfloat', 'matrix',
-                      'Axb_solver']:
+        essential_params = ('J', 'constraint', 'norm', 'mpfloat',
+                            'matrix', 'Axb_solver')
+        for param in essential_params:
             if not hasattr(self, '_' + param):
                 msg = 'parameter \'%s\' must be supplied.' % param
                 raise ParameterError(msg)
@@ -153,7 +167,6 @@ class MDNewton(RootfindingIterator):
 
     [2] http://openopt.org/Welcome
     """
-    maxsteps = 10
 
     def __init__(self, f, x0, **kwargs):
         self.f = f

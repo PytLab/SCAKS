@@ -1,5 +1,6 @@
 import re
 import logging
+import random
 
 from scipy.optimize import fsolve
 from scipy.linalg import norm
@@ -28,7 +29,7 @@ class SteadyStateSolver(SolverBase):
 
     def cvg_tuple2dict(self, cvgs_tuple):
         "Convert coverages list to coverages dict."
-        #there are some error when convert tuple to dict
+        #there are some small errors when convert tuple to dict
         #which is so small that we can ignore it
 
         #create cvgs_dict containing adsorbates
@@ -36,6 +37,7 @@ class SteadyStateSolver(SolverBase):
         for adsorbate_name in self._owner.adsorbate_names:
             idx = self._owner.adsorbate_names.index(adsorbate_name)
             cvgs_dict.setdefault(adsorbate_name, cvgs_tuple[idx])
+
         #add free site coverages
         for site_name in self._owner.site_names:
             total_cvg = \
@@ -47,6 +49,7 @@ class SteadyStateSolver(SolverBase):
                 sum_cvg += cvgs_dict[sp]
             free_site_cvg = total_cvg - sum_cvg
             cvgs_dict.setdefault('*_'+site_name, free_site_cvg)
+
         return cvgs_dict
 
     def cvg_dict2tuple(self, cvgs_dict):
@@ -543,9 +546,12 @@ class SteadyStateSolver(SolverBase):
         residual = max([abs(dtheta_dt) for dtheta_dt in dtheta_dts])
         return residual
 
-    def fsolve_steady_state_cvgs(self, c0):
+    # -- Use scipy.optimize.fsolve function to solve equations --
+
+    def coarse_steady_state_cvgs(self, c0):
         '''
-        Use scipy.optimize.fsolve to solve non-linear equations.
+        Use scipy.optimize.fsolve to solve non-linear equations
+        with fast speed and low-precison.
 
         Parameters:
         -----------
@@ -556,7 +562,6 @@ class SteadyStateSolver(SolverBase):
         steady_state_coverages: in the order of self._owner.adsorbate_names,
                                 tuple of float
         '''
-        self.logger.info('using fsolve to get steady state coverages...')
 
         def get_jacobian(c0):
             dtheta_dt_expressions = self.get_dtheta_dt_expressions()
@@ -570,25 +575,59 @@ class SteadyStateSolver(SolverBase):
         # main hotpot
         c0 = map(float, c0)  # covert to float
         converged_cvgs = fsolve(self.steady_state_function, c0, fprime=get_jacobian)
-        # get error
-        errors = self.steady_state_function(converged_cvgs)
-        error = norm(errors)
-        self._error = error
-
-        self._coverage = converged_cvgs
-        # log steady state coverages
-        self.log_sscvg(converged_cvgs, self._owner.adsorbate_names)
-        self.logger.info('error = %e', error)
-
-        #archive converged root and error
-        self.archive_data('steady_state_coverage',
-                          converged_cvgs)
-        self.archive_data('steady_state_error', error)
-        self.good_guess = c0
-        #archive initial guess
-        self.archive_data('initial_guess', c0)
 
         return converged_cvgs
+
+    def data_archive(func):
+        '''
+        Decorator for **_steady_state_coverages,
+        archive data when getting converged converages.
+        '''
+        def wrapped_func(*args):
+            '''
+            Use scipy.optimize.fsolve to solve non-linear equations.
+
+            Parameters:
+            -----------
+            c0: initial coverages, a list or tuple of float
+
+            Return:
+            -------
+            steady_state_coverages: in the order of self._owner.adsorbate_names,
+                                    tuple of float
+            '''
+            converged_cvgs = func(*args)
+            # archive data
+            # get error
+            self = args[0]
+            errors = self.steady_state_function(converged_cvgs)
+            error = norm(errors)
+            self._error = error
+
+            self._coverage = converged_cvgs
+            # log steady state coverages
+            self.log_sscvg(converged_cvgs, self._owner.adsorbate_names)
+            self.logger.info('error = %e', error)
+
+            #archive converged root and error
+            self.archive_data('steady_state_coverage',
+                              converged_cvgs)
+            self.archive_data('steady_state_error', error)
+            self.good_guess = args[1]
+            #archive initial guess
+            self.archive_data('initial_guess', args[1])
+            return converged_cvgs
+
+        return wrapped_func
+
+    @data_archive
+    def fsolve_steady_state_cvgs(self, c0):
+        '''
+        Use scipy.optimize.fsolve to get steady state coverages.
+        '''
+        return self.coarse_steady_state_cvgs(c0)
+
+    # -- fsolve END --
 
     def get_steady_state_cvgs(self, c0, single_pt=False):
         """
@@ -653,7 +692,7 @@ class SteadyStateSolver(SolverBase):
             elif self.rootfinding == 'MDNewton':
                 iterator_parameters = dict(
                     J=J,
-                    verbose=True,
+                    verbose=False,
                     )
                 newton_iterator = MDNewton(f, c0, **iterator_parameters)
             else:
@@ -711,7 +750,7 @@ class SteadyStateSolver(SolverBase):
 
                 #if convergence is slow when the norm is larger than 0.1
                 elif (nt_counter > self.max_rootfinding_iterations or
-                      abs(error - old_error) < 1e-4) and error > 1e-1:
+                      abs(error - old_error) < 1e-4) and error > 1e-10:
                     self.logger.info('%-10s%10d%23.10e%23.10e', 'break',
                                      nt_counter, float(resid), float(error))
                     self.logger.warning('slow convergence rate!')
@@ -760,7 +799,25 @@ class SteadyStateSolver(SolverBase):
 
             return converged_cvgs
 
-    def modify_init_guess(self, c0, dtheta_dts):
+    def modify_init_guess(self, *args):
+        '''
+        return a list of random coverages.
+        '''
+        n_adsorbates = len(self._owner.adsorbate_names)
+        random_cvgs = []
+
+        sum_cvgs = 0.0
+        for i in xrange(n_adsorbates):
+            cvg = random.random()*(1.0 - sum_cvgs)
+            random_cvgs.append(cvg)
+            sum_cvgs += cvg
+        #add to log
+        self.logger.info('modify initial coverage - success')
+        self.logger.debug(str(random_cvgs))
+
+        return tuple(random_cvgs)
+
+    def modify_init_guess_old(self, c0, dtheta_dts):
         "Return a new initial guess according to dthe_dts."
 #        max_dtheta_dt = np.max(np.abs(dtheta_dts))
         base_coefficient = self.initial_guess_scale_factor
