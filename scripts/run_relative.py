@@ -26,23 +26,24 @@ else:
     correct_energy = False
 
 #use custom initial guess
-#init_cvg = (0.5, 0.5)
-m.run_mkm(correct_energy=correct_energy)
+init_cvgs = (0.5, 0.5)
+relative = True if '--relative' in sys.argv else False
+m.run_mkm(init_cvgs=init_cvgs, relative=relative, correct_energy=correct_energy)
 
 # plot energy profiles
-for i, rxn_equation in enumerate(m.rxn_expressions):
-    logging.info('Plotting diagram '+str(i)+'...')
-    m.plotter.plot_single_energy_diagram(rxn_equation, show_mode='save')
-    logging.info('Ok.')
-
-logging.info('Plotting multi_energy_diagram...')
-m.plotter.plot_multi_energy_diagram(m.rxn_expressions, show_mode='save')
-logging.info('Ok.\n')
+#for i, rxn_equation in enumerate(m.rxn_expressions):
+#    logging.info('Plotting diagram '+str(i)+'...')
+#    m.plotter.plot_single_energy_diagram(rxn_equation, show_mode='save')
+#    logging.info('Ok.')
+#
+#logging.info('Plotting multi_energy_diagram...')
+#m.plotter.plot_multi_energy_diagram(m.rxn_expressions, show_mode='save')
+#logging.info('Ok.\n')
 
 #get latex file
-logging.info('Generating TEX file...')
-m.solver.get_data_symbols()
-m.solver.get_delta_G_symbols(log_latex=True)
-m.solver.get_rate_syms(log_latex=True)
-m.solver.get_dtheta_dt_syms(log_latex=True)
-logging.info('Ok.')
+#logging.info('Generating TEX file...')
+#m.solver.get_data_symbols()
+#m.solver.get_delta_G_symbols(log_latex=True)
+#m.solver.get_rate_syms(log_latex=True)
+#m.solver.get_dtheta_dt_syms(log_latex=True)
+#logging.info('Ok.')

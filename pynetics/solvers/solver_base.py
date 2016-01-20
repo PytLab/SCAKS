@@ -101,7 +101,8 @@ class SolverBase(KineticCoreComponent):
             self._Axb_solver = lambda A, b: A.LUsolve(b)
             self._norm = lambda x: sym.sqrt((x.transpose()*x)[0])  # x is a column vector
 
-        self.has_data = False
+        self.has_absolute_energy = False
+        self.has_relative_energy = False
         self.energy_correction = False
         self.has_symbols = False
 
@@ -109,8 +110,7 @@ class SolverBase(KineticCoreComponent):
         setattr(self, 'rxns_list', self._owner.elementary_rxns_list)
         setattr(self, 'rxns_num', len(self.rxns_list))
 
-        #set constants symbol dict
-#        import sympy as sym
+        # set constants symbol dict
         self.k_B_sym, self.h_sym, self.T_sym = \
             sym.symbols('k_B, h, T', is_real=True)
         self.constants_subs_dict = {
@@ -119,10 +119,11 @@ class SolverBase(KineticCoreComponent):
             self.T_sym: self._mpf(self._owner.temperature),
         }
 
-        if self._owner.hasdata:
-            self.get_data_dict()
-            self.get_rate_constants()
+#        if self._owner.hasdata:
+#            self.get_data()
+#            self.get_rate_constants()
 
+        # classify adsorbates according to site type
         self.classify_adsorbates()
 
     def log_latex(self, latex_tup):
@@ -144,16 +145,11 @@ class SolverBase(KineticCoreComponent):
         setattr(self, 'classified_adsorbates', classified_adsorbates)
         return classified_adsorbates
 
-    def get_data_dict(self):   # !!!correction added base on the values got in here!!!
+    def get_data(self):
         """
         Assign gas pressure, formation_energy of sites and
         species, frequencies as attrs of solver.
         """
-        if not self._owner.hasdata:
-            raise AttributeError('model object has '
-                                 'no input data in species_definitions\n'
-                                 'try parser.parse_data() '
-                                 'or add data in data table.')
         #get gas pressure dict
         p_dict = {}
         for gas_name in self._owner.gas_names:
@@ -161,6 +157,8 @@ class SolverBase(KineticCoreComponent):
                 gas_name,
                 self._mpf(self._owner.species_definitions[gas_name]['pressure'])
             )
+        self.p = p_dict
+
         #get concentration dict
         c_dict = {}
         for liquid_name in self._owner.liquid_names:
@@ -168,21 +166,53 @@ class SolverBase(KineticCoreComponent):
                 liquid_name,
                 self._mpf(self._owner.species_definitions[liquid_name]['concentration'])
             )
+        self.c = c_dict
 
-        #get energy for all species
-        E_dict = {}
-        for species in self._owner.species_definitions:
-            if self._owner.species_definitions[species]['type'] == 'site':
-                key = '*_' + species
+        # get energy data(relative or absolute)
+        if self._owner.has_relative_energy:
+            # NOTE: if free energies are not read,
+            #       use non-free energy as free energy instead
+
+            # delta G
+            if 'dG' in self._owner.relative_energies:
+                self.dG = self._owner.relative_energies['dG']
+            elif 'dE' in self._owner.relative_energies:
+                self.dG = self._owner.relative_energies['dE'] 
             else:
-                key = species
-            energy = self._mpf(self._owner.species_definitions
-                               [species]['formation_energy'])
-            E_dict.setdefault(key, energy)
-        setattr(self, 'energy_correction', False)
+                raise IOError('No dG/dE was read, try parser.parse_data() ' +
+                              'or add data in data table.')
+            # energy barrier 
+            if 'Ga' in self._owner.relative_energies:
+                self.Ga = self._owner.relative_energies['Ga']
+            elif 'Ea' in self._owner.relative_energies:
+                self.Ga = self._owner.relative_energies['Ea'] 
+            else:
+                raise IOError('No Ga/Ea was read, try parser.parse_data() ' +
+                              'or add data in data table.')
+            # stamp for having relative energy data
+            self.has_relative_energy = True
 
-        self.p, self.c, self.E = p_dict, c_dict, E_dict
-        self.has_data = True
+        # get energy for each species
+        if self._owner.has_absolute_energy:
+            E_dict = {}
+            for species in self._owner.species_definitions:
+                if self._owner.species_definitions[species]['type'] == 'site':
+                    key = '*_' + species
+                else:
+                    key = species
+                energy = self._mpf(self._owner.species_definitions
+                                   [species]['formation_energy'])
+                E_dict.setdefault(key, energy)
+            self.E = E_dict
+            setattr(self, 'energy_correction', False)
+            #stamp for having absolute energy data
+            self.has_absolute_energy = True
+
+        if not (self._owner.has_relative_energy or
+                self._owner.has_absolute_energy):
+            raise AttributeError('model object has no input energy data\n'
+                                 'try parser.parse_data() '
+                                 'or add data in data table.')
 
     def get_reaction_energies(self, elementary_rxn_list):
         """
@@ -240,21 +270,37 @@ class SolverBase(KineticCoreComponent):
 
     def get_rate_constants(self):
         "Go through rxns_list to get all delta_G and rate constants"
-        delta_Gfs, delta_Grs, kfs, krs = [], [], [], []
         kB, h, T = [self._mpf(constant) for constant in
                     [self._owner._kB, self._owner._h, self._owner.temperature]]
         prefactor = kB*T/h
-        for elementary_rxn in self.rxns_list:
-            delta_Gf, delta_Gr = self.get_reaction_energies(elementary_rxn)
-            delta_Gfs.append(delta_Gf)
-            delta_Grs.append(delta_Gr)
-            #rate constant
-            kf = prefactor*self._math.exp(-delta_Gf/(kB*T))
-            kr = prefactor*self._math.exp(-delta_Gr/(kB*T))
-            kfs.append(kf)
-            krs.append(kr)
+        kfs, krs = [], []
+
+        # get rate constants from absolute energies
+        if self.has_absolute_energy:
+            Gafs, Gars = [], [],
+            for elementary_rxn in self.rxns_list:
+                Gaf, Gar = self.get_reaction_energies(elementary_rxn)
+                Gafs.append(Gaf)
+                Gars.append(Gar)
+                #rate constant
+                kf = prefactor*self._math.exp(-Gaf/(kB*T))
+                kr = prefactor*self._math.exp(-Gar/(kB*T))
+                kfs.append(kf)
+                krs.append(kr)
+
+        # get rate constants from relative energies
+        elif self.has_relative_energy:
+            Gafs = self.Ga
+            Gars = [Ga - dG for Ga, dG in zip(self.Ga, self.dG)]
+            for Gaf, Gar in zip(Gafs, Gars):
+                kf = prefactor*self._math.exp(-Gaf/(kB*T))
+                kr = prefactor*self._math.exp(-Gar/(kB*T))
+                kfs.append(kf)
+                krs.append(kr)
+
         self._Gaf, self._Gar, self._kfs, self._krs = \
-            map(tuple, [delta_Gfs, delta_Grs, kfs, krs])
+            map(tuple, [Gafs, Gars, kfs, krs])
+
         return tuple(kfs), tuple(krs)
 
     def boltzmann_coverages(self):
@@ -267,9 +313,11 @@ class SolverBase(KineticCoreComponent):
         self._cvg_types = self._owner.adsorbate_names + free_site_names
         kB, h, T = [self._mpf(constant) for constant in
                     [self._owner._kB, self._owner._h, self._owner.temperature]]
-        #check whether solver has load data from species_definition
-        if not self.has_data:
-            self.get_data_dict()
+        # check whether solver has load data from species_definition
+        if not self.has_absolute_energy:
+            self.get_data()
+        if not self.has_absolute_energy:  # if no absolute again, raise exception
+            raise IOError('No absolute energies read, could not get Boltzmann coverages.')
 #        boltz_sum = sum([mp.exp(-self.E[adsorbate]/(kB*T))
 #                         for adsorbate in self._cvg_types])
         boltz_sum = sum([self._math.exp(-self.E[adsorbate]/(kB*T))
@@ -279,6 +327,7 @@ class SolverBase(KineticCoreComponent):
         for adsorbate in self._owner.adsorbate_names:
             cvg = self._math.exp(-self.E[adsorbate]/(kB*T))/boltz_sum
             cvgs.append(cvg)
+
         return tuple(cvgs)
 
     def get_elementary_rate_expression(self, elementary_rxn_list):
@@ -404,7 +453,7 @@ class SolverBase(KineticCoreComponent):
             self._owner.transition_state_names
         setattr(self, 'Gs_order', Gs_order)
 
-        #self.get_data_dict()    #refresh data for solver
+        #self.get_data()    #refresh data for solver
         for intermediate, G in zip(Gs_order, Gs):
             self.E[intermediate] = G
 
@@ -742,8 +791,8 @@ class SolverBase(KineticCoreComponent):
             TS_energy_sym = state_energy_sym_list[1]
         elif len(state_energy_sym_list) == 2:
             if not hasattr(self._owner, 'state_energy_dict'):
-                if not self.has_data:
-                    self.get_data_dict()
+                if not self.has_absolute_energy:
+                    self.get_data()
                 self.get_state_energy_dict()
 
             def get_state_energy(sp_list):
@@ -975,8 +1024,11 @@ class SolverBase(KineticCoreComponent):
     def get_G_subs_dict(self):
         "Get values from solver's data dict."
         #get value dict for solver
-        if not self.has_data:
-            self.get_data_dict()
+        if not self.has_absolute_energy:
+            self.get_data()
+        if not self.has_absolute_energy:
+            raise IOError('No absolute energies read, ' +
+                          'could not get substitution dictionary for G symbol.')
         #free energy value dict
         G_dict = {}
         for idx, sp_name in enumerate(self.sp_list):
