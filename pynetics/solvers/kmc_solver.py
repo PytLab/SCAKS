@@ -429,7 +429,7 @@ class KMCLibSolver(KMCSolver):
         '''
         # get parameters in model
         nstep = self._owner.nstep
-        dump_interval = self._owner.dump_interval
+        dump_interval = self._owner.trajectory_dump_interval
         seed = self._owner.seed
 
         # get pseudo random number generator type

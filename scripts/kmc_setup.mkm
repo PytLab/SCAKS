@@ -38,11 +38,12 @@ plotter = 'KMCPlotter'
 # parameters for KMC loop
 #kmc_continue = True
 nstep = 500000         # number of KMC loop step
-dump_interval = nstep/50  # number of steps between subsequent trajectory dumps
+trajectory_dump_interval = nstep/50  # number of steps between subsequent trajectory dumps
 seed = 13996           # seed for random number generator
 random_generator = 'MT'  # type of pseudo random number generator, 'MT' | 'MINSTD' | 'RANLUX24' | 'RANLUX48'
 analysis = []  # ['CoveragesAnalysis', 'TOFAnalysis']
 analysis_interval = 500
+analysis_dump_interval = 10
 TOF_indices = (0, 1, 2)  # reactions do TOF anlaysis
 TOF_start_step = 0   # step number when start to do TOF analysis
 cvgs_convergency = 1e-3
