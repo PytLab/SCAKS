@@ -187,11 +187,24 @@ class RelativeEnergyParser(ParserBase):
 
         return
 
-    def parse_data(self):
+    def parse_data(self, relative=False):
         '''
         put generalized formation energy into species_definition.
         '''
 
+        # get relative energy only
+        if relative:
+            if 'dG' and 'Ga' in self._owner.relative_energies:
+                setattr(self._owner, 'has_relative_energy', True) 
+                return
+            elif 'dE' and 'Ea' in self._owner.relative_energies:
+                setattr(self._owner, 'has_relative_energy', True)
+                return
+            else:
+                raise IOError('No relative energy was read, ' +
+                              'please check the \'rel_energy.py\'')
+
+        # get absolute energy for each species
         if not self.G_dict:
             self.convert_data()
 
@@ -199,6 +212,6 @@ class RelativeEnergyParser(ParserBase):
             sp_dict = self._owner.species_definitions
             sp_dict[sp_name].setdefault('formation_energy', self.G_dict[sp_name])
 
-        setattr(self._owner, 'hasdata', True)
+        setattr(self._owner, 'has_absolute_energy', True)
 
         return

@@ -67,7 +67,8 @@ class KineticModel(object):
 #        self.regex_dict['species_separator'] = \
 #        			[r'(?:\A|\s*\+\s*|\s+)', []]
 
-        self.hasdata = False
+        self.has_absolute_energy = False
+        self.has_relative_energy = False
 
         # load setup file
         if hasattr(self, 'setup_file'):
@@ -79,7 +80,8 @@ class KineticModel(object):
         else:
             self.logger.warning('setup file not read...')
 
-    def run_mkm(self, init_cvgs=None, correct_energy=False, fsolve=False, coarse_guess=True):
+    def run_mkm(self, init_cvgs=None, relative=False, correct_energy=False,
+                fsolve=False, coarse_guess=True):
         '''
         Function to solve Micro-kinetic model using Steady State Approxmiation
         to get steady state coverages and turnover frequencies.
@@ -98,14 +100,18 @@ class KineticModel(object):
         # parse data
         self.logger.info('reading data...')
         self.parser.chk_data_validity()
-        self.parser.parse_data()
+        if relative:
+            self.logger.info('use relative energy directly...')
+        else:
+            self.logger.info('convert relative to absolute energy...')
+        self.parser.parse_data(relative=relative)
 
         # solve steady state coverages
         self.logger.info('passing data to solver...')
-        self.solver.get_data_dict()
+        self.solver.get_data()
         self.logger.info('getting rate constants...')
         self.solver.get_rate_constants()
-        self.logger.info('geting rate expressions...')
+        self.logger.info('getting rate expressions...')
         self.solver.get_rate_expressions(self.solver.rxns_list)
 
         # energy correction
