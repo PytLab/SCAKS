@@ -1,6 +1,7 @@
 import re
 import logging
 import random
+import signal
 
 from scipy.optimize import fsolve
 from scipy.linalg import norm
@@ -911,10 +912,10 @@ class SteadyStateSolver(SolverBase):
 
         return all_data
 
-    # solve model by solving ODE
+    # solve model by ODE integration
 
-    def solve_ode(self, algo='lsoda', time_start=0.0, time_end=500.0, 
-                  time_span=0.5, initial_cvgs=None):
+    def solve_ode(self, algo='lsoda', time_start=0.0, time_end=100.0, 
+                  time_span=0.1, initial_cvgs=None):
         """
         Solve the differetial equations, return points of coverages.
 
@@ -923,7 +924,7 @@ class SteadyStateSolver(SolverBase):
         algo: algorithm for ODE solving, optional, str.
               'vode' | 'zvode' | 'lsoda' | 'dopri5' | 'dop853'
 
-        time_span: time span for each step, float, default to be 0.5
+        time_span: time span for each step, float, default to be 0.1
 
         time_start: time when begin integration, float.
 
@@ -972,20 +973,24 @@ class SteadyStateSolver(SolverBase):
         self.logger.info('%10s%20s' + '%20s'*nads, 'process',
                          'time(s)', *adsorbate_names)
         self.logger.info('-'*(20*nads + 30))
-        while r.t < t_end:
-            self.logger.info('%10.2f%%%20f' + '%20.8e'*nads, r.t/t_end*100,
-                             r.t, *r.integrate(r.t + t_step))
-            ts.append(r.t)
-            ys.append(r.y.tolist())
 
-        # write to archive file
-        with open('auto_ode_coverages.py', 'w') as f:
-            time_str = get_list_string('times', ts)
-            cvgs_str = get_list_string('coverages', ys)
-            content = file_header + time_str + cvgs_str
-            f.write(content)
-            self.logger.info('ODE integration trajectory is written' +
-                             ' to auto_ode_coverages.py.')
+        try:
+            while r.t < t_end:
+                self.logger.info('%10.2f%%%20f' + '%20.8e'*nads, r.t/t_end*100,
+                                 r.t, *r.integrate(r.t + t_step))
+                ts.append(r.t)
+                ys.append(r.y.tolist())
+            self.logger.info('%10s\n', 'stop')
+
+        finally:
+            # write to archive file
+            with open('auto_ode_coverages.py', 'w') as f:
+                time_str = get_list_string('times', ts)
+                cvgs_str = get_list_string('coverages', ys)
+                content = file_header + time_str + cvgs_str
+                f.write(content)
+                self.logger.info('ODE integration trajectory is written' +
+                                 ' to auto_ode_coverages.py.')
 
         return ts, ys
 
