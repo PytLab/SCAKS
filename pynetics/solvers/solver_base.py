@@ -4,7 +4,6 @@ import mpmath as mp
 import numpy as np
 import gmpy2
 import sympy as sym
-from scipy.integrate import odeint
 try:
     import matplotlib.pyplot as plt
 except ImportError:
@@ -621,35 +620,6 @@ class SolverBase(KineticCoreComponent):
         setattr(self, 'energy_correction', True)
 
         return self.E
-
-    def solve_ode(self, time_span=1.0, nticks=1000, initial_cvgs=None):
-        """
-        Solve the differetial equations, return points of coverages.
-        """
-        def dtheta_dt(cvgs_tuple, t):
-            return self.steady_state_function(cvgs_tuple)
-
-        t = np.arange(0, nticks, time_span)
-
-        if not initial_cvgs:
-            initial_cvgs = self.boltzmann_coverages()
-        track = odeint(dtheta_dt, initial_cvgs, t)
-
-        return track
-
-    def plot_ode(self, track, time_span=1.0, nticks=1000):
-        pt_num, line_num = track.shape
-        #x = np.arange(0, 5000, 0.0005)
-        x = np.arange(0, time_span, nticks)
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        for i in xrange(line_num):
-            label = self._owner.adsorbate_names[i]
-            y = track[:, i]
-            ax.plot(x, y, label=label, linewidth=2)
-        plt.legend()
-
-        plt.show()
 
     ######################################################
     ######                                          ######

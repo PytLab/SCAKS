@@ -73,6 +73,15 @@ class KynetixPlugin(KMCAnalysisPlugin):
         self.continuous_job = (hasattr(self.kinetic_model, 'kmc_continue') and
                                self.kinetic_model.kmc_continue)
 
+        # dump interval
+        if hasattr(self.kinetic_model, 'analysis_dump_interval'):
+            self.dump_interval = self.kinetic_model.analysis_dump_interval
+        else:
+            self.dump_interval = 1
+
+        # set counter
+        self.analysis_counter = 0
+
     def store_last_types(self):
         '''
         Archive self.last_types by writting it to file.
@@ -257,8 +266,7 @@ class TOFAnalysis(KynetixPlugin):
         if hasattr(self.kinetic_model, 'total_rates'):
             self.total_rates = self.kinetic_model.total_rates
         else:
-            self.total_rates = [[0.0, 0.0] for i in xrange(len(rates_list))] # set counter
-        self.analysis_counter = 0
+            self.total_rates = [[0.0, 0.0] for i in xrange(len(rates_list))] 
         # step and time collection ccontainers
         self.steps, self.times = [], []
         # TOF collection
@@ -307,7 +315,7 @@ class TOFAnalysis(KynetixPlugin):
 
         # TOF analysis start when coverage is converged
         if step < self.start_step:
-            self.logger.info("[ %d%% ] TOf analysis skipped ( step: %d, time: %e s )",
+            self.logger.info("[ %d%% ] TOF analysis skipped ( step: %d, time: %e s )",
                              percentage, step, time)
             return
 
@@ -325,9 +333,10 @@ class TOFAnalysis(KynetixPlugin):
 
         # info output
         self.analysis_counter += 1
-        self.logger.info('[ %d%% ] Entering TOF analysis %d ( step: %d, time: %e s ) ',
-                         percentage, self.analysis_counter, step, time)
-        self.logger.info('collect statistics about possible reactions:')
+        if self.analysis_counter % self.dump_interval == 0:
+            self.logger.info('[ %d%% ] Entering TOF analysis %d ( step: %d, time: %e s ) ',
+                             percentage, self.analysis_counter, step, time)
+            self.logger.info('collect statistics about possible reactions:')
 
         # get current types
         types = configuration.types()
@@ -388,15 +397,19 @@ class TOFAnalysis(KynetixPlugin):
             self.total_rates[idx][-1] += total_reversed_rate
 
             # info output
-            self.logger.info('[ %s ] n_forward = %d, n_reversed = %d, dt = %e',
-                             rxn_expression, n_forward, n_reversed, dt)
+
+            if self.analysis_counter % self.dump_interval == 0:
+                self.logger.info('[ %s ] n_forward = %d, n_reversed = %d, dt = %e',
+                                 rxn_expression, n_forward, n_reversed, dt)
 
         # collect TOFs for this step
         current_tofs = self.append_TOFs()
-        self.logger.info('current TOFs = ')
-        for tof_list in current_tofs:
-            self.logger.info('   %17.10e(+), %e(-)', *tof_list)
-        self.logger.info(' ')
+
+        if self.analysis_counter % self.dump_interval == 0:
+            self.logger.info('current TOFs = ')
+            for tof_list in current_tofs:
+                self.logger.info('   %17.10e(+), %e(-)', *tof_list)
+            self.logger.info(' ')
 
     def finalize(self):
         '''
@@ -504,6 +517,12 @@ class TOFCoveragesAnalysis(TOFAnalysis):
         self.species_cvgs = []
 
         self.total_step = self.kinetic_model.nstep
+
+        # dump interval
+        if hasattr(self.kinetic_model, 'analysis_dump_interval'):
+            self.dump_interval = self.kinetic_model.analysis_dump_interval
+        else:
+            self.dump_interval = 1
 
         # set logger
         self.logger = logging.getLogger('model.solvers.TOFCoveragesAnalysis')
@@ -627,7 +646,7 @@ class TOFCoveragesAnalysis(TOFAnalysis):
 
         # TOF analysis start when coverage is converged
         if not converged and not self.start:
-            self.logger.info("[ %d%% ] Coverages not converged, TOf analysis skipped " +
+            self.logger.info("[ %d%% ] Coverages not converged, TOF analysis skipped " +
                              "( step: %d, time: %e s )", percentage, step, time)
             return
 
@@ -648,9 +667,11 @@ class TOFCoveragesAnalysis(TOFAnalysis):
 
         # info output
         self.tof_analysis_counter += 1
-        self.logger.info('[ %d%% ] Entering TOF analysis %d ( step: %d, time: %e s )',
-                         percentage, self.tof_analysis_counter, step, time)
-        self.logger.info('collect statistics about possible reaction:')
+
+        if self.tof_analysis_counter % self.dump_interval == 0:
+            self.logger.info('[ %d%% ] Entering TOF analysis %d ( step: %d, time: %e s )',
+                             percentage, self.tof_analysis_counter, step, time)
+            self.logger.info('collect statistics about possible reaction:')
 
         # get current types
         types = configuration.types()
@@ -711,15 +732,19 @@ class TOFCoveragesAnalysis(TOFAnalysis):
             self.total_rates[idx][-1] += total_reversed_rate
 
             # info output
-            self.logger.info('[ %s ] n_forward = %d, n_reversed = %d, dt = %e',
-                             rxn_expression, n_forward, n_reversed, dt)
+
+            if self.tof_analysis_counter % self.dump_interval == 0:
+                self.logger.info('[ %s ] n_forward = %d, n_reversed = %d, dt = %e',
+                                 rxn_expression, n_forward, n_reversed, dt)
 
         # collect TOFs for this step
         current_tofs = self.append_TOFs()
-        self.logger.info('current TOFs = ')
-        for tof_list in current_tofs:
-            self.logger.info('   %17.10e(+), %e(-)', *tof_list)
-        self.logger.info(' ')
+
+        if self.tof_analysis_counter % self.dump_interval == 0:
+            self.logger.info('current TOFs = ')
+            for tof_list in current_tofs:
+                self.logger.info('   %17.10e(+), %e(-)', *tof_list)
+            self.logger.info(' ')
 
     def finalize(self):
         '''
@@ -766,7 +791,7 @@ class TOFCoveragesAnalysis(TOFAnalysis):
         with open('auto_coverages.py', 'w') as f:
             f.write(content)
 
-        self.logger.info('coverages info are wirtten to auto_coverages.py.')
+        self.logger.info('coverages info are written to auto_coverages.py.')
 
         self.store_last_types()
 

@@ -2,20 +2,20 @@ import sys
 import os
 import cPickle as cpkl
 
-sys.path.append('D:\Dropbox\Code\Python\kinetic\Pynetics')
+sys.path.append('D:\Dropbox\Code\CentOS_code\Pynetics')
 from pynetics import model
 
 
 #create micro kinetic model instance
-m = model.KineticModel(setup_file='formic_acid.mkm')
+m = model.KineticModel(setup_file='model_setup.mkm')
 
 if len(sys.argv) > 1:
-    if sys.argv[1] == '-t':  # table
+    if sys.argv[1] == '--init':  # table
         m.table_maker.create_initial_table()
     else:
-        if 'u' in sys.argv[1]:  # update
+        if '--update' in sys.argv:  # update
             m.table_maker.create_new_table('update')
-        if 'a' in sys.argv[1]:  # add
+        if '--add' in sys.argv:  # add
             m.table_maker.create_new_table('add')
 
         m.parser.parse_data()  # parse data from table
