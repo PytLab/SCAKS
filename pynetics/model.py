@@ -167,6 +167,13 @@ class KineticModel(object):
 
         return
 
+    def run_kmc(self):
+        '''
+        Function to do kinetic Monte Carlo simulation to 
+        get steady state coverages and turnover frequencies.
+        '''
+        self.solver.run()
+
     def set_parser(self, parser_name):
         """
         Import parser and set the instance of it as attr of model
