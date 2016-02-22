@@ -81,7 +81,7 @@ class KineticModel(object):
             self.logger.warning('setup file not read...')
 
     def run_mkm(self, init_cvgs=None, relative=False, correct_energy=False,
-                fsolve=False, coarse_guess=True):
+                solve_ode=False, fsolve=False, coarse_guess=True):
         '''
         Function to solve Micro-kinetic model using Steady State Approxmiation
         to get steady state coverages and turnover frequencies.
@@ -90,13 +90,15 @@ class KineticModel(object):
         -----------
         correct_energy: add free energy corrections to energy data or not, bool
 
+        solve_ode: solve ODE only or not, bool
+
         fsolve: use scipy.optimize.fsolve to get low-precision root or not, bool
 
         coarse_guess: use fsolve to do initial coverages preprocessing or not, bool
 
         '''
         self.logger.info('--- Solve Micro-kinetic model ---')
-        
+
         # parse data
         self.logger.info('reading data...')
         self.parser.chk_data_validity()
@@ -106,7 +108,7 @@ class KineticModel(object):
             self.logger.info('convert relative to absolute energy...')
         self.parser.parse_data(relative=relative)
 
-        # solve steady state coverages
+        # -- solve steady state coverages --
         self.logger.info('passing data to solver...')
         self.solver.get_data()
         self.logger.info('getting rate constants...')
@@ -118,7 +120,13 @@ class KineticModel(object):
         if correct_energy:
             self.logger.info('free energy correction...')
             self.solver.correct_energies()
-        
+
+        # solve ODE
+        # !! do ODE integration AFTER passing data to solver !!
+        if solve_ode:
+            self.solver.solve_ode(initial_cvgs=init_cvgs)
+            return
+
         # set initial guess(initial coverage)
         # if there is converged coverage in current path,
         # use it as initial guess
@@ -166,6 +174,13 @@ class KineticModel(object):
         tofs = self.solver.get_cvg_tof(ss_cvgs)
 
         return
+
+    def run_kmc(self):
+        '''
+        Function to do kinetic Monte Carlo simulation to
+        get steady state coverages and turnover frequencies.
+        '''
+        self.solver.run()
 
     def set_parser(self, parser_name):
         """

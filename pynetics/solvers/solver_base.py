@@ -176,15 +176,15 @@ class SolverBase(KineticCoreComponent):
             if 'dG' in self._owner.relative_energies:
                 self.dG = self._owner.relative_energies['dG']
             elif 'dE' in self._owner.relative_energies:
-                self.dG = self._owner.relative_energies['dE'] 
+                self.dG = self._owner.relative_energies['dE']
             else:
                 raise IOError('No dG/dE was read, try parser.parse_data() ' +
                               'or add data in data table.')
-            # energy barrier 
+            # energy barrier
             if 'Ga' in self._owner.relative_energies:
                 self.Ga = self._owner.relative_energies['Ga']
             elif 'Ea' in self._owner.relative_energies:
-                self.Ga = self._owner.relative_energies['Ea'] 
+                self.Ga = self._owner.relative_energies['Ea']
             else:
                 raise IOError('No Ga/Ea was read, try parser.parse_data() ' +
                               'or add data in data table.')
