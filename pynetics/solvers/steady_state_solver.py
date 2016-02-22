@@ -914,7 +914,7 @@ class SteadyStateSolver(SolverBase):
 
     # solve model by ODE integration
 
-    def solve_ode(self, algo='lsoda', time_start=0.0, time_end=100.0, 
+    def solve_ode(self, algo='lsoda', time_start=0.0, time_end=100.0,
                   time_span=0.1, initial_cvgs=None):
         """
         Solve the differetial equations, return points of coverages.
@@ -993,4 +993,3 @@ class SteadyStateSolver(SolverBase):
                                  ' to auto_ode_coverages.py.')
 
         return ts, ys
-
