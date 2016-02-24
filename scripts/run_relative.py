@@ -26,11 +26,13 @@ else:
     correct_energy = False
 
 #use custom initial guess
-init_cvgs = (0.5, 0.5)
+init_cvgs = (0.0, 0.0, 0.0, 0.0, 0.0)
 relative = True if '--relative' in sys.argv else False
 solve_ode = True if '--ode' in sys.argv else False
+coarse_guess = False if '--nocoarse' in sys.argv else True
 m.run_mkm(init_cvgs=init_cvgs, relative=relative,
-          correct_energy=correct_energy, solve_ode=solve_ode)
+          correct_energy=correct_energy, solve_ode=solve_ode,
+          coarse_guess=True)
 
 # plot energy profiles
 #for i, rxn_equation in enumerate(m.rxn_expressions):
