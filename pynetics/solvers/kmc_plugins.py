@@ -1,7 +1,7 @@
 #####################################################################
 #           KMC plugins for coverages and TOF analysis
 #
-# * CoveragesAnalysis and TOFAnalysis are sub-classes of KynetixPlugin, 
+# * CoveragesAnalysis and TOFAnalysis are sub-classes of KynetixPlugin,
 #   and support continuous job calculations.
 #
 # * TOFCoveragesAnalysis is sub-class of TOFAnalysis,
@@ -50,10 +50,12 @@ class KynetixPlugin(KMCAnalysisPlugin):
     def __init__(self, kinetic_model):
         self.kinetic_model = kinetic_model
 
-        # -----------------------------------------------------
+        # ---------------------------------------------------------
         # base point is used to get correct time and step value
         # when the job is a continuous job
-        # -----------------------------------------------------
+        #
+        # start_time and start_step are got in load() in /model.py
+        # ---------------------------------------------------------
         # set step base point
         if hasattr(self.kinetic_model, 'start_step'):
             self.step_base = self.kinetic_model.start_step
@@ -266,7 +268,7 @@ class TOFAnalysis(KynetixPlugin):
         if hasattr(self.kinetic_model, 'total_rates'):
             self.total_rates = self.kinetic_model.total_rates
         else:
-            self.total_rates = [[0.0, 0.0] for i in xrange(len(rates_list))] 
+            self.total_rates = [[0.0, 0.0] for i in xrange(len(rates_list))]
         # step and time collection ccontainers
         self.steps, self.times = [], []
         # TOF collection
@@ -431,7 +433,7 @@ class TOFAnalysis(KynetixPlugin):
         content = (file_header + start_time_str + times_str +
                    steps_str + TOFs_str + total_rates_str)
 
-        if self.continuous_job: 
+        if self.continuous_job:
             filename = 'auto_TOFs_ctn.py'
         else:
             filename = 'auto_TOFs.py'

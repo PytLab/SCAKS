@@ -124,6 +124,7 @@ class KineticModel(object):
         # solve ODE
         # !! do ODE integration AFTER passing data to solver !!
         if solve_ode:
+            self.logger.info("initial coverages = %s", str(init_cvgs))
             self.solver.solve_ode(initial_cvgs=init_cvgs)
             return
 
@@ -378,21 +379,20 @@ class KineticModel(object):
                                      (cvg_step, tof_step))
                 if not (abs(cvg_time - tof_time) < 1e-5):
                     raise FilesError('Times(%s, %s) are not consistent.' %
-                                     (cvg_time, tof_time)) 
+                                     (cvg_time, tof_time))
 
             # set model attributes
-            # -------------------------------------------------------------------
+            # -----------------------------------------------------------------
             # **start_time** is the time when all analysis object end
             # in last kmc loop which is the start point in current kmc loop.
             #
             # **tof_start_time** is the time when true TOF analysis
             # begins(no TOF calculation at this point) in last kmc loop
             # which is also used in continous kmc loop.
-            # -------------------------------------------------------------------
+            # -----------------------------------------------------------------
             self.start_step, self.start_time = tof_step, tof_time
             self.tof_start_time = tof_start_time
             self.start_types = last_types
             self.total_rates = total_rates
             self.logger.info('kMC analysis starts from step = %d, time = %e s',
                              self.start_step, self.start_time)
-
