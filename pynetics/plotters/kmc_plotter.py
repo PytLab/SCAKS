@@ -45,9 +45,9 @@ class KMCPlotter(PlotterBase):
             circle_attrs = self._owner.circle_attrs
 
             fig = func(self, types, time, step, circle_attrs={})
-            
+
             return fig
-        
+
         return wrapped_func
 
     @get_parameters
