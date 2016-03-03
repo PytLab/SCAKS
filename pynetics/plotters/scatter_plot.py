@@ -95,7 +95,7 @@ def plot_scatters(shape, types, possible_types, color_dict,
 
     for t, pt in zip(types, scatter_pts):  # t, pt <-> type, scatter_pt
         color = color_dict[t]
-        scatter_dict[t].append(pt)        
+        scatter_dict[t].append(pt)
 
     # plot scatter points
     for t, pts in scatter_dict.iteritems():
@@ -108,7 +108,7 @@ def plot_scatters(shape, types, possible_types, color_dict,
         edgecolor = circle_attrs['edgecolor'] if 'edgecolor' in circle_attrs else color
         area = circle_attrs['area'] if 'area' in circle_attrs else 60.0**2/mul(*shape)*20
         marker = circle_attrs['marker'] if 'marker' in circle_attrs else 'o'
-        ax.scatter(x, y, s=area, c=color, alpha=alpha, edgecolor=edgecolor)
+        ax.scatter(x, y, s=area, c=color, alpha=alpha, edgecolor=edgecolor, marker=marker)
 
     # set axes attrs
     ax.set_xlim(-0.1, shape[0]*0.1)
@@ -157,4 +157,3 @@ if __name__ == '__main__':
                         time=0.01, step=2, circle_attrs=circle_attrs)
 
     plt.show()
-
