@@ -1,5 +1,5 @@
 #ifndef TEST_KMC_FUNCTIONS_
-    #define TEST_KMC_FUNCTIONS_
+#define TEST_KMC_FUNCTIONS_
 #endif
 
 #include <assert.h>
@@ -12,7 +12,7 @@
 #include <CUnit/TestDB.h>
 
 #ifndef PLUGIN_BACKENDS_
-    #include "plugin_backends.h"
+#include "plugin_backends.h"
 #endif
 
 #define TOLERANCE 1e-10
