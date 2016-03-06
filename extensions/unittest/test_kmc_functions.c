@@ -11,7 +11,7 @@
 *********************************************************************************/
 
 #ifndef TEST_KMC_FUNCTIONS_
-    #include "test_kmc_functions.h"
+#include "test_kmc_functions.h"
 #endif
 
 #define NTESTS 3

@@ -572,7 +572,7 @@ class SteadyStateSolver(SolverBase):
             jm = self.analytical_jacobian(dtheta_dt_expressions, c0).tolist()
             # convert to floats
             jm = [[float(df) for df in dfs] for dfs in jm]
-                    
+
             return jm
 
         # main hotpot

@@ -25,7 +25,7 @@ elif len(sys.argv) >= 2:
     execfile(filename_1, globs, locs)
 
     # go through all the other files to append data
-    for filename in sys.argv[2: ]:
+    for filename in sys.argv[2:]:
         temp_globs, temp_locs = {}, {}
         execfile(filename, temp_globs, temp_locs)
         # for different data
@@ -33,7 +33,7 @@ elif len(sys.argv) >= 2:
             if var == 'times' or var == 'steps' or var.startswith('TOFs_'):
                 locs[var].extend(temp_locs[var])
     times, steps = locs['times'], locs['steps']
-    
+
 else:
     print "Usage: python plot_TOFs.py file1 file2 ..."
     sys.exit(1)
