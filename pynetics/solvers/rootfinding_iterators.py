@@ -33,7 +33,7 @@ class RootfindingIterator(object):
         fx: value of f(x), sequence of float
         '''
         pass
-        return (x0, fxnorm, fx) 
+        return (x0, fxnorm, fx)
 
 
 class ConstrainedNewton(RootfindingIterator):
@@ -137,7 +137,7 @@ class ConstrainedNewton(RootfindingIterator):
             x0, fxnorm = x1, norm(fx)
 
             yield (x0, fxnorm, fx)
-            
+
 
 class MDNewton(RootfindingIterator):
     """
@@ -221,5 +221,3 @@ class MDNewton(RootfindingIterator):
                 x1 = x0 + l*s
 
             yield (tuple(x0), fxnorm, fx)
-
-

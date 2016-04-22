@@ -195,7 +195,7 @@ class RelativeEnergyParser(ParserBase):
         # get relative energy only
         if relative:
             if 'dG' and 'Ga' in self._owner.relative_energies:
-                setattr(self._owner, 'has_relative_energy', True) 
+                setattr(self._owner, 'has_relative_energy', True)
                 return
             elif 'dE' and 'Ea' in self._owner.relative_energies:
                 setattr(self._owner, 'has_relative_energy', True)
