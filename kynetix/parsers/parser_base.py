@@ -140,7 +140,7 @@ class ParserBase(ModelShell):
         site_names = []
         transition_state_names = []
 
-        for equation in self._owner.rxn_expressions:
+        for equation in self._owner.rxn_expressions():
             # debug info
             self.logger.debug('parsing [ %s ]', equation)
 
@@ -176,15 +176,22 @@ class ParserBase(ModelShell):
                         adsorbate_names.append(sp)
             #merge elementary rxn
             elementary_rxns_list.append(elementary_rxn)
+
         #merge duplicates in lists
-        self._owner.adsorbate_names = tuple(sorted(list(set(adsorbate_names))))
-        self._owner.gas_names = tuple(sorted(list(set(gas_names))))
-        self._owner.liquid_names = tuple(sorted(list(set(liquid_names))))
-        self._owner.site_names = tuple(sorted(list(set(site_names))))
-        self._owner.transition_state_names = \
-            tuple(sorted(list(set(transition_state_names))))
-        self._owner.elementary_rxns_list = elementary_rxns_list
-        #return adsorbate_names, gas_names, site_names, transition_state_names
+        adsorbate_names = tuple(sorted(list(set(adsorbate_names))))
+        gas_names = tuple(sorted(list(set(gas_names))))
+        liquid_names = tuple(sorted(list(set(liquid_names))))
+        site_names = tuple(sorted(list(set(site_names))))
+        transition_state_names = tuple(sorted(list(set(transition_state_names))))
+        elementary_rxns_list = elementary_rxns_list
+
+        # Return.
+        return (adsorbate_names,
+                gas_names,
+                liquid_names,
+                site_names,
+                transition_state_names,
+                elementary_rxns_list)
 
     def parse_single_elementary_rxn(self, equation):
         """
@@ -315,25 +322,25 @@ class ParserBase(ModelShell):
 
         #below is species_definition part
         #add species to self.species_defination
-        if not total_name in self._owner.species_definitions:
-            self._owner.species_definitions[total_name] = \
+        if not total_name in self._owner._KineticModel__species_definitions:
+            self._owner._KineticModel__species_definitions[total_name] = \
                 sp_dict[total_name].copy()
-            del self._owner.species_definitions[total_name]['number']
+            del self._owner._KineticModel__species_definitions[total_name]['number']
         else:
-            self._owner.species_definitions[total_name].update(sp_dict[total_name])
-            del self._owner.species_definitions[total_name]['number']
-#        self._owner.species_definitions[total_name]['name'] = species_name
-        self._owner.species_definitions[total_name]['name'] = m.group(2)
+            self._owner._KineticModel__species_definitions[total_name].update(sp_dict[total_name])
+            del self._owner._KineticModel__species_definitions[total_name]['number']
+#        self._owner._KineticModel__species_definitions[total_name]['name'] = species_name
+        self._owner._KineticModel__species_definitions[total_name]['name'] = m.group(2)
         #add species type to species_definition
         if site != 'g' and site != 'l':
             if '-' in total_name:
-                self._owner.species_definitions[total_name]['type'] = 'transition_state'
+                self._owner._KineticModel__species_definitions[total_name]['type'] = 'transition_state'
             else:
-                self._owner.species_definitions[total_name]['type'] = 'adsorbate'
+                self._owner._KineticModel__species_definitions[total_name]['type'] = 'adsorbate'
         elif site == 'g':
-            self._owner.species_definitions[total_name]['type'] = 'gas'
+            self._owner._KineticModel__species_definitions[total_name]['type'] = 'gas'
         elif site == 'l':
-            self._owner.species_definitions[total_name]['type'] = 'liquid'
+            self._owner._KineticModel__species_definitions[total_name]['type'] = 'liquid'
         #part end
         return sp_dict
 

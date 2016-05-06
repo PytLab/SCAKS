@@ -16,38 +16,33 @@ class KineticModel(object):
     Main class for kinetic models.
     """
     def __init__(self, **kwargs):
+        """
+        Parameters:
+        -----------
+        setup_file: kinetic model set up file, str.
+        
+        verbosity: logging level, int.
+
+        Example:
+        --------
+        >>> from kynetix.model import KineticModel
+        >>> model = KineticModel(setup_file="setup.mkm",
+                                 verbosity=logging.WARNING)
+        """
+
+        # Get class name.
+        self.__class_name = self.__class__.__name__
 
         # set physical constants
-        self._kB = kB_eV  # Boltzmann constant from NIST, eV/K
-        self._h = h_eV    # Planck constant from NIST, eV s
-
-        #set kinetic attrs
-        self._attr_type_dict = {
-            'adsorbate_names': tuple,
-            'transition_state_names': tuple,
-            'gas_names': tuple,
-            'descriptor_names': tuple,
-            'surface_names': tuple,
-            'species_definitions': dict,
-            'elementary_rxns': tuple,
-            'setup_file': str,
-            'rxn_expression': list
-        }
-
-        # set logger
-        self.set_logger()
+        self.__kB = kB_eV  # Boltzmann constant from NIST, eV/K
+        self.__h = h_eV    # Planck constant from NIST, eV s
 
         # parse in keyword args
         for key in kwargs:
-            if key in self._attr_type_dict:
-                try:
-                    val = self._attr_type_dict[key](kwargs[key])
-                except:
-                    raise AttributeError('Argument \''+key+'\' '
-                                         'is in wrong type.')
-                setattr(self, key, val)
-            else:  # if key is not essential attr for model
-                self.logger.warning("redundant keyword - [ %s ]", str(key))
+            setattr(self, "_" + self.__class_name + "__" + key, kwargs[key])
+
+        # set logger
+        self.__set_logger()
 
         #set elementary parse regex(compiled)
         self.regex_dict = {}
@@ -71,11 +66,11 @@ class KineticModel(object):
         self.has_relative_energy = False
 
         # load setup file
-        if hasattr(self, 'setup_file'):
-            self.logger.info('setup file [ %s ] is found', self.setup_file)
-            model_name = self.setup_file.rsplit('.', 1)[0]
-            setattr(self, 'model_name', model_name)
-            self.load(self.setup_file)
+        if hasattr(self, '_' + self.__class_name + '__setup_file'):
+            self.logger.info('setup file [ {} ] is found'.format(self.__setup_file))
+            model_name = self.__setup_file.rsplit('.', 1)[0]
+            self.__model_name = model_name
+            self.__load(self.__setup_file)
             self.logger.info('kinetic modeling...success!\n')
         else:
             self.logger.warning('setup file not read...')
@@ -183,11 +178,11 @@ class KineticModel(object):
         '''
         self.solver.run()
 
-    def set_parser(self, parser_name):
+    def __set_parser(self, parser_name):
         """
-        Import parser and set the instance of it as attr of model
+        Private function to import parser and
+        set the instance of it as attr of model
         """
-        # hacked from CatMap (catmap/model.py)
         # https://docs.python.org/2/library/functions.html#__import__
         basepath = os.path.dirname(
             inspect.getfile(inspect.currentframe()))
@@ -196,18 +191,22 @@ class KineticModel(object):
         # from  loggers import logger
         _module = __import__('parsers', globals(), locals())
         parser_instance = getattr(_module, parser_name)(owner=self)
-        setattr(self, 'parser', parser_instance)
+        setattr(self, "_" + self.__class_name + '__parser', parser_instance)
         self.logger.info('parser is set.')
 
-    def set_logger(self):
+    def __set_logger(self):
         """
-        Get logging.logger instance as logger of kinetic model.
+        Private function to get logging.logger instance as logger of kinetic model.
         """
         logger = logging.getLogger('model')
         if os.path.exists('./logging.conf'):
             logging.config.fileConfig('./logging.conf')
         else:
-            logger.setLevel(logging.INFO)
+            # Set logging level.
+            if hasattr(self, "_" + self.__class_name + "__verbosity"):
+                logger.setLevel(self.__verbosity)
+            else:
+                logger.setLevel(logging.INFO)
             # create handlers
             std_hdlr = logging.FileHandler('out.log')
             std_hdlr.setLevel(logging.DEBUG)
@@ -221,9 +220,9 @@ class KineticModel(object):
             logger.addHandler(std_hdlr)
             logger.addHandler(console_hdlr)
 
-        self.logger = logger
+        self.__logger = logger
 
-    def load(self, setup_file):
+    def __load(self, setup_file):
         """
         Load 'setup_file' into kinetic model by exec setup file
         and assigning all local variables as attrs of model.
@@ -236,7 +235,7 @@ class KineticModel(object):
             data_file='data.pkl',
             grid_type='square',
             decimal_precision=100,
-            tools=['parser', 'plotter'],
+            tools=['parser'],
             parser='RelativeEnergyParser',
             table_maker='CsvMaker',
             solver='SteadyStateSolver',
@@ -255,14 +254,14 @@ class KineticModel(object):
         if 'tools' in locs:
             if 'parser' not in locs['tools']:
                 raise ParameterError('[ parser ] must be in tools.')
-            self.tools = locs['tools']
+            self.__tools = locs['tools']
             del locs['tools']
 
-            self.logger.info('tools = %s', str(self.tools))
+            self.logger.info('tools = {}'.format(str(self.__tools)))
 
         # assign parser ahead to provide essential attrs for other tools
-        self.logger.info('instantiate %s', str(locs['parser']))
-        self.set_parser(locs['parser'])
+        self.logger.info('instantiate {}'.format(str(locs['parser'])))
+        self.__set_parser(locs['parser'])
 
         # if parser is kmc_parser use kmc_solver correspondingly
         if locs['parser'] == 'KMCParser':
@@ -272,32 +271,29 @@ class KineticModel(object):
         # assign other tools
         for key in locs.keys():
             # ignore tools which will be loaded later
-            if key in self.tools:
+            if key in self.__tools:
                 continue
             # check type of variables
-            if key in self._attr_type_dict:
-                #chech attr type
-                if type(locs[key]) != self._attr_type_dict[key]:
-                    try:
-                        locs[key] = self._attr_type_dict[key](locs[key])
-                        setattr(self, key, locs[key])
-                    except:
-                        raise ValueError('\''+key+'\' is in wrong type. ' +
-                                         str(self._attr_type_dict[key]) +
-                                         ' object is expected.')
-            setattr(self, key, locs[key])
-            self.logger.info('%s = %s', key, str(locs[key]))
+            # Add later ...
+            setattr(self, "_" + self.__class_name + "__" + key, locs[key])
+            self.logger.info('{} = {}'.format(key, str(locs[key])))
 
         #use parser parse essential attrs for other tools
         #parse elementary rxns
         self.logger.info('Parsing elementary rxns...')
-        if self.rxn_expressions:
-            self.parser.parse_elementary_rxns(self.rxn_expressions)
+        if self.__rxn_expressions:
+            (self.__adsorbate_names,
+             self.__gas_names,
+             self.__liquid_names,
+             self.__site_names,
+             self.__transition_state_names,
+             self.__elementary_rxns_list) = \
+                self.__parser.parse_elementary_rxns(self.__rxn_expressions)
 
         # load tools of model
         self.logger.info('instantiate model tools...')
-        for key in self.tools:
-            # auto-import classes (HACKED from CatMap)
+        for key in self.__tools:
+            # Auto-import classes.
             if key == 'parser':  # ignore parser which is loaded before
                 continue
             try:
@@ -314,20 +310,26 @@ class KineticModel(object):
                     _temp = \
                         __import__(pyfile, globals(), sublocs, [locs[key]])
                     tool_instance = getattr(_temp, locs[key])(owner=self)
-                    setattr(self, key, tool_instance)
-                    self.logger.info('%s = %s', key, locs[key])
+                    setattr(self, "_" + self.__class_name + "__" + key, tool_instance)
+                    self.logger.info('{} = {}'.format(key, locs[key]))
                 else:
-                    setattr(self, key, None)
-                    self.logger.warning('%s is set to None.')
+                    setattr(self, "_" + self.__class_name + "__" + key, None)
+                    self.logger.warning('{} is set to None.'.format(key))
             except ImportError:
                 raise ToolsImportError(key.capitalize()+' '+locs[key] +
                                        ' could not be imported. ' +
                                        'Ensure that the class ' +
                                        'exists and is spelled properly.')
-        #HACK END
+        # Set kMC parameters.
+        if not isinstance(self.__solver, str):
+            self.__set_kmc_parameters()
 
+    def __set_kmc_parameters(self):
+        """
+        Private helper function to set KMC related parameters.
+        """
         # kMC parameters check
-        solver_type = repr(self.solver).split('.')[2]
+        solver_type = repr(self.__solver).split('.')[2]
         # pseudo random generator
         if solver_type == 'kmc_solver' and 'random_generator' not in locs:
             self.logger.info('pseudo random generator type was not set.')
@@ -390,9 +392,153 @@ class KineticModel(object):
             # begins(no TOF calculation at this point) in last kmc loop
             # which is also used in continous kmc loop.
             # -----------------------------------------------------------------
-            self.start_step, self.start_time = tof_step, tof_time
-            self.tof_start_time = tof_start_time
-            self.start_types = last_types
-            self.total_rates = total_rates
+            self.__start_step, self.__start_time = tof_step, tof_time
+            self.__tof_start_time = tof_start_time
+            self.__start_types = last_types
+            self.__total_rates = total_rates
             self.logger.info('kMC analysis starts from step = %d, time = %e s',
-                             self.start_step, self.start_time)
+                             self.__start_step, self.__start_time)
+
+    def setup_file(self):
+        """
+        Query function for setup file.
+        """
+        return self.__setup_file
+
+    def name(self):
+        """
+        Query function for model name.
+        """
+        return self.__model_name
+
+    def kB(self):
+        """
+        Query function for Boltzmann constant.
+        """
+        return self.__kB
+
+    def h(self):
+        """
+        Query function for Plank constant.
+        """
+        return self.__h
+
+    def logger(self):
+        """
+        Query function for model logger.
+        """
+        return self.__logger
+
+    def tools(self):
+        """
+        Query function for model tools.
+        """
+        return self.__tools
+
+    def parser(self):
+        """
+        Query function for model parser object.
+        """
+        return self.__parser
+
+    def solver(self):
+        """
+        Query function for model solver object.
+        """
+        return self.__solver
+
+    def corrector(self):
+        """
+        Query function for model corrector.
+        """
+        return self.__corrector
+
+    def plotter(self):
+        """
+        Query function for model plotter.
+        """
+        return self.__plotter
+
+    def rxn_expressions(self):
+        """
+        Query function for reaction expressions in model.
+        """
+        return self.__rxn_expressions
+
+    def species_definitions(self):
+        """
+        Query function for species definitions in model.
+        """
+        return self.__species_definitions
+
+    def decimal_precision(self):
+        """
+        Query function for data precision.
+        """
+        return self.__decimal_precision
+
+    def elementary_rxns_list(self):
+        """
+        Query function for elementary reactions list.
+        """
+        return self.__elementary_rxns_list
+
+    def temperature(self):
+        """
+        Query function for system temperature.
+        """
+        return self.__temperature
+
+    def site_names(self):
+        """
+        Query function for site names in model.
+        """
+        return self.__site_names
+
+    def adsorbate_names(self):
+        """
+        Query function for adsorbate names in model.
+        """
+        return self.__adsorbate_names
+
+    def gas_names(self):
+        """
+        Query function for gas names in model.
+        """
+        return self.__gas_names
+
+    def liquid_names(self):
+        """
+        Query function for liquid names in model.
+        """
+        return self.__liquid_names
+
+    def transition_state_names(self):
+        """
+        Query function for transition state species names in model.
+        """
+        return self.__transition_state_names
+
+    def gas_thermo_mode(self):
+        """
+        Query function for gas mode in model.
+        """
+        return self.__gas_thermo_mode
+
+    def ref_species(self):
+        """
+        Query function for reference species name.
+        """
+        return self.__ref_species
+
+    def surface_name(self):
+        """
+        Query function for surface name.
+        """
+        return self.__surface_name
+
+    def verbosity(self):
+        """
+        Query function for logging verbosity.
+        """
+        return self.__verbosity
