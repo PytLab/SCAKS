@@ -67,3 +67,6 @@ extensions/unittest/*.xml
 *.swp
 *un~
 *swo
+
+# log file
+*.log
