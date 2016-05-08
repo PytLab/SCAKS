@@ -39,9 +39,10 @@ class ModelShell(object):
         -----------
         species_str: species string, e.g. '2CH4_g', str
         '''
+        regex_dict = self._owner.parser().regex_dict()
         # for species adsorbated on surface
         if not '*' in species_str:
-            m = self._owner.regex_dict['species'][0].search(species_str)
+            m = regex_dict['species'][0].search(species_str)
 
             # check successful match or not
             if not m:
@@ -57,7 +58,7 @@ class ModelShell(object):
 
         # for site
         else:
-            m = self._owner.regex_dict['empty_site'][0].search(species_str)
+            m = regex_dict['empty_site'][0].search(species_str)
             if not m.group(1):
                 stoichiometry = 1
             else:

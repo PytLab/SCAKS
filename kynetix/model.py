@@ -1,7 +1,6 @@
 import os
 import sys
 import inspect
-import re
 import logging
 import logging.config
 import cPickle as cpkl
@@ -44,36 +43,18 @@ class KineticModel(object):
         # set logger
         self.__set_logger()
 
-        #set elementary parse regex(compiled)
-        self.regex_dict = {}
-
-        states_regex = re.compile(r'([^\<\>]*)(?:\<?\-\>)' +
-                                  r'(?:([^\<\>]*)(?:\<?\-\>))?([^\<\>]*)')
-        self.regex_dict['IS_TS_FS'] = [states_regex, ['IS', 'TS', 'FS']]
-
-        species_regex = re.compile(r'(\d*)([^\_\+\*\<\>]+)_(\d*)(\w+)')
-        self.regex_dict['species'] = \
-            [species_regex, ['stoichiometry', 'name', 'site_number', 'site']]
-
-        site_regex = re.compile(r'(\d*)(?:\*\_)(\w+)')
-        self.regex_dict['empty_site'] = \
-            [site_regex, ['stoichiometry', 'site']]
-
-#        self.regex_dict['species_separator'] = \
-#        			[r'(?:\A|\s*\+\s*|\s+)', []]
-
         self.has_absolute_energy = False
         self.has_relative_energy = False
 
         # load setup file
         if hasattr(self, '_' + self.__class_name + '__setup_file'):
-            self.logger.info('setup file [ {} ] is found'.format(self.__setup_file))
+            self.__logger.info('setup file [ {} ] is found'.format(self.__setup_file))
             model_name = self.__setup_file.rsplit('.', 1)[0]
             self.__model_name = model_name
             self.__load(self.__setup_file)
-            self.logger.info('kinetic modeling...success!\n')
+            self.__logger.info('kinetic modeling...success!\n')
         else:
-            self.logger.warning('setup file not read...')
+            self.__logger.warning('setup file not read...')
 
     def run_mkm(self, init_cvgs=None, relative=False, correct_energy=False,
                 solve_ode=False, fsolve=False, coarse_guess=True):
@@ -92,34 +73,34 @@ class KineticModel(object):
         coarse_guess: use fsolve to do initial coverages preprocessing or not, bool
 
         '''
-        self.logger.info('--- Solve Micro-kinetic model ---')
+        self.__logger.info('--- Solve Micro-kinetic model ---')
 
         # parse data
-        self.logger.info('reading data...')
+        self.__logger.info('reading data...')
         self.parser.chk_data_validity()
         if relative:
-            self.logger.info('use relative energy directly...')
+            self.__logger.info('use relative energy directly...')
         else:
-            self.logger.info('convert relative to absolute energy...')
+            self.__logger.info('convert relative to absolute energy...')
         self.parser.parse_data(relative=relative)
 
         # -- solve steady state coverages --
-        self.logger.info('passing data to solver...')
+        self.__logger.info('passing data to solver...')
         self.solver.get_data()
-        self.logger.info('getting rate constants...')
+        self.__logger.info('getting rate constants...')
         self.solver.get_rate_constants()
-        self.logger.info('getting rate expressions...')
+        self.__logger.info('getting rate expressions...')
         self.solver.get_rate_expressions(self.solver.rxns_list)
 
         # energy correction
         if correct_energy:
-            self.logger.info('free energy correction...')
+            self.__logger.info('free energy correction...')
             self.solver.correct_energies()
 
         # solve ODE
         # !! do ODE integration AFTER passing data to solver !!
         if solve_ode:
-            self.logger.info("initial coverages = %s", str(init_cvgs))
+            self.__logger.info("initial coverages = %s", str(init_cvgs))
             self.solver.solve_ode(initial_cvgs=init_cvgs)
             return
 
@@ -136,34 +117,34 @@ class KineticModel(object):
                 msg = ('init_cvgs must have %d elements, but %d is supplied' %
                        (len(self.adsorbate_names), len(init_cvgs)))
                 raise ParameterError(msg)
-            self.logger.info('use user-defined coverages as initial guess...')
+            self.__logger.info('use user-defined coverages as initial guess...')
 
         elif os.path.exists("./data.pkl"):
             with open('data.pkl', 'rb') as f:
                 data = cpkl.load(f)
             init_guess = 'steady_state_coverage'
             if init_guess in data:
-                self.logger.info('use coverages in data.pkl as initial guess...')
+                self.__logger.info('use coverages in data.pkl as initial guess...')
                 init_cvgs = data[init_guess]
                 coarse_guess = False
             else:
-                self.logger.info('use Boltzmann coverages as initial guess...')
+                self.__logger.info('use Boltzmann coverages as initial guess...')
                 init_cvgs = self.solver.boltzmann_coverages()
 
         else:  # use Boltzmann coverage
-            self.logger.info('use Boltzmann coverages as initial guess...')
+            self.__logger.info('use Boltzmann coverages as initial guess...')
             init_cvgs = self.solver.boltzmann_coverages()
 
         # solve steady state coverages
         # use scipy.optimize.fsolve or not (fast but low-precision)
         if fsolve:
-            self.logger.info('using fsolve to get steady state coverages...')
+            self.__logger.info('using fsolve to get steady state coverages...')
             ss_cvgs = self.solver.fsolve_steady_state_cvgs(init_cvgs)
         else:
             if coarse_guess:
-                self.logger.info('getting coarse steady state coverages...')
+                self.__logger.info('getting coarse steady state coverages...')
                 init_cvgs = self.solver.coarse_steady_state_cvgs(init_cvgs)  # coarse root
-            self.logger.info('getting precise steady state coverages...')
+            self.__logger.info('getting precise steady state coverages...')
             ss_cvgs = self.solver.get_steady_state_cvgs(init_cvgs)
 
         # get TOFs for gases
@@ -192,7 +173,7 @@ class KineticModel(object):
         _module = __import__('parsers', globals(), locals())
         parser_instance = getattr(_module, parser_name)(owner=self)
         setattr(self, "_" + self.__class_name + '__parser', parser_instance)
-        self.logger.info('parser is set.')
+        self.__logger.info('parser is set.')
 
     def __set_logger(self):
         """
@@ -229,7 +210,7 @@ class KineticModel(object):
         For tools, create the instances of tool classes and
         assign them as the attrs of model.
         """
-        self.logger.info('Loading Kinetic Model...\n')
+        self.__logger.info('Loading Kinetic Model...\n')
 
         defaults = dict(
             data_file='data.pkl',
@@ -243,7 +224,7 @@ class KineticModel(object):
             plotter='EnergyProfilePlotter',
         )
 
-        self.logger.info('read in parameters...')
+        self.__logger.info('read in parameters...')
 
         #exec setup file set local variables as attrs of model
         globs = {}
@@ -257,16 +238,16 @@ class KineticModel(object):
             self.__tools = locs['tools']
             del locs['tools']
 
-            self.logger.info('tools = {}'.format(str(self.__tools)))
+            self.__logger.info('tools = {}'.format(str(self.__tools)))
 
         # assign parser ahead to provide essential attrs for other tools
-        self.logger.info('instantiate {}'.format(str(locs['parser'])))
+        self.__logger.info('instantiate {}'.format(str(locs['parser'])))
         self.__set_parser(locs['parser'])
 
         # if parser is kmc_parser use kmc_solver correspondingly
         if locs['parser'] == 'KMCParser':
             locs['solver'] = 'KMCLibSolver'
-            self.logger.info('set solver [ KMCSolver ].')
+            self.__logger.info('set solver [ KMCSolver ].')
 
         # assign other tools
         for key in locs.keys():
@@ -276,11 +257,11 @@ class KineticModel(object):
             # check type of variables
             # Add later ...
             setattr(self, "_" + self.__class_name + "__" + key, locs[key])
-            self.logger.info('{} = {}'.format(key, str(locs[key])))
+            self.__logger.info('{} = {}'.format(key, str(locs[key])))
 
         #use parser parse essential attrs for other tools
         #parse elementary rxns
-        self.logger.info('Parsing elementary rxns...')
+        self.__logger.info('Parsing elementary rxns...')
         if self.__rxn_expressions:
             (self.__adsorbate_names,
              self.__gas_names,
@@ -291,7 +272,7 @@ class KineticModel(object):
                 self.__parser.parse_elementary_rxns(self.__rxn_expressions)
 
         # load tools of model
-        self.logger.info('instantiate model tools...')
+        self.__logger.info('instantiate model tools...')
         for key in self.__tools:
             # Auto-import classes.
             if key == 'parser':  # ignore parser which is loaded before
@@ -311,10 +292,10 @@ class KineticModel(object):
                         __import__(pyfile, globals(), sublocs, [locs[key]])
                     tool_instance = getattr(_temp, locs[key])(owner=self)
                     setattr(self, "_" + self.__class_name + "__" + key, tool_instance)
-                    self.logger.info('{} = {}'.format(key, locs[key]))
+                    self.__logger.info('{} = {}'.format(key, locs[key]))
                 else:
                     setattr(self, "_" + self.__class_name + "__" + key, None)
-                    self.logger.warning('{} is set to None.'.format(key))
+                    self.__logger.warning('{} is set to None.'.format(key))
             except ImportError:
                 raise ToolsImportError(key.capitalize()+' '+locs[key] +
                                        ' could not be imported. ' +
@@ -332,28 +313,28 @@ class KineticModel(object):
         solver_type = repr(self.__solver).split('.')[2]
         # pseudo random generator
         if solver_type == 'kmc_solver' and 'random_generator' not in locs:
-            self.logger.info('pseudo random generator type was not set.')
-            self.logger.info('use Mersenne-Twister by default.')
+            self.__logger.info('pseudo random generator type was not set.')
+            self.__logger.info('use Mersenne-Twister by default.')
 
         # kMC control parameters
         if 'kmc_continue' in locs and locs['kmc_continue']:
             # read in step and time info
-            self.logger.info('reading in kMC control parameters...')
+            self.__logger.info('reading in kMC control parameters...')
 
             # read from auto_coverages.py
-            self.logger.info('reading auto_coverages.py...')
+            self.__logger.info('reading auto_coverages.py...')
             has_auto_coverages = os.path.exists('./auto_coverages.py')
             if has_auto_coverages:
                 #raise FilesError('No auto_coverages.py in current path.')
                 cvg_globs, cvg_locs = {}, {}
                 execfile('./auto_coverages.py', cvg_globs, cvg_locs)
                 cvg_step, cvg_time = cvg_locs['steps'][-1], cvg_locs['times'][-1]
-                self.logger.info('auto_coverages.py was read.')
+                self.__logger.info('auto_coverages.py was read.')
             else:
-                self.logger.info('auto_coverages.py not read.')
+                self.__logger.info('auto_coverages.py not read.')
 
             # read from auto_TOFs.py
-            self.logger.info('reading auto_TOFs.py...')
+            self.__logger.info('reading auto_TOFs.py...')
             if not os.path.exists('./auto_TOFs.py'):
                 raise FilesError('No auto_TOFs.py in current path.')
             tof_globs, tof_locs = {}, {}
@@ -363,16 +344,16 @@ class KineticModel(object):
             total_rates = tof_locs['total_rates']
             # get time when the first TOF analysis start
             tof_start_time = tof_locs['start_time']
-            self.logger.info('auto_TOFs.py was read.')
+            self.__logger.info('auto_TOFs.py was read.')
 
             # read from auto_last_types.py
-            self.logger.info('reading auto_last_types.py...')
+            self.__logger.info('reading auto_last_types.py...')
             if not os.path.exists('auto_last_types.py'):
                 raise FilesError('No auto_last_types.py in current path.')
             types_globs, types_locs = {}, {}
             execfile('auto_last_types.py', types_globs, types_locs)
             last_types = types_locs['types']
-            self.logger.info('auto_last_types.py was read.')
+            self.__logger.info('auto_last_types.py was read.')
 
             # check data consistency
             if has_auto_coverages:
@@ -396,7 +377,7 @@ class KineticModel(object):
             self.__tof_start_time = tof_start_time
             self.__start_types = last_types
             self.__total_rates = total_rates
-            self.logger.info('kMC analysis starts from step = %d, time = %e s',
+            self.__logger.info('kMC analysis starts from step = %d, time = %e s',
                              self.__start_step, self.__start_time)
 
     def setup_file(self):
