@@ -226,12 +226,12 @@ class KineticModel(object):
 
         self.__logger.info('read in parameters...')
 
-        #exec setup file set local variables as attrs of model
+        # Exec setup file set local variables as attrs of model
         globs = {}
         locs = defaults
         execfile(setup_file, globs, locs)
 
-        # customize model tools
+        # Customize model tools
         if 'tools' in locs:
             if 'parser' not in locs['tools']:
                 raise ParameterError('[ parser ] must be in tools.')
@@ -239,6 +239,16 @@ class KineticModel(object):
             del locs['tools']
 
             self.__logger.info('tools = {}'.format(str(self.__tools)))
+
+        # Set model attributes in setup file.
+        for key in locs.keys():
+            # ignore tools which will be loaded later
+            if key in self.__tools:
+                continue
+            # TODO: check type of variables
+            # Add later ...
+            setattr(self, "_" + self.__class_name + "__" + key, locs[key])
+            self.__logger.info('{} = {}'.format(key, str(locs[key])))
 
         # assign parser ahead to provide essential attrs for other tools
         self.__logger.info('instantiate {}'.format(str(locs['parser'])))
@@ -248,16 +258,6 @@ class KineticModel(object):
         if locs['parser'] == 'KMCParser':
             locs['solver'] = 'KMCLibSolver'
             self.__logger.info('set solver [ KMCSolver ].')
-
-        # assign other tools
-        for key in locs.keys():
-            # ignore tools which will be loaded later
-            if key in self.__tools:
-                continue
-            # check type of variables
-            # Add later ...
-            setattr(self, "_" + self.__class_name + "__" + key, locs[key])
-            self.__logger.info('{} = {}'.format(key, str(locs[key])))
 
         #use parser parse essential attrs for other tools
         #parse elementary rxns
