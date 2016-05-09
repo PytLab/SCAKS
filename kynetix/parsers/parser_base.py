@@ -36,6 +36,7 @@ class ParserBase(ModelShell):
         self.__regex_dict['empty_site'] = [site_regex, ['stoichiometry', 'site']]
 
         # Parser's species definition
+        # NOTE: parser's species definitions is the reference of model's.
         self.__species_definitions = owner.species_definitions()
 
     def __check_conservation(self, states_dict):
@@ -327,22 +328,24 @@ class ParserBase(ModelShell):
 
             for sp in merged_species_list:
                 if not '*' in sp:
-                    species_dict.update(self.parse_species_expression(sp))
+                    species_dict.update(self.__parse_species_expression(sp))
                 else:
-                    empty_sites_dict.update(self.parse_site_expression(sp))
+                    empty_sites_dict.update(self.__parse_site_expression(sp))
         else:
             sp = state_expression.strip()
             #merged_species_list.append(sp)
             species_list = [sp]
             if not '*' in sp:
-                species_dict.update(self.parse_species_expression(sp))
+                species_dict.update(self.__parse_species_expression(sp))
             else:
-                empty_sites_dict.update(self.parse_site_expression(sp))
+                empty_sites_dict.update(self.__parse_site_expression(sp))
 
         return species_dict, empty_sites_dict, species_list
 
-    def parse_species_expression(self, species_expression):
+    def __parse_species_expression(self, species_expression):
         """
+        Private function to get species info from species string.
+
         Parse in species expression like '2CH3_s',
         return a sp_dict like
         {'CH3_s': {'number': 2, 'site': 's', 'elements': {'C': 1, 'H':3}}}
@@ -383,6 +386,9 @@ class ParserBase(ModelShell):
             'site_number': site_number,
             'elements': elements_dict}
 
+        # Update species definitions.
+        self.__update_species_definitions(sp_dict)
+
         return sp_dict
 
     def __update_species_definitions(self, species_dict):
@@ -420,7 +426,7 @@ class ParserBase(ModelShell):
 
         return self.__species_definitions
 
-    def parse_site_expression(self, site_expression):
+    def __parse_site_expression(self, site_expression):
         """
         Parse in species expression like '2*_s',
         return a empty_sites_dict like,
@@ -436,6 +442,7 @@ class ParserBase(ModelShell):
         #create site dict
         empty_sites_dict = {}
         empty_sites_dict[site] = {'number': stoichiometry, 'type': site}
+
         return empty_sites_dict
 
     def get_stoichiometry_matrices(self):
@@ -456,16 +463,16 @@ class ParserBase(ModelShell):
                      row vector: [*, *self.site_names]
                      numpy.matrix.
         """
-        sites_names = ['*_'+site_name for site_name in self._owner.site_names] + \
-            list(self._owner.adsorbate_names)
-        #reactant and product names
-        reapro_names = list(self._owner.gas_names + self._owner.liquid_names)
-        #initialize matrices
-        m = len(self._owner.elementary_rxns_list)
+        sites_names = (['*_'+site_name for site_name in self._owner.site_names()] +
+                       list(self._owner.adsorbate_names()))
+        # reactant and product names
+        reapro_names = list(self._owner.gas_names() + self._owner.liquid_names())
+        # initialize matrices
+        m = len(self._owner.elementary_rxns_list())
         n_s, n_g = len(sites_names), len(reapro_names)
-        site_matrix, reapro_matrix = np.matrix(np.zeros((m, n_s))),\
-            np.matrix(np.zeros((m, n_g)))
-        #go through all elementary equations
+        site_matrix, reapro_matrix = (np.matrix(np.zeros((m, n_s))),
+                                      np.matrix(np.zeros((m, n_g))))
+        # go through all elementary equations
         for i in xrange(m):
             states_list = self._owner.elementary_rxns_list[i]
             for sp in states_list[0]:  # for initial state
@@ -484,8 +491,6 @@ class ParserBase(ModelShell):
                 if sp_name in reapro_names:
                     j = reapro_names.index(sp_name)
                     reapro_matrix[i, j] -= stoichiometry
-        setattr(self._owner, 'reapro_matrix', reapro_matrix)
-        setattr(self._owner, 'site_matrix', site_matrix)
 
         return site_matrix, reapro_matrix
 
@@ -503,6 +508,7 @@ class ParserBase(ModelShell):
 #            null_mask = (s <= eps)
 #            null_space = scipy.compress(null_mask, vh, axis=0)
 #            return scipy.transpose(null_space)
+
         x = null(site_matrix.T)  # basis of null space
         if not x.any():  # x is not empty
             raise ValueError('Failed to get basis of nullspace.')
@@ -510,18 +516,18 @@ class ParserBase(ModelShell):
         #convert entries of x to integer
         min_x = min(x)
         x = [round(i/min_x, 1) for i in x]
-        setattr(self._owner, 'trim_coeffients', x)
+#        setattr(self._owner, 'trim_coeffients', x)
         x = np.matrix(x)
         total_coefficients = (x*reapro_matrix).tolist()[0]
-#        print total_coefficients
-        #cope with small differences between coeffs
+
+        # cope with small differences between coeffs
         abs_total_coefficients = map(abs, total_coefficients)
         min_coeff = min(abs_total_coefficients)
         total_coefficients = [int(i/min_coeff) for i in total_coefficients]
-#        print total_coefficients
-        #create total rxn expression
+
+        # create total rxn expression
         reactants_list, products_list = [], []
-        reapro_names = self._owner.gas_names + self._owner.liquid_names
+        reapro_names = self._owner.gas_names() + self._owner.liquid_names()
         for sp_name in reapro_names:
             idx = reapro_names.index(sp_name)
             coefficient = total_coefficients[idx]
@@ -539,27 +545,26 @@ class ParserBase(ModelShell):
                 else:
                     coefficient = str(coefficient)
                 reactants_list.append(coefficient + sp_name)
-        #get total rxn list and set it as an attr of model
+
+        # get total rxn list and set it as an attr of model
         total_rxn_list = [reactants_list, products_list]
-        self._owner.total_rxn_list = total_rxn_list
         reactants_expr = ' + '.join(reactants_list)
         products_expr = ' + '.join(products_list)
         total_rxn_equation = reactants_expr + ' -> ' + products_expr
-#        print total_rxn_equation
 
-        #check conservation
+        # check conservation
         states_dict = self.parse_single_elementary_rxn(total_rxn_equation)[0]
         check_result = self.__check_conservation(states_dict)
-        if not check_result:
-            setattr(self._owner, 'total_rxn_equation', total_rxn_equation)
-        else:
-            if check_result == 'mass_nonconservative':
-                raise ValueError('Mass of total equation \'' +
-                                 total_rxn_equation+'\' is not conservative!')
-            if check_result == 'site_nonconservative':
-                raise ValueError('Site of total equation \'' +
-                                 total_rxn_equation+'\' is not conservative!')
 
+        if check_result:
+            if check_result == 'mass_nonconservative':
+                msg = "Mass of total equation '{}' is not conservative.".format(total_rxn_equation)
+                raise ValueError(msg)
+            if check_result == 'site_nonconservative':
+                msg = "Site of total equation '{}' is not conservative.".format(total_rxn_equation)
+                raise ValueError(msg)
+
+        # If check passed, return.
         return total_rxn_equation
 
     #below 3 methods are used to merge elementary_rxn_lists
@@ -813,4 +818,5 @@ class ParserBase(ModelShell):
         """
         Query function for parser's species definitions.
         """
-        return self.__species_definitions
+        # Use deep copy to avoid modification of the model's attribution.
+        return copy.deepcopy(self.__species_definitions)

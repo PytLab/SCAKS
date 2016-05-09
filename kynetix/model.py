@@ -259,8 +259,8 @@ class KineticModel(object):
             locs['solver'] = 'KMCLibSolver'
             self.__logger.info('set solver [ KMCSolver ].')
 
-        #use parser parse essential attrs for other tools
-        #parse elementary rxns
+        # use parser parse essential attrs for other tools
+        # Parse elementary rxns
         self.__logger.info('Parsing elementary rxns...')
         if self.__rxn_expressions:
             (self.__adsorbate_names,
