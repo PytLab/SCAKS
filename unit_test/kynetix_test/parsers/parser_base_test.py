@@ -47,10 +47,34 @@ class TestParserBase(unittest.TestCase):
         self.assertDictEqual(parser.regex_dict(), ref_regex_dict)
 
         # Test species definitions.
-        ref_species_definitions = {'CO2_g': {'pressure': 0.0},
-                                  'CO_g': {'pressure': 1.0},
-                                  'O2_g': {'pressure': 0.3333333333333333},
-                                  's': {'site_name': '111', 'total': 1.0, 'type': 'site'}}
+        ref_species_definitions = {'CO-O_2s': {'elements': {'C': 1, 'O': 2},
+                                    'site': 's',
+                                    'site_number': 2,
+                                    'type': 'transition_state'},
+                                   'CO2_g': {'elements': {'C': 1, 'O': 2},
+                                    'pressure': 0.0,
+                                    'site': 'g',
+                                    'site_number': 1,
+                                    'type': 'gas'},
+                                   'CO_g': {'elements': {'C': 1, 'O': 1},
+                                    'pressure': 1.0,
+                                    'site': 'g',
+                                    'site_number': 1,
+                                    'type': 'gas'},
+                                   'CO_s': {'elements': {'C': 1, 'O': 1},
+                                    'site': 's',
+                                    'site_number': 1,
+                                    'type': 'adsorbate'},
+                                   'O2_g': {'elements': {'O': 2},
+                                    'pressure': 0.3333333333333333,
+                                    'site': 'g',
+                                    'site_number': 1,
+                                    'type': 'gas'},
+                                   'O_s': {'elements': {'O': 1},
+                                    'site': 's',
+                                    'site_number': 1,
+                                    'type': 'adsorbate'},
+                                   's': {'site_name': '111', 'total': 1.0, 'type': 'site'}}
         ret_species_definitions = parser.species_definitions()
 
         self.assertDictEqual(ret_species_definitions, ref_species_definitions)
@@ -108,14 +132,19 @@ class TestParserBase(unittest.TestCase):
                                   'CO_g': {'pressure': 1.0},
                                   'O2_g': {'pressure': 0.3333333333333333},
                                   's': {'site_name': '111', 'total': 1.0, 'type': 'site'}}
+
+        # Here we change the default value of parser's definitions.
+        parser._ParserBase__species_definitions = ref_species_definitions
+
+        # Em... this assertion maybe redundant.
         ret_species_definitions = parser.species_definitions()
         self.assertDictEqual(ret_species_definitions, ref_species_definitions)
 
         # Update with one species dict.
         sp_dict = {'CO_g': {'elements': {'C': 1, 'O': 1},
-                   'number': 1,
-                   'site': 'g',
-                   'site_number': 1}}
+                            'number': 1,
+                            'site': 'g',
+                            'site_number': 1}}
         parser._ParserBase__update_species_definitions(sp_dict)
 
         ref_species_definitions = {'CO2_g': {'pressure': 0.0},
