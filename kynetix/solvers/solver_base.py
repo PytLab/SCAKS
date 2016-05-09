@@ -40,7 +40,7 @@ class SolverBase(KineticCoreComponent):
         #set numerical represention
         if self.numerical_representation == 'mpmath':
             #import mpmath as mp
-            mp.mp.dps = self._owner.decimal_precision
+            mp.mp.dps = self._owner.decimal_precision()
             self._math = mp  # to do math operations
             self._linalg = mp
             self._mpf = mp.mpf
@@ -50,7 +50,7 @@ class SolverBase(KineticCoreComponent):
 
         elif self.numerical_representation == 'gmpy':
             #import gmpy2
-            gmpy2.get_context().precision = 3*self._owner.decimal_precision
+            gmpy2.get_context().precision = 3*self._owner.decimal_precision()
             self._math = gmpy2
             self._linalg = np
             self._mpf = gmpy2.mpfr
@@ -72,7 +72,7 @@ class SolverBase(KineticCoreComponent):
 
         elif self.numerical_representation == 'sympy.mpmath':
             import sympy.mpmath as symp
-            symp.mp.dps = self._owner.decimal_precision
+            symp.mp.dps = self._owner.decimal_precision()
             self._math = symp
             self._linalg = symp
             self._mpf = symp.mpf
@@ -86,7 +86,7 @@ class SolverBase(KineticCoreComponent):
             #import sympy as sym
             self._math = sym
             self._linalg = sym
-            precision = self._owner.decimal_precision
+            precision = self._owner.decimal_precision()
             self._mpf = lambda x: \
                 sym.N(sym.RealNumber(str(x), precision), precision)
 
@@ -106,16 +106,16 @@ class SolverBase(KineticCoreComponent):
         self.has_symbols = False
 
         #set essential attrs for solver
-        setattr(self, 'rxns_list', self._owner.elementary_rxns_list)
+        setattr(self, 'rxns_list', self._owner.elementary_rxns_list())
         setattr(self, 'rxns_num', len(self.rxns_list))
 
         # set constants symbol dict
         self.k_B_sym, self.h_sym, self.T_sym = \
             sym.symbols('k_B, h, T', is_real=True)
         self.constants_subs_dict = {
-            self.k_B_sym: self._mpf(self._owner._kB),
-            self.h_sym: self._mpf(self._owner._h),
-            self.T_sym: self._mpf(self._owner.temperature),
+            self.k_B_sym: self._mpf(self._owner.kB()),
+            self.h_sym: self._mpf(self._owner.h()),
+            self.T_sym: self._mpf(self._owner.temperature()),
         }
 
 #        if self._owner.hasdata:
@@ -136,10 +136,10 @@ class SolverBase(KineticCoreComponent):
     def classify_adsorbates(self):
         "Classify coverages according to type of site, return a dict"
         classified_adsorbates = {}
-        for site_name in self._owner.site_names:
+        for site_name in self._owner.site_names():
             classified_adsorbates.setdefault(site_name, [])
-        for adsorbate_name in self._owner.adsorbate_names:
-            site_name = self._owner.species_definitions[adsorbate_name]['site']
+        for adsorbate_name in self._owner.adsorbate_names():
+            site_name = self._owner.species_definitions()[adsorbate_name]['site']
             classified_adsorbates[site_name].append(adsorbate_name)
         setattr(self, 'classified_adsorbates', classified_adsorbates)
         return classified_adsorbates
@@ -151,19 +151,19 @@ class SolverBase(KineticCoreComponent):
         """
         #get gas pressure dict
         p_dict = {}
-        for gas_name in self._owner.gas_names:
+        for gas_name in self._owner.gas_names():
             p_dict.setdefault(
                 gas_name,
-                self._mpf(self._owner.species_definitions[gas_name]['pressure'])
+                self._mpf(self._owner.species_definitions()[gas_name]['pressure'])
             )
         self.p = p_dict
 
         #get concentration dict
         c_dict = {}
-        for liquid_name in self._owner.liquid_names:
+        for liquid_name in self._owner.liquid_names():
             c_dict.setdefault(
                 liquid_name,
-                self._mpf(self._owner.species_definitions[liquid_name]['concentration'])
+                self._mpf(self._owner.species_definitions()[liquid_name]['concentration'])
             )
         self.c = c_dict
 
@@ -194,13 +194,12 @@ class SolverBase(KineticCoreComponent):
         # get energy for each species
         if self._owner.has_absolute_energy:
             E_dict = {}
-            for species in self._owner.species_definitions:
-                if self._owner.species_definitions[species]['type'] == 'site':
+            for species in self._owner.species_definitions():
+                if self._owner.species_definitions()[species]['type'] == 'site':
                     key = '*_' + species
                 else:
                     key = species
-                energy = self._mpf(self._owner.species_definitions
-                                   [species]['formation_energy'])
+                energy = self._mpf(self._owner.species_definitions()[species]['formation_energy'])
                 E_dict.setdefault(key, energy)
             self.E = E_dict
             setattr(self, 'energy_correction', False)
@@ -259,7 +258,7 @@ class SolverBase(KineticCoreComponent):
 
     def get_state_energy_dict(self):
         state_energy_dict = {}
-        for elementary_rxn_list in self._owner.elementary_rxns_list:
+        for elementary_rxn_list in self._owner.elementary_rxns_list():
             single_state_energy_dict = \
                 self.get_single_state_energy_dict(elementary_rxn_list)
             state_energy_dict.update(single_state_energy_dict)
@@ -270,7 +269,7 @@ class SolverBase(KineticCoreComponent):
     def get_rate_constants(self):
         "Go through rxns_list to get all delta_G and rate constants"
         kB, h, T = [self._mpf(constant) for constant in
-                    [self._owner._kB, self._owner._h, self._owner.temperature]]
+                    [self._owner.kB(), self._owner.h(), self._owner.temperature()]]
         prefactor = kB*T/h
         kfs, krs = [], []
 
@@ -308,10 +307,10 @@ class SolverBase(KineticCoreComponent):
         according to adsorbation energy of adsorbates.
         """
         free_site_names = \
-            tuple(['*_' + site for site in self._owner.site_names])
-        self._cvg_types = self._owner.adsorbate_names + free_site_names
+            tuple(['*_' + site for site in self._owner.site_names()])
+        self._cvg_types = self._owner.adsorbate_names() + free_site_names
         kB, h, T = [self._mpf(constant) for constant in
-                    [self._owner._kB, self._owner._h, self._owner.temperature]]
+                    [self._owner.kB(), self._owner.h(), self._owner.temperature()]]
         # check whether solver has load data from species_definition
         if not self.has_absolute_energy:
             self.get_data()
@@ -320,10 +319,10 @@ class SolverBase(KineticCoreComponent):
 #        boltz_sum = sum([mp.exp(-self.E[adsorbate]/(kB*T))
 #                         for adsorbate in self._cvg_types])
         boltz_sum = sum([self._math.exp(-self.E[adsorbate]/(kB*T))
-                         for adsorbate in self._owner.adsorbate_names])
+                         for adsorbate in self._owner.adsorbate_names()])
         #get coverages list
         cvgs = []
-        for adsorbate in self._owner.adsorbate_names:
+        for adsorbate in self._owner.adsorbate_names():
             cvg = self._math.exp(-self.E[adsorbate]/(kB*T))/boltz_sum
             cvgs.append(cvg)
 
@@ -352,7 +351,7 @@ class SolverBase(KineticCoreComponent):
                     else:
                         sp_expr = "*theta['"+species_name+"']**"+str(stoichiometry)
                 else:
-                    sp_type = self._owner.species_definitions[species_name]['type']
+                    sp_type = self._owner.species_definitions()[species_name]['type']
                     if sp_type == 'adsorbate':
                         if stoichiometry == 1:
                             sp_expr = "*theta['"+species_name+"']"
@@ -407,8 +406,8 @@ class SolverBase(KineticCoreComponent):
         #concentration
         c = self.c
         #rate list
-        rfs, rrs = [0]*len(self._owner.elementary_rxns_list), \
-            [0]*len(self._owner.elementary_rxns_list)
+        rfs, rrs = [0]*len(self._owner.elementary_rxns_list()), \
+            [0]*len(self._owner.elementary_rxns_list())
 
         for exprs_list in rate_expressions:
             exprs_str = '\n'.join(exprs_list)
@@ -448,8 +447,8 @@ class SolverBase(KineticCoreComponent):
         """
         #get net rates firstly
         #change the E of solver
-        Gs_order = self._owner.adsorbate_names + \
-            self._owner.transition_state_names
+        Gs_order = self._owner.adsorbate_names() + \
+            self._owner.transition_state_names()
         setattr(self, 'Gs_order', Gs_order)
 
         #self.get_data()    #refresh data for solver
@@ -481,7 +480,7 @@ class SolverBase(KineticCoreComponent):
         setattr(self, 'tof', tof_list)
 
         # log TOFs
-        self.log_tof(tof_list, self._owner.gas_names)
+        self.log_tof(tof_list, self._owner.gas_names())
         #archive
         self.archive_data('tofs', tof_list)
 
@@ -501,7 +500,7 @@ class SolverBase(KineticCoreComponent):
 
         #get turnover frequencies
         if not hasattr(self._owner, 'reapro_matrix'):
-            self._owner.parser.get_stoichiometry_matrices()
+            self._owner.parser().get_stoichiometry_matrices()
         reapro_matrix = copy.copy(self._owner.reapro_matrix)
         reapro_matrix *= -1
         #reapro_matrix = abs(reapro_matrix)
@@ -510,7 +509,7 @@ class SolverBase(KineticCoreComponent):
         setattr(self, 'tof', tof_list)
 
         # log TOFs
-        self.log_tof(tof_list, self._owner.gas_names)
+        self.log_tof(tof_list, self._owner.gas_names())
         #archive
         self.archive_data('tofs', tof_list)
 
@@ -538,7 +537,7 @@ class SolverBase(KineticCoreComponent):
         #get Gs
         Gs = []
         for intermediates_name in \
-                self._owner.adsorbate_names + self._owner.transition_state_names:
+                self._owner.adsorbate_names() + self._owner.transition_state_names():
             Gs.append(self.E[intermediates_name])
         setattr(self._owner, 'intermediates_Gs', Gs)
         return Gs
@@ -560,7 +559,7 @@ class SolverBase(KineticCoreComponent):
         m = len(fx)
         n = len(x)
         J = self._matrix(m, n)
-        inter_num = len(self._owner.adsorbate_names)
+        inter_num = len(self._owner.adsorbate_names())
 
         for j in xrange(n):
             print j
@@ -589,7 +588,7 @@ class SolverBase(KineticCoreComponent):
         #get Gs
         Gs = self.get_intermediates_Gs()
 
-        kT = self._owner._kB*self._owner.temperature
+        kT = self._owner.kB()*self._owner.temperature()
         epsilon = self._mpf(self.perturbation_size)
         #get dr/dG matrix
         drdG = numerical_jacobian(
@@ -613,7 +612,7 @@ class SolverBase(KineticCoreComponent):
     def correct_energies(self):
         "Correct energies of solver"
         #corrections for gas
-        if self._owner.gas_thermo_mode == 'shomate_gas':
+        if self._owner.gas_thermo_mode() == 'shomate_gas':
             correction_dict = self._owner.corrector.shomate_gas()
         for gas_name in correction_dict:
             self.E[gas_name] += correction_dict[gas_name]
@@ -632,22 +631,22 @@ class SolverBase(KineticCoreComponent):
         #get pressure symbols objects
         self.p_sym = \
             tuple([sym.Symbol('p_' + gas_name, real=True, positive=True)
-                   for gas_name in self._owner.gas_names])
+                   for gas_name in self._owner.gas_names()])
         #get concentration symbols objects
         self.c_sym = \
             tuple([sym.Symbol('c_' + liquid_name, real=True, positive=True)
-                   for liquid_name in self._owner.liquid_names])
+                   for liquid_name in self._owner.liquid_names()])
 
         #get coverage symnols objects
         #for adsorbates
         self.ads_theta_sym = tuple(
             [sym.Symbol(r'theta_' + ads_name, real=True, positive=True)
-             for ads_name in self._owner.adsorbate_names]
+             for ads_name in self._owner.adsorbate_names()]
             )
         #for free sites
         fsite_theta_sym = []
-        for site_name in self._owner.site_names:
-            total = self._owner.species_definitions[site_name]['total']
+        for site_name in self._owner.site_names():
+            total = self._owner.species_definitions()[site_name]['total']
             #free_site_cvg = sym.Symbol(str(total), is_real=True)
             free_site_cvg = total
             for ads_name in self.classified_adsorbates[site_name]:
@@ -657,10 +656,10 @@ class SolverBase(KineticCoreComponent):
         self.fsite_theta_sym = tuple(fsite_theta_sym)
 
         #get free energies symbols for each species
-        sp_list = self._owner.species_definitions.keys()
+        sp_list = self._owner.species_definitions().keys()
         G_sym_list = []
         for idx, sp_name in enumerate(sp_list):
-            if sp_name in self._owner.site_names:
+            if sp_name in self._owner.site_names():
                 sp_name = '*_' + sp_name
                 sp_list[idx] = sp_name
             G_sym_list.append(sym.Symbol('G_' + sp_name, real=True,
@@ -688,16 +687,16 @@ class SolverBase(KineticCoreComponent):
         return corresponding symbol from symbol tuple.
         """
         if symbol_type == 'pressure':
-            sp_list = self._owner.gas_names
+            sp_list = self._owner.gas_names()
             symbol_tup = self.p_sym
         elif symbol_type == 'concentration':
-            sp_list = self._owner.liquid_names
+            sp_list = self._owner.liquid_names()
             symbol_tup = self.c_sym
         elif symbol_type == 'ads_cvg':
-            sp_list = self._owner.adsorbate_names
+            sp_list = self._owner.adsorbate_names()
             symbol_tup = self.ads_theta_sym
         elif symbol_type == 'free_site_cvg':
-            sp_list = self._owner.site_names
+            sp_list = self._owner.site_names()
             symbol_tup = self.fsite_theta_sym
         elif symbol_type == 'free_energy':
             sp_list = self.sp_list
@@ -872,7 +871,7 @@ class SolverBase(KineticCoreComponent):
                     species_name = species_name.split('_')[-1]
                     sp_type = 'site'
                 else:
-                    sp_type = self._owner.species_definitions[species_name]['type']
+                    sp_type = self._owner.species_definitions()[species_name]['type']
                 #set symbol_type
                 if sp_type == 'gas':
                     symbol_type = 'pressure'
@@ -891,7 +890,7 @@ class SolverBase(KineticCoreComponent):
 
     def get_rate_syms(self, log_latex=False):
         rf_syms, rr_syms = [], []
-        for elementary_rxn_list in self._owner.elementary_rxns_list:
+        for elementary_rxn_list in self._owner.elementary_rxns_list():
             rf_sym, rr_sym = self.get_single_rate_sym(elementary_rxn_list)
             rf_syms.append(rf_sym)
             rr_syms.append(rr_sym)
@@ -1008,7 +1007,7 @@ class SolverBase(KineticCoreComponent):
 
     def get_theta_subs_dict(self, cvgs_tuple):
         theta_dict = {}
-        for idx, ads_name in enumerate(self._owner.adsorbate_names):
+        for idx, ads_name in enumerate(self._owner.adsorbate_names()):
             theta_dict.setdefault(self.ads_theta_sym[idx], cvgs_tuple[idx])
 
         return theta_dict
@@ -1016,7 +1015,7 @@ class SolverBase(KineticCoreComponent):
     def get_p_subs_dict(self):
         "Get values from solver's data dict."
         p_dict = {}
-        for idx, gas_name in enumerate(self._owner.gas_names):
+        for idx, gas_name in enumerate(self._owner.gas_names()):
             p_dict.setdefault(self.p_sym[idx], self.p[gas_name])
 
         return p_dict
@@ -1024,7 +1023,7 @@ class SolverBase(KineticCoreComponent):
     def get_c_subs_dict(self):
         "Get values from solver's data dict."
         c_dict = {}
-        for idx, liquid_name in enumerate(self._owner.liquid_names):
+        for idx, liquid_name in enumerate(self._owner.liquid_names()):
             c_dict.setdefault(self.c_sym[idx], self.c[liquid_name])
 
         return c_dict
@@ -1067,7 +1066,7 @@ class SolverBase(KineticCoreComponent):
             gas_matrix = self._owner.gas_matrix
         else:
             gas_matrix = \
-                self._owner.parser.get_stoichiometry_matrices()[1]
+                self._owner.parser().get_stoichiometry_matrices()[1]
         gas_matrix = -sym.Matrix(gas_matrix)
         #get net rates symbolic expressions vector
         if not hasattr(self, 'net_rate_syms'):
@@ -1090,7 +1089,7 @@ class SolverBase(KineticCoreComponent):
         tof_vect = [self._mpf(float(tof)) for tof in tof_vect]
 
         # log TOFs
-        self.log_tof(tof_vect, self._owner.gas_names)
+        self.log_tof(tof_vect, self._owner.gas_names())
 
         return tuple(tof_vect)
 

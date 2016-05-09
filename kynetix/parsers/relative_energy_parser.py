@@ -36,21 +36,21 @@ class RelativeEnergyParser(ParserBase):
     def chk_data_validity(self):
         '''check data validity.'''
 
-        if (hasattr(self, 'Ga') and
-                not (len(self.Ga) == len(self._owner.elementary_rxns_list))):
-            raise ValueError("Invalid shape of Ga.")
+        if hasattr(self, "Ga"):
+            if len(self.Ga) != len(self._owner.elementary_rxns_list()):
+                raise ValueError("Invalid shape of Ga.")
 
-        if (hasattr(self, 'Ea') and
-                not (len(self.Ea) == len(self._owner.elementary_rxns_list))):
-            raise ValueError("Invalid shape of Ea.")
+        if hasattr(self, "Ea"):
+            if len(self.Ea) != len(self._owner.elementary_rxns_list()):
+                raise ValueError("Invalid shape of Ea.")
 
-        if (hasattr(self, 'dG') and
-                not (len(self.dG) == len(self._owner.elementary_rxns_list))):
-            raise ValueError("Invalid shape of dG.")
+        if hasattr(self, "dG"):
+            if len(self.dG) != len(self._owner.elementary_rxns_list()):
+                raise ValueError("Invalid shape of dG.")
 
-        if (hasattr(self, 'dE') and
-                not (len(self.dE) == len(self._owner.elementary_rxns_list))):
-            raise ValueError("Invalid shape of dE.")
+        if hasattr(self, "dE"):
+            if len(self.dE) != len(self._owner.elementary_rxns_list()):
+                raise ValueError("Invalid shape of dE.")
 
         return
 
@@ -58,12 +58,12 @@ class RelativeEnergyParser(ParserBase):
 
     def get_unknown_species(self):
         "Get species whose free energy is unknown."
-        all_sp = self._owner.site_names + self._owner.gas_names + \
-            self._owner.liquid_names + self._owner.adsorbate_names + \
-            self._owner.transition_state_names
+        all_sp = self._owner.site_names() + self._owner.gas_names() + \
+            self._owner.liquid_names() + self._owner.adsorbate_names() + \
+            self._owner.transition_state_names()
         all_sp = list(all_sp)
 
-        for known_sp in self._owner.ref_species:
+        for known_sp in self._owner.ref_species():
             all_sp.remove(known_sp)
             self.G_dict.setdefault(known_sp, 0.0)
 
@@ -98,7 +98,7 @@ class RelativeEnergyParser(ParserBase):
         -----
         The shape of coefficient vector is the same with that of unknowns.
         """
-        idx = self._owner.elementary_rxns_list.index(elementary_rxn_list)
+        idx = self._owner.elementary_rxns_list().index(elementary_rxn_list)
         Ga, dG = self.Ga[idx], self.dG[idx]
 
         if not hasattr(self, 'unknowns'):
@@ -154,7 +154,7 @@ class RelativeEnergyParser(ParserBase):
 
         # get coefficients matrix A and values vector b
         A, b = [], []
-        for rxn_list in self._owner.elementary_rxns_list:
+        for rxn_list in self._owner.elementary_rxns_list():
             coeff_vects, value = self.get_unknown_coeff_vector(rxn_list)
             A.extend(coeff_vects)
             b.extend(value)
@@ -169,7 +169,7 @@ class RelativeEnergyParser(ParserBase):
         if row != col:
             self.logger.warning('!!! %d equations for %d variables !!!' +
                                 'please check your [ ref_species ] in [ %s ]',
-                                row, col, self._owner.setup_file)
+                                row, col, self._owner.setup_file())
         self.logger.debug('b = \n%s', str(b))
         self.logger.debug('b.shape = %s', str(b.shape))
 
@@ -209,7 +209,7 @@ class RelativeEnergyParser(ParserBase):
             self.convert_data()
 
         for sp_name in self.G_dict:
-            sp_dict = self._owner.species_definitions
+            sp_dict = self._owner.species_definitions()
             sp_dict[sp_name].setdefault('formation_energy', self.G_dict[sp_name])
 
         setattr(self._owner, 'has_absolute_energy', True)
