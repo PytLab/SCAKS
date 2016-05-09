@@ -35,6 +35,9 @@ class ParserBase(ModelShell):
         site_regex = re.compile(r'(\d*)(?:\*\_)(\w+)')
         self.__regex_dict['empty_site'] = [site_regex, ['stoichiometry', 'site']]
 
+        # Parser's species definition
+        self.__species_definitions = owner.species_definitions()
+
     def __check_conservation(self, states_dict):
         """
         Private function to check chemical equation conservation.
@@ -380,29 +383,42 @@ class ParserBase(ModelShell):
             'site_number': site_number,
             'elements': elements_dict}
 
-        #below is species_definition part
-        #add species to self.species_defination
-        if not total_name in self._owner._KineticModel__species_definitions:
-            self._owner._KineticModel__species_definitions[total_name] = \
-                sp_dict[total_name].copy()
-            del self._owner._KineticModel__species_definitions[total_name]['number']
+        return sp_dict
+
+    def __update_species_definitions(self, species_dict):
+        """
+        Private helper function to update species_definition according species dict.
+
+        Return current species definitions of parser.
+        """
+        # Check parameter.
+        if len(species_dict) != 1:
+            msg = "species_dict must have one species, but {} are found.".format(len(species_dict))
+            raise ParameterError(msg)
+
+        total_name, = species_dict.keys()
+        # Add species to species_defination
+        if not total_name in self.__species_definitions:
+            self.__species_definitions[total_name] = species_dict[total_name].copy()
+            del self.__species_definitions[total_name]['number']
+        # Update existed species info.
         else:
-            self._owner._KineticModel__species_definitions[total_name].update(sp_dict[total_name])
-            del self._owner._KineticModel__species_definitions[total_name]['number']
-#        self._owner._KineticModel__species_definitions[total_name]['name'] = species_name
-        self._owner._KineticModel__species_definitions[total_name]['name'] = m.group(2)
-        #add species type to species_definition
+            self.__species_definitions[total_name].update(species_dict[total_name])
+            del self.__species_definitions[total_name]['number']
+
+        site = species_dict[total_name]["site"]
+        # Add species type to species_definition
         if site != 'g' and site != 'l':
             if '-' in total_name:
-                self._owner._KineticModel__species_definitions[total_name]['type'] = 'transition_state'
+                self.__species_definitions[total_name]['type'] = 'transition_state'
             else:
-                self._owner._KineticModel__species_definitions[total_name]['type'] = 'adsorbate'
+                self.__species_definitions[total_name]['type'] = 'adsorbate'
         elif site == 'g':
-            self._owner._KineticModel__species_definitions[total_name]['type'] = 'gas'
+            self.__species_definitions[total_name]['type'] = 'gas'
         elif site == 'l':
-            self._owner._KineticModel__species_definitions[total_name]['type'] = 'liquid'
-        #part end
-        return sp_dict
+            self.__species_definitions[total_name]['type'] = 'liquid'
+
+        return self.__species_definitions
 
     def parse_site_expression(self, site_expression):
         """
@@ -793,3 +809,8 @@ class ParserBase(ModelShell):
         """
         return self.__regex_dict
 
+    def species_definitions(self):
+        """
+        Query function for parser's species definitions.
+        """
+        return self.__species_definitions
