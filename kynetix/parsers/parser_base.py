@@ -37,7 +37,7 @@ class ParserBase(ModelShell):
 
         # Parser's species definition
         # NOTE: parser's species definitions is the reference of model's.
-        self.__species_definitions = owner.species_definitions()
+        self.__species_definitions = owner._KineticModel__species_definitions
 
     def __check_conservation(self, states_dict):
         """

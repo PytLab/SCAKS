@@ -1,4 +1,5 @@
 import os
+import copy
 import sys
 import inspect
 import logging
@@ -380,6 +381,19 @@ class KineticModel(object):
             self.__logger.info('kMC analysis starts from step = %d, time = %e s',
                              self.__start_step, self.__start_time)
 
+    def return_deepcopy(func):
+        """
+        Decorator to make query function return the copy of member data.
+        """
+        def wrapper(self):
+            """
+            Query function for the copy of the corresponding member.
+            """
+            ret_value = func(self)
+            return copy.deepcopy(ret_value)
+
+        return wrapper
+
     def setup_file(self):
         """
         Query function for setup file.
@@ -410,6 +424,7 @@ class KineticModel(object):
         """
         return self.__logger
 
+    @return_deepcopy
     def tools(self):
         """
         Query function for model tools.
@@ -440,24 +455,28 @@ class KineticModel(object):
         """
         return self.__plotter
 
+    @return_deepcopy
     def rxn_expressions(self):
         """
         Query function for reaction expressions in model.
         """
         return self.__rxn_expressions
 
+    @return_deepcopy
     def species_definitions(self):
         """
         Query function for species definitions in model.
         """
         return self.__species_definitions
 
+    @return_deepcopy
     def decimal_precision(self):
         """
         Query function for data precision.
         """
         return self.__decimal_precision
 
+    @return_deepcopy
     def elementary_rxns_list(self):
         """
         Query function for elementary reactions list.
@@ -470,30 +489,35 @@ class KineticModel(object):
         """
         return self.__temperature
 
+    @return_deepcopy
     def site_names(self):
         """
         Query function for site names in model.
         """
         return self.__site_names
 
+    @return_deepcopy
     def adsorbate_names(self):
         """
         Query function for adsorbate names in model.
         """
         return self.__adsorbate_names
 
+    @return_deepcopy
     def gas_names(self):
         """
         Query function for gas names in model.
         """
         return self.__gas_names
 
+    @return_deepcopy
     def liquid_names(self):
         """
         Query function for liquid names in model.
         """
         return self.__liquid_names
 
+    @return_deepcopy
     def transition_state_names(self):
         """
         Query function for transition state species names in model.
@@ -506,6 +530,7 @@ class KineticModel(object):
         """
         return self.__gas_thermo_mode
 
+    @return_deepcopy
     def ref_species(self):
         """
         Query function for reference species name.
@@ -523,3 +548,4 @@ class KineticModel(object):
         Query function for logging verbosity.
         """
         return self.__verbosity
+
