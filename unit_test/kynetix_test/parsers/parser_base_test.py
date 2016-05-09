@@ -12,19 +12,23 @@ class TestParserBase(unittest.TestCase):
         # Test case setting.
         self.maxDiff = None
 
+    def test_parser_construction(self):
+        " Test parser can be constructed in kinetic model. "
         # Construction.
         model = KineticModel(setup_file="input_files/setup.mkm",
                              verbosity=logging.WARNING)
-        self.parser = model.parser()
+        parser = model.parser()
 
-    def test_parser_construction(self):
-        " Test parser can be constructed in kinetic model. "
         # Check the parser class and base class type.
-        self.assertTrue(isinstance(self.parser, RelativeEnergyParser))
-        self.assertEqual(self.parser.__class__.__base__.__name__, "ParserBase")
+        self.assertTrue(isinstance(parser, RelativeEnergyParser))
+        self.assertEqual(parser.__class__.__base__.__name__, "ParserBase")
 
     def test_parser_base_query(self):
         " Test parser base query functions. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/setup.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
 
         # Test regex_dict().
         ref_regex_dict = {}
@@ -40,23 +44,36 @@ class TestParserBase(unittest.TestCase):
         site_regex = re.compile(r'(\d*)(?:\*\_)(\w+)')
         ref_regex_dict['empty_site'] = [site_regex, ['stoichiometry', 'site']]
 
-        self.assertDictEqual(self.parser.regex_dict(), ref_regex_dict)
+        self.assertDictEqual(parser.regex_dict(), ref_regex_dict)
+
+        # Test species definitions.
+        ref_species_definitions = {'CO2_g': {'pressure': 0.0},
+                                  'CO_g': {'pressure': 1.0},
+                                  'O2_g': {'pressure': 0.3333333333333333},
+                                  's': {'site_name': '111', 'total': 1.0, 'type': 'site'}}
+        ret_species_definitions = parser.species_definitions()
+
+        self.assertDictEqual(ret_species_definitions, ref_species_definitions)
 
     def test_state_expression_parse(self):
         " Test state expression can be parsed correctly. "
+
+        # Construction.
+        model = KineticModel(setup_file="input_files/setup.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
 
         # Test a normal state.
         state_expression = "CO_g + *_s"
         ref_state_dict = {'CO_g': {'elements': {'C': 1, 'O': 1},
                                    'number': 1,
                                    'site': 'g',
-                                   'site_number': 1}
-                         }
+                                   'site_number': 1}}
 
         ref_site_dict = {'s': {'number': 1, 'type': 's'}}
         ref_species_list = ['CO_g', '*_s']
         ret_state_dict, ret_site_dict, ret_species_list = \
-            self.parser._ParserBase__parse_state_expression(state_expression)
+            parser._ParserBase__parse_state_expression(state_expression)
 
         self.assertDictEqual(ref_state_dict, ret_state_dict)
         self.assertDictEqual(ref_site_dict, ret_site_dict)
@@ -72,11 +89,44 @@ class TestParserBase(unittest.TestCase):
         ref_species_list = ['CO-O_2s']
 
         ret_state_dict, ret_site_dict, ret_species_list = \
-            self.parser._ParserBase__parse_state_expression(state_expression)
+            parser._ParserBase__parse_state_expression(state_expression)
 
         self.assertDictEqual(ref_state_dict, ret_state_dict)
         self.assertDictEqual(ref_site_dict, ret_site_dict)
         self.assertListEqual(ref_species_list, ref_species_list)
+
+    def test_update_species_definitions(self):
+        " Test species definitions of parser can be updated correctly. "
+
+        # Construction.
+        model = KineticModel(setup_file="input_files/setup.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+
+        # Test species original definitions.
+        ref_species_definitions = {'CO2_g': {'pressure': 0.0},
+                                  'CO_g': {'pressure': 1.0},
+                                  'O2_g': {'pressure': 0.3333333333333333},
+                                  's': {'site_name': '111', 'total': 1.0, 'type': 'site'}}
+        ret_species_definitions = parser.species_definitions()
+        self.assertDictEqual(ret_species_definitions, ref_species_definitions)
+
+        # Update with one species dict.
+        sp_dict = {'CO_g': {'elements': {'C': 1, 'O': 1},
+                   'number': 1,
+                   'site': 'g',
+                   'site_number': 1}}
+        parser._ParserBase__update_species_definitions(sp_dict)
+
+        ref_species_definitions = {'CO2_g': {'pressure': 0.0},
+                                   'CO_g': {'elements': {'C': 1, 'O': 1},
+                                            'pressure': 1.0,
+                                            'site': 'g',
+                                            'site_number': 1,
+                                            'type': 'gas'},
+                                   'O2_g': {'pressure': 0.3333333333333333},
+                                   's': {'site_name': '111', 'total': 1.0, 'type': 'site'}}
+        self.assertDictEqual(parser.species_definitions(), ref_species_definitions)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestParserBase)
