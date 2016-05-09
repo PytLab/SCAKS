@@ -814,9 +814,10 @@ class ParserBase(ModelShell):
         """
         return self.__regex_dict
 
+    @return_deepcopy
     def species_definitions(self):
         """
         Query function for parser's species definitions.
         """
         # Use deep copy to avoid modification of the model's attribution.
-        return copy.deepcopy(self.__species_definitions)
+        return self.__species_definitions

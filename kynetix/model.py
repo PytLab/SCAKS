@@ -1,5 +1,4 @@
 import os
-import copy
 import sys
 import inspect
 import logging
@@ -380,19 +379,6 @@ class KineticModel(object):
             self.__total_rates = total_rates
             self.__logger.info('kMC analysis starts from step = %d, time = %e s',
                              self.__start_step, self.__start_time)
-
-    def return_deepcopy(func):
-        """
-        Decorator to make query function return the copy of member data.
-        """
-        def wrapper(self):
-            """
-            Query function for the copy of the corresponding member.
-            """
-            ret_value = func(self)
-            return copy.deepcopy(ret_value)
-
-        return wrapper
 
     def setup_file(self):
         """

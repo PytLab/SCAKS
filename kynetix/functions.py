@@ -150,3 +150,17 @@ def convert_time(sec):
 
     return hours, minutes, seconds  # int, int, float
 
+
+def return_deepcopy(func):
+    """
+    Decorator to make query function return the copy of member data.
+    """
+    def wrapper(self):
+        """
+        Query function for the copy of the corresponding member.
+        """
+        ret_value = func(self)
+        return copy.deepcopy(ret_value)
+
+    return wrapper
+
