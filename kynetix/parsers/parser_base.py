@@ -48,10 +48,10 @@ class ParserBase(ModelShell):
             for state in states_list:
                 #get element dict
                 elements_sum_dict = \
-                    self.get_elements_num_dict(states_dict[state]['species_dict'])
+                    self.__get_elements_num_dict(states_dict[state]['species_dict'])
                 state_elements_list.append(elements_sum_dict)
                 #get site dict
-                total_site_dict = self.get_total_site_dict(states_dict[state])
+                total_site_dict = self.__get_total_site_dict(states_dict[state])
                 state_site_list.append(total_site_dict)
 
             if state_elements_list[0] != state_elements_list[1]:
@@ -65,10 +65,10 @@ class ParserBase(ModelShell):
             for state in states_list:
                 #get element dict
                 elements_sum_dict = \
-                    self.get_elements_num_dict(states_dict[state]['species_dict'])
+                    self.__get_elements_num_dict(states_dict[state]['species_dict'])
                 state_elements_list.append(elements_sum_dict)
                 #get site dict
-                total_site_dict = self.get_total_site_dict(states_dict[state])
+                total_site_dict = self.__get_total_site_dict(states_dict[state])
                 state_site_list.append(total_site_dict)
 
             if not(state_elements_list[0] == state_elements_list[1] ==
@@ -78,16 +78,23 @@ class ParserBase(ModelShell):
                     state_site_list[2]):
                 return 'site_nonconservative'
 
-    def get_total_site_dict(self, state_dict):
+    def __get_total_site_dict(self, state_dict):
         """
-        Expect a state_dict(not states_dict as above), e.g.
-        {'empty_sites_dict': {'s': {'number': 1, 'type': 's'},
-         'species_dict': {'CH-H_s': {'elements': {'C': 1, 'H': 2},
-                          'number': 1,
-                          'site': 's'}},
-         'state_expression': 'CH-H_s + *_s'}
+        Private function to get site information from a state dict.
 
-         Return a total site dict, e.g. {'s': 2}
+        Return:
+        -------
+        total_site_dict: site information dictionary.
+
+        Example:
+        --------
+        >>> state_dict =
+            {'empty_sites_dict': {'s': {'number': 1, 'type': 's'},
+             'species_dict': {'CH-H_s': {'elements': {'C': 1, 'H': 2},
+                                         'number': 1,
+                                         'site': 's'}},
+             'state_expression': 'CH-H_s + *_s'}
+        >>> {'s': 2}
         """
         total_site_dict = {}
         if state_dict['empty_sites_dict']:
@@ -109,10 +116,13 @@ class ParserBase(ModelShell):
                 total_site_dict[site] += sp_number*site_number
             else:
                 total_site_dict.setdefault(site, sp_number*site_number)
+
         return total_site_dict
 
-    def get_elements_num_dict(self, species_dict):
+    def __get_elements_num_dict(self, species_dict):
         """
+        Private function to get element number information from speicies_dict.
+
         Expect a species_dict for a state, e.g.
         {'C_s': {'elements': {'C': 1}, 'number': 1, 'site': 's'},
          'CO_s': {'elements': {'C': 1, 'O': 1}, 'number': 2, 'site': 's'}}
@@ -184,8 +194,8 @@ class ParserBase(ModelShell):
             for state in states_dict:
                 if not states_dict.get(state):
                     continue
-                #for transition state, get ts names in addition
-                #NOTE: maybe like this -> 'TS': {}
+                # for transition state, get ts names in addition
+                # NOTE: maybe like this -> 'TS': {}
                 if state == 'TS' and states_dict.get('TS'):  # ??? need to check '-'?
                     transition_state_names += \
                         states_dict[state]['species_dict'].keys()
@@ -194,9 +204,11 @@ class ParserBase(ModelShell):
                     site_names += states_dict[state]['empty_sites_dict'].keys()
                 #collect gas names and adsorbate names
                 for sp in states_dict[state]['species_dict']:
-                    if states_dict[state]['species_dict'][sp]['site'] == 'g':  # sp is gas
+                    # If species is gas.
+                    if states_dict[state]['species_dict'][sp]['site'] == 'g':
                         gas_names.append(sp)
-                    elif states_dict[state]['species_dict'][sp]['site'] == 'l':  # sp is in liquid
+                    # If species is liquid.
+                    elif states_dict[state]['species_dict'][sp]['site'] == 'l':
                         liquid_names.append(sp)
                     elif not '-' in sp:  # sp is adsorbate
                         adsorbate_names.append(sp)
@@ -254,24 +266,35 @@ class ParserBase(ModelShell):
                 #analyse state expression
                 state_expression = states_dict[state]['state_expression']
                 species_dict, empty_sites_dict, state_species_list = \
-                    self.parse_state_expression(state_expression)
+                    self.__parse_state_expression(state_expression)
                 states_dict[state]['species_dict'] = species_dict
                 states_dict[state]['empty_sites_dict'] = empty_sites_dict
                 single_elementary_rxn_list.append(state_species_list)
 
         return states_dict, single_elementary_rxn_list
 
-    def parse_state_expression(self, state_expression):
+    def __parse_state_expression(self, state_expression):
         """
-        Parse in state_expression in elementary equation,
-        e.g. 'HCOOH_g + *_s'.
+        Private function to get information from a state expression string.
 
-        Return species_dict, empty_sites_dict and species_list, like
-        {'sp_dict': {'CH-H_s': {'number': 1,
-                              'site': 's',
-                              'elements': {'C': 1, 'H': 2}}}},
-        {'s': {'number': 1, 'type': 's'}},
-        ['CH2-H_s', '*_s']
+        Parameter:
+        ----------
+        state_expression: a state expression string, str.
+
+        Return:
+        -------
+        An information tuple:
+        (species dictionary, site dictionary, species list)
+
+        Example:
+        --------
+        >>> state_exp = "HCOOH_g + *_s"
+        >>> parser._ClassName__parse_state_expression(state_exp)
+        >>> {'sp_dict': {'CH-H_s': {'number': 1,
+                                    'site': 's',
+                                    'elements': {'C': 1, 'H': 2}}}},
+            {'s': {'number': 1, 'type': 's'}},
+            ['CH2-H_s', '*_s']
         """
         state_dict = {}
         merged_species_list = []
@@ -347,7 +370,7 @@ class ParserBase(ModelShell):
         elements_type_list = list(set(elements_list))
         elements_dict = {}
         for element in elements_type_list:
-            elements_dict.setdefault(element,  # ha, is this pythonic?
+            elements_dict.setdefault(element,
                                      elements_list.count(element))
         #create sp_dict
         sp_dict = {}
@@ -524,7 +547,7 @@ class ParserBase(ModelShell):
         return total_rxn_equation
 
     #below 3 methods are used to merge elementary_rxn_lists
-    #note: there is no reaction equation balancing operations(may add later, if need)
+    #NOTE: there is no reaction equation balancing operations(may add later, if need)
     def get_end_sp_list(self):
         #get sp list and set it as an attr of the model
         end_sp_list = []
