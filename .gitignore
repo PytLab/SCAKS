@@ -70,3 +70,6 @@ extensions/unittest/*.xml
 
 # log file
 *.log
+
+# ctags file.
+tags
