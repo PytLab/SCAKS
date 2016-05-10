@@ -565,6 +565,7 @@ class ParserBase(ModelShell):
         # If check passed, return.
         return total_rxn_equation
 
+    # TODO: need to be refactored.
     # below 3 methods are used to merge elementary_rxn_lists
     # NOTE: there is no reaction equation balancing operations
     #       (may add later, if need)
