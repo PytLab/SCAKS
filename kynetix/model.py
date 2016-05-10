@@ -69,12 +69,16 @@ class KineticModel(object):
         --------
         inputs_dict: The valid input dict.
         """
+        invalid_parameters = []
         for key, value in inputs_dict.iteritems():
             # Check parameter validity.
             if key not in type_rules:
-                msg = "Parameter [{}] is not a valid setup parameter, ignore it.".format(key)
-                del inputs_dict[key]
+                msg = ("Parameter [{}] is not a valid setup parameter, " +
+                       "it will be ignored.").format(key)
+                # Collect the invalid parameter.
+                invalid_parameters.append(key)
                 self.__logger.warning(msg)
+                continue
 
             rule = type_rules[key]
             if len(rule) == 1:
@@ -91,8 +95,11 @@ class KineticModel(object):
                 check_func, arg = rule
                 check_func(value, arg, key)
 
-        return inputs_dict
+        # Clean input dict.
+        for invalid_param in invalid_parameters:
+            del inputs_dict[invalid_param]
 
+        return inputs_dict
 
     def run_mkm(self, init_cvgs=None, relative=False, correct_energy=False,
                 solve_ode=False, fsolve=False, coarse_guess=True):
