@@ -38,6 +38,29 @@ class TestKineticModel(unittest.TestCase):
 
         self.assertTrue(isinstance(model.parser(), RelativeEnergyParser))
 
+    def test_check_inputs(self):
+        " Test the __check_inputs helper functions. "
+        # Test construction.
+        model = KineticModel(setup_file="input_files/setup.mkm",
+                             verbosity=logging.WARNING)
+
+        # Check a valid input dict.
+        inputs_dict = {"parser": "CsvParser",
+                       "tools": ["parser", "solver"]}
+        ret_inputs_dict = model._KineticModel__check_inputs(inputs_dict)
+
+        self.assertIs(inputs_dict, ret_inputs_dict)
+
+        # Check input dict with invalid parameter.
+        inputs_dict = {"parser": "CsvParser",
+                       "tools": ["parser", "solver"],
+                       "whatname": (1, 2, 3)}
+        ref_inputs_dict = {"parser": "CsvParser",
+                           "tools": ["parser", "solver"]}
+        ret_inputs_dict = model._KineticModel__check_inputs(inputs_dict)
+
+        self.assertDictEqual(ret_inputs_dict, ref_inputs_dict)
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestKineticModel)
     unittest.TextTestRunner(verbosity=2).run(suite)

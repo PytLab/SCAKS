@@ -38,6 +38,11 @@ class ToolsImportError(Error):
     pass
 
 
+class SetupError(Error):
+    ''' Class for type error of inputs in setup file. '''
+    pass
+
+
 # parser errors
 class ProcessParsingError(Error):
     ''' Class for errors in parsing kMC process/event. '''

@@ -8,6 +8,7 @@ import cPickle as cpkl
 from kynetix.functions import *
 from kynetix.errors.error import *
 from kynetix.database.thermo_data import kB_eV, h_eV
+from kynetix.utilities.check_utilities import *
 
 
 class KineticModel(object):
@@ -55,6 +56,51 @@ class KineticModel(object):
             self.__logger.info('kinetic modeling...success!\n')
         else:
             self.__logger.warning('setup file not read...')
+
+    def __check_inputs(self, inputs_dict):
+        """
+        Private function to check all parameters in setup file.
+
+        Parameters:
+        -----------
+        inputs_dict: A dict store all setup information.
+
+        Returns:
+        --------
+        inputs_dict: The valid input dict (REFERENCE of input).
+        """
+        invalid_parameters = []
+        for key, value in inputs_dict.iteritems():
+            # Check parameter validity.
+            if key not in type_rules:
+                msg = ("Parameter [{}] is not a valid setup parameter, " +
+                       "it will be ignored.").format(key)
+                self.__logger.warning(msg)
+
+                # Collect the invalid parameter.
+                invalid_parameters.append(key)
+                continue
+
+            rule = type_rules[key]
+            if len(rule) == 1:
+                # If it is check function.
+                if hasattr(rule[0], "__call__"):
+                    check_func = rule[0]
+                    check_func(value)
+                # If it is a type.
+                elif type(rule[0]) is type:
+                    if not isinstance(value, rule[0]):
+                        msg = "{} should be a {}".format(key, rule[0])
+                        raise SetupError(msg)
+            else:  # Call corresponding check function.
+                check_func, arg = rule
+                check_func(value, arg, key)
+
+        # Clean input dict.
+        for invalid_param in invalid_parameters:
+            del inputs_dict[invalid_param]
+
+        return inputs_dict
 
     def run_mkm(self, init_cvgs=None, relative=False, correct_energy=False,
                 solve_ode=False, fsolve=False, coarse_guess=True):
@@ -230,6 +276,10 @@ class KineticModel(object):
         globs = {}
         locs = defaults
         execfile(setup_file, globs, locs)
+
+        # Check parameters validity.
+        self.__logger.info("Check setup file validity...")
+        self.__check_inputs(locs)
 
         # Customize model tools
         if 'tools' in locs:

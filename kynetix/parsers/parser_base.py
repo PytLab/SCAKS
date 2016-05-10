@@ -565,8 +565,10 @@ class ParserBase(ModelShell):
         # If check passed, return.
         return total_rxn_equation
 
-    #below 3 methods are used to merge elementary_rxn_lists
-    #NOTE: there is no reaction equation balancing operations(may add later, if need)
+    # TODO: need to be refactored.
+    # below 3 methods are used to merge elementary_rxn_lists
+    # NOTE: there is no reaction equation balancing operations
+    #       (may add later, if need)
     def get_end_sp_list(self):
         #get sp list and set it as an attr of the model
         end_sp_list = []
