@@ -298,6 +298,20 @@ class TestParserBase(unittest.TestCase):
         self.assertTupleEqual(ref_transition_state_names, ret_transition_state_names)
         self.assertListEqual(ref_elementary_rxns_list, ret_elementary_rxns_list)
 
+    def test_total_rxn_equation(self):
+        " Test we can get the total reaction equation from elementary reactions. "
+
+        # Construction.
+        model = KineticModel(setup_file="input_files/setup.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+
+        ref_total_rxn_equation = "2CO_g + O2_g -> 2CO2_g"
+        ret_total_rxn_equation = parser.get_total_rxn_equation()
+
+        # Check.
+        self.assertEqual(ref_total_rxn_equation, ret_total_rxn_equation)
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestParserBase)
     unittest.TextTestRunner(verbosity=2).run(suite)
