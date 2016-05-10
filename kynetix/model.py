@@ -67,7 +67,7 @@ class KineticModel(object):
 
         Returns:
         --------
-        inputs_dict: The valid input dict.
+        inputs_dict: The valid input dict (REFERENCE of input).
         """
         invalid_parameters = []
         for key, value in inputs_dict.iteritems():
@@ -75,9 +75,10 @@ class KineticModel(object):
             if key not in type_rules:
                 msg = ("Parameter [{}] is not a valid setup parameter, " +
                        "it will be ignored.").format(key)
+                self.__logger.warning(msg)
+
                 # Collect the invalid parameter.
                 invalid_parameters.append(key)
-                self.__logger.warning(msg)
                 continue
 
             rule = type_rules[key]
@@ -91,7 +92,7 @@ class KineticModel(object):
                     if not isinstance(value, rule[0]):
                         msg = "{} should be a {}".format(key, rule[0])
                         raise SetupError(msg)
-            else:
+            else:  # Call corresponding check function.
                 check_func, arg = rule
                 check_func(value, arg, key)
 
