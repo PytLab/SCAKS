@@ -7,7 +7,7 @@ from kynetix.model import KineticModel
 from kynetix.utilities.check_utilities import *
 
 
-class TestCheckUtilities(unittest.TestCase):
+class CheckUtilitiesTest(unittest.TestCase):
 
     def setUp(self):
         # Test case setting.
@@ -87,6 +87,6 @@ class TestCheckUtilities(unittest.TestCase):
                                 check_species_definitions,
                                 species_definitions)
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestCheckUtilities)
+    suite = unittest.TestLoader().loadTestsFromTestCase(CheckUtilitiesTest)
     unittest.TextTestRunner(verbosity=2).run(suite)
 

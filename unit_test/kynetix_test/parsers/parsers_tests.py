@@ -1,14 +1,15 @@
 import unittest
 
-from relative_energy_parser_test import RelativeEnergyParserTest
+from parser_base_test import ParserBaseTest
 
 
 def suite():
     suite = unittest.TestSuite(
-        [unittest.TestLoader().loadTestsFromTestCase(RelativeEnergyParserTest),
-         ])
+        [unittest.TestLoader().loadTestsFromTestCase(ParserBaseTest)]
+    )
     return suite
 
 
 if __name__ == '__main__':
     unittest.TextTestRunner(verbosity=2).run(suite())
+
