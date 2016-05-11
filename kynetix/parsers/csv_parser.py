@@ -20,13 +20,17 @@ class CsvParser(ParserBase):
         # Set tools logger as child of model's
         self.__logger = logging.getLogger('model.parsers.CsvParser')
 
-    def parse_data(self, filename="./energy.csv"):
+    def parse_data(self, filename="./energy.csv", relative=False):
         """
         Read data in csv data file and update the species definitions.
 
         Parameters:
         -----------
         filename: csv file data file name.
+
+        relative: A useless parameter for compatibility
+                  with other parser_data method,
+                  so just IGNORE it.
 
         Returns:
         --------
