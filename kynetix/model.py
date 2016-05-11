@@ -59,7 +59,7 @@ class KineticModel(object):
 
     def __check_inputs(self, inputs_dict):
         """
-        Private function to check all parameters in setup file.
+        Private helper function to check all parameters in setup file.
 
         Parameters:
         -----------
@@ -73,8 +73,8 @@ class KineticModel(object):
         for key, value in inputs_dict.iteritems():
             # Check parameter validity.
             if key not in type_rules:
-                msg = ("Parameter [{}] is not a valid setup parameter, " +
-                       "it will be ignored.").format(key)
+                msg = (("Parameter [{}] is not a valid setup parameter, " +
+                        "it will be ignored.")).format(key)
                 self.__logger.warning(msg)
 
                 # Collect the invalid parameter.
@@ -295,8 +295,6 @@ class KineticModel(object):
             # ignore tools which will be loaded later
             if key in self.__tools:
                 continue
-            # TODO: check type of variables
-            # Add later ...
             setattr(self, "_" + self.__class_name + "__" + key, locs[key])
             self.__logger.info('{} = {}'.format(key, str(locs[key])))
 
