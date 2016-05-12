@@ -6,7 +6,7 @@ from kynetix.model import KineticModel
 from kynetix.parsers import *
 
 
-class TestKineticModel(unittest.TestCase):
+class KineticModelTest(unittest.TestCase):
 
     def setUp(self):
         # Test case setting.
@@ -62,6 +62,6 @@ class TestKineticModel(unittest.TestCase):
         self.assertDictEqual(ret_inputs_dict, ref_inputs_dict)
 
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestKineticModel)
+    suite = unittest.TestLoader().loadTestsFromTestCase(KineticModelTest)
     unittest.TextTestRunner(verbosity=2).run(suite)
 

@@ -8,7 +8,7 @@ from kynetix.model import KineticModel
 from kynetix.parsers import *
 
 
-class TestParserBase(unittest.TestCase):
+class ParserBaseTest(unittest.TestCase):
 
     def setUp(self):
         # Test case setting.
@@ -313,6 +313,6 @@ class TestParserBase(unittest.TestCase):
         self.assertEqual(ref_total_rxn_equation, ret_total_rxn_equation)
 
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestParserBase)
+    suite = unittest.TestLoader().loadTestsFromTestCase(ParserBaseTest)
     unittest.TextTestRunner(verbosity=2).run(suite)
 

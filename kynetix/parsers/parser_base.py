@@ -1,5 +1,6 @@
 import copy
 import re
+import logging
 
 import numpy as np
 
@@ -38,6 +39,9 @@ class ParserBase(ModelShell):
         # Parser's species definition
         # NOTE: parser's species definitions is the reference of model's.
         self.__species_definitions = owner._KineticModel__species_definitions
+
+        # Set logger.
+        self.__logger = logging.getLogger("model.parser.ParserBase")
 
     def __check_conservation(self, states_dict):
         """
@@ -182,7 +186,7 @@ class ParserBase(ModelShell):
 
         for equation in self._owner.rxn_expressions():
             # debug info
-            self.logger.debug('parsing [ %s ]', equation)
+            self.__logger.debug('parsing [ %s ]', equation)
 
             states_dict, elementary_rxn = \
                 self.parse_single_elementary_rxn(equation)
