@@ -7,7 +7,7 @@ from kynetix.errors.error import *
 
 
 class CsvParser(ParserBase):
-    def __init__(self, owner):
+    def __init__(self, owner, filename="./energy.csv"):
         """
         Kinetic Model parser to parse data in csv file.
 
@@ -17,17 +17,18 @@ class CsvParser(ParserBase):
         """
         ParserBase.__init__(self, owner)
 
+        # Set filename.
+        self.__filename = filename
+
         # Set tools logger as child of model's
         self.__logger = logging.getLogger('model.parsers.CsvParser')
 
-    def parse_data(self, filename="./energy.csv", relative=False):
+    def parse_data(self, relative=False):
         """
         Read data in csv data file and update the species definitions.
 
         Parameters:
         -----------
-        filename: csv file data file name.
-
         relative: A useless parameter for compatibility
                   with other parser_data method,
                   so just IGNORE it.
@@ -36,15 +37,16 @@ class CsvParser(ParserBase):
         --------
         species_definitions: The updated species definition of model.
         """
+        # Get the COPY of model's species.
         species_definitions = self._owner.species_definitions()
 
         # Check file existance.
-        if not os.path.exists(filename):
-            msg = "'{}' is not found.".format(filename)
-            raise FileError(msg)
+        if not os.path.exists(self.__filename):
+            msg = "'{}' is not found.".format(self.__filename)
+            raise FilesError(msg)
 
         # Open data file.
-        csvfile = open(filename, 'rU')
+        csvfile = open(self.__filename, 'rU')
         reader = csv.DictReader(csvfile)
 
         # Loop over all data in file to update species definitions.
