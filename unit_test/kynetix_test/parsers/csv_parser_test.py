@@ -80,7 +80,7 @@ class CsvParserTest(unittest.TestCase):
                                     'total': 1.0,
                                     'type': 'site'}}
 
-        ret_species_definitions = parser.parse_data(filename="input_files/energy.csv")
+        ret_species_definitions = parser.parse_data()
         self.assertDictEqual(ref_species_definitions, ret_species_definitions)
 
 if __name__ == '__main__':
