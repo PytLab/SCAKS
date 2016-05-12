@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-#↓↓↓static utility functions↓↓↓
 import copy
+
+from kynetix.errors.error import *
 
 
 def string2symbols(s):  # HACKED# copy-pasted from ase\atoms.py
@@ -163,4 +164,32 @@ def return_deepcopy(func):
         return copy.deepcopy(ret_value)
 
     return wrapper
+
+
+def mangled_name(obj, attribute):
+    """
+    Helper function to get the mangled name of a private attribute of an object.
+
+    Parameters:
+    -----------
+    obj: The object which has the private attribute, any object.
+
+    attribute: The private attribute name, str.
+
+    Returns:
+    --------
+    mangled_name: The true name of the attribute.
+
+    Example:
+    --------
+    >>> mangled_name(parser, "yes")
+
+    >>> "_CsvParser__yes"
+    """
+    if not isinstance(attribute, str):
+        raise ParameterError("attribute must be a string object.")
+
+    class_name = obj.__class__.__name__
+
+    return "_{}__{}".format(class_name, attribute)
 
