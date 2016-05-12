@@ -123,7 +123,6 @@ class KineticModel(object):
 
         # parse data
         self.__logger.info('reading data...')
-        self.parser.chk_data_validity()
         if relative:
             self.__logger.info('use relative energy directly...')
         else:
