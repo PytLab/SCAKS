@@ -1,11 +1,15 @@
 import unittest
 
 from parser_base_test import ParserBaseTest
+from csv_parser_test import CsvParserTest
+from relative_energy_parser_test import RelativeEnergyParserTest
 
 
 def suite():
     suite = unittest.TestSuite(
-        [unittest.TestLoader().loadTestsFromTestCase(ParserBaseTest)]
+        [unittest.TestLoader().loadTestsFromTestCase(ParserBaseTest),
+         unittest.TestLoader().loadTestsFromTestCase(CsvParserTest),
+         unittest.TestLoader().loadTestsFromTestCase(RelativeEnergyParserTest),]
     )
     return suite
 
