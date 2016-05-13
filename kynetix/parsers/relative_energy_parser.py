@@ -227,14 +227,23 @@ class RelativeEnergyParser(ParserBase):
                 raise IOError(("No relative energy was read, " +
                                "please check the '{}'").format(self.__filename))
 
-            return self.relative_energies()
+            # Set model's relative energies.
+            attribute_name = mangled_name(self._owner, "relative_energies")
+            setattr(self._owner, attribute_name, self.__relative_energies)
+
+            # Set flags.
+            attribute_name = mangled_name(self._owner, "has_relative_energy")
+            setattr(self._owner, attribute_name, True)
+
+            return
 
         # Get absolute energy for each species
         if not self.__G_dict:
             self.__convert_data()
 
         # NOTE: use the REFERENCE of model's species definitions.
-        species_definitions = self._owner.species_definitions()
+        attribute_name = mangled_name(self._owner, "species_definitions")
+        species_definitions = getattr(self._owner, attribute_name)
 
         # Update formation energies in model's species definitions.
         for sp_name in self.__G_dict:
@@ -242,27 +251,10 @@ class RelativeEnergyParser(ParserBase):
                                                     self.__G_dict[sp_name])
 
         # Set flag.
-        self.__has_absolute_energy = True
+        attribute_name = mangled_name(self._owner, "has_absolute_energy")
+        setattr(self._owner, attribute_name, True)
 
-        return species_definitions
-
-    def has_relative_energy(self):
-        """
-        Query function for relative energy flag.
-        """
-        return self.__has_relative_energy
-
-    def has_absolute_energy(self):
-        """
-        Query function for absolute energy flag.
-        """
-        return self.__has_absolute_energy
-
-    def relative_energies(self):
-        """
-        Query function for relative energy in data file.
-        """
-        return self.__relative_energies
+        return
 
     @return_deepcopy
     def Ga(self):
