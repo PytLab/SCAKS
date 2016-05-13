@@ -812,9 +812,12 @@ class ParserBase(ModelShell):
         else:
             return molecular_mass
 
-    def get_barrier(self, elementary_rxn_list):
+    def get_relative_energies(self, elementary_rxn_list):
         """
-        Function to get forward and reverse reaction barriers.
+        Function to get relative energies:
+            forward barrier,
+            reverse barrier,
+            reaction energy
 
         Parameters:
         -----------
@@ -822,7 +825,9 @@ class ParserBase(ModelShell):
 
         Returns:
         --------
-        f_barrier, r_barrier: forward reaction barrier and reverse reaction barrier.
+        f_barrier: forward barrier.
+        r_barrier: reverse barrier.
+        reaction_energy: reaction energy.
         """
         # Check.
         if not self._owner.has_absolute_energy():
@@ -872,10 +877,12 @@ class ParserBase(ModelShell):
                     species_name = extract_site(species_name)
                 G_TS += stoichiometry*species_definitions[species_name]["formation_energy"]
 
-        # Get forward and reverse barriers.
-        f_barrier, r_barrier = G_TS - G_IS, G_TS - G_FS
+        # Get relative energies.
+        f_barrier = G_TS - G_IS
+        r_barrier = G_TS - G_FS
+        reaction_energy = G_FS - G_IS
 
-        return f_barrier, r_barrier
+        return f_barrier, r_barrier, reaction_energy
 
     def regex_dict(self):
         """

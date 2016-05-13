@@ -83,7 +83,7 @@ class CsvParserTest(unittest.TestCase):
         parser.parse_data()
         self.assertDictEqual(ref_species_definitions, model.species_definitions())
 
-    def test_get_barriers(self):
+    def test_get_relative_energies(self):
         " Test parsers can calculate reaction barriers correctly. "
         # Construction.
         model = KineticModel(setup_file="input_files/csv_parser.mkm",
@@ -92,14 +92,26 @@ class CsvParserTest(unittest.TestCase):
 
         # Before get absolute data.
         rxn_list = model.elementary_rxns_list()[-1]
-        self.assertRaises(AttributeError, parser.get_barrier, rxn_list)
+        self.assertRaises(AttributeError, parser.get_relative_energies, rxn_list)
 
         # Parse absolute data.
         parser.parse_data()
-        ret_f_barrier, ret_r_barrier = parser.get_barrier(rxn_list)
-        ref_f_barrier, ref_r_barrier = (1.1, 1.75)
+        ret_f_barrier, ret_r_barrier, ret_rxn_energy = parser.get_relative_energies(rxn_list)
+        ref_f_barrier, ref_r_barrier, ref_rxn_energy = (1.1, 1.75, -0.6499999999999999)
+
         self.assertEqual(ref_f_barrier, ret_f_barrier)
         self.assertEqual(ref_r_barrier, ret_r_barrier)
+        self.assertEqual(ref_rxn_energy, ret_rxn_energy)
+
+        # Check rxn list without TS.
+        rxn_list = model.elementary_rxns_list()[1]
+
+        ret_f_barrier, ret_r_barrier, ret_rxn_energy = parser.get_relative_energies(rxn_list)
+        ref_f_barrier, ref_r_barrier, ref_rxn_energy = (0.0, 2.32, -2.32)
+
+        self.assertEqual(ref_f_barrier, ret_f_barrier)
+        self.assertEqual(ref_r_barrier, ret_r_barrier)
+        self.assertEqual(ref_rxn_energy, ret_rxn_energy)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(CsvParserTest)
