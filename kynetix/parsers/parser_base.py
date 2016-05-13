@@ -884,6 +884,22 @@ class ParserBase(ModelShell):
 
         return f_barrier, r_barrier, reaction_energy
 
+    def get_relative_from_absolute(self):
+        """
+        Function to set relative energies from absolute energies.
+        """
+        Gafs, Gars, dGs = [], [], []
+
+        for rxn_list in self._owner.elementary_rxns_list():
+            Gaf, Gar, dG = self.get_relative_energies(rxn_list)
+            Gafs.append(Gaf)
+            Gars.append(Gar)
+            dGs.append(dG)
+
+        relative_energies = dict(Gar=Gars, Gaf=Gafs, dG=dGs)
+
+        return relative_energies
+
     def regex_dict(self):
         """
         Query function for regress expression dictionary.
