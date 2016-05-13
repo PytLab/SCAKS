@@ -1,7 +1,9 @@
 import logging
+import os
 import unittest
 
 from kynetix.model import KineticModel
+from kynetix.functions import *
 from kynetix.parsers import *
 
 
@@ -20,12 +22,6 @@ class RelativeEnergyParserTest(unittest.TestCase):
         # Check the parser class and base class type.
         self.assertTrue(isinstance(parser, RelativeEnergyParser))
         self.assertEqual(parser.__class__.__base__.__name__, "ParserBase")
-
-        # Check query.
-        self.assertListEqual([0.0, 0.0, 1.25], parser.Ga())
-        self.assertListEqual([-0.758, -2.64, 0.324], parser.dG())
-        ref_relative_energies = {'Ga': [0.0, 0.0, 1.25], 'dG': [-0.758, -2.64, 0.324]}
-        self.assertDictEqual(ref_relative_energies, parser._RelativeEnergyParser__relative_energies)
 
     def test_unknown_species(self):
         " Make sure we can get unknown species correctly. "
@@ -56,6 +52,19 @@ class RelativeEnergyParserTest(unittest.TestCase):
         model = KineticModel(setup_file="input_files/relative_energy_parser.mkm",
                              verbosity=logging.WARNING)
         parser = model.parser()
+
+        # Read relative energy data file.
+        filename = "./rel_energy.py"
+        if os.path.exists(filename):
+            globs, locs = {}, {}
+            execfile(filename, globs, locs)
+
+            # Set variables in data file as attr of parser
+            for key in locs:
+                attribute_name = mangled_name(parser, key)
+                setattr(parser, attribute_name, locs[key])
+        else:
+            raise IOError("{} is not found.".format(filename))
 
         rxn_list = [['CO_s', 'O_s'], ['CO-O_2s'], ['CO2_g', '2*_s']]
         ref_vectors = [[0, -1, -1, 1], [0, -1, -1, 0]]
@@ -89,6 +98,19 @@ class RelativeEnergyParserTest(unittest.TestCase):
 
         # Check G dict before conversion.
         self.assertDictEqual({}, parser._RelativeEnergyParser__G_dict)
+
+        # Read relative energy data file.
+        filename = "./rel_energy.py"
+        if os.path.exists(filename):
+            globs, locs = {}, {}
+            execfile(filename, globs, locs)
+
+            # Set variables in data file as attr of parser
+            for key in locs:
+                attribute_name = mangled_name(parser, key)
+                setattr(parser, attribute_name, locs[key])
+        else:
+            raise IOError("{} is not found.".format(filename))
 
         # Check after conversion.
         parser._RelativeEnergyParser__convert_data()
@@ -144,11 +166,6 @@ class RelativeEnergyParserTest(unittest.TestCase):
         self.assertFalse(model.has_absolute_energy())
         self.assertFalse(model.has_relative_energy())
 
-        self.assertTrue(hasattr(parser, "_RelativeEnergyParser__Ga"))
-        self.assertTrue(hasattr(parser, "_RelativeEnergyParser__dG"))
-        self.assertFalse(hasattr(parser, "_RelativeEnergyParser__Ea"))
-        self.assertFalse(hasattr(parser, "_RelativeEnergyParser__dE"))
-
         # Parse absolute data.
         parser.parse_data(relative=False)
         ref_species_definitions = {'CO-O_2s': {'elements': {'C': 1, 'O': 2},
@@ -188,6 +205,12 @@ class RelativeEnergyParserTest(unittest.TestCase):
                                     'site_name': '111',
                                     'total': 1.0,
                                     'type': 'site'}}
+
+        self.assertTrue(hasattr(parser, "_RelativeEnergyParser__Ga"))
+        self.assertTrue(hasattr(parser, "_RelativeEnergyParser__dG"))
+        self.assertFalse(hasattr(parser, "_RelativeEnergyParser__Ea"))
+        self.assertFalse(hasattr(parser, "_RelativeEnergyParser__dE"))
+
         self.assertDictEqual(ref_species_definitions, model.species_definitions())
         self.assertTrue(model.has_absolute_energy())
         self.assertFalse(model.has_relative_energy())
@@ -200,7 +223,9 @@ class RelativeEnergyParserTest(unittest.TestCase):
 
         # Check.
         parser.parse_data(relative=True)
-        ref_relative_energies = {'Ga': [0.0, 0.0, 1.25], 'dG': [-0.758, -2.64, 0.324]}
+        ref_relative_energies = {'Gaf': [0.0, 0.0, 1.25],
+                                 'Gar': [0.758, 2.64, 0.9259999999999999],
+                                 'dG': [-0.758, -2.64, 0.324]}
         self.assertDictEqual(ref_relative_energies, model.relative_energies())
         self.assertFalse(model.has_absolute_energy())
         self.assertTrue(model.has_relative_energy())
