@@ -812,6 +812,71 @@ class ParserBase(ModelShell):
         else:
             return molecular_mass
 
+    def get_barrier(self, elementary_rxn_list):
+        """
+        Function to get forward and reverse reaction barriers.
+
+        Parameters:
+        -----------
+        elementary_rxn_list: elementary reaction in list format.
+
+        Returns:
+        --------
+        f_barrier, r_barrier: forward reaction barrier and reverse reaction barrier.
+        """
+        # Check.
+        if not self._owner.has_absolute_energy():
+            raise AttributeError("Absolute energie are needed for getting barriers.")
+
+        # Get free energy for states
+        G_IS, G_TS, G_FS = 0.0, 0.0, 0.0
+
+        species_definitions = self._owner.species_definitions()
+
+        # Inner function to extract site type.
+        def extract_site(species_name):
+            regex = self.__regex_dict["empty_site"][0]
+            m = regex.search(species_name)
+            if not m:
+                msg = "{} is not a empty site name.".format(species_name)
+                raise ParameterError(msg)
+            return m.groups()[-1]
+
+        # IS energy.
+        for sp in elementary_rxn_list[0]:
+            stoichiometry, species_name = self.split_species(sp)
+            # If it is a empty site.
+            if "*" in species_name:
+                species_name = extract_site(species_name)
+            species_energy = species_definitions[species_name]["formation_energy"]
+            G_IS += stoichiometry*species_energy
+
+        # FS energy.
+        for sp in elementary_rxn_list[-1]:
+            stoichiometry, species_name = self.split_species(sp)
+            # If it is a empty site.
+            if "*" in species_name:
+                species_name = extract_site(species_name)
+            species_energy = species_definitions[species_name]["formation_energy"]
+            G_FS += stoichiometry*species_energy
+
+        # TS energy.
+        if len(elementary_rxn_list) == 2:
+            G_TS = max(G_IS, G_FS)
+
+        if len(elementary_rxn_list) == 3:
+            for sp in elementary_rxn_list[1]:
+                stoichiometry, species_name = self.split_species(sp)
+                # If it is a empty site.
+                if "*" in species_name:
+                    species_name = extract_site(species_name)
+                G_TS += stoichiometry*species_definitions[species_name]["formation_energy"]
+
+        # Get forward and reverse barriers.
+        f_barrier, r_barrier = G_TS - G_IS, G_TS - G_FS
+
+        return f_barrier, r_barrier
+
     def regex_dict(self):
         """
         Query function for regress expression dictionary.
