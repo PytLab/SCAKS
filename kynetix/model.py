@@ -44,8 +44,10 @@ class KineticModel(object):
         # set logger
         self.__set_logger()
 
-        self.has_absolute_energy = False
-        self.has_relative_energy = False
+        # Energy flags.
+        self.__has_absolute_energy = False
+        self.__has_relative_energy = False
+        self.__relative_energies = {}
 
         # load setup file
         if hasattr(self, '_' + self.__class_name + '__setup_file'):
@@ -581,4 +583,23 @@ class KineticModel(object):
         Query function for logging verbosity.
         """
         return self.__verbosity
+
+    def has_relative_energy(self):
+        """
+        Query function for relative energy flag.
+        """
+        return self.__has_relative_energy
+
+    def has_absolute_energy(self):
+        """
+        Query function for absolute energy flag.
+        """
+        return self.__has_absolute_energy
+
+    @return_deepcopy
+    def relative_energies(self):
+        """
+        Query function for relative energy in data file.
+        """
+        return self.__relative_energies
 
