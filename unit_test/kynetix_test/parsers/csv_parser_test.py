@@ -80,8 +80,26 @@ class CsvParserTest(unittest.TestCase):
                                     'total': 1.0,
                                     'type': 'site'}}
 
-        ret_species_definitions = parser.parse_data()
-        self.assertDictEqual(ref_species_definitions, ret_species_definitions)
+        parser.parse_data()
+        self.assertDictEqual(ref_species_definitions, model.species_definitions())
+
+    def test_get_barriers(self):
+        " Test parsers can calculate reaction barriers correctly. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/csv_parser.mkm",
+                             verbosity=logging.ERROR)
+        parser = model.parser()
+
+        # Before get absolute data.
+        rxn_list = model.elementary_rxns_list()[-1]
+        self.assertRaises(AttributeError, parser.get_barrier, rxn_list)
+
+        # Parse absolute data.
+        parser.parse_data()
+        ret_f_barrier, ret_r_barrier = parser.get_barrier(rxn_list)
+        ref_f_barrier, ref_r_barrier = (1.1, 1.75)
+        self.assertEqual(ref_f_barrier, ret_f_barrier)
+        self.assertEqual(ref_r_barrier, ret_r_barrier)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(CsvParserTest)

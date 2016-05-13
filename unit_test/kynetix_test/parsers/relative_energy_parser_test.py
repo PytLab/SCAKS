@@ -22,13 +22,10 @@ class RelativeEnergyParserTest(unittest.TestCase):
         self.assertEqual(parser.__class__.__base__.__name__, "ParserBase")
 
         # Check query.
-        self.assertFalse(parser.has_relative_energy())
-        self.assertFalse(parser.has_absolute_energy())
-
         self.assertListEqual([0.0, 0.0, 1.25], parser.Ga())
         self.assertListEqual([-0.758, -2.64, 0.324], parser.dG())
         ref_relative_energies = {'Ga': [0.0, 0.0, 1.25], 'dG': [-0.758, -2.64, 0.324]}
-        self.assertDictEqual(ref_relative_energies, parser.relative_energies())
+        self.assertDictEqual(ref_relative_energies, parser._RelativeEnergyParser__relative_energies)
 
     def test_unknown_species(self):
         " Make sure we can get unknown species correctly. "
@@ -144,8 +141,8 @@ class RelativeEnergyParserTest(unittest.TestCase):
                                    's': {'site_name': '111', 'total': 1.0, 'type': 'site'}}
         self.assertDictEqual(ref_species_definitions, model.species_definitions())
 
-        self.assertFalse(parser.has_absolute_energy())
-        self.assertFalse(parser.has_relative_energy())
+        self.assertFalse(model.has_absolute_energy())
+        self.assertFalse(model.has_relative_energy())
 
         self.assertTrue(hasattr(parser, "_RelativeEnergyParser__Ga"))
         self.assertTrue(hasattr(parser, "_RelativeEnergyParser__dG"))
@@ -153,7 +150,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
         self.assertFalse(hasattr(parser, "_RelativeEnergyParser__dE"))
 
         # Parse absolute data.
-        ret_species_definitions = parser.parse_data(relative=False)
+        parser.parse_data(relative=False)
         ref_species_definitions = {'CO-O_2s': {'elements': {'C': 1, 'O': 2},
                                     'formation_energy': 0.9259999999999999,
                                     'site': 's',
@@ -191,9 +188,9 @@ class RelativeEnergyParserTest(unittest.TestCase):
                                     'site_name': '111',
                                     'total': 1.0,
                                     'type': 'site'}}
-        self.assertDictEqual(ref_species_definitions, ret_species_definitions)
-        self.assertTrue(parser.has_absolute_energy())
-        self.assertFalse(parser.has_relative_energy())
+        self.assertDictEqual(ref_species_definitions, model.species_definitions())
+        self.assertTrue(model.has_absolute_energy())
+        self.assertFalse(model.has_relative_energy())
 
         # Check if relative == true.
         # Construct again.
@@ -202,11 +199,11 @@ class RelativeEnergyParserTest(unittest.TestCase):
         parser = model.parser()
 
         # Check.
-        ret_relative_energies = parser.parse_data(relative=True)
+        parser.parse_data(relative=True)
         ref_relative_energies = {'Ga': [0.0, 0.0, 1.25], 'dG': [-0.758, -2.64, 0.324]}
-        self.assertDictEqual(ret_relative_energies, ref_relative_energies)
-        self.assertFalse(parser.has_absolute_energy())
-        self.assertTrue(parser.has_relative_energy())
+        self.assertDictEqual(ref_relative_energies, model.relative_energies())
+        self.assertFalse(model.has_absolute_energy())
+        self.assertTrue(model.has_relative_energy())
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(RelativeEnergyParserTest)
