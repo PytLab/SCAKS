@@ -8,7 +8,7 @@ from kynetix.functions import *
 
 
 class CsvParser(ParserBase):
-    def __init__(self, owner, filename="./energy.csv"):
+    def __init__(self, owner):
         """
         Kinetic Model parser to parse data in csv file.
 
@@ -18,18 +18,17 @@ class CsvParser(ParserBase):
         """
         ParserBase.__init__(self, owner)
 
-        # Set filename.
-        self.__filename = filename
-
         # Set tools logger as child of model's
         self.__logger = logging.getLogger('model.parsers.CsvParser')
 
-    def parse_data(self, relative=False):
+    def parse_data(self, filename="./energy.csv", relative=False):
         """
         Read data in csv data file and update the species definitions.
 
         Parameters:
         -----------
+        filename: file name of energy data.
+
         relative: A useless parameter for compatibility
                   with other parser_data method,
                   so just IGNORE it.
@@ -43,12 +42,12 @@ class CsvParser(ParserBase):
         species_definitions = getattr(self._owner, attribute_name)
 
         # Check file existance.
-        if not os.path.exists(self.__filename):
-            msg = "'{}' is not found.".format(self.__filename)
+        if not os.path.exists(filename):
+            msg = "'{}' is not found.".format(filename)
             raise FilesError(msg)
 
         # Open data file.
-        csvfile = open(self.__filename, 'rU')
+        csvfile = open(filename, 'rU')
         reader = csv.DictReader(csvfile)
 
         # Loop over all data in file to update species definitions.
@@ -96,7 +95,7 @@ class CsvParser(ParserBase):
         setattr(self._owner, attribute_name, True)
 
         # Get relative energies from absolute energies.
-        relative_energies = self.__get_relative_from_absolute()
+        relative_energies = self.get_relative_from_absolute()
         attribute_name = mangled_name(self._owner, "relative_energies")
         setattr(self._owner, attribute_name, relative_energies)
 
@@ -105,22 +104,6 @@ class CsvParser(ParserBase):
         setattr(self._owner, attribute_name, True)
 
         return
-
-    def __get_relative_from_absolute(self):
-        """
-        Private helper function to set relative energies from absolute energies.
-        """
-        Gafs, Gars, dGs = [], [], []
-
-        for rxn_list in self._owner.elementary_rxns_list():
-            Gaf, Gar, dG = self.get_relative_energies(rxn_list)
-            Gafs.append(Gaf)
-            Gars.append(Gar)
-            dGs.append(dG)
-
-        relative_energies = dict(Gar=Gars, Gaf=Gafs, dG=dGs)
-
-        return relative_energies
 
     def has_relative_energy(self):
         """
