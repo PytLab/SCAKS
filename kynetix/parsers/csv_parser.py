@@ -24,10 +24,6 @@ class CsvParser(ParserBase):
         # Set tools logger as child of model's
         self.__logger = logging.getLogger('model.parsers.CsvParser')
 
-        # Flags.
-        self.__has_absolute_energy = False
-        self.__has_relative_energy = False
-
     def parse_data(self, relative=False):
         """
         Read data in csv data file and update the species definitions.
@@ -99,7 +95,32 @@ class CsvParser(ParserBase):
         attribute_name = mangled_name(self._owner, "has_absolute_energy")
         setattr(self._owner, attribute_name, True)
 
+        # Get relative energies from absolute energies.
+        relative_energies = self.__get_relative_from_absolute()
+        attribute_name = mangled_name(self._owner, "relative_energies")
+        setattr(self._owner, attribute_name, relative_energies)
+
+        # Set flag.
+        attribute_name = mangled_name(self._owner, "has_relative_energy")
+        setattr(self._owner, attribute_name, True)
+
         return
+
+    def __get_relative_from_absolute(self):
+        """
+        Private helper function to set relative energies from absolute energies.
+        """
+        Gafs, Gars, dGs = [], [], []
+
+        for rxn_list in self._owner.elementary_rxns_list():
+            Gaf, Gar, dG = self.get_relative_energies(rxn_list)
+            Gafs.append(Gaf)
+            Gars.append(Gar)
+            dGs.append(dG)
+
+        relative_energies = dict(Gar=Gars, Gaf=Gafs, dG=dGs)
+
+        return relative_energies
 
     def has_relative_energy(self):
         """
