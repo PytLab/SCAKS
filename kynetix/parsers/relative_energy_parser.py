@@ -65,8 +65,8 @@ class RelativeEnergyParser(ParserBase):
 
     def __list2dict(self, state_list):
         """
-        Expect a state list, e.g. ['*_s', 'NO_g']
-        return a corresponding dict, e.g. {'*_s': 1, 'NO_g': 1}.
+        Private helper function to convert a state list to dict.
+        ['*_s', 'NO_g'] -> {'*_s': 1, 'NO_g': 1}.
         """
         state_dict = {}
         for sp_str in state_list:
@@ -183,6 +183,21 @@ class RelativeEnergyParser(ParserBase):
 
         return
 
+    @staticmethod
+    def __compare_relative_energies(dict1, dict2):
+        """
+        Private static method for compare two relative energies dicts.
+        """
+        for key in dict1:
+            list1 = dict1[key]
+            list2 = dict2[key]
+            # Compare.
+            for item1, item2 in zip(list1, list2):
+                if (item1 - item2) > 10e-10:
+                    return False
+
+        return True
+
     def __get_relative_from_relative(self):
         """
         Private helper function to get relative energies dict from relative energy.
@@ -200,6 +215,9 @@ class RelativeEnergyParser(ParserBase):
         Put generalized formation energy into species_definitions.
 
         NOTE: This function will change the species definition of model.
+              If relative is true, then the relative_energies of model will be set.
+              If relative is false, formation energy in species_definitions
+              and realtive energies will be set.
         '''
         # Read relative energy data file.
         if os.path.exists(filename):
@@ -261,21 +279,6 @@ class RelativeEnergyParser(ParserBase):
                 raise ValueError(msg)
 
         return
-
-    @staticmethod
-    def __compare_relative_energies(dict1, dict2):
-        """
-        Private static method for compare two relative energies dicts.
-        """
-        for key in dict1:
-            list1 = dict1[key]
-            list2 = dict2[key]
-            # Compare.
-            for item1, item2 in zip(list1, list2):
-                if (item1 - item2) > 10e-10:
-                    return False
-
-        return True
 
     @return_deepcopy
     def Ga(self):
