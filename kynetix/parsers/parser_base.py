@@ -455,15 +455,15 @@ class ParserBase(ModelShell):
         reactants and products stoichiometry matrix.
 
         Returns:
-        reapro_matrix: coefficients matrix for reactants and product,
-                       if species is on the left of arrow, the entry
-                       will be positive, vice-versa.
-                       row vector: [*self.gas_names], numpy.matrix.
-
         site_matrix: coefficients matrix for intermediates,
                      if species is on the left of arrow, the entry
                      will be positive, vice-versa.
                      row vector: [*, *self.adsorbate_names], numpy.matrix.
+
+        reapro_matrix: coefficients matrix for reactants and product,
+                       if species is on the left of arrow, the entry
+                       will be positive, vice-versa.
+                       row vector: [*self.gas_names], numpy.matrix.
         """
         sites_names = (['*_'+site_name for site_name in self._owner.site_names()] +
                        list(self._owner.adsorbate_names()))

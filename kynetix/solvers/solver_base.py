@@ -436,46 +436,46 @@ class SolverBase(KineticCoreComponent):
 
         return reversibilities
 
-    def get_cvg_tof(self, cvgs):
+    def get_tof(self, cvgs):
         """
-        Expect a certain coverage of intermediates,
-        return turnover frequencies wrt gases.
+        Function to get the turnover frequencies(TOF) wrt all gas species.
+
+        Parameters:
+        -----------
+        cvgs: coverages of adsorbates on surface, tuple of float.
+
+        Returns:
+        --------
+        tof_list: List of TOF.
         """
-        #get net rates wrt the coverages c
-        self.get_rate_constants()
-        if not hasattr(self, 'rate_expressions'):
-            self.get_rate_expressions(self.rxns_list)
-        rfs, rrs = self.get_rates(self.rate_expressions, cvgs)
+        # Get net rates wrt the coverages c.
+        rfs, rrs = self.get_rates(cvgs)
         net_rates = self.get_net_rates(rfs, rrs)
 
-        #get turnover frequencies
-        if not hasattr(self._owner, 'reapro_matrix'):
-            self._owner.parser().get_stoichiometry_matrices()
-        reapro_matrix = copy.copy(self._owner.reapro_matrix)
+        # Get turnover frequencies.
+        _, reapro_matrix = self._owner.parser().get_stoichiometry_matrices()
         reapro_matrix *= -1
-        #reapro_matrix = abs(reapro_matrix)
         rate_vector = np.matrix(net_rates)  # get rate vector
         tof_list = (rate_vector*reapro_matrix).tolist()[0]
-        setattr(self, 'tof', tof_list)
 
         # log TOFs
-        self.log_tof(tof_list, self._owner.gas_names())
-        #archive
+        self.__log_tof(tof_list, self._owner.gas_names())
+
+        # Archive.
         self.archive_data('tofs', tof_list)
 
         return tof_list
 
-    def log_tof(self, tof_list, gas_names):
+    def __log_tof(self, tof_list, gas_names):
         "Log turnover frequencies of every gas species."
-        head_str = "\n\n %-5s     %-20s     %-30s\n" % \
-                   ("index", "gas name", "TOF")
+        head_str = "\n\n {:<5s}     {:<20s}     {:<30s}\n".format("index", "gas name", "TOF")
         line_str = '-'*60 + '\n'
 
         all_data = ''
         all_data += head_str + line_str
         for idx, (gas_name, tof) in enumerate(zip(gas_names, tof_list)):
             idx = str(idx).zfill(2)
-            data = " %-5s     %-20s     %-30.16e\n" % (idx, gas_name, float(tof))
+            data = " {:<5s}     {:<20s}     {:<30.16e}\n".format(idx, gas_name, float(tof))
             all_data += data
         all_data += line_str
 
