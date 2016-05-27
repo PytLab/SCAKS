@@ -414,15 +414,24 @@ class SolverBase(KineticCoreComponent):
         return net_rates
 
     def get_reversibilities(self, rfs, rrs):
-        "Return a list of reversibilities."
+        """
+        Function to get reversibilities of given rates.
+
+        Parameters:
+        -----------
+        rfs: forward rates, list of float.
+        rrs: reverse rates, list of float.
+
+        Returns:
+        --------
+        reversibilities: list of float.
+        """
         if len(rfs) != len(rrs):
             raise ValueError('Different rates number is detected.')
-        zipped_rates = zip(rfs, rrs)
 
-        reversibilities = [float(rate_tuple[1]/rate_tuple[0])
-                           for rate_tuple in zipped_rates]
-        setattr(self, 'reversibilities', reversibilities)
-        #archive
+        reversibilities = [float(rr/rf) for rf, rr in zip(rfs, rrs)]
+
+        # Archive.
         self.archive_data('reversibilities', reversibilities)
 
         return reversibilities
