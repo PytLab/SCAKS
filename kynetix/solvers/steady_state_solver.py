@@ -36,18 +36,19 @@ class SteadyStateSolver(SolverBase):
         #there are some small errors when convert tuple to dict
         #which is so small that we can ignore it
 
-        #create cvgs_dict containing adsorbates
+        # Create cvgs_dict containing adsorbates
         cvgs_dict = {}
-        for adsorbate_name in self._owner.adsorbate_names:
-            idx = self._owner.adsorbate_names.index(adsorbate_name)
+        adsorbate_names = self._owner.adsorbate_names()
+        for adsorbate_name in adsorbate_names:
+            idx = adsorbate_names.index(adsorbate_name)
             cvgs_dict.setdefault(adsorbate_name, cvgs_tuple[idx])
 
-        #add free site coverages
-        for site_name in self._owner.site_names:
-            total_cvg = self._owner.species_definitions[site_name]['total']
+        # Add free site coverages
+        for site_name in self._owner.site_names():
+            total_cvg = self._owner.species_definitions()[site_name]['total']
             #print total_cvg
             sum_cvg = 0.0
-            for sp in self.classified_adsorbates[site_name]:
+            for sp in self._classified_adsorbates[site_name]:
                 #print cvgs_dict[sp]
                 sum_cvg += cvgs_dict[sp]
             free_site_cvg = total_cvg - sum_cvg

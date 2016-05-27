@@ -49,8 +49,8 @@ class SolverBase(KineticCoreComponent):
         self._has_symbols = False
 
         # Set essential attrs for solver
-        self.rxns_list = self._owner.elementary_rxns_list()
-        self.rxns_num = len(self.rxns_list)
+        self._rxns_list = self._owner.elementary_rxns_list()
+        self._rxns_num = len(self._rxns_list)
 
         # set constants symbol dict
         self.k_B_sym, self.h_sym, self.T_sym = sym.symbols('k_B, h, T', is_real=True)
@@ -289,7 +289,7 @@ class SolverBase(KineticCoreComponent):
         >>> solver.get_elementary_rate_expression(rxn_list)
         >>> ("kf[1]*p['O2_g']*theta['*_s']**2", "kr[1]*theta['O_s']**2")
         """
-        idx = self.rxns_list.index(elementary_rxn_list)
+        idx = self._rxns_list.index(elementary_rxn_list)
 
         # Local function.
         def list2string(sp_list, direction):
@@ -331,56 +331,86 @@ class SolverBase(KineticCoreComponent):
 
         return f_expr, r_expr
 
-    def get_rate_expressions(self, rxns_list):
+    def get_rate_expressions(self):
         """
-        Expect elementary_rxns_list,
-        return a list of forward rate expressions,
-        and a list of reverse rate expressions.
-        e.g. "rf[0] = kf[0]*p['CO_g']*theta['*_s']"
+        Function to get rate expression for all elementary reactions in model.
         """
         f_rate_expressions, r_rate_expressions = [], []
-        for rxn_list in rxns_list:
+        for rxn_list in self._rxns_list:
             f_expr, r_expr = self.get_elementary_rate_expression(rxn_list)
-            idx = rxns_list.index(rxn_list)
-            f_rate_expressions.append('rfs['+str(idx)+'] = ' + f_expr)
-            r_rate_expressions.append('rrs['+str(idx)+'] = ' + r_expr)
-        setattr(self, 'rate_expressions',
-                (f_rate_expressions, r_rate_expressions))
+            idx = self._rxns_list.index(rxn_list)
+            f_rate_expressions.append('rfs[' + str(idx) + '] = ' + f_expr)
+            r_rate_expressions.append('rrs[' + str(idx) + '] = ' + r_expr)
+
         return f_rate_expressions, r_rate_expressions
 
-    def get_rates(self, rate_expressions, cvgs_tuple):
+    def get_rates(self, cvgs_tuple, archive=False):
         """
-        Expect rate_expressions and a coverage tuple,
-        return forward and reverse rates list.
-        """
-        #set theta, kf, kr, p, dtheta_dt
-        #coverages(theta)
-        theta = self.cvg_tuple2dict(cvgs_tuple)
-        #rate constants(kf, kr)
-        kf, kr = self.get_rate_constants()
-        #pressure
-        p = self.p
-        #concentration
-        c = self.c
-        #rate list
-        rfs, rrs = [0]*len(self._owner.elementary_rxns_list()), \
-            [0]*len(self._owner.elementary_rxns_list())
+        Function to get forward and reverse rates list.
 
+        Parameters:
+        -----------
+        cvgs_tuple: coverage tuple, tuple of floats.
+        archive: archive data or not, bool.
+
+        Returns:
+        --------
+        rfs, rrs: forward rates and reverse rates, tuple of float.
+        """
+        # Coverages(theta).
+        theta = self.cvg_tuple2dict(cvgs_tuple)
+
+        # Rate constants(kf, kr).
+        kf, kr = self.get_rate_constants()
+
+        # Pressure.
+        p = self._p
+
+        # Concentration.
+        c = self._c
+
+        # Rate list.
+        rfs, rrs = [0]*self._rxns_num, [0]*self._rxns_num
+
+        # Rate expressions.
+        rate_expressions = self.get_rate_expressions()
+
+        # Calculate rates.
         for exprs_list in rate_expressions:
             exprs_str = '\n'.join(exprs_list)
             exec exprs_str in locals()
+
         rfs, rrs = map(tuple, (rfs, rrs))
-        setattr(self, '_rates', (rfs, rrs))
-        #archive
-        self.archive_data('rates', (rfs, rrs))
+
+        # Archive.
+        if archive:
+            self.archive_data('rates', (rfs, rrs))
 
         return rfs, rrs
 
-    def get_net_rates(self, rfs, rrs):
+    def get_net_rates(self, cvgs_tuple, archive=False):
+        """
+        Function to get forward and reverse rates list.
+
+        Parameters:
+        -----------
+        cvgs_tuple: coverage tuple, tuple of floats.
+        archive: archive data or not, bool.
+
+        Returns:
+        --------
+        net_rates: net rates for all elementary reactions, tuple of float.
+        """
+        # Get forward and reverse rates.
+        rfs, rrs = self.get_rates(cvgs_tuple, archive=False)
+
+        # Get net rates.
         net_rates = tuple([rf - rr for rf, rr in zip(rfs, rrs)])
-        setattr(self, 'net_rates', net_rates)
-        #archive
-        self.archive_data('net_rates', net_rates)
+
+        # Archive.
+        if archive:
+            self.archive_data('net_rates', net_rates)
+
         return net_rates
 
     def get_reversibilities(self, rfs, rrs):
@@ -1110,4 +1140,10 @@ class SolverBase(KineticCoreComponent):
         Query function for relative energies.
         """
         return self._relative_energies
+
+    def rate_expressions(self):
+        """
+        Query functions for rate expressions for all elementary reactions.
+        """
+        return self._rate_expressions
 
