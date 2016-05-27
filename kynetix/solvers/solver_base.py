@@ -436,52 +436,6 @@ class SolverBase(KineticCoreComponent):
 
         return reversibilities
 
-    def get_tof(self, Gs):  # Gs -> free energies
-        """
-        Expect free energies of intermediates in kinetic model,
-        return turnover frequencies.
-        """
-        #get net rates firstly
-        #change the E of solver
-        Gs_order = self._owner.adsorbate_names() + \
-            self._owner.transition_state_names()
-        setattr(self, 'Gs_order', Gs_order)
-
-        #self.get_data()    #refresh data for solver
-        for intermediate, G in zip(Gs_order, Gs):
-            self.E[intermediate] = G
-
-        #get net rates about new Gs
-        self.get_rate_constants()
-        #get initial guess
-        if self._coverage:
-            init_guess = self._coverage
-        else:
-            init_guess = self.initial_guess
-        steady_state_cvg = self.get_steady_state_cvgs(init_guess)
-        #check whether solver has rate_expressions
-        if not hasattr(self, 'rate_expressions'):  # if not, get it
-            self.get_rate_expressions(self.rxns_list)
-        rfs, rrs = self.get_rates(self.rate_expressions, steady_state_cvg)
-        net_rates = self.get_net_rates(rfs, rrs)
-
-        #get turnover frequencies
-        if not hasattr(self._owner, 'reapro_matrix'):
-            self._owner.parser.get_stoichiometry_matrices()
-        reapro_matrix = copy.copy(self._owner.reapro_matrix)
-        #reapro_matrix *= -1
-        reapro_matrix = abs(reapro_matrix)
-        rate_vector = np.matrix(net_rates)  # get rate vector
-        tof_list = (rate_vector*reapro_matrix).tolist()[0]
-        setattr(self, 'tof', tof_list)
-
-        # log TOFs
-        self.log_tof(tof_list, self._owner.gas_names())
-        #archive
-        self.archive_data('tofs', tof_list)
-
-        return tof_list
-
     def get_cvg_tof(self, cvgs):
         """
         Expect a certain coverage of intermediates,
