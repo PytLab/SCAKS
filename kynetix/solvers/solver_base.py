@@ -471,7 +471,9 @@ class SolverBase(KineticCoreComponent):
         return tof_list
 
     def __log_tof(self, tof_list, gas_names):
-        "Log turnover frequencies of every gas species."
+        """
+        Private helper function to log TOF of every gas species.
+        """
         head_str = "\n\n {:<5s}     {:<20s}     {:<30s}\n".format("index", "gas name", "TOF")
         line_str = '-'*60 + '\n'
 
@@ -524,36 +526,6 @@ class SolverBase(KineticCoreComponent):
             for i in xrange(m):
                 J[i, j] = Jj[i]
         return J
-
-    def get_rate_control(self):
-        """
-        Expect free energies of intermediates in kinetic model,
-        return a matrix of partial derivation wrt intermediates.
-        """
-        # Get intermediates formation energies.
-        Gs = self._get_intermediates_Gs()
-
-        kT = self._owner.kB()*self._owner.temperature()
-        epsilon = self._mpf(self._perturbation_size)
-
-        # Get dr/dG matrix.
-        drdG = numerical_jacobian(
-            f=self.get_tof, x=Gs,
-            num_repr=self._numerical_representation,
-            matrix=self._matrix, h=epsilon,
-            direction=self._perturbation_direction
-        )
-        r = self.get_tof(Gs)
-
-        #multiply 1/r to drdG matrix
-        diag_matrix = self._linalg.diag([-kT/tof for tof in r])
-        DTRC = diag_matrix*drdG
-        #covert it to list
-        DTRC_list = DTRC.tolist()
-        #archive
-        self.archive_data('DTRC', DTRC_list)
-
-        return DTRC
 
     def correct_energies(self):
         "Correct energies of solver"
