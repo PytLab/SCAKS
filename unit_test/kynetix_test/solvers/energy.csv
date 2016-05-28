@@ -1,0 +1,9 @@
+surface_name,site_name,species_name,DFT_energy,formation_energy,frequencies,information
+None,gas,CO2,-32.96253087,2.45,[1333 2349 667 667],None
+None,gas,O2,-496.4113942,5.42,[1580],None
+None,gas,CO,-626.6119705,2.74,[2170],None
+Pd,111,slab,-114762.2548,0,[],None
+Pd,111,O,-115225.1065,1.55,[],None
+Pd,111,CO,-115390.4456,1.55,[],None
+Pd,111,CO-O,-115241.8617,4.2,[],None
+Pd,111,O-O,-114976.7397,5.34,[],None
