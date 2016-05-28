@@ -598,3 +598,9 @@ class KineticModel(object):
         """
         return self.__relative_energies
 
+    def data_file(self):
+        """
+        Query function for data archive file name.
+        """
+        return self.__data_file
+

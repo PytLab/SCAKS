@@ -37,9 +37,12 @@ class SteadyStateSolver(SolverBase):
         self.__dict__.update(protected_defaults)
 
     def cvg_tuple2dict(self, cvgs_tuple):
-        "Convert coverages list to coverages dict."
-        #there are some small errors when convert tuple to dict
-        #which is so small that we can ignore it
+        """
+        Function to convert coverages list to corresponding coverages dict.
+        """
+
+        # NOTE: there are some small errors when convert tuple to dict
+        #       which is so small that we can ignore it
 
         # Create cvgs_dict containing adsorbates
         cvgs_dict = {}
@@ -51,20 +54,20 @@ class SteadyStateSolver(SolverBase):
         # Add free site coverages
         for site_name in self._owner.site_names():
             total_cvg = self._owner.species_definitions()[site_name]['total']
-            #print total_cvg
             sum_cvg = 0.0
             for sp in self._classified_adsorbates[site_name]:
-                #print cvgs_dict[sp]
                 sum_cvg += cvgs_dict[sp]
             free_site_cvg = total_cvg - sum_cvg
-            cvgs_dict.setdefault('*_'+site_name, free_site_cvg)
+            cvgs_dict.setdefault('*_' + site_name, free_site_cvg)
 
         return cvgs_dict
 
     def cvg_dict2tuple(self, cvgs_dict):
-        "Convert coverages dict to coverages list."
+        """
+        Function to convert coverages dict to coverages tuple.
+        """
         cvgs_list = []
-        for adsorbate_name in self._owner.adsorbate_names:
+        for adsorbate_name in self._owner.adsorbate_names():
             cvgs_list.append(cvgs_dict[adsorbate_name])
         return tuple(cvgs_list)
 
@@ -75,16 +78,16 @@ class SteadyStateSolver(SolverBase):
         #convert tuple to dict
         cvgs_dict = self.cvg_tuple2dict(cvgs_tuple)
         #enforce explicit maxima, cannot be larger than 1.0, smaller than 0.0
-        for adsorbate_name in self._owner.adsorbate_names:
+        for adsorbate_name in self._owner.adsorbate_names():
             if cvgs_dict[adsorbate_name] > 1.0:
                 cvgs_dict[adsorbate_name] = self._mpf('1.0')
             if cvgs_dict[adsorbate_name] < 0.0:
                 cvgs_dict[adsorbate_name] = self._mpf('0.0')
 
         #enforce explicit maxima, cannot be larger than site's total number
-        for site_name in self._owner.site_names:
-            total_cvg = self._owner.species_definitions[site_name]['total']
-            for adsorbate_name in self.classified_adsorbates[site_name]:
+        for site_name in self._owner.site_names():
+            total_cvg = self._owner.species_definitions()[site_name]['total']
+            for adsorbate_name in self._classified_adsorbates[site_name]:
                 if cvgs_dict[adsorbate_name] > total_cvg:
                     cvgs_dict[adsorbate_name] = self._mpf(total_cvg)
 
@@ -98,12 +101,12 @@ class SteadyStateSolver(SolverBase):
 
         #enforce site conservation,
         #sum of cvgs on one type of surface <= site total e.g 1.0
-        for site_name in self._owner.site_names:
-            max_cvg = self._owner.species_definitions[site_name]['total']
+        for site_name in self._owner.site_names():
+            max_cvg = self._owner.species_definitions()[site_name]['total']
             sub_cvgs_dict = {}
 
             #add cvgs of the site to sub_cvgs_dict
-            for adsorbate_name in self.classified_adsorbates[site_name]:
+            for adsorbate_name in self._classified_adsorbates[site_name]:
                 sub_cvgs_dict.setdefault(adsorbate_name,
                                          cvgs_dict[adsorbate_name])
             #add free site coverage
@@ -141,7 +144,7 @@ class SteadyStateSolver(SolverBase):
         elementary equation.
         """
         #species must be adsorbate
-        if adsorbate_name not in self._owner.adsorbate_names:
+        if adsorbate_name not in self._owner.adsorbate_names():
             raise ValueError("'"+adsorbate_name+"' is not an adsorbate!")
         for state_list in elementary_rxn_list:
             for species_str in state_list:
@@ -181,7 +184,7 @@ class SteadyStateSolver(SolverBase):
         return dtheta_dt of the adsorbate.
         """
         dtheta_dt_expression_list = []
-        for elementary_rxn_list in self.rxns_list:
+        for elementary_rxn_list in self._rxns_list:
             single_dtheta_dt = \
                 self.get_elementary_dtheta_dt_expression(adsorbate_name,
                                                          elementary_rxn_list)
@@ -197,16 +200,15 @@ class SteadyStateSolver(SolverBase):
         return a tuple of dtheta_dt_expressions.
         """
         dtheta_dt_expressions_list = []
-        for adsorbate_name in self._owner.adsorbate_names:
-            adsorbate_idx = self._owner.adsorbate_names.index(adsorbate_name)
+        for adsorbate_name in self._owner.adsorbate_names():
+            adsorbate_idx = self._owner.adsorbate_names().index(adsorbate_name)
             dtheta_dt_expression = "dtheta_dt[" + str(adsorbate_idx) + "] = "
             dtheta_dt_expression += \
                 self.get_adsorbate_dtheta_dt_expression(adsorbate_name)
             dtheta_dt_expressions_list.append(dtheta_dt_expression)
 
         dtheta_dt_expressions_tup = tuple(dtheta_dt_expressions_list)
-        setattr(self, 'dtheta_dt_expressions',
-                dtheta_dt_expressions_tup)
+        setattr(self, 'dtheta_dt_expressions', dtheta_dt_expressions_tup)
 
         return dtheta_dt_expressions_tup
 
@@ -215,18 +217,21 @@ class SteadyStateSolver(SolverBase):
         Recieve a coverages tuple containing coverages of adsorbates,
         return a tuple of dtheta_dts of corresponding adsorbates.
         """
-        #set theta, kf, kr, p, dtheta_dt
-        #coverages(theta)
+        # Set theta, kf, kr, p, dtheta_dt
+        # Coverages(theta).
         theta = self.cvg_tuple2dict(cvgs_tuple)
-        #self.constrain_converage(theta)
-        #rate constants(kf, kr)
+
+        # Rate constants(kf, kr).
         kf, kr = self.get_rate_constants()
-        #pressure
-        p = self.p
-        #concentration
-        c = self.c
-        #rate of coverage change(dtheta_dt)
-        dtheta_dt = [0.0]*len(self._owner.adsorbate_names)
+
+        # Pressure.
+        p = self._p
+
+        # Concentration.
+        c = self._c
+
+        # Rate of coverage change(dtheta_dt).
+        dtheta_dt = [0.0]*len(self._owner.adsorbate_names())
 
         dtheta_dt_expressions = '\n'.join(self.get_dtheta_dt_expressions())
         exec dtheta_dt_expressions in locals()
@@ -290,7 +295,7 @@ class SteadyStateSolver(SolverBase):
         return a total derivation expression about adsorbate_name
         taking free site into consideration.
         """
-        if adsorbate_name not in self._owner.adsorbate_names:
+        if adsorbate_name not in self._owner.adsorbate_names():
             raise ValueError("'"+adsorbate_name+"' is not in adsorbate_names")
 
         def theta(sp_name):
@@ -298,9 +303,9 @@ class SteadyStateSolver(SolverBase):
 
         site_cvg_regex = r"theta\['\*_(\w*)'\]"
         sites_list = re.findall(site_cvg_regex, term_expression)
-        site_name = self._owner.species_definitions[adsorbate_name]['site']
+        site_name = self._owner.species_definitions()[adsorbate_name]['site']
         site_cvg_expr = theta('*_' + site_name)
-        site_total = self._owner.species_definitions[site_name]['total']
+        site_total = self._owner.species_definitions()[site_name]['total']
 
         #get derivation expression wrt free site
         def deriv_site_part(site_name, term_expression):
@@ -310,7 +315,7 @@ class SteadyStateSolver(SolverBase):
                 #convert site expression to adsobate expression
                 #get substitute expression
                 substitute_expr = str(site_total)
-                for adsorbate_name in self.classified_adsorbates[site_name]:
+                for adsorbate_name in self._classified_adsorbates[site_name]:
                     substitute_expr += ' - ' + theta(adsorbate_name)
                 substitute_expr = '(' + substitute_expr + ')'
                 #do substitution
@@ -376,27 +381,29 @@ class SteadyStateSolver(SolverBase):
 
     def analytical_jacobian(self, dtheta_dt_expressions, cvgs_tuple):
         "Get the jacobian matrix of the steady_state_function."
-        #set theta, kf, kr, p, dtheta_dt
-        #coverages(theta)
+        # Set theta, kf, kr, p, dtheta_dt
+        # Coverages(theta).
         theta = self.cvg_tuple2dict(cvgs_tuple)
-        #rate constants(kf, kr)
-        kf, kr = self.get_rate_constants()
-        #pressure
-        p = self.p
-        #concentration
-        c = self.c
 
-        #generate Jacobian matrix
+        # Rate constants(kf, kr).
+        kf, kr = self.get_rate_constants()
+
+        # Pressure.
+        p = self._p
+
+        # Concentration.
+        c = self._c
+
+        # Generate Jacobian matrix.
         m, n = len(dtheta_dt_expressions), len(cvgs_tuple)
         J = self._matrix(m, n)
         for i in xrange(m):
             poly_expression = dtheta_dt_expressions[i]
             for j in xrange(n):
                 #get adsorbate_name
-                adsorbate_name = self._owner.adsorbate_names[j]
-                J[i, j] = \
-                    eval(self.poly_adsorbate_derivation(adsorbate_name,
-                                                        poly_expression))
+                adsorbate_name = self._owner.adsorbate_names()[j]
+                J[i, j] = eval(self.poly_adsorbate_derivation(adsorbate_name,
+                                                              poly_expression))
         return J
 
     ######################################################
@@ -413,7 +420,7 @@ class SteadyStateSolver(SolverBase):
         in single elementary equation.
         """
         #species must be adsorbate
-        if adsorbate_name not in self._owner.adsorbate_names:
+        if adsorbate_name not in self._owner.adsorbate_names():
             raise ValueError("'"+adsorbate_name+"' is not an adsorbate!")
         for state_list in elementary_rxn_list:
             for species_str in state_list:
@@ -444,7 +451,7 @@ class SteadyStateSolver(SolverBase):
         """
         #total_dtheta_dt_sym = sym.Symbol('0', is_real=True)
         total_dtheta_dt_sym = 0
-        for elementary_rxn_list in self.rxns_list:
+        for elementary_rxn_list in self._rxns_list:
             dtheta_dt_sym = \
                 self.get_elementary_dtheta_dt_sym(adsorbate_name,
                                                   elementary_rxn_list)
@@ -457,7 +464,7 @@ class SteadyStateSolver(SolverBase):
     def get_dtheta_dt_syms(self, log_latex=False):
         "Go through adsorbate_names to get dtheta_dts list."
         dtheta_dt_syms = []
-        for adsorbate_name in self._owner.adsorbate_names:
+        for adsorbate_name in self._owner.adsorbate_names():
             dtheta_dt_sym = self.get_adsorbate_dtheta_dt_sym(adsorbate_name)
             dtheta_dt_syms.append(dtheta_dt_sym)
 
@@ -503,7 +510,7 @@ class SteadyStateSolver(SolverBase):
         for i in xrange(m):
             dthe_dt_sym = dtheta_dt_syms[i]
             for j in xrange(n):
-                ads_name = self._owner.adsorbate_names[j]
+                ads_name = self._owner.adsorbate_names()[j]
                 theta_sym = self.extract_symbol(ads_name, 'ads_cvg')
                 sym_jacobian[i, j] = \
                     sym.Derivative(dthe_dt_sym, theta_sym).doit()
@@ -615,7 +622,7 @@ class SteadyStateSolver(SolverBase):
 
             self._coverage = converged_cvgs
             # log steady state coverages
-            self.log_sscvg(converged_cvgs, self._owner.adsorbate_names)
+            self.log_sscvg(converged_cvgs, self._owner.adsorbate_names())
             self.__logger.info('error = %e', error)
 
             #archive converged root and error
@@ -651,18 +658,15 @@ class SteadyStateSolver(SolverBase):
         single_pt : bool
             if True, no initial guess check will be done.
         """
-        #Oh, intial coverage must have physical meaning!
+        # Intial coverage must have physical meaning.
         c0 = self.constrain_converage(c0)
-        self.initial_guess = c0  # set self.initial_guess
+        self.__initial_guess = c0
 
-        #start root finding algorithm
+        # Start root finding algorithm.
         f = self.steady_state_function
         f_resid = self.get_residual
         constraint = self.constrain_converage
-        if hasattr(self, 'dtheta_dt_expressions'):
-            f_expression = self.dtheta_dt_expressions
-        else:
-            f_expression = self.get_dtheta_dt_expressions()
+        f_expression = self.get_dtheta_dt_expressions()
         J = lambda x: self.analytical_jacobian(f_expression, x)
 
         ############    Main Loop with changed initial guess   ##############
@@ -671,11 +675,12 @@ class SteadyStateSolver(SolverBase):
         cancel = False
 
         while not cancel:  # outer loop
-            if f_resid(c0) <= self.tolerance and not single_pt:
+            # Good initial coverages.
+            if f_resid(c0) <= self._tolerance and not single_pt:
                 self._coverage = converged_cvgs = c0
                 self.__logger.info('Good initial guess: \n%s', str(map(float, c0)))
                 # log steady state coverages
-                self.log_sscvg(c0, self._owner.adsorbate_names)
+                self.log_sscvg(c0, self._owner.adsorbate_names())
                 #get error
                 fx = self.steady_state_function(c0)  # dtheta/dts
                 norm = self._norm(fx)
@@ -685,35 +690,30 @@ class SteadyStateSolver(SolverBase):
                 self.__logger.info('error = %e', error)
                 break
 
-            # instantiate rootfinding iterator
-            # for MDNewton iterator
-            if self.rootfinding == 'ConstrainedNewton':
-                iterator_parameters = dict(
-                    J=J,
-                    constraint=constraint,
-                    norm=self._norm,
-                    mpfloat=self._mpf,
-                    matrix=self._matrix,
-                    Axb_solver=self._Axb_solver,
-                    )
-                newton_iterator = ConstrainedNewton(f, c0, **iterator_parameters)
+            # Instantiate rootfinding iterator
             # ConstrainedNewton iterator
-            elif self.rootfinding == 'MDNewton':
-                iterator_parameters = dict(
-                    J=J,
-                    verbose=False,
-                    )
+            if self._rootfinding == 'ConstrainedNewton':
+                iterator_parameters = dict(J=J,
+                                           constraint=constraint,
+                                           norm=self._norm,
+                                           mpfloat=self._mpf,
+                                           matrix=self._matrix,
+                                           Axb_solver=self._Axb_solver)
+                newton_iterator = ConstrainedNewton(f, c0, **iterator_parameters)
+            # MDNewton iterator
+            elif self._rootfinding == 'MDNewton':
+                iterator_parameters = dict(J=J, verbose=False)
                 newton_iterator = MDNewton(f, c0, **iterator_parameters)
             else:
-                msg='Unrecognized rootfinding iterator name [%s]' % self.rootfinding
+                msg='Unrecognized rootfinding iterator name [{}]'.format(self._rootfinding)
                 raise ParameterError(msg)
 
-            self.__logger.info('%s Iterator instantiation - success!', self.rootfinding)
+            self.__logger.info('{} Iterator instantiation - success!'.format(self._rootfinding))
 
             x = c0
             old_error = 1e99
             if c0:
-                #log initial guess
+                # log initial guess
                 self.__logger.info('initial guess coverage - success')
                 self.__logger.debug(str(map(float, c0)))
 
@@ -730,11 +730,11 @@ class SteadyStateSolver(SolverBase):
                 nt_counter += 1
                 resid = f_resid(x)
                 self.__logger.info('%-10s%10d%23.10e%23.10e', 'in_process',
-                                 nt_counter, float(resid), float(error))
-                #less than tolerance
-                if error < self.tolerance:
-                    if resid < self.tolerance:
-                        #check whether there is minus value in x
+                                   nt_counter, float(resid), float(error))
+                # Less than tolerance
+                if error < self._tolerance:
+                    if resid < self._tolerance:
+                        # Check whether there is minus value in x
                         for cvg in x:
                             if cvg < 0.0:
                                 lt_zero = True  # less than 0
@@ -744,9 +744,9 @@ class SteadyStateSolver(SolverBase):
                         # check END #
                         if not lt_zero:
                             self.__logger.info('%-10s%10d%23.10e%23.10e', 'success',
-                                             nt_counter, float(resid), float(error))
+                                               nt_counter, float(resid), float(error))
                             # log steady state coverages
-                            self.log_sscvg(x, self._owner.adsorbate_names)
+                            self.log_sscvg(x, self._owner.adsorbate_names())
                             converged_cvgs = x
                             self.__logger.info('error = %e', min(error, resid))
                             cancel = True
@@ -757,24 +757,24 @@ class SteadyStateSolver(SolverBase):
                     else:
                         error = f_resid(x)  # use residual as error and continue
 
-                #if convergence is slow when the norm is larger than 0.1
-                elif (nt_counter > self.max_rootfinding_iterations or
+                # if convergence is slow when the norm is larger than 0.1
+                elif (nt_counter > self._max_rootfinding_iterations or
                       abs(error - old_error) < 1e-4) and error > 1e-10:
                     self.__logger.info('%-10s%10d%23.10e%23.10e', 'break',
                                      nt_counter, float(resid), float(error))
                     self.__logger.warning('slow convergence rate!')
                     self.__logger.warning('root finding break for this initial guess...\n')
-                    #jump out of loop for this c0
+                    # Jump out of loop for this c0
                     cancel = False
                     break
 
-                #residual is almost stagnated
-                elif abs(error - old_error) < self.stable_criterion:
+                # residual is almost stagnated
+                elif abs(error - old_error) < self._stable_criterion:
                     self.__logger.info('%-10s%10d%23.10e%23.10e', 'stable',
                                        nt_counter, float(resid), float(error))
                     self.__logger.warning('stable root: %s', str(map(float, x)))
                     self.__logger.debug(' difference: %-24.16e', abs(error - old_error))
-                    #jump out of loop for this c0
+                    # Jump out of loop for this c0.
                     cancel = False
                     break
 
@@ -798,21 +798,81 @@ class SteadyStateSolver(SolverBase):
 
         if converged_cvgs:
             self._coverage = converged_cvgs
-            #archive converged root and error
-            self.archive_data('steady_state_coverage',
-                              converged_cvgs)
+
+            # Archive converged root and error.
+            self.archive_data('steady_state_coverage', converged_cvgs)
             self.archive_data('steady_state_error', error)
             self.good_guess = c0
-            #archive initial guess
+
+            # Archive initial guess.
             self.archive_data('initial_guess', c0)
 
             return converged_cvgs
+
+    def _get_Gs_tof(self, Gs):  # Gs -> free energies
+        """
+        Protected function to get TOF for a given formation energies.
+        """
+        Gs_order = self._owner.adsorbate_names() + self._owner.transition_state_names()
+
+        # Copy the original energies.
+        G_copy = copy.deepcopy(self._G)
+
+        # Update formation energies of solver.
+        for intermediate, G in zip(Gs_order, Gs):
+            self._G[intermediate] = G
+
+        # Get net rates about new Gs
+        self.get_rate_constants()
+
+        # Get initial guess
+        if self._coverage:
+            init_guess = self._coverage
+        else:
+            init_guess = self.__initial_guess
+
+        # Calculate the new steady state coverages.
+        steady_state_cvg = self.get_steady_state_cvgs(init_guess)
+
+        #check whether solver has rate_expressions
+        if not hasattr(self, 'rate_expressions'):  # if not, get it
+            self.get_rate_expressions(self._rxns_list)
+        rfs, rrs = self.get_rates(self.rate_expressions, steady_state_cvg)
+        net_rates = self.get_net_rates(rfs, rrs)
+
+        #get turnover frequencies
+        if not hasattr(self._owner, 'reapro_matrix'):
+            self._owner.parser.get_stoichiometry_matrices()
+        reapro_matrix = copy.copy(self._owner.reapro_matrix)
+        #reapro_matrix *= -1
+        reapro_matrix = abs(reapro_matrix)
+        rate_vector = np.matrix(net_rates)  # get rate vector
+        tof_list = (rate_vector*reapro_matrix).tolist()[0]
+        setattr(self, 'tof', tof_list)
+
+        # log TOFs
+        self.log_tof(tof_list, self._owner.gas_names)
+        #archive
+        self.archive_data('tofs', tof_list)
+
+        return tof_list
+
+    def _get_intermediates_Gs(self):
+        """
+        Protected helper function to get formation energies of intermediates.
+        """
+        Gs = []
+        for intermediates_name in \
+                self._owner.adsorbate_names() + self._owner.transition_state_names():
+            Gs.append(self.E[intermediates_name])
+        setattr(self._owner, 'intermediates_Gs', Gs)
+        return Gs
 
     def modify_init_guess(self, *args):
         '''
         return a list of random coverages.
         '''
-        n_adsorbates = len(self._owner.adsorbate_names)
+        n_adsorbates = len(self._owner.adsorbate_names())
         random_cvgs = []
 
         sum_cvgs = 0.0
@@ -829,10 +889,10 @@ class SteadyStateSolver(SolverBase):
     def modify_init_guess_old(self, c0, dtheta_dts):
         "Return a new initial guess according to dthe_dts."
 #        max_dtheta_dt = np.max(np.abs(dtheta_dts))
-        base_coefficient = self.initial_guess_scale_factor
+        base_coefficient = self._initial_guess_scale_factor
         coefficients = []
         for dtheta_dt in np.abs(dtheta_dts):
-            if abs(dtheta_dt) >= self.tolerance:
+            if abs(dtheta_dt) >= self._tolerance:
                 #coefficients.append(dtheta_dt/max_dtheta_dt*base_coefficient)
                 coefficients.append(base_coefficient)
             else:
@@ -857,10 +917,10 @@ class SteadyStateSolver(SolverBase):
     def modify_init_guess_new(self, c0, dtheta_dts):
         "Return a new initial guess according to dthe_dts."
         max_dtheta_dt = np.max(np.abs(dtheta_dts))
-        base_coefficient = self.initial_guess_scale_factor
+        base_coefficient = self._initial_guess_scale_factor
         coefficients = []
         for idx, dtheta_dt in enumerate(np.abs(dtheta_dts)):
-            if abs(dtheta_dt) >= self.tolerance:
+            if abs(dtheta_dt) >= self._tolerance:
                 if dtheta_dt < 0:
                     coefficients.append(dtheta_dt/max_dtheta_dt*base_coefficient)
                 elif dtheta_dt > 0:
@@ -953,7 +1013,7 @@ class SteadyStateSolver(SolverBase):
         t_end = time_end
         t_step = time_span
 
-        adsorbate_names = self._owner.adsorbate_names
+        adsorbate_names = self._owner.adsorbate_names()
         nads = len(adsorbate_names)
 
         # set initial points

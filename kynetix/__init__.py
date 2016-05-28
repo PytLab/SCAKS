@@ -98,7 +98,7 @@ class ModelShell(object):
             self._archived_data_dict[data_name] = data
             # Dump data dict to data file
             if self._archived_data_dict:
-                with open(self._owner.data_file, 'wb') as f:
+                with open(self._owner.data_file(), 'wb') as f:
                     cPickle.dump(self._archived_data_dict, f)
 
     def elementary_rxn_list2str(self, elementary_rxn_list):

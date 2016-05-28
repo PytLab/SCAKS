@@ -1,4 +1,5 @@
 import copy
+import logging
 
 import mpmath as mp
 import numpy as np
@@ -27,6 +28,9 @@ class SolverBase(KineticCoreComponent):
         '''
         super(SolverBase, self).__init__(owner)
 
+        # Set logger.
+        self.__logger = logging.getLogger("model.solvers.SolverBase")
+
         # Update default parameter dict
         defaults = dict(perturbation_size=0.01,
                         perturbation_direction='right',
@@ -34,7 +38,7 @@ class SolverBase(KineticCoreComponent):
                         archived_variables=['steady_state_coverage', 'rates'])
         defaults = self.update_defaults(defaults)
 
-        # Set varibles in defaults private attributes of solver.
+        # Set varibles in defaults protected attributes of solver.
         protected_defaults = {"_{}".format(key): value
                               for key, value in defaults.iteritems()}
         self.__dict__.update(protected_defaults)
@@ -479,18 +483,9 @@ class SolverBase(KineticCoreComponent):
             all_data += data
         all_data += line_str
 
-        self.logger.info(all_data)
+        self.__logger.info(all_data)
 
         return all_data
-
-    def get_intermediates_Gs(self):
-        #get Gs
-        Gs = []
-        for intermediates_name in \
-                self._owner.adsorbate_names() + self._owner.transition_state_names():
-            Gs.append(self.E[intermediates_name])
-        setattr(self._owner, 'intermediates_Gs', Gs)
-        return Gs
 
     def classified_numerical_jacobian(self, f, x, h=1e-10):
         """
@@ -535,17 +530,18 @@ class SolverBase(KineticCoreComponent):
         Expect free energies of intermediates in kinetic model,
         return a matrix of partial derivation wrt intermediates.
         """
-        #get Gs
-        Gs = self.get_intermediates_Gs()
+        # Get intermediates formation energies.
+        Gs = self._get_intermediates_Gs()
 
         kT = self._owner.kB()*self._owner.temperature()
-        epsilon = self._mpf(self.__perturbation_size)
-        #get dr/dG matrix
+        epsilon = self._mpf(self._perturbation_size)
+
+        # Get dr/dG matrix.
         drdG = numerical_jacobian(
             f=self.get_tof, x=Gs,
             num_repr=self._numerical_representation,
             matrix=self._matrix, h=epsilon,
-            direction=self.__perturbation_direction
+            direction=self._perturbation_direction
         )
         r = self.get_tof(Gs)
 
