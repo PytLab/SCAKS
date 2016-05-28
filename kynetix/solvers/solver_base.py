@@ -142,6 +142,42 @@ class SolverBase(KineticCoreComponent):
 
         return classified_adsorbates
 
+    def _cvg_tuple2dict(self, cvgs_tuple):
+        """
+        Protected function to convert coverages list to corresponding coverages dict.
+        """
+
+        # NOTE: there are some small errors when convert tuple to dict
+        #       which is so small that we can ignore it
+
+        # Create cvgs_dict containing adsorbates
+        cvgs_dict = {}
+        adsorbate_names = self._owner.adsorbate_names()
+        for adsorbate_name in adsorbate_names:
+            idx = adsorbate_names.index(adsorbate_name)
+            cvgs_dict.setdefault(adsorbate_name, cvgs_tuple[idx])
+
+        # Add free site coverages
+        species_definitions = self._owner.species_definitions()
+        for site_name in self._owner.site_names():
+            total_cvg = species_definitions[site_name]['total']
+            sum_cvg = 0.0
+            for sp in self._classified_adsorbates[site_name]:
+                sum_cvg += cvgs_dict[sp]
+            free_site_cvg = total_cvg - sum_cvg
+            cvgs_dict.setdefault('*_' + site_name, free_site_cvg)
+
+        return cvgs_dict
+
+    def _cvg_dict2tuple(self, cvgs_dict):
+        """
+        Protected function to convert coverages dict to coverages tuple.
+        """
+        cvgs_list = []
+        for adsorbate_name in self._owner.adsorbate_names():
+            cvgs_list.append(cvgs_dict[adsorbate_name])
+        return tuple(cvgs_list)
+
     def get_data(self):
         """
         Function to get data from model.
@@ -362,7 +398,7 @@ class SolverBase(KineticCoreComponent):
         rfs, rrs: forward rates and reverse rates, tuple of float.
         """
         # Coverages(theta).
-        theta = self.cvg_tuple2dict(cvgs_tuple)
+        theta = self._cvg_tuple2dict(cvgs_tuple)
 
         # Rate constants(kf, kr).
         kf, kr = self.get_rate_constants()

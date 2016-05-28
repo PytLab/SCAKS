@@ -21,14 +21,12 @@ class SteadyStateSolver(SolverBase):
         self.__logger = logging.getLogger('model.solvers.SteadyStateSolver')
 
         # Set default parameter dict
-        defaults = dict(
-            rootfinding='MDNewton',
-            tolerance=1e-8,
-            max_rootfinding_iterations=100,
-            residual_threshold=1.0,
-            initial_guess_scale_factor=100,
-            stable_criterion=1e-10,
-            )
+        defaults = dict(rootfinding='MDNewton',
+                        tolerance=1e-8,
+                        max_rootfinding_iterations=100,
+                        residual_threshold=1.0,
+                        initial_guess_scale_factor=100,
+                        stable_criterion=1e-10)
         defaults = self.update_defaults(defaults)
 
         # Set varibles in defaults protected attributes of solver.
@@ -36,9 +34,9 @@ class SteadyStateSolver(SolverBase):
                               for key, value in defaults.iteritems()}
         self.__dict__.update(protected_defaults)
 
-    def cvg_tuple2dict(self, cvgs_tuple):
+    def __cvg_tuple2dict(self, cvgs_tuple):
         """
-        Function to convert coverages list to corresponding coverages dict.
+        Private function to convert coverages list to corresponding coverages dict.
         """
 
         # NOTE: there are some small errors when convert tuple to dict
@@ -52,8 +50,9 @@ class SteadyStateSolver(SolverBase):
             cvgs_dict.setdefault(adsorbate_name, cvgs_tuple[idx])
 
         # Add free site coverages
+        species_definitions = self._owner.species_definitions()
         for site_name in self._owner.site_names():
-            total_cvg = self._owner.species_definitions()[site_name]['total']
+            total_cvg = species_definitions[site_name]['total']
             sum_cvg = 0.0
             for sp in self._classified_adsorbates[site_name]:
                 sum_cvg += cvgs_dict[sp]
@@ -62,9 +61,9 @@ class SteadyStateSolver(SolverBase):
 
         return cvgs_dict
 
-    def cvg_dict2tuple(self, cvgs_dict):
+    def __cvg_dict2tuple(self, cvgs_dict):
         """
-        Function to convert coverages dict to coverages tuple.
+        Private function to convert coverages dict to coverages tuple.
         """
         cvgs_list = []
         for adsorbate_name in self._owner.adsorbate_names():
@@ -76,7 +75,7 @@ class SteadyStateSolver(SolverBase):
         Constrain coverages of absorbates between 0.0 and 1.0/total number.
         """
         #convert tuple to dict
-        cvgs_dict = self.cvg_tuple2dict(cvgs_tuple)
+        cvgs_dict = self.__cvg_tuple2dict(cvgs_tuple)
         #enforce explicit maxima, cannot be larger than 1.0, smaller than 0.0
         for adsorbate_name in self._owner.adsorbate_names():
             if cvgs_dict[adsorbate_name] > 1.0:
@@ -114,7 +113,7 @@ class SteadyStateSolver(SolverBase):
             sub_cvgs_dict = constrain_in_total(sub_cvgs_dict, max_cvg)
             cvgs_dict.update(sub_cvgs_dict)
         #convert dict to tuple, and return
-        constrained_cvgs_tuple = self.cvg_dict2tuple(cvgs_dict)
+        constrained_cvgs_tuple = self.__cvg_dict2tuple(cvgs_dict)
 
         def compare_cvgs(cvgs1, cvgs2):
             "Compare two coverage tuples."
@@ -219,7 +218,7 @@ class SteadyStateSolver(SolverBase):
         """
         # Set theta, kf, kr, p, dtheta_dt
         # Coverages(theta).
-        theta = self.cvg_tuple2dict(cvgs_tuple)
+        theta = self.__cvg_tuple2dict(cvgs_tuple)
 
         # Rate constants(kf, kr).
         kf, kr = self.get_rate_constants()
@@ -383,7 +382,7 @@ class SteadyStateSolver(SolverBase):
         "Get the jacobian matrix of the steady_state_function."
         # Set theta, kf, kr, p, dtheta_dt
         # Coverages(theta).
-        theta = self.cvg_tuple2dict(cvgs_tuple)
+        theta = self.__cvg_tuple2dict(cvgs_tuple)
 
         # Rate constants(kf, kr).
         kf, kr = self.get_rate_constants()
