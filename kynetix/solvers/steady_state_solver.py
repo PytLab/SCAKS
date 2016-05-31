@@ -285,12 +285,24 @@ class SteadyStateSolver(SolverBase):
 
         return derivation_expression
 
-    def total_term_adsorbate_derivation(self, adsorbate_name,
-                                        term_expression):
+    def __total_term_adsorbate_derivation(self,
+                                          adsorbate_name,
+                                          term_expression):
         """
-        Expect a single expression and an adsorbate_name
-        return a total derivation expression about adsorbate_name
-        taking free site into consideration.
+        Private function to get derivation expression taking FREE SITE into consideration.
+
+        NOTE: the coverage of free site can be expressed as (1 - theta_CO_s - ...),
+              so the derivation must take coverages of free site into consideration.
+
+        Parameters:
+        -----------
+        adsorbate_name: The adsorbate name which derivation expression wrt
+                        would be returned, str.
+        term_expression: The string of term expression, str.
+
+        Returns:
+        --------
+        The derivation expression, str.
         """
         if adsorbate_name not in self._owner.adsorbate_names():
             raise ValueError("'" + adsorbate_name + "' is not in adsorbate_names")
@@ -319,6 +331,9 @@ class SteadyStateSolver(SolverBase):
                 # Do substitution
                 site_cvg_regex = r"theta\['\*_" + site_name + r"'\]"
                 final_expr = re.sub(site_cvg_regex, substitute_expr, initial_expr)
+
+                # Add minus.
+                final_expr = "-" + final_expr
             else:
                 # Just add a minus before expression.
                 final_expr = '-' + initial_expr
@@ -364,8 +379,8 @@ class SteadyStateSolver(SolverBase):
         poly_list = poly_expression.split()
         operators, terms = poly_list[3::2], poly_list[2::2]
         #generate derived term expressions
-        derived_terms = [self.total_term_adsorbate_derivation(adsorbate_name,
-                                                              term_expression)
+        derived_terms = [self.__total_term_adsorbate_derivation(adsorbate_name,
+                                                                term_expression)
                          for term_expression in terms]
         #combine 2 lists
         derived_poly_list = []
