@@ -34,58 +34,28 @@ class SteadyStateSolver(SolverBase):
                               for key, value in defaults.iteritems()}
         self.__dict__.update(protected_defaults)
 
-    def __cvg_tuple2dict(self, cvgs_tuple):
+    def __constrain_converage(self, cvgs_tuple):
         """
-        Private function to convert coverages list to corresponding coverages dict.
+        Private function to constrain coverages of absorbates
+        between 0.0 and 1.0 or total number.
         """
-
-        # NOTE: there are some small errors when convert tuple to dict
-        #       which is so small that we can ignore it
-
-        # Create cvgs_dict containing adsorbates
-        cvgs_dict = {}
-        adsorbate_names = self._owner.adsorbate_names()
-        for adsorbate_name in adsorbate_names:
-            idx = adsorbate_names.index(adsorbate_name)
-            cvgs_dict.setdefault(adsorbate_name, cvgs_tuple[idx])
-
-        # Add free site coverages
         species_definitions = self._owner.species_definitions()
-        for site_name in self._owner.site_names():
-            total_cvg = species_definitions[site_name]['total']
-            sum_cvg = 0.0
-            for sp in self._classified_adsorbates[site_name]:
-                sum_cvg += cvgs_dict[sp]
-            free_site_cvg = total_cvg - sum_cvg
-            cvgs_dict.setdefault('*_' + site_name, free_site_cvg)
+        adsorbate_names = self._owner.adsorbate_names()
+        site_names = self._owner.site_names()
 
-        return cvgs_dict
+        # Convert tuple to dict
+        cvgs_dict = self._cvg_tuple2dict(cvgs_tuple)
 
-    def __cvg_dict2tuple(self, cvgs_dict):
-        """
-        Private function to convert coverages dict to coverages tuple.
-        """
-        cvgs_list = []
-        for adsorbate_name in self._owner.adsorbate_names():
-            cvgs_list.append(cvgs_dict[adsorbate_name])
-        return tuple(cvgs_list)
-
-    def constrain_converage(self, cvgs_tuple):
-        """
-        Constrain coverages of absorbates between 0.0 and 1.0/total number.
-        """
-        #convert tuple to dict
-        cvgs_dict = self.__cvg_tuple2dict(cvgs_tuple)
-        #enforce explicit maxima, cannot be larger than 1.0, smaller than 0.0
-        for adsorbate_name in self._owner.adsorbate_names():
+        # Enforce explicit maxima, cannot be larger than 1.0, smaller than 0.0
+        for adsorbate_name in adsorbate_names:
             if cvgs_dict[adsorbate_name] > 1.0:
                 cvgs_dict[adsorbate_name] = self._mpf('1.0')
             if cvgs_dict[adsorbate_name] < 0.0:
                 cvgs_dict[adsorbate_name] = self._mpf('0.0')
 
-        #enforce explicit maxima, cannot be larger than site's total number
-        for site_name in self._owner.site_names():
-            total_cvg = self._owner.species_definitions()[site_name]['total']
+        # Enforce explicit maxima, cannot be larger than site's total number
+        for site_name in site_names:
+            total_cvg = species_definitions[site_name]['total']
             for adsorbate_name in self._classified_adsorbates[site_name]:
                 if cvgs_dict[adsorbate_name] > total_cvg:
                     cvgs_dict[adsorbate_name] = self._mpf(total_cvg)
@@ -98,22 +68,20 @@ class SteadyStateSolver(SolverBase):
                     cvgs_dict[key] = cvgs_dict[key]/total_cvg*max_cvg
             return cvgs_dict
 
-        #enforce site conservation,
-        #sum of cvgs on one type of surface <= site total e.g 1.0
-        for site_name in self._owner.site_names():
-            max_cvg = self._owner.species_definitions()[site_name]['total']
+        # Sum of cvgs on one type of surface <= site total e.g 1.0
+        for site_name in site_names:
+            max_cvg = species_definitions[site_name]['total']
             sub_cvgs_dict = {}
 
-            #add cvgs of the site to sub_cvgs_dict
+            # Add cvgs of the site to sub_cvgs_dict
             for adsorbate_name in self._classified_adsorbates[site_name]:
                 sub_cvgs_dict.setdefault(adsorbate_name,
                                          cvgs_dict[adsorbate_name])
-            #add free site coverage
-#            sub_cvgs_dict.setdefault('*_'+site_name, cvgs_dict['*_'+site_name])
+            # Add free site coverage
             sub_cvgs_dict = constrain_in_total(sub_cvgs_dict, max_cvg)
             cvgs_dict.update(sub_cvgs_dict)
-        #convert dict to tuple, and return
-        constrained_cvgs_tuple = self.__cvg_dict2tuple(cvgs_dict)
+        # Convert dict to tuple, and return
+        constrained_cvgs_tuple = self._cvg_dict2tuple(cvgs_dict)
 
         def compare_cvgs(cvgs1, cvgs2):
             "Compare two coverage tuples."
@@ -126,7 +94,7 @@ class SteadyStateSolver(SolverBase):
             return True
 
         consistant = compare_cvgs(constrained_cvgs_tuple, cvgs_tuple)
-        #log if constraint has been carried out
+        # log if constraint has been carried out
         if not consistant:
             self.__logger.warning('coverage constraining...\n')
             self.__logger.debug('    initial coverage: %s', str(map(float, cvgs_tuple)))
@@ -135,60 +103,90 @@ class SteadyStateSolver(SolverBase):
 
         return constrained_cvgs_tuple
 
-    def get_elementary_dtheta_dt_expression(self, adsorbate_name,
+    def get_elementary_dtheta_dt_expression(self,
+                                            adsorbate_name,
                                             elementary_rxn_list):
         """
-        Expect elementary_rxn_list and an adsorbate_name in it,
-        return dtheta_dt of the corresponding adsorbate in single
+        Function to get dtheta_dt of the corresponding adsorbate in single
         elementary equation.
+
+        Parameters:
+        -----------
+        adsorbate_name: The adsorbate name whose coverage is derived wrt time, str.
+
+        elementary_rxn_list: The list form of an elementary reaction.
+
+        Returns:
+        --------
+        The dtheta/dt expression, str.
+
+        Example:
+        --------
+        >>> s.get_elementary_dtheta_dt_expression("O_s", [['O2_g', '2*_s'], ['2O_s']])
+        >>> "2*kf[1]*p['O2_g']*theta['*_s']**2 - 2*kr[1]*theta['O_s']**2"
         """
-        #species must be adsorbate
+        # Check adsorbate name.
         if adsorbate_name not in self._owner.adsorbate_names():
-            raise ValueError("'"+adsorbate_name+"' is not an adsorbate!")
+            raise ValueError("'{}' is not an adsorbate!".format(adsorbate_name))
+
         for state_list in elementary_rxn_list:
             for species_str in state_list:
                 stoichiometry, site_name = self.split_species(species_str)
                 if site_name == adsorbate_name:
                     break
             if site_name == adsorbate_name:
-                #get state idx to get direction info
+                # Get state idx to get direction info.
                 state_idx = elementary_rxn_list.index(state_list)
                 break
-        #if adsorbate name not in elementary_rxn list, stop
+
+        # If adsorbate name not in elementary_rxn list, stop.
         if site_name != adsorbate_name:
             return
-        #get rate expression of the elementary equation
-        f_expr, r_expr = \
-            self.get_elementary_rate_expression(elementary_rxn_list)
-        if state_idx == 0:  # adsorbate is consumed
+
+        # Get rate expression of the elementary equation.
+        f_expr, r_expr = self.get_elementary_rate_expression(elementary_rxn_list)
+
+        # Adsorbate is consumed
+        if state_idx == 0:
             if stoichiometry == 1:
                 increase_rate, decrease_rate = r_expr, f_expr
             else:
-                increase_rate, decrease_rate = \
-                    [str(stoichiometry)+'*'+rate_expr
-                     for rate_expr in [r_expr, f_expr]]
-        else:  # adsorbate is producted
+                increase_rate, decrease_rate = [str(stoichiometry) + '*' + rate_expr
+                                                for rate_expr in [r_expr, f_expr]]
+        # Adsorbate is produced.
+        else:
             if stoichiometry == 1:
                 increase_rate, decrease_rate = f_expr, r_expr
             else:
-                increase_rate, decrease_rate = \
-                    [str(stoichiometry)+'*'+rate_expr
-                     for rate_expr in [f_expr, r_expr]]
-        #return dtheta_dt expression
+                increase_rate, decrease_rate = [str(stoichiometry) + '*' + rate_expr
+                                                for rate_expr in [f_expr, r_expr]]
+
+        # Return.
         return increase_rate + ' - ' + decrease_rate
 
     def get_adsorbate_dtheta_dt_expression(self, adsorbate_name):
         """
-        Expect a adsorbate_name, and go through self.rxns_list,
-        return dtheta_dt of the adsorbate.
+        Function to get dtheta/dt expression over all elementary reactions wrt an adsorbate.
+
+        Parameters:
+        -----------
+        adsorbate_name: The name of the adsorbate whose dtheta/dt expression
+                        would be returned.
+
+        Returns:
+        --------
+        dtheta_dt_expression: String of dtheta/dt expression.
         """
+        # Collect all dtheta/dt exprression for an elementary reaction.
         dtheta_dt_expression_list = []
+
         for elementary_rxn_list in self._rxns_list:
-            single_dtheta_dt = \
-                self.get_elementary_dtheta_dt_expression(adsorbate_name,
-                                                         elementary_rxn_list)
+            single_dtheta_dt = self.get_elementary_dtheta_dt_expression(adsorbate_name,
+                                                                        elementary_rxn_list)
             if single_dtheta_dt:
                 dtheta_dt_expression_list.append(single_dtheta_dt)
+
+        # Join the expressions.
         dtheta_dt_expression = ' + '.join(dtheta_dt_expression_list)
 
         return dtheta_dt_expression
@@ -218,7 +216,7 @@ class SteadyStateSolver(SolverBase):
         """
         # Set theta, kf, kr, p, dtheta_dt
         # Coverages(theta).
-        theta = self.__cvg_tuple2dict(cvgs_tuple)
+        theta = self._cvg_tuple2dict(cvgs_tuple)
 
         # Rate constants(kf, kr).
         kf, kr = self.get_rate_constants()
@@ -238,18 +236,17 @@ class SteadyStateSolver(SolverBase):
         return tuple(dtheta_dt)
 
     @staticmethod
-    def term_adsorbate_derivation(adsorbate_name, term_expression):
+    def __term_adsorbate_derivation(adsorbate_name, term_expression):
         """
         Expect a single expression and an adsorbate_name
         e.g. "kf[2]*theta['CO_s']*theta['*_s']" 'CO_s',
         return a derivation expression wrt adsorbate_name.
         """
+        # Escape.
         if '*' in adsorbate_name:
             adsorbate_name = '\\' + adsorbate_name
-#        cvg_name = "theta['"+adsorbate_name.strip('\\')+"']"
-#        if cvg_name in term_expression:
-        regex = \
-            "((.*)\*|)(theta\['"+adsorbate_name+"'\])(\*{2}(\d)|)(\*(.*)|)"
+
+        regex = r"((.*)\*|)(theta\['" + adsorbate_name + r"'\])(\*{2}(\d)|)(\*(.*)|)"
         #r"(.*)\*(theta\['CO_s'\])(\*\*(\d)|)(\*(.*)|)"
         ###########################################################
         # group(1) -> ((.*)\*|), group(2) -> (.*)                 #
@@ -257,7 +254,8 @@ class SteadyStateSolver(SolverBase):
         # group(4) -> (\*{2}(\d)|), group(5) -> \*{2}(\d) or None #
         # group(6) -> (\*(.*)|), group(7) -> (.*) or None         #
         ###########################################################
-        #coefficient
+
+        # Coefficient
         m = re.search(regex, term_expression)
         if m.group(7) and m.group(2):
             coefficient = m.group(2) + '*' + m.group(7)
@@ -267,7 +265,7 @@ class SteadyStateSolver(SolverBase):
             coefficient = m.group(7)
         else:
             coefficient = '1'
-        #for power of cvg
+        # Power of cvg
         if m.group(4):
             power = int(m.group(5))
         else:
@@ -295,10 +293,10 @@ class SteadyStateSolver(SolverBase):
         taking free site into consideration.
         """
         if adsorbate_name not in self._owner.adsorbate_names():
-            raise ValueError("'"+adsorbate_name+"' is not in adsorbate_names")
+            raise ValueError("'" + adsorbate_name + "' is not in adsorbate_names")
 
         def theta(sp_name):
-            return "theta['" + sp_name + "']"
+            return "theta['{}']".format(sp_name)
 
         site_cvg_regex = r"theta\['\*_(\w*)'\]"
         sites_list = re.findall(site_cvg_regex, term_expression)
@@ -306,53 +304,52 @@ class SteadyStateSolver(SolverBase):
         site_cvg_expr = theta('*_' + site_name)
         site_total = self._owner.species_definitions()[site_name]['total']
 
-        #get derivation expression wrt free site
+        # Get derivation expression wrt free site.
         def deriv_site_part(site_name, term_expression):
-            initial_expr = \
-                self.term_adsorbate_derivation('*_'+site_name, term_expression)
+            initial_expr = self.__term_adsorbate_derivation('*_'+site_name, term_expression)
+
+            # Convert site expression to adsobate expression.
             if site_cvg_expr in initial_expr:
-                #convert site expression to adsobate expression
-                #get substitute expression
+                # Get substitute expression.
                 substitute_expr = str(site_total)
                 for adsorbate_name in self._classified_adsorbates[site_name]:
                     substitute_expr += ' - ' + theta(adsorbate_name)
                 substitute_expr = '(' + substitute_expr + ')'
-                #do substitution
-                site_cvg_regex = "theta\['\*_"+site_name+"'\]"
-                final_expr = \
-                    re.sub(site_cvg_regex, substitute_expr, initial_expr)
+
+                # Do substitution
+                site_cvg_regex = r"theta\['\*_" + site_name + r"'\]"
+                final_expr = re.sub(site_cvg_regex, substitute_expr, initial_expr)
             else:
-                #just add a minus before expression
+                # Just add a minus before expression.
                 final_expr = '-' + initial_expr
+
             return final_expr
 
-        #get derivation expression wrt adsorbate
+        # Get derivation expression wrt adsorbate.
         def deriv_adsorbate_part(adsorbate_name, term_expression):
-            return self.term_adsorbate_derivation(adsorbate_name,
-                                                  term_expression)
+            return self.__term_adsorbate_derivation(adsorbate_name, term_expression)
 
-        #if contains both
-        if site_name in sites_list and \
-           theta(adsorbate_name) in term_expression:
+        # If contains both.
+        if (site_name in sites_list) and (theta(adsorbate_name) in term_expression):
             #split two parts
-            regex = \
-                "(.*)\*(theta\['" + adsorbate_name + "'\])(\*{2}(\d)|)(\*(.*)|)"
+            regex = r"(.*)\*(theta\['" + adsorbate_name + r"'\])(\*{2}(\d)|)(\*(.*)|)"
             m = re.search(regex, term_expression)
             if m.group(6):
                 site_part = m.group(1) + '*' + m.group(6)
             else:
                 site_part = m.group(1)
             adsorbate_part = m.group(2) + m.group(3)
-            #get derivation expression
-            derivation_expression = \
-                deriv_adsorbate_part(adsorbate_name, adsorbate_part) + \
-                '*' + site_part + ' + ' + \
-                deriv_site_part(site_name, site_part) + '*' + adsorbate_part
+            # Get derivation expression
+            derivation_expression = (deriv_adsorbate_part(adsorbate_name, adsorbate_part) +
+                                     '*' + site_part + ' + ' +
+                                     deriv_site_part(site_name, site_part) +
+                                     '*' + adsorbate_part)
+        # Derive empty site coverage only.
         elif site_name in sites_list:
             derivation_expression = deriv_site_part(site_name, term_expression)
+        # Derive adsorbate coverage only.
         elif theta(adsorbate_name) in term_expression:
-            derivation_expression = \
-                deriv_adsorbate_part(adsorbate_name, term_expression)
+            derivation_expression = deriv_adsorbate_part(adsorbate_name, term_expression)
         else:
             derivation_expression = '0'
 
@@ -382,7 +379,7 @@ class SteadyStateSolver(SolverBase):
         "Get the jacobian matrix of the steady_state_function."
         # Set theta, kf, kr, p, dtheta_dt
         # Coverages(theta).
-        theta = self.__cvg_tuple2dict(cvgs_tuple)
+        theta = self._cvg_tuple2dict(cvgs_tuple)
 
         # Rate constants(kf, kr).
         kf, kr = self.get_rate_constants()
@@ -556,7 +553,7 @@ class SteadyStateSolver(SolverBase):
     def get_residual(self, cvgs_tuple):
         "Return the minimum cvg rate wrt coverage."
         #constrain cvgs
-        #cvgs_tuple = self.constrain_converage(cvgs_tuple)
+        #cvgs_tuple = self.__constrain_converage(cvgs_tuple)
         dtheta_dts = self.steady_state_function(cvgs_tuple)
         residual = max([abs(dtheta_dt) for dtheta_dt in dtheta_dts])
         return residual
@@ -658,13 +655,13 @@ class SteadyStateSolver(SolverBase):
             if True, no initial guess check will be done.
         """
         # Intial coverage must have physical meaning.
-        c0 = self.constrain_converage(c0)
+        c0 = self.__constrain_converage(c0)
         self.__initial_guess = c0
 
         # Start root finding algorithm.
         f = self.steady_state_function
         f_resid = self.get_residual
-        constraint = self.constrain_converage
+        constraint = self.__constrain_converage
         f_expression = self.get_dtheta_dt_expressions()
         J = lambda x: self.analytical_jacobian(f_expression, x)
 
@@ -940,7 +937,7 @@ class SteadyStateSolver(SolverBase):
         self.__logger.info('modify initial coverage - success')
         self.__logger.debug(str(map(float, c0)))
 
-        #return self.constrain_converage(new_c0)
+        #return self.__constrain_converage(new_c0)
         return new_c0
 
     def modify_init_guess_new(self, c0, dtheta_dts):
