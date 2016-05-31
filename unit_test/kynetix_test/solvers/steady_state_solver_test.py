@@ -204,6 +204,29 @@ class SteadyStateSolverTest(unittest.TestCase):
         ret_derivation = solver._SteadyStateSolver__term_adsorbate_derivation(adsorbate, term)
         self.assertEqual(ref_derivation, ret_derivation)
 
+    def test_total_term_adsorbate_derivation(self):
+        " Test private function __total_term_adsorbate_derivation(). "
+        # Construction.
+        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+                             verbosity=logging.WARNING)
+        solver = model.solver()
+
+        # Check.
+        adsorbate = "O_s"
+        term = "2*kf[1]*p['O2_g']*theta['*_s']**2"
+        ret_derivation = solver._SteadyStateSolver__total_term_adsorbate_derivation(adsorbate,
+                                                                                    term)
+        ref_derivation = "-2*2*kf[1]*p['O2_g']*(1.0 - theta['CO_s'] - theta['O_s'])**1"
+        self.assertEqual(ref_derivation, ret_derivation)
+
+        adsorbate = "O_s"
+        term = "2*kf[1]*p['O2_g']*theta['*_s']**2*theta['O_s']"
+        ret_derivation = solver._SteadyStateSolver__total_term_adsorbate_derivation(adsorbate,
+                                                                                    term)
+        ref_derivation = ("1*2*kf[1]*p['O2_g']*theta['*_s']**2 + " +
+                          "-2*2*kf[1]*p['O2_g']*(1.0 - theta['CO_s'] - theta['O_s'])**1*theta['O_s']")
+        self.assertEqual(ref_derivation, ret_derivation)
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(SteadyStateSolverTest)
     unittest.TextTestRunner(verbosity=2).run(suite)
