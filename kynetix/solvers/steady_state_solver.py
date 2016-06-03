@@ -374,20 +374,39 @@ class SteadyStateSolver(SolverBase):
         """
         Expect a polynomial expression of dtheta_dt and an adsorbate_name,
         return a derivation expression about the adsorbate.
+        Function to the derivation expression wrt an adsorbate.
+
+        Parameters:
+        -----------
+        adsorbate_name: The adsorbate name, str.
+        poly_expression: A polynomial expression of dtheta/dt, str.
+
+        Returns:
+        --------
+        The derivation expression, str.
+
+        Example:
+        --------
+        >>> adsorbate = "CO_s"
+        >>> poly_expression = "dtheta_dt[0] = kf[0]*p['CO_g']*theta['*_s'] - kr[0]*theta['CO_s']"
+        >>> solver.poly_adsorbate_derivation(adsorbate, poly_expression)
         """
-        #split poly_expression
+        # Split poly_expression.
         poly_list = poly_expression.split()
         operators, terms = poly_list[3::2], poly_list[2::2]
-        #generate derived term expressions
+
+        # Generate derived term expressions.
         derived_terms = [self.__total_term_adsorbate_derivation(adsorbate_name,
                                                                 term_expression)
                          for term_expression in terms]
-        #combine 2 lists
+
+        # Combine 2 lists.
         derived_poly_list = []
         for combination in zip(derived_terms, operators):
             derived_poly_list += list(combination)
         derived_poly_list.append(derived_terms[-1])
 
+        # Join and return.
         return ' '.join(derived_poly_list)
 
     def analytical_jacobian(self, dtheta_dt_expressions, cvgs_tuple):
