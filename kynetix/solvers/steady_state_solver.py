@@ -11,6 +11,7 @@ from kynetix.solvers.solver_base import *
 from kynetix.solvers.rootfinding_iterators import *
 from kynetix import file_header
 from kynetix.functions import get_list_string
+from kynetix.errors.error import *
 
 
 class SteadyStateSolver(SolverBase):
@@ -409,8 +410,27 @@ class SteadyStateSolver(SolverBase):
         # Join and return.
         return ' '.join(derived_poly_list)
 
-    def analytical_jacobian(self, dtheta_dt_expressions, cvgs_tuple):
-        "Get the jacobian matrix of the steady_state_function."
+    def analytical_jacobian(self, cvgs_tuple):
+        """
+        Function to get analytical Jacobian matrix of the nonlinear equation system.
+
+        Parameters:
+        -----------
+        cvgs_tuple: A tuple of adsorbate coverages, tuple of float.
+
+        Returns:
+        --------
+        The analytical Jacobian matrix, N x N matrix of float.
+        N is the number of adsorbates.
+        """
+        # Check input parameter.
+        dtheta_dt_expressions = self.get_dtheta_dt_expressions()
+        m, n = len(dtheta_dt_expressions), len(cvgs_tuple)
+
+        if m != n:
+            msg = "{} coverages are expected, but {} are provided.".format(m, n)
+            raise ParameterError(msg)
+
         # Set theta, kf, kr, p, dtheta_dt
         # Coverages(theta).
         theta = self._cvg_tuple2dict(cvgs_tuple)
@@ -425,15 +445,20 @@ class SteadyStateSolver(SolverBase):
         c = self._c
 
         # Generate Jacobian matrix.
-        m, n = len(dtheta_dt_expressions), len(cvgs_tuple)
         J = self._matrix(m, n)
+        adsorbate_names = self._owner.adsorbate_names()
+
+        # Fill matrix.
         for i in xrange(m):
             poly_expression = dtheta_dt_expressions[i]
             for j in xrange(n):
-                #get adsorbate_name
-                adsorbate_name = self._owner.adsorbate_names()[j]
-                J[i, j] = eval(self.poly_adsorbate_derivation(adsorbate_name,
-                                                              poly_expression))
+                # Get adsorbate_name.
+                adsorbate_name = adsorbate_names[j]
+                # Fill the matrix
+                derivation = self.poly_adsorbate_derivation(adsorbate_name, poly_expression)
+                J[i, j] = eval(derivation)
+
+        # Return Jacobian matrix.
         return J
 
     ######################################################
