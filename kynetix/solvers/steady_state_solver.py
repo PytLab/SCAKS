@@ -610,11 +610,22 @@ class SteadyStateSolver(SolverBase):
     ##########################################################
 
     def get_residual(self, cvgs_tuple):
-        "Return the minimum cvg rate wrt coverage."
+        """
+        Function to get residual value of equations(the max value of dthe/dt).
+
+        Parameters:
+        -----------
+        cvgs_tuple: A tuple of adsorbate coverages.
+
+        Returns:
+        --------
+        The max value of dtheta/dt wrt the coverages.
+        """
         #constrain cvgs
         #cvgs_tuple = self.__constrain_converage(cvgs_tuple)
         dtheta_dts = self.steady_state_function(cvgs_tuple)
         residual = max([abs(dtheta_dt) for dtheta_dt in dtheta_dts])
+
         return residual
 
     # -- Use scipy.optimize.fsolve function to solve equations --
@@ -635,15 +646,14 @@ class SteadyStateSolver(SolverBase):
         '''
 
         def get_jacobian(c0):
-            dtheta_dt_expressions = self.get_dtheta_dt_expressions()
-            # jacobian matrix
-            jm = self.analytical_jacobian(dtheta_dt_expressions, c0).tolist()
-            # convert to floats
+            # Jacobian matrix.
+            jm = self.analytical_jacobian(c0).tolist()
+            # Convert to floats.
             jm = [[float(df) for df in dfs] for dfs in jm]
 
             return jm
 
-        # main hotpot
+        # Main hotpot.
         c0 = map(float, c0)  # covert to float
         converged_cvgs = fsolve(self.steady_state_function, c0, fprime=get_jacobian)
 
@@ -668,43 +678,45 @@ class SteadyStateSolver(SolverBase):
                                     tuple of float
             '''
             converged_cvgs = func(*args)
-            # archive data
-            # get error
+            # Archive data.
+            # Get error.
             self = args[0]
             errors = self.steady_state_function(converged_cvgs)
             error = norm(errors)
             self._error = error
 
             self._coverage = converged_cvgs
-            # log steady state coverages
+            # log steady state coverages.
             self.log_sscvg(converged_cvgs, self._owner.adsorbate_names())
             self.__logger.info('error = %e', error)
 
-            #archive converged root and error
-            self.archive_data('steady_state_coverage',
-                              converged_cvgs)
+            # Archive converged root and error.
+            self.archive_data('steady_state_coverage', converged_cvgs)
             self.archive_data('steady_state_error', error)
             self.good_guess = args[1]
-            #archive initial guess
+            # Archive initial guess.
             self.archive_data('initial_guess', args[1])
+
             return converged_cvgs
 
         return wrapped_func
 
     @data_archive
     def fsolve_steady_state_cvgs(self, c0):
-        '''
+        """
         Use scipy.optimize.fsolve to get steady state coverages.
-        '''
+        """
         return self.coarse_steady_state_cvgs(c0)
 
     # -- fsolve END --
 
     def get_steady_state_cvgs(self, c0, single_pt=False):
         """
-        Expect an inital coverages tuple,
-        use Newton Method to solving nonlinear equations,
-        return steady state coverages, if converged.
+        Function to get steady state coverages.
+
+        Expect an inital coverages tuple, use Newton Method to
+        solving nonlinear equations, return steady state coverages,
+        if converged.
 
         Parameters
         ----------
@@ -721,8 +733,7 @@ class SteadyStateSolver(SolverBase):
         f = self.steady_state_function
         f_resid = self.get_residual
         constraint = self.__constrain_converage
-        f_expression = self.get_dtheta_dt_expressions()
-        J = lambda x: self.analytical_jacobian(f_expression, x)
+        J = lambda x: self.analytical_jacobian(x)
 
         ############    Main Loop with changed initial guess   ##############
         self.__logger.info('Entering main loop...')
@@ -736,7 +747,7 @@ class SteadyStateSolver(SolverBase):
                 self.__logger.info('Good initial guess: \n%s', str(map(float, c0)))
                 # log steady state coverages
                 self.log_sscvg(c0, self._owner.adsorbate_names())
-                #get error
+                # Get error.
                 fx = self.steady_state_function(c0)  # dtheta/dts
                 norm = self._norm(fx)
                 resid = self.get_residual(c0)
@@ -803,6 +814,7 @@ class SteadyStateSolver(SolverBase):
                             # log steady state coverages
                             self.log_sscvg(x, self._owner.adsorbate_names())
                             converged_cvgs = x
+                            converged_error = error
                             self.__logger.info('error = %e', min(error, resid))
                             cancel = True
                             break
@@ -834,8 +846,8 @@ class SteadyStateSolver(SolverBase):
                     break
 
                 old_error = error  # set old error to be compared in next loop
-                self._coverage = x
-                self._error = error
+                #self._coverage = x
+                #self._error = error
 
                 # archive data every 100 steps
                 if nt_counter % 100 == 0:
@@ -843,9 +855,9 @@ class SteadyStateSolver(SolverBase):
                     self.archive_data('iter_error', error)
             #####    Sub loop for a c0 END    #####
 
-            #change the initial guess(c0)
+            # Change the initial guess(c0).
             if not cancel:
-                #get a new initial guess coverage
+                # get a new initial guess coverage
                 c0 = self.modify_init_guess(x, fx)
                 icvg_counter += 1
 
@@ -853,10 +865,11 @@ class SteadyStateSolver(SolverBase):
 
         if converged_cvgs:
             self._coverage = converged_cvgs
+            self._error = converged_error
 
             # Archive converged root and error.
             self.archive_data('steady_state_coverage', converged_cvgs)
-            self.archive_data('steady_state_error', error)
+            self.archive_data('steady_state_error', converged_error)
             self.good_guess = c0
 
             # Archive initial guess.
@@ -912,15 +925,16 @@ class SteadyStateSolver(SolverBase):
 
         return tof_list
 
-    def _get_intermediates_Gs(self):
+    def __get_intermediates_Gs(self):
         """
-        Protected helper function to get formation energies of intermediates.
+        Private helper function to get formation energies of intermediates.
         """
+        all_intermediates = (self._owner.adsorbate_names() +
+                             self._owner.transition_state_names())
         Gs = []
-        for intermediates_name in \
-                self._owner.adsorbate_names() + self._owner.transition_state_names():
-            Gs.append(self.E[intermediates_name])
-        setattr(self._owner, 'intermediates_Gs', Gs)
+        for intermediates_name in all_intermediates:
+            Gs.append(self._G[intermediates_name])
+
         return Gs
 
     def get_rate_control(self):
@@ -1144,3 +1158,15 @@ class SteadyStateSolver(SolverBase):
                                    ' to auto_ode_coverages.py.')
 
         return ts, ys
+
+    def error(self):
+        """
+        Query function for converged error.
+        """
+        return self._error
+
+    def coverages(self):
+        """
+        Query function for converaged coverages.
+        """
+        return self._coverages
