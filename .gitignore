@@ -73,3 +73,6 @@ extensions/unittest/*.xml
 
 # ctags file.
 tags
+
+# data file.
+*.pkl
