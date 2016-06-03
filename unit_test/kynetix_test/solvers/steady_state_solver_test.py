@@ -227,6 +227,34 @@ class SteadyStateSolverTest(unittest.TestCase):
                           "-2*2*kf[1]*p['O2_g']*(1.0 - theta['CO_s'] - theta['O_s'])**1*theta['O_s']")
         self.assertEqual(ref_derivation, ret_derivation)
 
+    def test_poly_adsorbate_derivation(self):
+        " Test we can derive dtheta/dt expression correctly. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+                             verbosity=logging.WARNING)
+        solver = model.solver()
+
+        adsorbate = "CO_s"
+        poly_expression = ("dtheta_dt[0] = kf[0]*p['CO_g']*theta['*_s'] - " +
+                           "kr[0]*theta['CO_s'] + kr[2]*p['CO2_g']*theta['*_s']**2 - " +
+                           "kf[2]*theta['CO_s']*theta['O_s']")
+        ref_expression = ("-kf[0]*p['CO_g'] - kr[0] + " +
+                          "-2*kr[2]*p['CO2_g']*(1.0 - theta['CO_s'] - theta['O_s'])**1 - " +
+                          "kf[2]*theta['O_s']")
+        ret_expression = solver.poly_adsorbate_derivation(adsorbate, poly_expression)
+        self.assertEqual(ref_expression, ret_expression)
+
+        adsorbate = "O_s"
+        poly_expression = ("dtheta_dt[1] = 2*kf[1]*p['O2_g']*theta['*_s']**2 - " +
+                           "2*kr[1]*theta['O_s']**2 + kr[2]*p['CO2_g']*theta['*_s']**2 - " +
+                           "kf[2]*theta['CO_s']*theta['O_s']")
+        ref_expression = ("-2*2*kf[1]*p['O2_g']*(1.0 - theta['CO_s'] - theta['O_s'])**1 - " +
+                          "2*2*kr[1]*theta['O_s']**1 + " +
+                          "-2*kr[2]*p['CO2_g']*(1.0 - theta['CO_s'] - theta['O_s'])**1 - " +
+                          "kf[2]*theta['CO_s']")
+        ret_expression = solver.poly_adsorbate_derivation(adsorbate, poly_expression)
+        self.assertEqual(ref_expression, ret_expression)
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(SteadyStateSolverTest)
     unittest.TextTestRunner(verbosity=2).run(suite)
