@@ -3,6 +3,7 @@ import re
 import unittest
 
 import numpy as np
+from numpy import matrix
 from mpmath import mpf
 
 from kynetix.model import KineticModel
@@ -254,6 +255,27 @@ class SteadyStateSolverTest(unittest.TestCase):
                           "kf[2]*theta['CO_s']")
         ret_expression = solver.poly_adsorbate_derivation(adsorbate, poly_expression)
         self.assertEqual(ref_expression, ret_expression)
+
+    def test_analytical_jacobian(self):
+        " Make sure we can get analytical Jacobian matrix correctly. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+
+        # Check.
+        coverages = (0.2, 0.4)
+        ref_jacobian = \
+            [[mpf('-9376477776977.325529152146275592601226578547583860255160845870399909908707423189398400433251115064142969'),
+              mpf('-9376477746581.581348144746485471400972547261919826208563429346043157057434712822741984254838669163188788')],
+            [mpf('-5000788131510.204262305677225587384258732494296102303565975254275297829626321443425939601899076029921783'),
+             mpf('-5000788131510.185482786259657444444790044255747964731910321536357200218091672598363190527537210968397623')]]
+        ret_jacobian = solver.analytical_jacobian(coverages).tolist()
+        self.assertListEqual(ref_jacobian, ret_jacobian)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(SteadyStateSolverTest)
