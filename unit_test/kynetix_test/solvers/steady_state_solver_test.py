@@ -277,6 +277,63 @@ class SteadyStateSolverTest(unittest.TestCase):
         ret_jacobian = solver.analytical_jacobian(coverages).tolist()
         self.assertListEqual(ref_jacobian, ret_jacobian)
 
+    def test_get_residual(self):
+        " Test we can get correct residual. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+
+        coverages = (0.99, 0.01)
+        ref_residual = mpf('30091.7690770593132993749732280040438170939546090401684804502584011824620182098839677033574048380638922')
+        ret_residual = solver.get_residual(coverages)
+
+        self.assertEqual(ref_residual, ret_residual)
+
+    def test_coarse_steady_state_cvgs(self):
+        " Make sure we can get a coarse coverages. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+
+        coverages = (0.99, 0.0)
+        ref_coarse_cvgs = np.array([9.99305118e-01, 6.94878644e-04])
+        ret_coarse_cvgs = solver.coarse_steady_state_cvgs(coverages)
+
+        self.assertTrue(np.allclose(ref_coarse_cvgs, ret_coarse_cvgs))
+
+    def test_get_steady_state_coverages(self):
+        " Test we can get correct steady state coverages. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+        
+        # Check.
+        coverages = solver.boltzmann_coverages()
+        ref_sscvg = (mpf('0.9993009023315727974778177681208650925107462317706412753934079954585578629794007870326052571832315224074'),
+                     mpf('0.0006990944289937278999185466825600445954918013941899906934858302326203804780394631662799688248593916870043'))
+        ret_sscvg = solver.get_steady_state_cvgs(coverages)
+        self.assertTupleEqual(ref_sscvg, ret_sscvg)
+
+        # Check error.
+        ref_error = mpf('0.00000000000003168526264202393143682820950745746086660249326055772811983321415704726691709333379630093057684318328861')
+        ret_error = solver.error()
+        self.assertEqual(ret_error, ref_error)
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(SteadyStateSolverTest)
     unittest.TextTestRunner(verbosity=2).run(suite)
