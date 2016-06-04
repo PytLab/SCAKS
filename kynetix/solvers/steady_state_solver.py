@@ -740,13 +740,17 @@ class SteadyStateSolver(SolverBase):
         icvg_counter = 1  # initial coverage counter, outer
         cancel = False
 
+        converged = False  # Flag for convergence.
         while not cancel:  # outer loop
             # Good initial coverages.
             if f_resid(c0) <= self._tolerance and not single_pt:
-                self._coverage = converged_cvgs = c0
+                converged = True
+                self._coverage = c0
                 self.__logger.info('Good initial guess: \n%s', str(map(float, c0)))
+
                 # log steady state coverages
                 self.log_sscvg(c0, self._owner.adsorbate_names())
+
                 # Get error.
                 fx = self.steady_state_function(c0)  # dtheta/dts
                 norm = self._norm(fx)
@@ -813,10 +817,13 @@ class SteadyStateSolver(SolverBase):
                                                nt_counter, float(resid), float(error))
                             # log steady state coverages
                             self.log_sscvg(x, self._owner.adsorbate_names())
-                            converged_cvgs = x
-                            converged_error = error
+                            self._coverage = x
+                            self._error = error
                             self.__logger.info('error = %e', min(error, resid))
+
+                            # Update flags.
                             cancel = True
+                            converged = True
                             break
                         else:  # bad root, iteration continue...
                             self.__logger.warning('bad root: %s', str(map(float, x)))
@@ -863,24 +870,37 @@ class SteadyStateSolver(SolverBase):
 
         ##############    main loop end   #################
 
-        if converged_cvgs:
-            self._coverage = converged_cvgs
-            self._error = converged_error
-
+        if converged:
             # Archive converged root and error.
-            self.archive_data('steady_state_coverage', converged_cvgs)
-            self.archive_data('steady_state_error', converged_error)
+            self.archive_data('steady_state_coverage', self._coverage)
+            self.archive_data('steady_state_error', self._error)
             self.good_guess = c0
 
             # Archive initial guess.
             self.archive_data('initial_guess', c0)
 
-            return converged_cvgs
+            return self._coverage
 
-    def _get_Gs_tof(self, Gs):  # Gs -> free energies
+    def __get_Gs_tof(self, Gs):  # Gs -> free energies
         """
-        Protected function to get TOF for a given formation energies.
+        Private function to get TOF for a given formation energies.
+
+        Parameters:
+        -----------
+        Gs: free energies of all intermediates(adsorbates and transition states).
+
+        Returns:
+        --------
+        tof_list: List of TOF.
         """
+        # Get initial guess
+        if hasattr(self, "_coverage"):
+            init_guess = self._coverage
+        else:
+            msg = ("Converged coverages are needed to calculate TOF for a list " +
+                   "formation energies, so try to get steady state coverages first.")
+            raise AttributeError(msg)
+
         Gs_order = self._owner.adsorbate_names() + self._owner.transition_state_names()
 
         # Copy the original energies.
@@ -890,38 +910,14 @@ class SteadyStateSolver(SolverBase):
         for intermediate, G in zip(Gs_order, Gs):
             self._G[intermediate] = G
 
-        # Get net rates about new Gs
-        self.get_rate_constants()
-
-        # Get initial guess
-        if self._coverage:
-            init_guess = self._coverage
-        else:
-            init_guess = self.__initial_guess
-
         # Calculate the new steady state coverages.
         steady_state_cvg = self.get_steady_state_cvgs(init_guess)
 
-        #check whether solver has rate_expressions
-        if not hasattr(self, 'rate_expressions'):  # if not, get it
-            self.get_rate_expressions(self._rxns_list)
-        rfs, rrs = self.get_rates(self.rate_expressions, steady_state_cvg)
-        net_rates = self.get_net_rates(rfs, rrs)
+        # Get turnover frequencies.
+        tof_list = self.get_tof(steady_state_cvg)
 
-        #get turnover frequencies
-        if not hasattr(self._owner, 'reapro_matrix'):
-            self._owner.parser.get_stoichiometry_matrices()
-        reapro_matrix = copy.copy(self._owner.reapro_matrix)
-        #reapro_matrix *= -1
-        reapro_matrix = abs(reapro_matrix)
-        rate_vector = np.matrix(net_rates)  # get rate vector
-        tof_list = (rate_vector*reapro_matrix).tolist()[0]
-        setattr(self, 'tof', tof_list)
-
-        # log TOFs
-        self.log_tof(tof_list, self._owner.gas_names)
-        #archive
-        self.archive_data('tofs', tof_list)
+        # Recover solver's formation energy dict.
+        self._G = G_copy
 
         return tof_list
 
