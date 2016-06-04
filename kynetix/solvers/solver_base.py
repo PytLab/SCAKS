@@ -248,27 +248,45 @@ class SolverBase(KineticCoreComponent):
 
         return state_energy_dict
 
-    def get_rate_constants(self):
+    def get_rate_constants(self, relative_energies=None):
         """
         Function to get rate constants for all elementary reactions.
+
+        Parameters:
+        -----------
+        relative_energies: A dict of relative eneriges of elementary reactions.
+            NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
+
+        Returns:
+        --------
+        (Forward rate constants, Reverse rate constants)
         """
+        # Get relative energies.
+        if not relative_energies:
+            if self._has_relative_energy:
+                relative_energies = self._relative_energies
+            else:
+                msg = "Solver must have relative energies to get rate constants."
+                raise AttributeError(msg)
+
+        # Check input parameter.
+        if "Gaf" and "Gar" not in relative_energies:
+            msg = "'Gaf' and 'Gar' must be in relative_energies."
+            raise ParameterError(msg)
+
+        # Calculate rate constants.
         kB, h, T = [self._mpf(constant) for constant in
                     [self._owner.kB(), self._owner.h(), self._owner.temperature()]]
         prefactor = kB*T/h
         kfs, krs = [], []
 
-        # get rate constants from relative energies
-        if self._has_relative_energy:
-            Gafs = self._relative_energies["Gaf"]
-            Gars = self._relative_energies["Gar"]
-            for Gaf, Gar in zip(Gafs, Gars):
-                kf = prefactor*self._math.exp(-Gaf/(kB*T))
-                kr = prefactor*self._math.exp(-Gar/(kB*T))
-                kfs.append(kf)
-                krs.append(kr)
-        else:
-            msg = "Solver must have relative energies to get rate constants."
-            raise AttributeError(msg)
+        Gafs = relative_energies["Gaf"]
+        Gars = relative_energies["Gar"]
+        for Gaf, Gar in zip(Gafs, Gars):
+            kf = prefactor*self._math.exp(-Gaf/(kB*T))
+            kr = prefactor*self._math.exp(-Gar/(kB*T))
+            kfs.append(kf)
+            krs.append(kr)
 
         return tuple(kfs), tuple(krs)
 
