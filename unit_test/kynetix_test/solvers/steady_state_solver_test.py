@@ -353,6 +353,30 @@ class SteadyStateSolverTest(unittest.TestCase):
 
         self.assertListEqual(ref_Gs, ret_Gs)
 
+    def test_get_Gs_tof(self):
+        " Test private function __get_Gs_tof(). "
+        # Construction.
+        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+
+        # Get steady state converages first.
+        coverages = solver.boltzmann_coverages()
+        solver.get_steady_state_cvgs(coverages)
+
+        # Check.
+        Gs = solver._SteadyStateSolver__get_intermediates_Gs()
+        ref_tof = [mpf('0.00006559739595110368600498031342965082631709276536276896384863121614360978577485627423068419453387406309781'),
+                   mpf('-0.00006559739597350071441731557982863535625087290032441771661460764080034748406280044847430181035649452593027'),
+                   mpf('-0.0000327986979867581915044675535448405758347302265953113244359216100377718956030035681169078255245732720541')]
+        ret_tof = solver._SteadyStateSolver__get_Gs_tof(Gs)
+
+        self.assertListEqual(ref_tof, ret_tof)
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(SteadyStateSolverTest)
     unittest.TextTestRunner(verbosity=2).run(suite)
