@@ -945,20 +945,20 @@ class SteadyStateSolver(SolverBase):
         epsilon = self._mpf(self._perturbation_size)
 
         # Get dr/dG matrix.
-        drdG = numerical_jacobian(
-            f=self.get_tof, x=Gs,
-            num_repr=self._numerical_representation,
-            matrix=self._matrix, h=epsilon,
-            direction=self._perturbation_direction
-        )
-        r = self.get_tof(Gs)
+        drdG = numerical_jacobian(f=self.__get_Gs_tof, x=Gs,
+                                  num_repr=self._numerical_representation,
+                                  matrix=self._matrix, h=epsilon,
+                                  direction=self._perturbation_direction)
+        r = self.__get_Gs_tof(Gs)
 
-        #multiply 1/r to drdG matrix
+        # multiply 1/r to drdG matrix.
         diag_matrix = self._linalg.diag([-kT/tof for tof in r])
         DTRC = diag_matrix*drdG
-        #covert it to list
+
+        # Covert it to list.
         DTRC_list = DTRC.tolist()
-        #archive
+
+        # Archive
         self.archive_data('DTRC', DTRC_list)
 
         return DTRC
