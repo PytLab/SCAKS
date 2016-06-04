@@ -253,9 +253,9 @@ class SolverBaseTest(unittest.TestCase):
         solver.get_data()
 
         coverages = (0.2, 0.4)
-        ref_tof = [mpf('1.761135016529e+23'),
-                   mpf('3.98563119502e+25'),
-                   mpf('-5.647200850453e+37')]
+        ref_tof = [mpf('0.007511807766946'),
+                   mpf('-3750591092544.0'),
+                   mpf('-500078813148.0')]
         ret_tof = solver.get_tof(coverages)
 
         self.assertListEqual(ref_tof, ret_tof)
