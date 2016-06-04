@@ -943,7 +943,7 @@ class SteadyStateSolver(SolverBase):
         return a matrix of partial derivation wrt intermediates.
         """
         # Get intermediates formation energies.
-        Gs = self._get_intermediates_Gs()
+        Gs = self.__get_intermediates_Gs()
 
         kT = self._owner.kB()*self._owner.temperature()
         epsilon = self._mpf(self._perturbation_size)
