@@ -489,8 +489,7 @@ class SolverBase(KineticCoreComponent):
         tof_list: List of TOF.
         """
         # Get net rates wrt the coverages c.
-        rfs, rrs = self.get_rates(cvgs)
-        net_rates = self.get_net_rates(rfs, rrs)
+        net_rates = self.get_net_rates(cvgs)
 
         # Get turnover frequencies.
         _, reapro_matrix = self._owner.parser().get_stoichiometry_matrices()
