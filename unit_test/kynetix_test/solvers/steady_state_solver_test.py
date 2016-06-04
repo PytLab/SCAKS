@@ -334,6 +334,25 @@ class SteadyStateSolverTest(unittest.TestCase):
         ret_error = solver.error()
         self.assertEqual(ret_error, ref_error)
 
+    def test_get_intermediates_Gs(self):
+        " Test private function __get_intermediates_Gs(). "
+        # Construction.
+        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+
+        # Check.
+        ref_Gs = [mpf('-0.75800000000000000710542735760100185871124267578125'),
+                  mpf('0.4339999999999999413802242997917346656322479248046875'),
+                  mpf('0.9259999999999999342747969421907328069210052490234375')]
+        ret_Gs = solver._SteadyStateSolver__get_intermediates_Gs()
+
+        self.assertListEqual(ref_Gs, ret_Gs)
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(SteadyStateSolverTest)
     unittest.TextTestRunner(verbosity=2).run(suite)
