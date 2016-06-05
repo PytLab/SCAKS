@@ -33,7 +33,7 @@ class CsvParserTest(unittest.TestCase):
         self.assertRaises(AttributeError, parser.get_relative_energies, rxn_list)
 
         # Parse absolute data.
-        parser.parse_data()
+        parser.parse_data(filename="input_files/energy.csv")
         ret_f_barrier, ret_r_barrier, ret_rxn_energy = parser.get_relative_energies(rxn_list)
         ref_f_barrier, ref_r_barrier, ref_rxn_energy = (1.1, 1.75, -0.6499999999999999)
 
@@ -115,7 +115,7 @@ class CsvParserTest(unittest.TestCase):
         self.assertFalse(model.has_relative_energy())
         self.assertDictEqual({}, model.relative_energies())
 
-        parser.parse_data()
+        parser.parse_data(filename="input_files/energy.csv")
         self.assertDictEqual(ref_species_definitions, model.species_definitions())
         self.assertTrue(model.has_absolute_energy())
 

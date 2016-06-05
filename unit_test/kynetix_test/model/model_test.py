@@ -1,5 +1,4 @@
 import unittest
-import sys
 import logging
 
 from kynetix.model import KineticModel
@@ -15,7 +14,7 @@ class KineticModelTest(unittest.TestCase):
     def test_mkm_construction_query(self):
         " Test micro kinetic model can be constructed with parser. "
         # Test construction.
-        model = KineticModel(setup_file="input_files/setup.mkm",
+        model = KineticModel(setup_file="input_files/model.mkm",
                              verbosity=logging.WARNING)
 
         # Test member data query.
@@ -24,7 +23,7 @@ class KineticModelTest(unittest.TestCase):
 
         # Load data in setup file.
         glob, loc = {}, {}
-        execfile("input_files/setup.mkm", glob, loc)
+        execfile("input_files/model.mkm", glob, loc)
         self.assertEqual(model.tools(), loc["tools"])
         self.assertEqual(model.solver(), loc["solver"])
         self.assertEqual(model.corrector(), loc["corrector"])
@@ -41,7 +40,7 @@ class KineticModelTest(unittest.TestCase):
     def test_check_inputs(self):
         " Test the __check_inputs helper functions. "
         # Test construction.
-        model = KineticModel(setup_file="input_files/setup.mkm",
+        model = KineticModel(setup_file="input_files/model.mkm",
                              verbosity=logging.WARNING)
 
         # Check a valid input dict.
@@ -64,4 +63,3 @@ class KineticModelTest(unittest.TestCase):
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(KineticModelTest)
     unittest.TextTestRunner(verbosity=2).run(suite)
-

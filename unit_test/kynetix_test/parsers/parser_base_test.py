@@ -17,7 +17,7 @@ class ParserBaseTest(unittest.TestCase):
     def test_parser_construction(self):
         " Test parser can be constructed in kinetic model. "
         # Construction.
-        model = KineticModel(setup_file="input_files/setup.mkm",
+        model = KineticModel(setup_file="input_files/parser_base.mkm",
                              verbosity=logging.WARNING)
         parser = model.parser()
 
@@ -28,7 +28,7 @@ class ParserBaseTest(unittest.TestCase):
     def test_parser_base_query(self):
         " Test parser base query functions. "
         # Construction.
-        model = KineticModel(setup_file="input_files/setup.mkm",
+        model = KineticModel(setup_file="input_files/parser_base.mkm",
                              verbosity=logging.WARNING)
         parser = model.parser()
 
@@ -85,7 +85,7 @@ class ParserBaseTest(unittest.TestCase):
         " Test state expression can be parsed correctly. "
 
         # Construction.
-        model = KineticModel(setup_file="input_files/setup.mkm",
+        model = KineticModel(setup_file="input_files/parser_base.mkm",
                              verbosity=logging.WARNING)
         parser = model.parser()
 
@@ -124,7 +124,7 @@ class ParserBaseTest(unittest.TestCase):
     def test_species_expression_parse(self):
         " Test species expression can be parsed correctly. "
         # Construction.
-        model = KineticModel(setup_file="input_files/setup.mkm",
+        model = KineticModel(setup_file="input_files/parser_base.mkm",
                              verbosity=logging.WARNING)
         parser = model.parser()
 
@@ -158,7 +158,7 @@ class ParserBaseTest(unittest.TestCase):
     def test_site_expression_parse(self):
         " Test site expression can be parsed correctly. "
         # Construction.
-        model = KineticModel(setup_file="input_files/setup.mkm",
+        model = KineticModel(setup_file="input_files/parser_base.mkm",
                              verbosity=logging.WARNING)
         parser = model.parser()
 
@@ -175,7 +175,7 @@ class ParserBaseTest(unittest.TestCase):
     def test_stoichiometry_matrices(self):
         " Make sure we can get the reactant product matrix and intermediate matrix correctly."
         # Construction.
-        model = KineticModel(setup_file="input_files/setup.mkm",
+        model = KineticModel(setup_file="input_files/parser_base.mkm",
                              verbosity=logging.WARNING)
         parser = model.parser()
 
@@ -194,7 +194,7 @@ class ParserBaseTest(unittest.TestCase):
         " Test species definitions of parser can be updated correctly. "
 
         # Construction.
-        model = KineticModel(setup_file="input_files/setup.mkm",
+        model = KineticModel(setup_file="input_files/parser_base.mkm",
                              verbosity=logging.WARNING)
         parser = model.parser()
 
@@ -232,7 +232,7 @@ class ParserBaseTest(unittest.TestCase):
         " Test a single reaction expression can be parsed correctly. "
 
         # Construction.
-        model = KineticModel(setup_file="input_files/setup.mkm",
+        model = KineticModel(setup_file="input_files/parser_base.mkm",
                              verbosity=logging.WARNING)
         parser = model.parser()
 
@@ -267,7 +267,7 @@ class ParserBaseTest(unittest.TestCase):
         " Test all elementary reaction equations can be parsed correctly. "
 
         # Construction.
-        model = KineticModel(setup_file="input_files/setup.mkm",
+        model = KineticModel(setup_file="input_files/parser_base.mkm",
                              verbosity=logging.WARNING)
         parser = model.parser()
 
@@ -302,7 +302,7 @@ class ParserBaseTest(unittest.TestCase):
         " Test we can get the total reaction equation from elementary reactions. "
 
         # Construction.
-        model = KineticModel(setup_file="input_files/setup.mkm",
+        model = KineticModel(setup_file="input_files/parser_base.mkm",
                              verbosity=logging.WARNING)
         parser = model.parser()
 
@@ -315,4 +315,3 @@ class ParserBaseTest(unittest.TestCase):
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(ParserBaseTest)
     unittest.TextTestRunner(verbosity=2).run(suite)
-

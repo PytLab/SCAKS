@@ -54,7 +54,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
         parser = model.parser()
 
         # Read relative energy data file.
-        filename = "./rel_energy.py"
+        filename = "input_files/rel_energy.py"
         if os.path.exists(filename):
             globs, locs = {}, {}
             execfile(filename, globs, locs)
@@ -100,7 +100,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
         self.assertDictEqual({}, parser._RelativeEnergyParser__G_dict)
 
         # Read relative energy data file.
-        filename = "./rel_energy.py"
+        filename = "input_files/rel_energy.py"
         if os.path.exists(filename):
             globs, locs = {}, {}
             execfile(filename, globs, locs)
@@ -167,7 +167,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
         self.assertFalse(model.has_relative_energy())
 
         # Parse absolute data.
-        parser.parse_data(relative=False)
+        parser.parse_data(relative=False, filename="input_files/rel_energy.py")
         ref_species_definitions = {'CO-O_2s': {'elements': {'C': 1, 'O': 2},
                                     'formation_energy': 0.9259999999999999,
                                     'site': 's',
@@ -222,7 +222,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
         parser = model.parser()
 
         # Check.
-        parser.parse_data(relative=True)
+        parser.parse_data(relative=True, filename="input_files/rel_energy.py")
         ref_relative_energies = {'Gaf': [0.0, 0.0, 1.25],
                                  'Gar': [0.758, 2.64, 0.9259999999999999],
                                  'dG': [-0.758, -2.64, 0.324]}
