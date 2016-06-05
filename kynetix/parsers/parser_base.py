@@ -455,15 +455,15 @@ class ParserBase(ModelShell):
         reactants and products stoichiometry matrix.
 
         Returns:
-        reapro_matrix: coefficients matrix for reactants and product,
-                       if species is on the left of arrow, the entry
-                       will be positive, vice-versa.
-                       row vector: [*self.gas_names], numpy.matrix.
-
         site_matrix: coefficients matrix for intermediates,
                      if species is on the left of arrow, the entry
                      will be positive, vice-versa.
                      row vector: [*, *self.adsorbate_names], numpy.matrix.
+
+        reapro_matrix: coefficients matrix for reactants and product,
+                       if species is on the left of arrow, the entry
+                       will be positive, vice-versa.
+                       row vector: [*self.gas_names], numpy.matrix.
         """
         sites_names = (['*_'+site_name for site_name in self._owner.site_names()] +
                        list(self._owner.adsorbate_names()))
@@ -811,6 +811,88 @@ class ParserBase(ModelShell):
             return amu*molecular_mass
         else:
             return molecular_mass
+
+    def get_relative_energies(self, elementary_rxn_list):
+        """
+        Function to get relative energies:
+            forward barrier,
+            reverse barrier,
+            reaction energy
+
+        Parameters:
+        -----------
+        elementary_rxn_list: elementary reaction in list format.
+
+        Returns:
+        --------
+        f_barrier: forward barrier.
+        r_barrier: reverse barrier.
+        reaction_energy: reaction energy.
+        """
+        # Check.
+        if not self._owner.has_absolute_energy():
+            raise AttributeError("Absolute energie are needed for getting barriers.")
+
+        # Get free energy for states
+        G_IS, G_TS, G_FS = 0.0, 0.0, 0.0
+
+        species_definitions = self._owner.species_definitions()
+
+        # Inner function to get species energy.
+        def get_species_energy(species_name):
+            # Extract site type.
+            if "*" in species_name:
+                regex = self.__regex_dict["empty_site"][0]
+                m = regex.search(species_name)
+                species_name = m.groups()[-1]
+
+            return species_definitions[species_name]["formation_energy"]
+
+        # IS energy.
+        for sp in elementary_rxn_list[0]:
+            stoichiometry, species_name = self.split_species(sp)
+            species_energy = get_species_energy(species_name)
+            G_IS += stoichiometry*species_energy
+
+        # FS energy.
+        for sp in elementary_rxn_list[-1]:
+            stoichiometry, species_name = self.split_species(sp)
+            species_energy = get_species_energy(species_name)
+            G_FS += stoichiometry*species_energy
+
+        # TS energy.
+        if len(elementary_rxn_list) == 2:
+            G_TS = max(G_IS, G_FS)
+
+        if len(elementary_rxn_list) == 3:
+            for sp in elementary_rxn_list[1]:
+                stoichiometry, species_name = self.split_species(sp)
+                species_energy = get_species_energy(species_name)
+                G_TS += stoichiometry*species_energy
+
+        # Get relative energies.
+        f_barrier = G_TS - G_IS
+        r_barrier = G_TS - G_FS
+        reaction_energy = G_FS - G_IS
+
+        return f_barrier, r_barrier, reaction_energy
+
+    def get_relative_from_absolute(self):
+        """
+        Function to set relative energies from absolute energies.
+
+        """
+        Gafs, Gars, dGs = [], [], []
+
+        for rxn_list in self._owner.elementary_rxns_list():
+            Gaf, Gar, dG = self.get_relative_energies(rxn_list)
+            Gafs.append(Gaf)
+            Gars.append(Gar)
+            dGs.append(dG)
+
+        relative_energies = dict(Gar=Gars, Gaf=Gafs, dG=dGs)
+
+        return relative_energies
 
     def regex_dict(self):
         """

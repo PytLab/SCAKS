@@ -29,7 +29,7 @@ class ModelShell(object):
 
     def __init__(self, owner):
         self._owner = owner
-        self.archived_data_dict = {}
+        self._archived_data_dict = {}
 
     def split_species(self, species_str):
         '''
@@ -93,14 +93,13 @@ class ModelShell(object):
 
         data: value in data dict, any python data type.
         '''
-
-        #update data dict
-        if data_name in self.archived_variables:
-            self.archived_data_dict[data_name] = data
-            #dump data dict to data file
-            if self.archived_data_dict:
-                with open(self._owner.data_file, 'wb') as f:
-                    cPickle.dump(self.archived_data_dict, f)
+        # Update data dict.
+        if data_name in self._archived_variables:
+            self._archived_data_dict[data_name] = data
+            # Dump data dict to data file
+            if self._archived_data_dict:
+                with open(self._owner.data_file(), 'wb') as f:
+                    cPickle.dump(self._archived_data_dict, f)
 
     def elementary_rxn_list2str(self, elementary_rxn_list):
         '''

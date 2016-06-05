@@ -8,15 +8,12 @@ from kynetix.functions import *
 
 
 class RelativeEnergyParser(ParserBase):
-    def __init__(self, owner, filename="./rel_energy.py"):
+    def __init__(self, owner):
         '''
         A class to parse relative energies
         covert them to generalize formation energies.
         '''
         super(RelativeEnergyParser, self).__init__(owner)
-
-        # Filename.
-        self.__filename = filename
 
         # Set logger.
         self.__logger = logging.getLogger('model.parsers.RelativeEnergyParser')
@@ -28,20 +25,6 @@ class RelativeEnergyParser(ParserBase):
         self.__has_relative_energy = False
         self.__has_absolute_energy = False
 
-        # Read relative energy data file.
-        if os.path.exists(filename):
-            globs, locs = {}, {}
-            execfile(filename, globs, locs)
-
-            # Set variables in data file as attr of parser
-            self.__relative_energies = {}
-            for key in locs:
-                setattr(self, "_RelativeEnergyParser__" + key, locs[key])
-                self.__relative_energies.setdefault(key, locs[key])
-        else:
-            raise IOError("{} is not found.".format(filename))
-
-
     def __chk_data_validity(self):
         """
         Private helper function to check relative energy data validity.
@@ -51,17 +34,9 @@ class RelativeEnergyParser(ParserBase):
             if len(self.__Ga) != len(self._owner.elementary_rxns_list()):
                 raise ValueError("Invalid shape of Ga.")
 
-        if hasattr(self, "_RelativeEnergyParser__Ea"):
-            if len(self.__Ea) != len(self._owner.elementary_rxns_list()):
-                raise ValueError("Invalid shape of Ea.")
-
         if hasattr(self, "_RelativeEnergyParser__dG"):
             if len(self.__dG) != len(self._owner.elementary_rxns_list()):
                 raise ValueError("Invalid shape of dG.")
-
-        if hasattr(self, "_RelativeEnergyParser__dE"):
-            if len(self.__dE) != len(self._owner.elementary_rxns_list()):
-                raise ValueError("Invalid shape of dE.")
 
         return
 
@@ -90,8 +65,8 @@ class RelativeEnergyParser(ParserBase):
 
     def __list2dict(self, state_list):
         """
-        Expect a state list, e.g. ['*_s', 'NO_g']
-        return a corresponding dict, e.g. {'*_s': 1, 'NO_g': 1}.
+        Private helper function to convert a state list to dict.
+        ['*_s', 'NO_g'] -> {'*_s': 1, 'NO_g': 1}.
         """
         state_dict = {}
         for sp_str in state_list:
@@ -208,61 +183,102 @@ class RelativeEnergyParser(ParserBase):
 
         return
 
-    def parse_data(self, relative=False):
+    @staticmethod
+    def __compare_relative_energies(dict1, dict2):
+        """
+        Private static method for compare two relative energies dicts.
+        """
+        for key in dict1:
+            list1 = dict1[key]
+            list2 = dict2[key]
+            # Compare.
+            for item1, item2 in zip(list1, list2):
+                if (item1 - item2) > 10e-10:
+                    return False
+
+        return True
+
+    def __get_relative_from_relative(self):
+        """
+        Private helper function to get relative energies dict from relative energy.
+        """
+        relative_energies = dict(Gaf=self.__Ga, dG=self.__dG)
+
+        # Get reverse barriers.
+        Gars = [Ga - dG for Ga, dG in zip(self.__Ga, self.__dG)]
+        relative_energies.setdefault("Gar", Gars)
+
+        return relative_energies
+
+    def parse_data(self, relative=False, filename="./rel_energy.py"):
         '''
         Put generalized formation energy into species_definitions.
 
         NOTE: This function will change the species definition of model.
+              If relative is true, then the relative_energies of model will be set.
+              If relative is false, formation energy in species_definitions
+              and realtive energies will be set.
         '''
+        # Read relative energy data file.
+        if os.path.exists(filename):
+            globs, locs = {}, {}
+            execfile(filename, globs, locs)
+
+            # Set variables in data file as attr of parser
+            for key in locs:
+                attribute_name = mangled_name(self, key)
+                setattr(self, attribute_name, locs[key])
+        else:
+            raise IOError("{} is not found.".format(filename))
+
         # Check data shape.
         self.__chk_data_validity()
 
-        # Get relative energy only.
-        if relative:
-            if '_RelativeEnergyParser__dG' and '_RelativeEnergyParser__Ga' in self.__dict__:
-                self.__has_relative_energy = True
-            elif '_RelativeEnergyParser__dE' and '_RelativeEnergyParser__Ea' in self.__dict__:
-                self.__has_relative_energy = True
-            else:
-                raise IOError(("No relative energy was read, " +
-                               "please check the '{}'").format(self.__filename))
+        if not relative:
+            # Get absolute energy for each species
+            if not self.__G_dict:
+                self.__convert_data()
 
-            return self.relative_energies()
+            # NOTE: use the REFERENCE of model's species definitions.
+            attribute_name = mangled_name(self._owner, "species_definitions")
+            species_definitions = getattr(self._owner, attribute_name)
 
-        # Get absolute energy for each species
-        if not self.__G_dict:
-            self.__convert_data()
+            # Update formation energies in model's species definitions.
+            for sp_name in self.__G_dict:
+                species_definitions[sp_name].setdefault('formation_energy',
+                                                        self.__G_dict[sp_name])
 
-        # NOTE: use the REFERENCE of model's species definitions.
-        species_definitions = self._owner.species_definitions()
+            # Set flag.
+            attribute_name = mangled_name(self._owner, "has_absolute_energy")
+            setattr(self._owner, attribute_name, True)
 
-        # Update formation energies in model's species definitions.
-        for sp_name in self.__G_dict:
-            species_definitions[sp_name].setdefault('formation_energy',
-                                                    self.__G_dict[sp_name])
+        # Get relative energy.
+        if '_RelativeEnergyParser__dG' and '_RelativeEnergyParser__Ga' in self.__dict__:
+            self.__has_relative_energy = True
+        else:
+            raise IOError(("No relative energy was read, " +
+                           "please check the '{}'").format(self.__filename))
 
-        # Set flag.
-        self.__has_absolute_energy = True
+        # Get relative energies.
+        relative_energies = self.__get_relative_from_relative()
+        attribute_name = mangled_name(self._owner, "relative_energies")
+        setattr(self._owner, attribute_name, relative_energies)
 
-        return species_definitions
+        # Set flags.
+        attribute_name = mangled_name(self._owner, "has_relative_energy")
+        setattr(self._owner, attribute_name, True)
 
-    def has_relative_energy(self):
-        """
-        Query function for relative energy flag.
-        """
-        return self.__has_relative_energy
+        # Check the consistency of relative energies.
+        if self._owner.has_absolute_energy():
+            relative_energies_from_absolute = self.get_relative_from_absolute()
+            consistent = self.__compare_relative_energies(relative_energies_from_absolute,
+                                                          self._owner.relative_energies())
+            if not consistent:
+                msg = ("relative energies from solving equations " +
+                       "are not equal to that in data files.")
+                raise ValueError(msg)
 
-    def has_absolute_energy(self):
-        """
-        Query function for absolute energy flag.
-        """
-        return self.__has_absolute_energy
-
-    def relative_energies(self):
-        """
-        Query function for relative energy in data file.
-        """
-        return self.__relative_energies
+        return
 
     @return_deepcopy
     def Ga(self):

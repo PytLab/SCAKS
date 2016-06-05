@@ -44,8 +44,10 @@ class KineticModel(object):
         # set logger
         self.__set_logger()
 
-        self.has_absolute_energy = False
-        self.has_relative_energy = False
+        # Energy flags.
+        self.__has_absolute_energy = False
+        self.__has_relative_energy = False
+        self.__relative_energies = {}
 
         # load setup file
         if hasattr(self, '_' + self.__class_name + '__setup_file'):
@@ -324,35 +326,30 @@ class KineticModel(object):
             # Auto-import classes.
             if key == 'parser':  # ignore parser which is loaded before
                 continue
-            try:
-                if locs[key]:
-                    if not key.endswith('s'):
-                        pyfile = key + 's'
-                    else:
-                        pyfile = key
-                    basepath = os.path.dirname(
-                        inspect.getfile(inspect.currentframe()))
-                    if basepath not in sys.path:
-                        sys.path.append(basepath)
-                    sublocs = {}
-                    _temp = \
-                        __import__(pyfile, globals(), sublocs, [locs[key]])
-                    tool_instance = getattr(_temp, locs[key])(owner=self)
-                    setattr(self, "_" + self.__class_name + "__" + key, tool_instance)
-                    self.__logger.info('{} = {}'.format(key, locs[key]))
+            if locs[key]:
+                if not key.endswith('s'):
+                    pyfile = key + 's'
                 else:
-                    setattr(self, "_" + self.__class_name + "__" + key, None)
-                    self.__logger.warning('{} is set to None.'.format(key))
-            except ImportError:
-                raise ToolsImportError(key.capitalize()+' '+locs[key] +
-                                       ' could not be imported. ' +
-                                       'Ensure that the class ' +
-                                       'exists and is spelled properly.')
-        # Set kMC parameters.
-        if not isinstance(self.__solver, str):
-            self.__set_kmc_parameters()
+                    pyfile = key
+                basepath = os.path.dirname(
+                    inspect.getfile(inspect.currentframe()))
+                if basepath not in sys.path:
+                    sys.path.append(basepath)
+                sublocs = {}
+                _temp = \
+                    __import__(pyfile, globals(), sublocs, [locs[key]])
+                tool_instance = getattr(_temp, locs[key])(owner=self)
+                setattr(self, "_" + self.__class_name + "__" + key, tool_instance)
+                self.__logger.info('{} = {}'.format(key, locs[key]))
+            else:
+                setattr(self, "_" + self.__class_name + "__" + key, None)
+                self.__logger.warning('{} is set to None.'.format(key))
 
-    def __set_kmc_parameters(self):
+        # Set kMC parameters.
+        if (not isinstance(self.__solver, str)) and (locs["solver"] == "KMCSolver"):
+            self.__set_kmc_parameters(locs)
+
+    def __set_kmc_parameters(self, locs):
         """
         Private helper function to set KMC related parameters.
         """
@@ -581,4 +578,29 @@ class KineticModel(object):
         Query function for logging verbosity.
         """
         return self.__verbosity
+
+    def has_relative_energy(self):
+        """
+        Query function for relative energy flag.
+        """
+        return self.__has_relative_energy
+
+    def has_absolute_energy(self):
+        """
+        Query function for absolute energy flag.
+        """
+        return self.__has_absolute_energy
+
+    @return_deepcopy
+    def relative_energies(self):
+        """
+        Query function for relative energy in data file.
+        """
+        return self.__relative_energies
+
+    def data_file(self):
+        """
+        Query function for data archive file name.
+        """
+        return self.__data_file
 

@@ -1,9 +1,11 @@
 import copy
+import logging
 
 import mpmath as mp
 import numpy as np
 import gmpy2
 import sympy as sym
+#import sympy.mpmath as symp
 try:
     import matplotlib.pyplot as plt
 except ImportError:
@@ -15,7 +17,7 @@ except ImportError:
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
 from kynetix import KineticCoreComponent
-from kynetix.functions import numerical_jacobian
+from kynetix.functions import *
 
 
 class SolverBase(KineticCoreComponent):
@@ -24,22 +26,54 @@ class SolverBase(KineticCoreComponent):
         A class acts as a base class to be inherited by other
         solver classes, it is not functional on its own.
         '''
-        KineticCoreComponent.__init__(self, owner)
-        #mp.mp.dps = self._owner.decimal_precision
+        super(SolverBase, self).__init__(owner)
 
-        #set default parameter dict
-        defaults = dict(
-            perturbation_size=0.01,
-            perturbation_direction='right',
-            numerical_representation='mpmath',
-            archived_variables=['steady_state_coverage', 'rates'],
-            )
+        # Set logger.
+        self.__logger = logging.getLogger("model.solvers.SolverBase")
+
+        # Update default parameter dict
+        defaults = dict(perturbation_size=0.01,
+                        perturbation_direction='right',
+                        numerical_representation='mpmath',
+                        archived_variables=['steady_state_coverage', 'rates'])
         defaults = self.update_defaults(defaults)
-        self.__dict__.update(defaults)
 
-        #set numerical represention
-        if self.numerical_representation == 'mpmath':
-            #import mpmath as mp
+        # Set varibles in defaults protected attributes of solver.
+        protected_defaults = {"_{}".format(key): value
+                              for key, value in defaults.iteritems()}
+        self.__dict__.update(protected_defaults)
+
+        # Set numerical representation.
+        self.__set_numerical_representation()
+
+        # Set flags.
+        self._has_absolute_energy = False
+        self._has_relative_energy = False
+        self._has_energy_correction = False
+        self._has_symbols = False
+
+        # Set essential attrs for solver
+        self._rxns_list = self._owner.elementary_rxns_list()
+        self._rxns_num = len(self._rxns_list)
+
+        # set constants symbol dict
+        self.k_B_sym, self.h_sym, self.T_sym = sym.symbols('k_B, h, T', is_real=True)
+
+        self.constants_subs_dict = {
+            self.k_B_sym: self._mpf(self._owner.kB()),
+            self.h_sym: self._mpf(self._owner.h()),
+            self.T_sym: self._mpf(self._owner.temperature()),
+        }
+
+        # classify adsorbates according to site type
+        self._classified_adsorbates = self.__classify_adsorbates()
+
+    def __set_numerical_representation(self):
+        """
+        Private helper function to set numerical representation.
+        """
+        # Mpmath.
+        if self._numerical_representation == 'mpmath':
             mp.mp.dps = self._owner.decimal_precision()
             self._math = mp  # to do math operations
             self._linalg = mp
@@ -47,9 +81,8 @@ class SolverBase(KineticCoreComponent):
             self._matrix = mp.matrix
             self._Axb_solver = mp.lu_solve
             self._norm = lambda x: mp.norm(x, p=2)
-
-        elif self.numerical_representation == 'gmpy':
-            #import gmpy2
+        # Gmpy2.
+        elif self._numerical_representation == 'gmpy':
             gmpy2.get_context().precision = 3*self._owner.decimal_precision()
             self._math = gmpy2
             self._linalg = np
@@ -67,23 +100,9 @@ class SolverBase(KineticCoreComponent):
 
             self._matrix = cus_matrix
             self._Axb_solver = np.linalg.solve
-            self._norm = lambda x: \
-                gmpy2.sqrt(np.sum(np.square(x)))  # x is a column vector
-
-        elif self.numerical_representation == 'sympy.mpmath':
-            import sympy.mpmath as symp
-            symp.mp.dps = self._owner.decimal_precision()
-            self._math = symp
-            self._linalg = symp
-            self._mpf = symp.mpf
-            #self._mpf = lambda x: \
-            #    sym.N(sym.RealNumber(str(x), 100), 100)
-            self._matrix = symp.matrix
-            self._Axb_solver = symp.lu_solve
-            self._norm = lambda x: symp.norm(x, p=2)
-
-        elif self.numerical_representation == 'sympy':
-            #import sympy as sym
+            self._norm = lambda x: gmpy2.sqrt(np.sum(np.square(x)))  # x is a column vector
+        # Sympy.
+        elif self._numerical_representation == 'sympy':
             self._math = sym
             self._linalg = sym
             precision = self._owner.decimal_precision()
@@ -100,31 +119,6 @@ class SolverBase(KineticCoreComponent):
             self._Axb_solver = lambda A, b: A.LUsolve(b)
             self._norm = lambda x: sym.sqrt((x.transpose()*x)[0])  # x is a column vector
 
-        self.has_absolute_energy = False
-        self.has_relative_energy = False
-        self.energy_correction = False
-        self.has_symbols = False
-
-        #set essential attrs for solver
-        setattr(self, 'rxns_list', self._owner.elementary_rxns_list())
-        setattr(self, 'rxns_num', len(self.rxns_list))
-
-        # set constants symbol dict
-        self.k_B_sym, self.h_sym, self.T_sym = \
-            sym.symbols('k_B, h, T', is_real=True)
-        self.constants_subs_dict = {
-            self.k_B_sym: self._mpf(self._owner.kB()),
-            self.h_sym: self._mpf(self._owner.h()),
-            self.T_sym: self._mpf(self._owner.temperature()),
-        }
-
-#        if self._owner.hasdata:
-#            self.get_data()
-#            self.get_rate_constants()
-
-        # classify adsorbates according to site type
-        self.classify_adsorbates()
-
     def log_latex(self, latex_tup):
         "Append latex strings to 'formulas.tex'."
         latex_str = ''.join(latex_tup)
@@ -133,111 +127,99 @@ class SolverBase(KineticCoreComponent):
         self.write2file('formulas.tex', latex_str)
         return latex_str
 
-    def classify_adsorbates(self):
-        "Classify coverages according to type of site, return a dict"
+    def __classify_adsorbates(self):
+        """
+        Private helper function to classify coverages according to type of site.
+        """
         classified_adsorbates = {}
         for site_name in self._owner.site_names():
             classified_adsorbates.setdefault(site_name, [])
+
+        species_definitions = self._owner.species_definitions()
         for adsorbate_name in self._owner.adsorbate_names():
-            site_name = self._owner.species_definitions()[adsorbate_name]['site']
+            site_name = species_definitions[adsorbate_name]['site']
             classified_adsorbates[site_name].append(adsorbate_name)
-        setattr(self, 'classified_adsorbates', classified_adsorbates)
+
         return classified_adsorbates
+
+    def _cvg_tuple2dict(self, cvgs_tuple):
+        """
+        Protected function to convert coverages list to corresponding coverages dict.
+        """
+
+        # NOTE: there are some small errors when convert tuple to dict
+        #       which is so small that we can ignore it
+
+        # Create cvgs_dict containing adsorbates
+        cvgs_dict = {}
+        adsorbate_names = self._owner.adsorbate_names()
+        for adsorbate_name in adsorbate_names:
+            idx = adsorbate_names.index(adsorbate_name)
+            cvgs_dict.setdefault(adsorbate_name, cvgs_tuple[idx])
+
+        # Add free site coverages
+        species_definitions = self._owner.species_definitions()
+        for site_name in self._owner.site_names():
+            total_cvg = species_definitions[site_name]['total']
+            sum_cvg = 0.0
+            for sp in self._classified_adsorbates[site_name]:
+                sum_cvg += cvgs_dict[sp]
+            free_site_cvg = total_cvg - sum_cvg
+            cvgs_dict.setdefault('*_' + site_name, free_site_cvg)
+
+        return cvgs_dict
+
+    def _cvg_dict2tuple(self, cvgs_dict):
+        """
+        Protected function to convert coverages dict to coverages tuple.
+        """
+        cvgs_list = []
+        for adsorbate_name in self._owner.adsorbate_names():
+            cvgs_list.append(cvgs_dict[adsorbate_name])
+        return tuple(cvgs_list)
 
     def get_data(self):
         """
-        Assign gas pressure, formation_energy of sites and
-        species, frequencies as attrs of solver.
+        Function to get data from model.
         """
-        #get gas pressure dict
+        # Get gas pressure dict.
         p_dict = {}
         for gas_name in self._owner.gas_names():
-            p_dict.setdefault(
-                gas_name,
-                self._mpf(self._owner.species_definitions()[gas_name]['pressure'])
-            )
-        self.p = p_dict
+            pressure = self._owner.species_definitions()[gas_name]['pressure']
+            p_dict.setdefault(gas_name, self._mpf(pressure))
+        self._p = p_dict
 
-        #get concentration dict
+        # Get concentration dict.
         c_dict = {}
         for liquid_name in self._owner.liquid_names():
-            c_dict.setdefault(
-                liquid_name,
-                self._mpf(self._owner.species_definitions()[liquid_name]['concentration'])
-            )
-        self.c = c_dict
+            concentration = self._owner.species_definitions()[liquid_name]['concentration']
+            c_dict.setdefault(liquid_name, self._mpf(concentration))
+        self._c = c_dict
 
-        # get energy data(relative or absolute)
-        if self._owner.has_relative_energy:
-            # NOTE: if free energies are not read,
-            #       use non-free energy as free energy instead
-
-            # delta G
-            if 'dG' in self._owner.relative_energies:
-                self.dG = self._owner.relative_energies['dG']
-            elif 'dE' in self._owner.relative_energies:
-                self.dG = self._owner.relative_energies['dE']
-            else:
-                raise IOError('No dG/dE was read, try parser.parse_data() ' +
-                              'or add data in data table.')
-            # energy barrier
-            if 'Ga' in self._owner.relative_energies:
-                self.Ga = self._owner.relative_energies['Ga']
-            elif 'Ea' in self._owner.relative_energies:
-                self.Ga = self._owner.relative_energies['Ea']
-            else:
-                raise IOError('No Ga/Ea was read, try parser.parse_data() ' +
-                              'or add data in data table.')
-            # stamp for having relative energy data
-            self.has_relative_energy = True
+        # Get energy data(relative or absolute)
+        if self._owner.has_relative_energy():
+            self._relative_energies = self._owner.relative_energies()
+            # Set flag.
+            self._has_relative_energy = True
+        else:
+            raise IOError('No relative energies was read, try parser.parse_data() ' +
+                          'or add data in data table.')
 
         # get energy for each species
-        if self._owner.has_absolute_energy:
-            E_dict = {}
+        if self._owner.has_absolute_energy():
+            G_dict = {}
             for species in self._owner.species_definitions():
                 if self._owner.species_definitions()[species]['type'] == 'site':
                     key = '*_' + species
                 else:
                     key = species
                 energy = self._mpf(self._owner.species_definitions()[species]['formation_energy'])
-                E_dict.setdefault(key, energy)
-            self.E = E_dict
-            setattr(self, 'energy_correction', False)
-            #stamp for having absolute energy data
-            self.has_absolute_energy = True
+                G_dict.setdefault(key, energy)
+            self._G = G_dict
 
-        if not (self._owner.has_relative_energy or
-                self._owner.has_absolute_energy):
-            raise AttributeError('model object has no input energy data\n'
-                                 'try parser.parse_data() '
-                                 'or add data in data table.')
-
-    def get_reaction_energies(self, elementary_rxn_list):
-        """
-        Analyse a single elementary rxn equation,
-        return list of reaction_barrier(delta_G).
-        """
-        #get free energy for states
-        G_IS, G_TS, G_FS = 0.0, 0.0, 0.0
-        for sp in elementary_rxn_list[0]:
-            stoichiometry, species_name = self.split_species(sp)
-            G_IS += stoichiometry * self.E[species_name]
-        for sp in elementary_rxn_list[-1]:
-            stoichiometry, species_name = self.split_species(sp)
-            G_FS += stoichiometry * self.E[species_name]
-
-        if len(elementary_rxn_list) == 2:
-            G_TS = max(G_IS, G_FS)
-        if len(elementary_rxn_list) == 3:
-            for sp in elementary_rxn_list[1]:
-                stoichiometry, species_name = self.split_species(sp)
-                G_TS += stoichiometry * self.E[species_name]
-
-#        return [G_IS, G_TS, G_FS]
-        #calculate delta G for one elementary rxn
-        f_barrier, r_barrier = G_TS - G_IS, G_TS - G_FS
-        #reaction_energy = G_FS - G_IS
-        return f_barrier, r_barrier
+            # Set flags.
+            self._has_energy_correction = False
+            self._has_absolute_energy = True
 
     def get_single_state_energy_dict(self, elementary_rxn_list):
         """
@@ -266,281 +248,298 @@ class SolverBase(KineticCoreComponent):
 
         return state_energy_dict
 
-    def get_rate_constants(self):
-        "Go through rxns_list to get all delta_G and rate constants"
+    def get_rate_constants(self, relative_energies=None):
+        """
+        Function to get rate constants for all elementary reactions.
+
+        Parameters:
+        -----------
+        relative_energies: A dict of relative eneriges of elementary reactions.
+            NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
+
+        Returns:
+        --------
+        Forward rate constants, Reverse rate constants
+        """
+        # Get relative energies.
+        if not relative_energies:
+            if self._has_relative_energy:
+                relative_energies = self._relative_energies
+            else:
+                msg = "Solver must have relative energies to get rate constants."
+                raise AttributeError(msg)
+
+        # Check input parameter.
+        if "Gaf" and "Gar" not in relative_energies:
+            msg = "'Gaf' and 'Gar' must be in relative_energies."
+            raise ParameterError(msg)
+
+        # Calculate rate constants.
         kB, h, T = [self._mpf(constant) for constant in
                     [self._owner.kB(), self._owner.h(), self._owner.temperature()]]
         prefactor = kB*T/h
         kfs, krs = [], []
+        Gafs, Gars = relative_energies["Gaf"], relative_energies["Gar"]
 
-        # get rate constants from absolute energies
-        if self.has_absolute_energy:
-            Gafs, Gars = [], [],
-            for elementary_rxn in self.rxns_list:
-                Gaf, Gar = self.get_reaction_energies(elementary_rxn)
-                Gafs.append(Gaf)
-                Gars.append(Gar)
-                #rate constant
-                kf = prefactor*self._math.exp(-Gaf/(kB*T))
-                kr = prefactor*self._math.exp(-Gar/(kB*T))
-                kfs.append(kf)
-                krs.append(kr)
-
-        # get rate constants from relative energies
-        elif self.has_relative_energy:
-            Gafs = self.Ga
-            Gars = [Ga - dG for Ga, dG in zip(self.Ga, self.dG)]
-            for Gaf, Gar in zip(Gafs, Gars):
-                kf = prefactor*self._math.exp(-Gaf/(kB*T))
-                kr = prefactor*self._math.exp(-Gar/(kB*T))
-                kfs.append(kf)
-                krs.append(kr)
-
-        self._Gaf, self._Gar, self._kfs, self._krs = \
-            map(tuple, [Gafs, Gars, kfs, krs])
+        for Gaf, Gar in zip(Gafs, Gars):
+            kf = prefactor*self._math.exp(-Gaf/(kB*T))
+            kr = prefactor*self._math.exp(-Gar/(kB*T))
+            kfs.append(kf)
+            krs.append(kr)
 
         return tuple(kfs), tuple(krs)
 
-    def boltzmann_coverages(self):
+    def boltzmann_coverages(self, include_empty_site=True):
         """
-        Return a boltzmann coverages list
-        according to adsorbation energy of adsorbates.
+        Function to get boltzmann coverages according to the formation energy of each adsorbate.
+
+        Parameters:
+        -----------
+        include_empty_site: If the empty sites are included in bolztmann sum, bool.
+                            Default value is True.
+
+        Returns:
+        --------
+        cvgs: A tuple of coverages in order of adsorbates names.
         """
-        free_site_names = \
-            tuple(['*_' + site for site in self._owner.site_names()])
+        free_site_names = tuple(['*_' + site for site in self._owner.site_names()])
         self._cvg_types = self._owner.adsorbate_names() + free_site_names
         kB, h, T = [self._mpf(constant) for constant in
                     [self._owner.kB(), self._owner.h(), self._owner.temperature()]]
-        # check whether solver has load data from species_definition
-        if not self.has_absolute_energy:
+
+        # Check whether solver has load data from species_definition
+        if not self._has_absolute_energy:
             self.get_data()
-        if not self.has_absolute_energy:  # if no absolute again, raise exception
+        if not self._has_absolute_energy:  # if no absolute again, raise exception
             raise IOError('No absolute energies read, could not get Boltzmann coverages.')
-#        boltz_sum = sum([mp.exp(-self.E[adsorbate]/(kB*T))
-#                         for adsorbate in self._cvg_types])
-        boltz_sum = sum([self._math.exp(-self.E[adsorbate]/(kB*T))
-                         for adsorbate in self._owner.adsorbate_names()])
-        #get coverages list
+
+        if include_empty_site:
+            boltz_sum = sum([mp.exp(-self._G[adsorbate]/(kB*T))
+                             for adsorbate in self._cvg_types])
+        else:
+            boltz_sum = sum([self._math.exp(-self._G[adsorbate]/(kB*T))
+                             for adsorbate in self._owner.adsorbate_names()])
+
+        # Get coverages list
         cvgs = []
         for adsorbate in self._owner.adsorbate_names():
-            cvg = self._math.exp(-self.E[adsorbate]/(kB*T))/boltz_sum
+            cvg = self._math.exp(-self._G[adsorbate]/(kB*T))/boltz_sum
             cvgs.append(cvg)
 
         return tuple(cvgs)
 
     def get_elementary_rate_expression(self, elementary_rxn_list):
         """
-        Expect a elementary_rxn list, e.g.[['3H2_g', '6*_s'], ['6H_s']]
-        return a tuple of forward and reverse rxn rate expressions.
-        e.g. "kf[0]*p['CO_g']*theta['*_s']"
-        """
-        idx = self.rxns_list.index(elementary_rxn_list)
+        Function to get the rate calculation expression for an elementary reaction.
 
+        Parameters:
+        -----------
+        elementary_rxn_list: An elementary reaction (in list).
+
+        Returns:
+        --------
+        f_expr, r_expr: A tuple of forward and reverse reaction rate expressions.
+
+        Example:
+        --------
+        >>> rxn_list = [['O2_g', '2*_s'], ['2O_s']]
+        >>> solver.get_elementary_rate_expression(rxn_list)
+        >>> ("kf[1]*p['O2_g']*theta['*_s']**2", "kr[1]*theta['O_s']**2")
+        """
+        idx = self._rxns_list.index(elementary_rxn_list)
+
+        # Local function.
         def list2string(sp_list, direction):
             if direction == 'f':
-                rate_str = 'kf['+str(idx)+']'
+                rate_str = 'kf[' + str(idx) + ']'
             if direction == 'r':
-                rate_str = 'kr['+str(idx)+']'
+                rate_str = 'kr[' + str(idx) + ']'
 
             for sp in sp_list:
                 stoichiometry, species_name = self.split_species(sp)
                 #get type of species
                 if '*' in sp:
                     if stoichiometry == 1:
-                        sp_expr = "*theta['"+species_name+"']"
+                        sp_expr = "*theta['" + species_name + "']"
                     else:
-                        sp_expr = "*theta['"+species_name+"']**"+str(stoichiometry)
+                        sp_expr = "*theta['" + species_name + "']**" + str(stoichiometry)
                 else:
                     sp_type = self._owner.species_definitions()[species_name]['type']
                     if sp_type == 'adsorbate':
                         if stoichiometry == 1:
-                            sp_expr = "*theta['"+species_name+"']"
+                            sp_expr = "*theta['" + species_name + "']"
                         else:
-                            sp_expr = "*theta['"+species_name+"']**"+str(stoichiometry)
+                            sp_expr = "*theta['" + species_name + "']**" + str(stoichiometry)
                     elif sp_type == 'gas':
                         if stoichiometry == 1:
-                            sp_expr = "*p['"+species_name+"']"
+                            sp_expr = "*p['" + species_name + "']"
                         else:
-                            sp_expr = "*p['"+species_name+"']**"+str(stoichiometry)
+                            sp_expr = "*p['" + species_name + "']**" + str(stoichiometry)
                     elif sp_type == 'liquid':
                         if stoichiometry == 1:
-                            sp_expr = "*c['"+species_name+"']"
+                            sp_expr = "*c['" + species_name + "']"
                         else:
-                            sp_expr = "*c['"+species_name+"']**"+str(stoichiometry)
+                            sp_expr = "*c['" + species_name + "']**" + str(stoichiometry)
                 rate_str += sp_expr
             return rate_str
-#        f_list, r_list = elementary_rxn_list[0], elementary_rxn_list[-1]
-        f_expr, r_expr = list2string(elementary_rxn_list[0], direction='f'),\
-            list2string(elementary_rxn_list[-1], direction='r')
+
+        f_expr, r_expr = (list2string(elementary_rxn_list[0], direction='f'),
+                          list2string(elementary_rxn_list[-1], direction='r'))
+
         return f_expr, r_expr
 
-    def get_rate_expressions(self, rxns_list):
+    def get_rate_expressions(self):
         """
-        Expect elementary_rxns_list,
-        return a list of forward rate expressions,
-        and a list of reverse rate expressions.
-        e.g. "rf[0] = kf[0]*p['CO_g']*theta['*_s']"
+        Function to get rate expression for all elementary reactions in model.
         """
         f_rate_expressions, r_rate_expressions = [], []
-        for rxn_list in rxns_list:
+        for rxn_list in self._rxns_list:
             f_expr, r_expr = self.get_elementary_rate_expression(rxn_list)
-            idx = rxns_list.index(rxn_list)
-            f_rate_expressions.append('rfs['+str(idx)+'] = ' + f_expr)
-            r_rate_expressions.append('rrs['+str(idx)+'] = ' + r_expr)
-        setattr(self, 'rate_expressions',
-                (f_rate_expressions, r_rate_expressions))
+            idx = self._rxns_list.index(rxn_list)
+            f_rate_expressions.append('rfs[' + str(idx) + '] = ' + f_expr)
+            r_rate_expressions.append('rrs[' + str(idx) + '] = ' + r_expr)
+
         return f_rate_expressions, r_rate_expressions
 
-    def get_rates(self, rate_expressions, cvgs_tuple):
+    def get_rates(self, cvgs_tuple, archive=False):
         """
-        Expect rate_expressions and a coverage tuple,
-        return forward and reverse rates list.
-        """
-        #set theta, kf, kr, p, dtheta_dt
-        #coverages(theta)
-        theta = self.cvg_tuple2dict(cvgs_tuple)
-        #rate constants(kf, kr)
-        kf, kr = self.get_rate_constants()
-        #pressure
-        p = self.p
-        #concentration
-        c = self.c
-        #rate list
-        rfs, rrs = [0]*len(self._owner.elementary_rxns_list()), \
-            [0]*len(self._owner.elementary_rxns_list())
+        Function to get forward and reverse rates list.
 
+        Parameters:
+        -----------
+        cvgs_tuple: coverage tuple, tuple of floats.
+        archive: archive data or not, bool.
+
+        Returns:
+        --------
+        rfs, rrs: forward rates and reverse rates, tuple of float.
+        """
+        # Coverages(theta).
+        theta = self._cvg_tuple2dict(cvgs_tuple)
+
+        # Rate constants(kf, kr).
+        kf, kr = self.get_rate_constants()
+
+        # Pressure.
+        p = self._p
+
+        # Concentration.
+        c = self._c
+
+        # Rate list.
+        rfs, rrs = [0]*self._rxns_num, [0]*self._rxns_num
+
+        # Rate expressions.
+        rate_expressions = self.get_rate_expressions()
+
+        # Calculate rates.
         for exprs_list in rate_expressions:
             exprs_str = '\n'.join(exprs_list)
             exec exprs_str in locals()
+
         rfs, rrs = map(tuple, (rfs, rrs))
-        setattr(self, '_rates', (rfs, rrs))
-        #archive
-        self.archive_data('rates', (rfs, rrs))
+
+        # Archive.
+        if archive:
+            self.archive_data('rates', (rfs, rrs))
 
         return rfs, rrs
 
-    def get_net_rates(self, rfs, rrs):
+    def get_net_rates(self, cvgs_tuple, archive=False):
+        """
+        Function to get forward and reverse rates list.
+
+        Parameters:
+        -----------
+        cvgs_tuple: coverage tuple, tuple of floats.
+        archive: archive data or not, bool.
+
+        Returns:
+        --------
+        net_rates: net rates for all elementary reactions, tuple of float.
+        """
+        # Get forward and reverse rates.
+        rfs, rrs = self.get_rates(cvgs_tuple, archive=False)
+
+        # Get net rates.
         net_rates = tuple([rf - rr for rf, rr in zip(rfs, rrs)])
-        setattr(self, 'net_rates', net_rates)
-        #archive
-        self.archive_data('net_rates', net_rates)
+
+        # Archive.
+        if archive:
+            self.archive_data('net_rates', net_rates)
+
         return net_rates
 
     def get_reversibilities(self, rfs, rrs):
-        "Return a list of reversibilities."
+        """
+        Function to get reversibilities of given rates.
+
+        Parameters:
+        -----------
+        rfs: forward rates, list of float.
+        rrs: reverse rates, list of float.
+
+        Returns:
+        --------
+        reversibilities: list of float.
+        """
         if len(rfs) != len(rrs):
             raise ValueError('Different rates number is detected.')
-        zipped_rates = zip(rfs, rrs)
 
-        reversibilities = [float(rate_tuple[1]/rate_tuple[0])
-                           for rate_tuple in zipped_rates]
-        setattr(self, 'reversibilities', reversibilities)
-        #archive
+        reversibilities = [float(rr/rf) for rf, rr in zip(rfs, rrs)]
+
+        # Archive.
         self.archive_data('reversibilities', reversibilities)
 
         return reversibilities
 
-    def get_tof(self, Gs):  # Gs -> free energies
+    def get_tof(self, cvgs):
         """
-        Expect free energies of intermediates in kinetic model,
-        return turnover frequencies.
+        Function to get the turnover frequencies(TOF) wrt all gas species.
+
+        Parameters:
+        -----------
+        cvgs: coverages of adsorbates on surface, tuple of float.
+
+        Returns:
+        --------
+        tof_list: List of TOF.
         """
-        #get net rates firstly
-        #change the E of solver
-        Gs_order = self._owner.adsorbate_names() + \
-            self._owner.transition_state_names()
-        setattr(self, 'Gs_order', Gs_order)
+        # Get net rates wrt the coverages c.
+        net_rates = self.get_net_rates(cvgs)
 
-        #self.get_data()    #refresh data for solver
-        for intermediate, G in zip(Gs_order, Gs):
-            self.E[intermediate] = G
-
-        #get net rates about new Gs
-        self.get_rate_constants()
-        #get initial guess
-        if self._coverage:
-            init_guess = self._coverage
-        else:
-            init_guess = self.initial_guess
-        steady_state_cvg = self.get_steady_state_cvgs(init_guess)
-        #check whether solver has rate_expressions
-        if not hasattr(self, 'rate_expressions'):  # if not, get it
-            self.get_rate_expressions(self.rxns_list)
-        rfs, rrs = self.get_rates(self.rate_expressions, steady_state_cvg)
-        net_rates = self.get_net_rates(rfs, rrs)
-
-        #get turnover frequencies
-        if not hasattr(self._owner, 'reapro_matrix'):
-            self._owner.parser.get_stoichiometry_matrices()
-        reapro_matrix = copy.copy(self._owner.reapro_matrix)
-        #reapro_matrix *= -1
-        reapro_matrix = abs(reapro_matrix)
-        rate_vector = np.matrix(net_rates)  # get rate vector
-        tof_list = (rate_vector*reapro_matrix).tolist()[0]
-        setattr(self, 'tof', tof_list)
-
-        # log TOFs
-        self.log_tof(tof_list, self._owner.gas_names())
-        #archive
-        self.archive_data('tofs', tof_list)
-
-        return tof_list
-
-    def get_cvg_tof(self, cvgs):
-        """
-        Expect a certain coverage of intermediates,
-        return turnover frequencies wrt gases.
-        """
-        #get net rates wrt the coverages c
-        self.get_rate_constants()
-        if not hasattr(self, 'rate_expressions'):
-            self.get_rate_expressions(self.rxns_list)
-        rfs, rrs = self.get_rates(self.rate_expressions, cvgs)
-        net_rates = self.get_net_rates(rfs, rrs)
-
-        #get turnover frequencies
-        if not hasattr(self._owner, 'reapro_matrix'):
-            self._owner.parser().get_stoichiometry_matrices()
-        reapro_matrix = copy.copy(self._owner.reapro_matrix)
+        # Get turnover frequencies.
+        _, reapro_matrix = self._owner.parser().get_stoichiometry_matrices()
         reapro_matrix *= -1
-        #reapro_matrix = abs(reapro_matrix)
         rate_vector = np.matrix(net_rates)  # get rate vector
         tof_list = (rate_vector*reapro_matrix).tolist()[0]
-        setattr(self, 'tof', tof_list)
 
         # log TOFs
-        self.log_tof(tof_list, self._owner.gas_names())
-        #archive
+        self.__log_tof(tof_list, self._owner.gas_names())
+
+        # Archive.
         self.archive_data('tofs', tof_list)
 
         return tof_list
 
-    def log_tof(self, tof_list, gas_names):
-        "Log turnover frequencies of every gas species."
-        head_str = "\n\n %-5s     %-20s     %-30s\n" % \
-                   ("index", "gas name", "TOF")
+    def __log_tof(self, tof_list, gas_names):
+        """
+        Private helper function to log TOF of every gas species.
+        """
+        head_str = "\n\n {:<5s}     {:<20s}     {:<30s}\n".format("index", "gas name", "TOF")
         line_str = '-'*60 + '\n'
 
         all_data = ''
         all_data += head_str + line_str
         for idx, (gas_name, tof) in enumerate(zip(gas_names, tof_list)):
             idx = str(idx).zfill(2)
-            data = " %-5s     %-20s     %-30.16e\n" % (idx, gas_name, float(tof))
+            data = " {:<5s}     {:<20s}     {:<30.16e}\n".format(idx, gas_name, float(tof))
             all_data += data
         all_data += line_str
 
-        self.logger.info(all_data)
+        self.__logger.info(all_data)
 
         return all_data
-
-    def get_intermediates_Gs(self):
-        #get Gs
-        Gs = []
-        for intermediates_name in \
-                self._owner.adsorbate_names() + self._owner.transition_state_names():
-            Gs.append(self.E[intermediates_name])
-        setattr(self._owner, 'intermediates_Gs', Gs)
-        return Gs
 
     def classified_numerical_jacobian(self, f, x, h=1e-10):
         """
@@ -579,35 +578,6 @@ class SolverBase(KineticCoreComponent):
             for i in xrange(m):
                 J[i, j] = Jj[i]
         return J
-
-    def get_rate_control(self):
-        """
-        Expect free energies of intermediates in kinetic model,
-        return a matrix of partial derivation wrt intermediates.
-        """
-        #get Gs
-        Gs = self.get_intermediates_Gs()
-
-        kT = self._owner.kB()*self._owner.temperature()
-        epsilon = self._mpf(self.perturbation_size)
-        #get dr/dG matrix
-        drdG = numerical_jacobian(
-            f=self.get_tof, x=Gs,
-            num_repr=self.numerical_representation,
-            matrix=self._matrix, h=epsilon,
-            direction=self.perturbation_direction
-        )
-        r = self.get_tof(Gs)
-
-        #multiply 1/r to drdG matrix
-        diag_matrix = self._linalg.diag([-kT/tof for tof in r])
-        DTRC = diag_matrix*drdG
-        #covert it to list
-        DTRC_list = DTRC.tolist()
-        #archive
-        self.archive_data('DTRC', DTRC_list)
-
-        return DTRC
 
     def correct_energies(self):
         "Correct energies of solver"
@@ -649,7 +619,7 @@ class SolverBase(KineticCoreComponent):
             total = self._owner.species_definitions()[site_name]['total']
             #free_site_cvg = sym.Symbol(str(total), is_real=True)
             free_site_cvg = total
-            for ads_name in self.classified_adsorbates[site_name]:
+            for ads_name in self._classified_adsorbates[site_name]:
                 free_site_cvg -= self.extract_symbol(sp_name=ads_name,
                                                      symbol_type='ads_cvg')
             fsite_theta_sym.append(free_site_cvg)
@@ -674,7 +644,7 @@ class SolverBase(KineticCoreComponent):
             K_sym_list.append(K_sym)
         self.K_sym = tuple(K_sym_list)
 
-        self.has_symbols = True
+        self._has_symbols = True
         self.sp_list = sp_list
 
         return
@@ -734,7 +704,7 @@ class SolverBase(KineticCoreComponent):
         return sympy expression of delta Gf and Gr.
         e.g. (G_HCO-OH_s - G_HCOOH_s, G_*_s + G_HCO-OH_s - G_HCO_s - G_OH_s)
         """
-        if not self.has_symbols:
+        if not self._has_symbols:
             raise AttributeError('Solver has no data symbol.')
 
         #get symbols of state energy
@@ -760,7 +730,7 @@ class SolverBase(KineticCoreComponent):
             TS_energy_sym = state_energy_sym_list[1]
         elif len(state_energy_sym_list) == 2:
             if not hasattr(self._owner, 'state_energy_dict'):
-                if not self.has_absolute_energy:
+                if not self._has_absolute_energy:
                     self.get_data()
                 self.get_state_energy_dict()
 
@@ -993,9 +963,9 @@ class SolverBase(KineticCoreComponent):
     def get_G_subs_dict(self):
         "Get values from solver's data dict."
         #get value dict for solver
-        if not self.has_absolute_energy:
+        if not self._has_absolute_energy:
             self.get_data()
-        if not self.has_absolute_energy:
+        if not self._has_absolute_energy:
             raise IOError('No absolute energies read, ' +
                           'could not get substitution dictionary for G symbol.')
         #free energy value dict
@@ -1094,4 +1064,69 @@ class SolverBase(KineticCoreComponent):
         return tuple(tof_vect)
 
     ###### calculate micro kinetic model with Sympy END ######
+
+    def has_absolute_energy(self):
+        """
+        Query function for has_absolute_energy flag.
+        """
+        return self._has_absolute_energy
+
+    def has_relative_energy(self):
+        """
+        Query function for has_relative_energy flag.
+        """
+        return self._has_relative_energy
+
+    def has_energy_correction(self):
+        """
+        Query function for has energy correction flag.
+        """
+        return self._has_energy_correction
+
+    def has_symbols(self):
+        """
+        Query function for has symbol flag.
+        """
+        return self._has_symbols
+
+    @return_deepcopy
+    def classified_adsorbates(self):
+        """
+        Query function for classified adsorbates.
+        """
+        return self._classified_adsorbates
+
+    @return_deepcopy
+    def pressures(self):
+        """
+        Query function for gas pressures.
+        """
+        return self._p
+
+    @return_deepcopy
+    def concentrations(self):
+        """
+        Query function for liquid concentrations.
+        """
+        return self._c
+
+    @return_deepcopy
+    def formation_energies(self):
+        """
+        Query function for formation energies.
+        """
+        return self._G
+
+    @return_deepcopy
+    def relative_energies(self):
+        """
+        Query function for relative energies.
+        """
+        return self._relative_energies
+
+    def rate_expressions(self):
+        """
+        Query functions for rate expressions for all elementary reactions.
+        """
+        return self._rate_expressions
 
