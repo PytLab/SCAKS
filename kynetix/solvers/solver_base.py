@@ -259,7 +259,7 @@ class SolverBase(KineticCoreComponent):
 
         Returns:
         --------
-        (Forward rate constants, Reverse rate constants)
+        Forward rate constants, Reverse rate constants
         """
         # Get relative energies.
         if not relative_energies:
@@ -279,9 +279,8 @@ class SolverBase(KineticCoreComponent):
                     [self._owner.kB(), self._owner.h(), self._owner.temperature()]]
         prefactor = kB*T/h
         kfs, krs = [], []
+        Gafs, Gars = relative_energies["Gaf"], relative_energies["Gar"]
 
-        Gafs = relative_energies["Gaf"]
-        Gars = relative_energies["Gar"]
         for Gaf, Gar in zip(Gafs, Gars):
             kf = prefactor*self._math.exp(-Gaf/(kB*T))
             kr = prefactor*self._math.exp(-Gar/(kB*T))

@@ -812,7 +812,29 @@ class ParserBase(ModelShell):
         else:
             return molecular_mass
 
-    def get_relative_energies(self, elementary_rxn_list):
+    def _formation_energy(self, species):
+        """
+        Protected function to get formation species of a species.
+        """
+        species_definitions = self._owner.species_definitions()
+
+        # Inner function to extract site type.
+        def extract_site(species_name):
+            regex = self.__regex_dict["empty_site"][0]
+            m = regex.search(species_name)
+            if not m:
+                msg = "{} is not a empty site name.".format(species_name)
+                raise ParameterError(msg)
+            return m.groups()[-1]
+
+        # If it is a empty site.
+        if "*" in species:
+            species = extract_site(species)
+
+        return species_definitions[species]['formation_energy']
+
+    def get_relative_energies(self, elementary_rxn_list,
+                              energy_func=_formation_energy):
         """
         Function to get relative energies:
             forward barrier,
@@ -822,6 +844,7 @@ class ParserBase(ModelShell):
         Parameters:
         -----------
         elementary_rxn_list: elementary reaction in list format.
+        energy_func: A function object to return formation energy of a species.
 
         Returns:
         --------
@@ -838,31 +861,16 @@ class ParserBase(ModelShell):
 
         species_definitions = self._owner.species_definitions()
 
-        # Inner function to extract site type.
-        def extract_site(species_name):
-            regex = self.__regex_dict["empty_site"][0]
-            m = regex.search(species_name)
-            if not m:
-                msg = "{} is not a empty site name.".format(species_name)
-                raise ParameterError(msg)
-            return m.groups()[-1]
-
         # IS energy.
         for sp in elementary_rxn_list[0]:
             stoichiometry, species_name = self.split_species(sp)
-            # If it is a empty site.
-            if "*" in species_name:
-                species_name = extract_site(species_name)
-            species_energy = species_definitions[species_name]["formation_energy"]
+            species_energy = energy_func(self, species_name)
             G_IS += stoichiometry*species_energy
 
         # FS energy.
         for sp in elementary_rxn_list[-1]:
             stoichiometry, species_name = self.split_species(sp)
-            # If it is a empty site.
-            if "*" in species_name:
-                species_name = extract_site(species_name)
-            species_energy = species_definitions[species_name]["formation_energy"]
+            species_energy = energy_func(self, species_name)
             G_FS += stoichiometry*species_energy
 
         # TS energy.
@@ -872,10 +880,8 @@ class ParserBase(ModelShell):
         if len(elementary_rxn_list) == 3:
             for sp in elementary_rxn_list[1]:
                 stoichiometry, species_name = self.split_species(sp)
-                # If it is a empty site.
-                if "*" in species_name:
-                    species_name = extract_site(species_name)
-                G_TS += stoichiometry*species_definitions[species_name]["formation_energy"]
+                species_energy = energy_func(self, species_name)
+                G_TS += stoichiometry*species_energy
 
         # Get relative energies.
         f_barrier = G_TS - G_IS
@@ -884,14 +890,18 @@ class ParserBase(ModelShell):
 
         return f_barrier, r_barrier, reaction_energy
 
-    def get_relative_from_absolute(self):
+    def get_relative_from_absolute(self, energy_func=_formation_energy):
         """
         Function to set relative energies from absolute energies.
+
+        Parameters:
+        -----------
+        energy_func: A function object to return formation energy of a species.
         """
         Gafs, Gars, dGs = [], [], []
 
         for rxn_list in self._owner.elementary_rxns_list():
-            Gaf, Gar, dG = self.get_relative_energies(rxn_list)
+            Gaf, Gar, dG = self.get_relative_energies(rxn_list, energy_func)
             Gafs.append(Gaf)
             Gars.append(Gar)
             dGs.append(dG)
