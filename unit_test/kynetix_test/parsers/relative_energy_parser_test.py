@@ -124,7 +124,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
         ret_G_dict = parser._RelativeEnergyParser__G_dict
         self.assertDictEqual(ref_G_dict, ret_G_dict)
 
-    def test_data_parser(self):
+    def test_data_parse(self):
         " Test data in relative energy file can be parsed correctly. "
 
         # Construction.
@@ -213,7 +213,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
 
         self.assertDictEqual(ref_species_definitions, model.species_definitions())
         self.assertTrue(model.has_absolute_energy())
-        self.assertFalse(model.has_relative_energy())
+        self.assertTrue(model.has_relative_energy())
 
         # Check if relative == true.
         # Construct again.
