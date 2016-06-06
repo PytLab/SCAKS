@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 import re
 
+from kynetix.errors.error import *
+
 
 class RxnEquation(object):
     """
@@ -116,6 +118,14 @@ class ChemFormula(object):
     def split_species(self, species=None):
         """
         Function to split elements of species.
+
+        Parameters:
+        -----------
+        species: The species name.
+
+        Returns:
+        --------
+        The element dict of the species.
         """
         if not species:
             species = self.__species
@@ -124,7 +134,7 @@ class ChemFormula(object):
 
         element_dict = {}
         for element, number in element_list:
-            number = int(number) if number else 0
+            number = int(number) if number else 1
             if element not in element_dict:
                 element_dict.setdefault(element, number)
             else:
@@ -168,6 +178,46 @@ class ChemFormula(object):
     def __add__(self, formula_inst):
         chem_state = self.formula + ' + ' + formula_inst.formula
         return ChemState(chem_state)
+
+    def conserve(self, another):
+        """
+        Function to check conservation.
+
+        Parameters:
+        -----------
+        another: Another ChemFormula instance.
+
+        Returns:
+        --------
+        Conservative or not, bool.
+        """
+        # Check parameter type.
+        if not isinstance(another, self.__class__):
+            msg = "Parameter another must be instance of ChemFormula."
+            raise ParameterError(msg)
+
+        # Check elements.
+        dict1 = self.split_species()
+        dict2 = another.split_species()
+
+        if dict1 != dict2:
+            msg_temp = "Mass of chemical formula {} and {} are not conservative."
+            msg = msg_temp.format(self.formula(), another.formula())
+            raise ValueError(msg)
+
+        # Check sites type.
+        msg_temp = "Site of chemical formula {} and {} are not conservatvie."
+        if self.__site != another.site():
+            msg = msg_temp.format(self.formula(), another.formula())
+            raise ValueError(msg)
+
+        # Check site number.
+        if self.__nsite != another.nsite():
+            msg = msg_temp.format(self.formula(), another.formula())
+            raise ValueError(msg)
+
+        # If all tests passed, return True.
+        return True
 
     # -----------------------------------------------
     # Query functions.
