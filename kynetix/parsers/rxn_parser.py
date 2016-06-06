@@ -211,10 +211,10 @@ class ChemFormula(object):
         Constructor.
         """
         self.__formula = formula
-        self.__formula_regex = re.compile(r'(\d*)([\w\*-]*)_(\d*)([a-z\*]+)')
+        self.__formula_regex = re.compile(r'(\d*)(([\w\*-]*)_(\d*)([a-z\*]+))')
         self.__sp_regex = re.compile(r'([a-zA-Z\*])(\d*)')
 
-        self.__stoich, self.__species, self.__nsite, self.__site = self.__split()
+        self.__split()
 
     def __add__(self, formula_inst):
         """
@@ -233,11 +233,11 @@ class ChemFormula(object):
             msg = 'Unexpected chemical formula: {}'.format(self.__formula)
             raise ChemFormulaError(msg)
         else:
-            stoich = int(m.group(1)) if m.group(1) else 1
-            species = m.group(2)
-            site = m.group(4)
-            nsite = int(m.group(3)) if m.group(3) else 1
-            return stoich, species, nsite, site
+            self.__stoich = int(m.group(1)) if m.group(1) else 1
+            self.__species_site = m.group(2)
+            self.__species = m.group(3)
+            self.__site = m.group(5)
+            self.__nsite = int(m.group(4)) if m.group(4) else 1
 
     def get_elements_dict(self):
         """
@@ -377,6 +377,12 @@ class ChemFormula(object):
         Query function for stoichiometry number.
         """
         return self.__stoich
+
+    def species_site(self):
+        """
+        Query function for string of species on site.
+        """
+        return self.__species_site
 
     def species(self):
         """
