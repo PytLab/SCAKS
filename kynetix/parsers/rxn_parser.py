@@ -82,6 +82,25 @@ class ChemState(object):
 
         return merged_dict
 
+    def get_sites_dict(self):
+        """
+        Function to get sites dictionary of the state.
+        """
+        # Get sites dict of all formulas.
+        formula_list = self.tolist()
+        sites_dicts = (formula.get_sites_dict() for formula in formula_list)
+
+        # Merge all elements dicts.
+        merged_dict = {}
+        for sites_dict in sites_dicts:
+            for site, number in sites_dict.iteritems():
+                if site not in merged_dict:
+                    merged_dict.setdefault(site, number)
+                else:
+                    merged_dict[site] += number
+
+        return merged_dict
+
     def texen(self):
         """
         Get tex string.
