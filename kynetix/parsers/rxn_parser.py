@@ -29,6 +29,23 @@ class RxnEquation(object):
 
         return state_list
 
+    def check_conservation(self):
+        """
+        Function to check reaction equation conservation.
+
+        Returns:
+        --------
+        Conservative or not, bool.
+        """
+        state_list = self.tolist()
+
+        first = state_list[0]
+        for state in state_list[1:]:
+            first.conserve(state)
+
+        # If passed, return True.
+        return True
+
     def texen(self):
         """
         Get tex string of a reaction equation.
