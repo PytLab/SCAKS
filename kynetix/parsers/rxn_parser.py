@@ -57,6 +57,31 @@ class ChemState(object):
         self.__chem_state = chem_state
         self.__sp_list = [sp.strip() for sp in chem_state.split('+')]
 
+    def tolist(self):
+        """
+        Function to split state string to chemical formula list.
+        """
+        return [ChemFormula(species) for species in self.__sp_list]
+
+    def get_elements_dict(self):
+        """
+        Function to get element dictionary of the state.
+        """
+        # Get elements dict of all species.
+        formula_list = self.tolist()
+        elements_dicts = (formula.get_elements_dict() for formula in formula_list)
+
+        # Merge all elements dicts.
+        merged_dict = {}
+        for elements_dict in elements_dicts:
+            for element, number in elements_dict.iteritems():
+                if element not in merged_dict:
+                    merged_dict.setdefault(element, number)
+                else:
+                    merged_dict[element] += number
+
+        return merged_dict
+
     def texen(self):
         """
         Get tex string.
@@ -101,13 +126,13 @@ class ChemFormula(object):
 
     def __split(self):
         """
-        Split whole formual to
+        Private helper function to split whole formual to
         stoichiometry, species name, site number, site name.
         """
         m = self.__formula_regex.search(self.__formula)
         if not m:
-            raise ChemFormulaError('Unexpected chemical formula: %s' %
-                                   self.formula)
+            msg = 'Unexpected chemical formula: {}'.format(self.__formula)
+            raise ChemFormulaError(msg)
         else:
             stoich = int(m.group(1)) if m.group(1) else 1
             species = m.group(2)
@@ -115,9 +140,21 @@ class ChemFormula(object):
             nsite = int(m.group(3)) if m.group(3) else 1
             return stoich, species, nsite, site
 
-    def split_species(self, species=None):
+    def get_elements_dict(self):
         """
-        Function to split elements of species.
+        Function to get elements dictionary of formula.
+        """
+        sp_elements_dict = self.get_species_elements_dict()
+
+        # Get total elements dict.
+        elements_dict = {elem: self.__stoich*num
+                         for elem, num in sp_elements_dict.iteritems()}
+
+        return elements_dict
+
+    def get_species_elements_dict(self, species=None):
+        """
+        Function to split elements of species to element dict.
 
         Parameters:
         -----------
@@ -130,6 +167,10 @@ class ChemFormula(object):
         if not species:
             species = self.__species
 
+        # If it's a site, no element returned.
+        if species == "*":
+            return {}
+
         element_list = self.__sp_regex.findall(species)
 
         element_dict = {}
@@ -141,6 +182,15 @@ class ChemFormula(object):
                 element_dict[element] += number
 
         return element_dict
+
+    def get_sites_dict(self):
+        """
+        Function to get site dictionary of formula.
+        """
+        single_dict = dict([(self.__site, self.__nsite)])
+        sites_dict = {site: num*self.__stoich for site, num in single_dict.iteritems()}
+
+        return sites_dict
 
     def __sub_texen(self, sub_species):
         """
@@ -197,8 +247,8 @@ class ChemFormula(object):
             raise ParameterError(msg)
 
         # Check elements.
-        dict1 = self.split_species()
-        dict2 = another.split_species()
+        dict1 = self.get_elements_dict()
+        dict2 = another.get_elements_dict()
 
         if dict1 != dict2:
             msg_temp = "Mass of chemical formula {} and {} are not conservative."
