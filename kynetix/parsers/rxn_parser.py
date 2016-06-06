@@ -9,10 +9,15 @@ class RxnEquation(object):
     Class to create reaction equation object.
     """
     def __init__(self, rxn_equation):
+        """
+        Constructor.
+        """
         self.__rxn_equation = rxn_equation
 
     def tolist(self):
-        "Convert rxn_equation string to rxn_list(chem_state objects)."
+        """
+        Convert rxn_equation string to rxn_list(chem_state objects).
+        """
         states_regex = re.compile(r'([^\<\>]*)(?:\<?\-\>)' +
                                   r'(?:([^\<\>]*)(?:\<?\-\>))?([^\<\>]*)')
         m = states_regex.search(self.__rxn_equation)
@@ -54,6 +59,9 @@ class ChemState(object):
     Class to generate chemical state object.
     """
     def __init__(self, chem_state):
+        """
+        Constructor.
+        """
         self.__chem_state = chem_state
         self.__sp_list = [sp.strip() for sp in chem_state.split('+')]
 
@@ -137,6 +145,9 @@ class ChemFormula(object):
     Class to generate chemical formula object.
     """
     def __init__(self, formula):
+        """
+        Constructor.
+        """
         self.__formula = formula
         self.__formula_regex = re.compile(r'(\d*)([\w\*-]*)_(\d*)([a-z\*]+)')
         self.__sp_regex = re.compile(r'([a-zA-Z\*])(\d*)')
@@ -144,6 +155,9 @@ class ChemFormula(object):
         self.__stoich, self.__species, self.__nsite, self.__site = self.__split()
 
     def __add__(self, formula_inst):
+        """
+        Overload + operation function.
+        """
         chem_state = self.formula + ' + ' + formula_inst.formula
         return ChemState(chem_state)
 
