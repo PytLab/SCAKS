@@ -143,6 +143,10 @@ class ChemFormula(object):
 
         self.__stoich, self.__species, self.__nsite, self.__site = self.__split()
 
+    def __add__(self, formula_inst):
+        chem_state = self.formula + ' + ' + formula_inst.formula
+        return ChemState(chem_state)
+
     def __split(self):
         """
         Private helper function to split whole formual to
@@ -211,6 +215,45 @@ class ChemFormula(object):
 
         return sites_dict
 
+    def conserve(self, another):
+        """
+        Function to check conservation.
+
+        Parameters:
+        -----------
+        another: Another ChemFormula instance.
+
+        Returns:
+        --------
+        Conservative or not, bool.
+        """
+        # Check parameter type.
+        if not isinstance(another, self.__class__):
+            msg = "Parameter another must be instance of ChemFormula."
+            raise ParameterError(msg)
+
+        # Check elements.
+        dict1 = self.get_elements_dict()
+        dict2 = another.get_elements_dict()
+
+        if dict1 != dict2:
+            msg_temp = "Mass of chemical formula {} and {} are not conservative."
+            msg = msg_temp.format(self.formula(), another.formula())
+            raise ValueError(msg)
+
+        # Check sites.
+        dict1 = self.get_sites_dict()
+        dict2 = another.get_sites_dict()
+
+        if dict1 != dict2:
+            msg_temp = "Site of chemical formula {} and {} are not conservatvie."
+            msg = msg_temp.format(self.formula(), another.formula())
+            raise ValueError(msg)
+
+        # If all tests passed, return True.
+        return True
+
+
     def __sub_texen(self, sub_species):
         """
         Private helper function to get tex string of sub-species.
@@ -243,50 +286,6 @@ class ChemFormula(object):
         tex_str += r'(' + self.__site + r')'
 
         return tex_str
-
-    def __add__(self, formula_inst):
-        chem_state = self.formula + ' + ' + formula_inst.formula
-        return ChemState(chem_state)
-
-    def conserve(self, another):
-        """
-        Function to check conservation.
-
-        Parameters:
-        -----------
-        another: Another ChemFormula instance.
-
-        Returns:
-        --------
-        Conservative or not, bool.
-        """
-        # Check parameter type.
-        if not isinstance(another, self.__class__):
-            msg = "Parameter another must be instance of ChemFormula."
-            raise ParameterError(msg)
-
-        # Check elements.
-        dict1 = self.get_elements_dict()
-        dict2 = another.get_elements_dict()
-
-        if dict1 != dict2:
-            msg_temp = "Mass of chemical formula {} and {} are not conservative."
-            msg = msg_temp.format(self.formula(), another.formula())
-            raise ValueError(msg)
-
-        # Check sites type.
-        msg_temp = "Site of chemical formula {} and {} are not conservatvie."
-        if self.__site != another.site():
-            msg = msg_temp.format(self.formula(), another.formula())
-            raise ValueError(msg)
-
-        # Check site number.
-        if self.__nsite != another.nsite():
-            msg = msg_temp.format(self.formula(), another.formula())
-            raise ValueError(msg)
-
-        # If all tests passed, return True.
-        return True
 
     # -----------------------------------------------
     # Query functions.
