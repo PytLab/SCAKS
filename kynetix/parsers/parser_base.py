@@ -19,8 +19,7 @@ class ParserBase(ModelShell):
         A class acts as a base class to be inherited by other
         parser classes, it is not functional on its own.
         """
-        #super(self.__class__, self).__init__(owner)
-        ModelShell.__init__(self, owner)
+        super(ParserBase, self).__init__(owner)
 
         # Set elementary parse regex(compiled)
         self.__regex_dict = {}
