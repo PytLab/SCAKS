@@ -98,16 +98,61 @@ class ChemState(object):
         formula_list = self.tolist()
         sites_dicts = (formula.get_sites_dict() for formula in formula_list)
 
+        # Site types that are not included.
+        exclusive_sites = ("g", "l")
+
         # Merge all elements dicts.
         merged_dict = {}
         for sites_dict in sites_dicts:
             for site, number in sites_dict.iteritems():
+                # If gas or liquid, pass.
+                if site in exclusive_sites:
+                    continue
+
                 if site not in merged_dict:
                     merged_dict.setdefault(site, number)
                 else:
                     merged_dict[site] += number
 
         return merged_dict
+
+    def conserve(self, another):
+        """
+        Function to check state conservation.
+
+        Parameters:
+        -----------
+        another: Another ChemState instance.
+
+        Returns:
+        --------
+        Conservative or not, bool.
+        """
+        # Check input parameter.
+        if not isinstance(another, self.__class__):
+            msg = "Parameter another must be instance of ChemState."
+            return ParameterError(msg)
+
+        # Check elements.
+        dict1 = self.get_elements_dict()
+        dict2 = another.get_elements_dict()
+
+        if dict1 != dict2:
+            msg_temp = "Mass of chemical states {} and {} are not conservative."
+            msg = msg_temp.format(self.chem_state(), another.chem_state())
+            raise ValueError(msg)
+
+        # Check sites.
+        dict1 = self.get_sites_dict()
+        dict2 = another.get_sites_dict()
+
+        if dict1 != dict2:
+            msg_temp = "Site of chemical states {} and {} are not conservatvie."
+            msg = msg_temp.format(self.chem_state(), another.chem_state())
+            raise ValueError(msg)
+
+        # If all tests passed, return True.
+        return True
 
     def texen(self):
         """
