@@ -36,6 +36,10 @@ class ParserBase(ModelShell):
         """
         Parse all elementary rxn equations.
 
+        Parameters:
+        -----------
+        elementary_rxns: A list of elementary reaction strings.
+
         Return:
         -------
         A tuple of elementary related attributes:
@@ -45,6 +49,13 @@ class ParserBase(ModelShell):
              site_names,
              transition_state_names,
              elementary_rxns_list)
+
+        Example:
+        --------
+        >>> elementary_rxns = ['CO_g + *_s -> CO_s',
+                               'O2_g + 2*_s -> 2O_s',
+                               'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s']
+        >>> parser.parse_elementary_rxns(elementary_rxns)
         """
         elementary_rxns_list = []
         adsorbate_names = []
@@ -69,7 +80,7 @@ class ParserBase(ModelShell):
 
             # For each state object.
             for state in state_list:
-                rxn_list.append(state.species_list())
+                rxn_list.append(state.tolist())
 
                 # for each formula object.
                 for formula in state.tolist():
@@ -110,41 +121,6 @@ class ParserBase(ModelShell):
                 transition_state_names,
                 elementary_rxns_list)
 
-    def __update_species_definitions(self, species_dict):
-        """
-        Private helper function to update species_definition according species dict.
-
-        Return current species definitions of parser.
-        """
-        # Check parameter.
-        if len(species_dict) != 1:
-            msg = "species_dict must have one species, but {} are found.".format(len(species_dict))
-            raise ParameterError(msg)
-
-        total_name, = species_dict.keys()
-        # Add species to species_defination
-        if not total_name in self.__species_definitions:
-            self.__species_definitions[total_name] = species_dict[total_name].copy()
-            del self.__species_definitions[total_name]['number']
-        # Update existed species info.
-        else:
-            self.__species_definitions[total_name].update(species_dict[total_name])
-            del self.__species_definitions[total_name]['number']
-
-        site = species_dict[total_name]["site"]
-        # Add species type to species_definition
-        if site != 'g' and site != 'l':
-            if '-' in total_name:
-                self.__species_definitions[total_name]['type'] = 'transition_state'
-            else:
-                self.__species_definitions[total_name]['type'] = 'adsorbate'
-        elif site == 'g':
-            self.__species_definitions[total_name]['type'] = 'gas'
-        elif site == 'l':
-            self.__species_definitions[total_name]['type'] = 'liquid'
-
-        return self.__species_definitions
-
     def get_stoichiometry_matrices(self):
         """
         Go through elementary_rxns_list, return sites stoichiometry matrix,
@@ -161,34 +137,52 @@ class ParserBase(ModelShell):
                        will be positive, vice-versa.
                        row vector: [*self.gas_names], numpy.matrix.
         """
+        # Site and adsorbate names.
         sites_names = (['*_'+site_name for site_name in self._owner.site_names()] +
                        list(self._owner.adsorbate_names()))
-        # reactant and product names
+
+        # Reactant and product names.
         reapro_names = list(self._owner.gas_names() + self._owner.liquid_names())
-        # initialize matrices
+
+        # Initialize matrices.
         m = len(self._owner.elementary_rxns_list())
         n_s, n_g = len(sites_names), len(reapro_names)
-        site_matrix, reapro_matrix = (np.matrix(np.zeros((m, n_s))),
-                                      np.matrix(np.zeros((m, n_g))))
-        # go through all elementary equations
-        for i in xrange(m):
-            states_list = self._owner.elementary_rxns_list()[i]
-            for sp in states_list[0]:  # for initial state
-                stoichiometry, sp_name = self.split_species(sp)
-                if sp_name in sites_names:
-                    j = sites_names.index(sp_name)
-                    site_matrix[i, j] += stoichiometry
-                if sp_name in reapro_names:
-                    j = reapro_names.index(sp_name)
-                    reapro_matrix[i, j] += stoichiometry
-            for sp in states_list[-1]:  # for final state
-                stoichiometry, sp_name = self.split_species(sp)
-                if sp_name in sites_names:
-                    j = sites_names.index(sp_name)
-                    site_matrix[i, j] -= stoichiometry
-                if sp_name in reapro_names:
-                    j = reapro_names.index(sp_name)
-                    reapro_matrix[i, j] -= stoichiometry
+        site_matrix = np.matrix(np.zeros((m, n_s)))
+        reapro_matrix = np.matrix(np.zeros((m, n_g)))
+
+        rxns_list = self._owner.elementary_rxns_list()
+
+        # Go through all elementary equations.
+        for i, rxn_list in enumerate(rxns_list):
+            # Initial state.
+            for formula in rxn_list[0]:
+                stoich = formula.stoichiometry()
+                species_site = formula.species_site()
+
+                # Empty site.
+                if species_site in sites_names:
+                    j = sites_names.index(species_site)
+                    site_matrix[i, j] += stoich
+
+                # Adsorbate.
+                if species_site in reapro_names:
+                    j = reapro_names.index(species_site)
+                    reapro_matrix[i, j] += stoich
+
+            # Final state.
+            for formula in rxn_list[-1]:
+                stoich = formula.stoichiometry()
+                species_site = formula.species_site()
+
+                # Empty site.
+                if species_site in sites_names:
+                    j = sites_names.index(species_site)
+                    site_matrix[i, j] -= stoich
+
+                # Adsorbate.
+                if species_site in reapro_names:
+                    j = reapro_names.index(species_site)
+                    reapro_matrix[i, j] -= stoich
 
         return site_matrix, reapro_matrix
 

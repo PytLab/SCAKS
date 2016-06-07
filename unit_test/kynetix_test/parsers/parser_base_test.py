@@ -65,23 +65,23 @@ class ParserBaseTest(unittest.TestCase):
 #
 #        self.assertDictEqual(ret_species_definitions, ref_species_definitions)
 
-#    def test_stoichiometry_matrices(self):
-#        " Make sure we can get the reactant product matrix and intermediate matrix correctly."
-#        # Construction.
-#        model = KineticModel(setup_file="input_files/parser_base.mkm",
-#                             verbosity=logging.WARNING)
-#        parser = model.parser()
-#
-#        ref_reapro_matrix = np.matrix([[1.0, -1.0, 0.0],
-#                                       [2.0, 0.0, -2.0],
-#                                       [-2.0, 1.0, 1.0]])
-#        ref_site_matrix = np.matrix([[0.0, 1.0, 0.0],
-#                                    [0.0, 0.0, 1.0],
-#                                    [-1.0, 0.0, 0.0]])
-#        ret_reapro_matrix, ret_site_matrix = parser.get_stoichiometry_matrices()
-#
-#        self.assertTrue(np.allclose(ref_reapro_matrix, ret_reapro_matrix))
-#        self.assertTrue(np.allclose(ref_site_matrix, ret_site_matrix))
+    def test_stoichiometry_matrices(self):
+        " Make sure we can get the reactant product matrix and intermediate matrix correctly."
+        # Construction.
+        model = KineticModel(setup_file="input_files/parser_base.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+
+        ref_reapro_matrix = np.matrix([[1.0, -1.0, 0.0],
+                                       [2.0, 0.0, -2.0],
+                                       [-2.0, 1.0, 1.0]])
+        ref_site_matrix = np.matrix([[0.0, 1.0, 0.0],
+                                    [0.0, 0.0, 1.0],
+                                    [-1.0, 0.0, 0.0]])
+        ret_reapro_matrix, ret_site_matrix = parser.get_stoichiometry_matrices()
+
+        self.assertTrue(np.allclose(ref_reapro_matrix, ret_reapro_matrix))
+        self.assertTrue(np.allclose(ref_site_matrix, ret_site_matrix))
 #
 #    def test_update_species_definitions(self):
 #        " Test species definitions of parser can be updated correctly. "
@@ -138,9 +138,7 @@ class ParserBaseTest(unittest.TestCase):
         ref_liquid_names = ()
         ref_site_names = ('s', )
         ref_transition_state_names = ('CO-O_2s', )
-        ref_elementary_rxns_list = [[['CO_g', '*_s'], ['CO_s']],
-                                    [['O2_g', '2*_s'], ['2O_s']],
-                                    [['CO_s', 'O_s'], ['CO-O_2s'], ['CO2_g', '2*_s']]]
+
         (ret_adsorbate_names,
          ret_gas_names,
          ret_liquid_names,
@@ -154,7 +152,6 @@ class ParserBaseTest(unittest.TestCase):
         self.assertTupleEqual(ref_liquid_names, ret_liquid_names)
         self.assertTupleEqual(ref_site_names, ret_site_names)
         self.assertTupleEqual(ref_transition_state_names, ret_transition_state_names)
-        self.assertListEqual(ref_elementary_rxns_list, ret_elementary_rxns_list)
 
 #    def test_total_rxn_equation(self):
 #        " Test we can get the total reaction equation from elementary reactions. "
