@@ -82,44 +82,6 @@ class ParserBaseTest(unittest.TestCase):
 
         self.assertTrue(np.allclose(ref_reapro_matrix, ret_reapro_matrix))
         self.assertTrue(np.allclose(ref_site_matrix, ret_site_matrix))
-#
-#    def test_update_species_definitions(self):
-#        " Test species definitions of parser can be updated correctly. "
-#
-#        # Construction.
-#        model = KineticModel(setup_file="input_files/parser_base.mkm",
-#                             verbosity=logging.WARNING)
-#        parser = model.parser()
-#
-#        # Test species original definitions.
-#        ref_species_definitions = {'CO2_g': {'pressure': 0.0},
-#                                  'CO_g': {'pressure': 1.0},
-#                                  'O2_g': {'pressure': 0.3333333333333333},
-#                                  's': {'site_name': '111', 'total': 1.0, 'type': 'site'}}
-#
-#        # Here we change the default value of parser's definitions.
-#        parser._ParserBase__species_definitions = ref_species_definitions
-#
-#        # Em... this assertion maybe redundant.
-#        ret_species_definitions = parser.species_definitions()
-#        self.assertDictEqual(ret_species_definitions, ref_species_definitions)
-#
-#        # Update with one species dict.
-#        sp_dict = {'CO_g': {'elements': {'C': 1, 'O': 1},
-#                            'number': 1,
-#                            'site': 'g',
-#                            'site_number': 1}}
-#        parser._ParserBase__update_species_definitions(sp_dict)
-#
-#        ref_species_definitions = {'CO2_g': {'pressure': 0.0},
-#                                   'CO_g': {'elements': {'C': 1, 'O': 1},
-#                                            'pressure': 1.0,
-#                                            'site': 'g',
-#                                            'site_number': 1,
-#                                            'type': 'gas'},
-#                                   'O2_g': {'pressure': 0.3333333333333333},
-#                                   's': {'site_name': '111', 'total': 1.0, 'type': 'site'}}
-#        self.assertDictEqual(parser.species_definitions(), ref_species_definitions)
 
     def test_elemtary_rxns_parse(self):
         " Test all elementary reaction equations can be parsed correctly. "
@@ -153,19 +115,19 @@ class ParserBaseTest(unittest.TestCase):
         self.assertTupleEqual(ref_site_names, ret_site_names)
         self.assertTupleEqual(ref_transition_state_names, ret_transition_state_names)
 
-#    def test_total_rxn_equation(self):
-#        " Test we can get the total reaction equation from elementary reactions. "
-#
-#        # Construction.
-#        model = KineticModel(setup_file="input_files/parser_base.mkm",
-#                             verbosity=logging.WARNING)
-#        parser = model.parser()
-#
-#        ref_total_rxn_equation = "2CO_g + O2_g -> 2CO2_g"
-#        ret_total_rxn_equation = parser.get_total_rxn_equation()
-#
-#        # Check.
-#        self.assertEqual(ref_total_rxn_equation, ret_total_rxn_equation)
+    def test_total_rxn_equation(self):
+        " Test we can get the total reaction equation from elementary reactions. "
+
+        # Construction.
+        model = KineticModel(setup_file="input_files/parser_base.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+
+        ref_total_rxn_equation = "2CO_g + O2_g -> 2CO2_g"
+        ret_total_rxn_equation = parser.get_total_rxn_equation()
+
+        # Check.
+        self.assertEqual(ref_total_rxn_equation, ret_total_rxn_equation)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(ParserBaseTest)

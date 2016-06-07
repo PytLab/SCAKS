@@ -187,19 +187,16 @@ class ParserBase(ModelShell):
         return site_matrix, reapro_matrix
 
     def get_total_rxn_equation(self):
-        "Get total reaction expression of the kinetic model."
+        """
+        Function to get total reaction expression of the kinetic model.
+        """
         site_matrix, reapro_matrix = self.get_stoichiometry_matrices()
 
+        # Helper function to get null space of transposition of site_matrix.
         def null(A, eps=1e-10):
-            "get null space of transposition of site_matrix"
             u, s, vh = np.linalg.svd(A, full_matrices=1, compute_uv=1)
             null_space = np.compress(s <= eps, vh, axis=0)
             return null_space.T
-#        def null(A, eps=1e-15):
-#            u, s, vh = scipy.linalg.svd(A)
-#            null_mask = (s <= eps)
-#            null_space = scipy.compress(null_mask, vh, axis=0)
-#            return scipy.transpose(null_space)
 
         x = null(site_matrix.T)  # basis of null space
         if not x.any():  # x is not empty
@@ -208,7 +205,6 @@ class ParserBase(ModelShell):
         #convert entries of x to integer
         min_x = min(x)
         x = [round(i/min_x, 1) for i in x]
-#        setattr(self._owner, 'trim_coeffients', x)
         x = np.matrix(x)
         total_coefficients = (x*reapro_matrix).tolist()[0]
 
@@ -244,17 +240,8 @@ class ParserBase(ModelShell):
         products_expr = ' + '.join(products_list)
         total_rxn_equation = reactants_expr + ' -> ' + products_expr
 
-        # check conservation
-        states_dict = self.parse_single_elementary_rxn(total_rxn_equation)[0]
-        check_result = self.__check_conservation(states_dict)
-
-        if check_result:
-            if check_result == 'mass_nonconservative':
-                msg = "Mass of total equation '{}' is not conservative.".format(total_rxn_equation)
-                raise ValueError(msg)
-            if check_result == 'site_nonconservative':
-                msg = "Site of total equation '{}' is not conservative.".format(total_rxn_equation)
-                raise ValueError(msg)
+        # Check conservation.
+        RxnEquation(total_rxn_equation).check_conservation()
 
         # If check passed, return.
         return total_rxn_equation
