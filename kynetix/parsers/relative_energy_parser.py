@@ -63,19 +63,8 @@ class RelativeEnergyParser(ParserBase):
 
         return unknown_species
 
-    def __list2dict(self, state_list):
-        """
-        Private helper function to convert a state list to dict.
-        ['*_s', 'NO_g'] -> {'*_s': 1, 'NO_g': 1}.
-        """
-        state_dict = {}
-        for sp_str in state_list:
-            stoichiometry, species_name = self.split_species(sp_str)
-            state_dict.setdefault(species_name, stoichiometry)
-
-        return state_dict
-
     def __get_unknown_coeff_vector(self, rxn_expression):
+        # {{{
         """
         Private helper function to get coefficient vector for unknown species.
 
@@ -159,6 +148,7 @@ class RelativeEnergyParser(ParserBase):
         else:
             self.__logger.debug('dG: {}'.format(dG))
             return coeff_vects, [dG]
+        # }}}
 
     def __convert_data(self):
         '''
