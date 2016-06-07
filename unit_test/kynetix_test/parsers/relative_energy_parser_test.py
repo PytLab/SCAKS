@@ -66,25 +66,25 @@ class RelativeEnergyParserTest(unittest.TestCase):
         else:
             raise IOError("{} is not found.".format(filename))
 
-        rxn_list = [['CO_s', 'O_s'], ['CO-O_2s'], ['CO2_g', '2*_s']]
+        rxn_expression = 'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s'
         ref_vectors = [[0, -1, -1, 1], [0, -1, -1, 0]]
         ref_Ga = 1.25
         ref_dG = 0.324
 
         ret_vectors, [ret_Ga, ret_dG] = \
-            parser._RelativeEnergyParser__get_unknown_coeff_vector(rxn_list)
+            parser._RelativeEnergyParser__get_unknown_coeff_vector(rxn_expression)
 
         self.assertListEqual(ref_vectors, ret_vectors)
         self.assertAlmostEqual(ref_Ga, ret_Ga)
         self.assertAlmostEqual(ref_dG, ret_dG)
 
         # Reaction without TS.
-        rxn_list = [['CO_g', '*_s'], ['CO_s']]
+        rxn_expression = 'CO_g + *_s -> CO_s'
         ref_vectors = [[0, 1, 0, 0]]
         ref_dG = -0.758
 
         ret_vectors, [ret_dG] = \
-            parser._RelativeEnergyParser__get_unknown_coeff_vector(rxn_list)
+            parser._RelativeEnergyParser__get_unknown_coeff_vector(rxn_expression)
 
         self.assertListEqual(ref_vectors, ret_vectors)
         self.assertAlmostEqual(ref_dG, ret_dG)

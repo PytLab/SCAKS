@@ -31,11 +31,11 @@ class RelativeEnergyParser(ParserBase):
         """
 
         if hasattr(self, "_RelativeEnergyParser__Ga"):
-            if len(self.__Ga) != len(self._owner.elementary_rxns_list()):
+            if len(self.__Ga) != len(self._owner.rxn_expressions()):
                 raise ValueError("Invalid shape of Ga.")
 
         if hasattr(self, "_RelativeEnergyParser__dG"):
-            if len(self.__dG) != len(self._owner.elementary_rxns_list()):
+            if len(self.__dG) != len(self._owner.rxn_expressions()):
                 raise ValueError("Invalid shape of dG.")
 
         return
@@ -75,7 +75,7 @@ class RelativeEnergyParser(ParserBase):
 
         return state_dict
 
-    def __get_unknown_coeff_vector(self, elementary_rxn_list):
+    def __get_unknown_coeff_vector(self, rxn_expression):
         """
         Private helper function to get coefficient vector for unknown species.
 
@@ -93,43 +93,64 @@ class RelativeEnergyParser(ParserBase):
         -----
         The shape of coefficient vector is the same with that of unknown_species.
         """
-        idx = self._owner.elementary_rxns_list().index(elementary_rxn_list)
+        # Get relative energies for the elementary reaction.
+        idx = self._owner.rxn_expressions().index(rxn_expression)
         Ga, dG = self.__Ga[idx], self.__dG[idx]
 
+        # Get ChemState object list.
+        rxn_equation = RxnEquation(rxn_expression)
+        states = rxn_equation.tolist()
+
+        # Unknown species names.
         unknown_species = self.__get_unknown_species()
 
         coeff_vects = []
-        if Ga != 0 and len(elementary_rxn_list) != 2:  # has barrier
+
+        # Equation for E(TS) - E(IS) = Ea.
+        if Ga != 0 and len(states) != 2:
             # Get ts coefficient vector
-            is_list, ts_list = elementary_rxn_list[0], elementary_rxn_list[1]
-            is_dict, ts_dict = self.__list2dict(is_list), self.__list2dict(ts_list)
+            istate, tstate = states[0], states[1]
+            is_species = istate.species_list()
+            ts_species = tstate.species_list()
             coeff_vect = []
+
             for unknown in unknown_species:
-                if unknown in is_dict:
-                    coeff = -is_dict[unknown]
-                elif unknown in ts_dict:
-                    coeff = ts_dict[unknown]
+                if unknown in is_species:
+                    formula_idx = is_species.index(unknown)
+                    formula = istate.tolist()[formula_idx]
+                    coeff = -formula.stoichiometry()
+                elif unknown in ts_species:
+                    formula_idx = ts_species.index(unknown)
+                    formula = tstate.tolist()[formula_idx]
+                    coeff = formula.stoichiometry()
                 else:
                     coeff = 0
                 coeff_vect.append(coeff)
             coeff_vects.append(coeff_vect)
 
-        # Coefficient vector for dG
-        is_list, fs_list = elementary_rxn_list[0], elementary_rxn_list[-1]
-        is_dict, fs_dict = self.__list2dict(is_list), self.__list2dict(fs_list)
+        # Equation for E(FS) - E(IS) = dE.
+        istate, fstate = states[0], states[-1]
+        is_species = istate.species_list()
+        fs_species = fstate.species_list()
         coeff_vect = []
+
         for unknown in unknown_species:
-            if unknown in is_dict:
-                coeff = -is_dict[unknown]
-            elif unknown in fs_dict:
-                coeff = fs_dict[unknown]
+            if unknown in is_species:
+                formula_idx = is_species.index(unknown)
+                formula = istate.tolist()[formula_idx]
+                coeff = -formula.stoichiometry()
+            elif unknown in fs_species:
+                formula_idx = fs_species.index(unknown)
+                formula = fstate.tolist()[formula_idx]
+                coeff = formula.stoichiometry()
             else:
                 coeff = 0
             coeff_vect.append(coeff)
+
         coeff_vects.append(coeff_vect)
 
         # Debug info output
-        self.__logger.debug('elementary rxn: {}'.format(elementary_rxn_list))
+        self.__logger.debug('elementary rxn: {}'.format(rxn_expression))
         self.__logger.debug('unknown species coeffs: {}'.format(coeff_vects))
 
         if Ga:
