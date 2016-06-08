@@ -262,6 +262,17 @@ class ChemFormula(object):
             self.__site = m.group(5)
             self.__nsite = int(m.group(4)) if m.group(4) else 1
 
+    def type(self):
+        """
+        Function to get species type:  'gas' | 'liquid' | 'adsorbate'
+        """
+        if self.__site == "g":
+            return "gas"
+        elif self.__site == "l":
+            return "liquid"
+        else:
+            return "adsorbate"
+
     def get_elements_dict(self):
         """
         Function to get elements dictionary of formula.

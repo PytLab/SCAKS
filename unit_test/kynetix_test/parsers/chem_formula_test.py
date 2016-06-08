@@ -13,6 +13,23 @@ class ChemFormulaTest(unittest.TestCase):
         # Test case setting.
         self.maxDiff = None
 
+    def test_type(self):
+        " Make sure formula can return correct species type. "
+        # Gas.
+        formula_str = "CO2_g"
+        formula = ChemFormula(formula_str)
+        self.assertEqual("gas", formula.type())
+
+        # Liquid.
+        formula_str = "CO2_l"
+        formula = ChemFormula(formula_str)
+        self.assertEqual("liquid", formula.type())
+
+        # Adsorbate.
+        formula_str = "CO2_s"
+        formula = ChemFormula(formula_str)
+        self.assertEqual("adsorbate", formula.type())
+
     def test_get_elements_dict(self):
         " Test we can get correct elements dictionary. "
         # Construction.
