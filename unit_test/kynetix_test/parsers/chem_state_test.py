@@ -13,6 +13,45 @@ class ChemStateTest(unittest.TestCase):
         # Test case setting.
         self.maxDiff = None
 
+    def test_split(self):
+        " Test we can get formula string list correctly. "
+        # Construction.
+        state_str = "CO2_g + 2*_s"
+        state = ChemState(state_str)
+
+        ref_formula_list = ['CO2_g', '2*_s']
+        ret_formula_list = state.split()
+
+        self.assertListEqual(ref_formula_list, ret_formula_list)
+
+    def get_tolist(self):
+        " Test we can get correct ChemFormula list. "
+        # Construction.
+        state_str = "CO2_g + 2*_s"
+        state = ChemState(state_str)
+
+        formula_list = state.tolist()
+
+        # Check length.
+        self.assertEqual(len(formula_list), 2)
+
+        # Check formula.
+        formula_str_list = ['CO2_g', '2*_s']
+        for formula, formula_str in zip(formula_list, formula_str_list):
+            self.assertTrue(isinstance(formula, ChemFormula))
+            self.assertEqual(formula.formula(), formula_str)
+
+    def test_get_species_site_dict(self):
+        " Make sure we can get species_site dict correctly. "
+        # Construction.
+        state_str = "CO2_g + 2*_s"
+        state = ChemState(state_str)
+
+        ref_species_site_dict = {'*_s': 2, 'CO2_g': 1}
+        ret_species_site_dict = state.get_species_site_dict()
+
+        self.assertDictEqual(ref_species_site_dict, ret_species_site_dict)
+
     def test_get_elements_dict(self):
         " Test we can get correct elements dictionary. "
         # Construction.

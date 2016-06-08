@@ -80,13 +80,31 @@ class ChemState(object):
         Constructor.
         """
         self.__chem_state = chem_state
-        self.__sp_list = [sp.strip() for sp in chem_state.split('+')]
+
+    def split(self):
+        """
+        Function to split state to formula string list.
+        """
+        return [sp.strip() for sp in self.__chem_state.split('+')]
 
     def tolist(self):
         """
         Function to split state string to chemical formula list.
         """
-        return [ChemFormula(species) for species in self.__sp_list]
+        formula_str_list = self.split()
+        formula_list = [ChemFormula(formula) for formula in formula_str_list]
+        return formula_list
+
+    def get_species_site_dict(self):
+        """
+        Function to get species_site dictionary of the state.
+        """
+        formula_list = self.tolist()
+
+        species_dict = {formula.species_site(): formula.stoichiometry()
+                        for formula in formula_list}
+
+        return species_dict
 
     def get_elements_dict(self):
         """
@@ -191,11 +209,6 @@ class ChemState(object):
         """
         return self.__chem_state
 
-    def species_list(self):
-        """
-        Query function for species list in state.
-        """
-        return self.__sp_list
 
 class ChemFormulaError(Exception):
     "Exception raised for errors in the chemical formula."
