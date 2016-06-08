@@ -99,17 +99,17 @@ class RelativeEnergyParser(ParserBase):
         if Ga != 0 and len(states) != 2:
             # Get ts coefficient vector
             istate, tstate = states[0], states[1]
-            is_species = istate.species_list()
-            ts_species = tstate.species_list()
+            is_species_sites = istate.get_species_site_list()
+            ts_species_sites = tstate.get_species_site_list()
             coeff_vect = []
 
             for unknown in unknown_species:
-                if unknown in is_species:
-                    formula_idx = is_species.index(unknown)
+                if unknown in is_species_sites:
+                    formula_idx = is_species_sites.index(unknown)
                     formula = istate.tolist()[formula_idx]
                     coeff = -formula.stoichiometry()
-                elif unknown in ts_species:
-                    formula_idx = ts_species.index(unknown)
+                elif unknown in ts_species_sites:
+                    formula_idx = ts_species_sites.index(unknown)
                     formula = tstate.tolist()[formula_idx]
                     coeff = formula.stoichiometry()
                 else:
@@ -119,17 +119,17 @@ class RelativeEnergyParser(ParserBase):
 
         # Equation for E(FS) - E(IS) = dE.
         istate, fstate = states[0], states[-1]
-        is_species = istate.species_list()
-        fs_species = fstate.species_list()
+        is_species_sites = istate.get_species_site_list()
+        fs_species_sites = fstate.get_species_site_list()
         coeff_vect = []
 
         for unknown in unknown_species:
-            if unknown in is_species:
-                formula_idx = is_species.index(unknown)
+            if unknown in is_species_sites:
+                formula_idx = is_species_sites.index(unknown)
                 formula = istate.tolist()[formula_idx]
                 coeff = -formula.stoichiometry()
-            elif unknown in fs_species:
-                formula_idx = fs_species.index(unknown)
+            elif unknown in fs_species_sites:
+                formula_idx = fs_species_sites.index(unknown)
                 formula = fstate.tolist()[formula_idx]
                 coeff = formula.stoichiometry()
             else:
@@ -159,8 +159,8 @@ class RelativeEnergyParser(ParserBase):
 
         # Get coefficients matrix A and values vector b
         A, b = [], []
-        for rxn_list in self._owner.elementary_rxns_list():
-            coeff_vects, value = self.__get_unknown_coeff_vector(rxn_list)
+        for rxn_expression in self._owner.rxn_expressions():
+            coeff_vects, value = self.__get_unknown_coeff_vector(rxn_expression)
             A.extend(coeff_vects)
             b.extend(value)
 
