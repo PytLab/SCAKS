@@ -95,16 +95,26 @@ class ChemState(object):
         formula_list = [ChemFormula(formula) for formula in formula_str_list]
         return formula_list
 
+    def get_species_site_list(self):
+        """
+        Function to get species_site list of the state.
+        """
+        formula_list = self.tolist()
+
+        species_site_list = [formula.species_site() for formula in formula_list]
+
+        return species_site_list
+
     def get_species_site_dict(self):
         """
         Function to get species_site dictionary of the state.
         """
         formula_list = self.tolist()
 
-        species_dict = {formula.species_site(): formula.stoichiometry()
-                        for formula in formula_list}
+        species_site_dict = {formula.species_site(): formula.stoichiometry()
+                             for formula in formula_list}
 
-        return species_dict
+        return species_site_dict
 
     def get_elements_dict(self):
         """

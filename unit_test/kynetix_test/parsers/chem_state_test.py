@@ -24,7 +24,7 @@ class ChemStateTest(unittest.TestCase):
 
         self.assertListEqual(ref_formula_list, ret_formula_list)
 
-    def get_tolist(self):
+    def test_tolist(self):
         " Test we can get correct ChemFormula list. "
         # Construction.
         state_str = "CO2_g + 2*_s"
@@ -40,6 +40,17 @@ class ChemStateTest(unittest.TestCase):
         for formula, formula_str in zip(formula_list, formula_str_list):
             self.assertTrue(isinstance(formula, ChemFormula))
             self.assertEqual(formula.formula(), formula_str)
+
+    def test_get_species_site_list(self):
+        " Make sure we can get species_site list correctly. "
+        # Construction.
+        state_str = "CO2_g + 2*_s"
+        state = ChemState(state_str)
+
+        ref_species_site_list = ['CO2_g', '*_s']
+        ret_species_site_list = state.get_species_site_list()
+
+        self.assertListEqual(ref_species_site_list, ret_species_site_list)
 
     def test_get_species_site_dict(self):
         " Make sure we can get species_site dict correctly. "
