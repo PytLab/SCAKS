@@ -18,6 +18,7 @@ except ImportError:
 
 from kynetix import KineticCoreComponent
 from kynetix.functions import *
+from kynetix.parsers.rxn_parser import *
 
 
 class SolverBase(KineticCoreComponent):
@@ -137,7 +138,8 @@ class SolverBase(KineticCoreComponent):
 
         species_definitions = self._owner.species_definitions()
         for adsorbate_name in self._owner.adsorbate_names():
-            site_name = species_definitions[adsorbate_name]['site']
+            formula = ChemFormula(adsorbate_name)
+            site_name = formula.site()
             classified_adsorbates[site_name].append(adsorbate_name)
 
         return classified_adsorbates
@@ -182,17 +184,19 @@ class SolverBase(KineticCoreComponent):
         """
         Function to get data from model.
         """
+        species_definitions = self._owner.species_definitions()
+
         # Get gas pressure dict.
         p_dict = {}
         for gas_name in self._owner.gas_names():
-            pressure = self._owner.species_definitions()[gas_name]['pressure']
+            pressure = species_definitions[gas_name]['pressure']
             p_dict.setdefault(gas_name, self._mpf(pressure))
         self._p = p_dict
 
         # Get concentration dict.
         c_dict = {}
         for liquid_name in self._owner.liquid_names():
-            concentration = self._owner.species_definitions()[liquid_name]['concentration']
+            concentration = species_definitions[liquid_name]['concentration']
             c_dict.setdefault(liquid_name, self._mpf(concentration))
         self._c = c_dict
 
@@ -208,12 +212,13 @@ class SolverBase(KineticCoreComponent):
         # get energy for each species
         if self._owner.has_absolute_energy():
             G_dict = {}
-            for species in self._owner.species_definitions():
-                if self._owner.species_definitions()[species]['type'] == 'site':
+            for species in species_definitions:
+                if ("type" in species_definitions[species] and
+                        species_definitions[species]["type"] == "site"):
                     key = '*_' + species
                 else:
                     key = species
-                energy = self._mpf(self._owner.species_definitions()[species]['formation_energy'])
+                energy = self._mpf(species_definitions[species]['formation_energy'])
                 G_dict.setdefault(key, energy)
             self._G = G_dict
 
@@ -328,7 +333,7 @@ class SolverBase(KineticCoreComponent):
 
         return tuple(cvgs)
 
-    def get_elementary_rate_expression(self, elementary_rxn_list):
+    def get_elementary_rate_expression(self, rxn_expression):
         """
         Function to get the rate calculation expression for an elementary reaction.
 
@@ -346,25 +351,26 @@ class SolverBase(KineticCoreComponent):
         >>> solver.get_elementary_rate_expression(rxn_list)
         >>> ("kf[1]*p['O2_g']*theta['*_s']**2", "kr[1]*theta['O_s']**2")
         """
-        idx = self._rxns_list.index(elementary_rxn_list)
+        idx = self._owner.rxn_expressions().index(rxn_expression)
 
         # Local function.
-        def list2string(sp_list, direction):
+        def list2string(formula_list, direction):
             if direction == 'f':
                 rate_str = 'kf[' + str(idx) + ']'
             if direction == 'r':
                 rate_str = 'kr[' + str(idx) + ']'
 
-            for sp in sp_list:
-                stoichiometry, species_name = self.split_species(sp)
+            for formula in formula_list:
+                stoichiometry = formula.stoichiometry()
+                species_name = formula.species_site()
                 #get type of species
-                if '*' in sp:
+                if '*' in species_name:
                     if stoichiometry == 1:
                         sp_expr = "*theta['" + species_name + "']"
                     else:
                         sp_expr = "*theta['" + species_name + "']**" + str(stoichiometry)
                 else:
-                    sp_type = self._owner.species_definitions()[species_name]['type']
+                    sp_type = formula.type()
                     if sp_type == 'adsorbate':
                         if stoichiometry == 1:
                             sp_expr = "*theta['" + species_name + "']"
@@ -383,6 +389,8 @@ class SolverBase(KineticCoreComponent):
                 rate_str += sp_expr
             return rate_str
 
+        elementary_rxn_list = self._rxns_list[idx]
+
         f_expr, r_expr = (list2string(elementary_rxn_list[0], direction='f'),
                           list2string(elementary_rxn_list[-1], direction='r'))
 
@@ -393,9 +401,11 @@ class SolverBase(KineticCoreComponent):
         Function to get rate expression for all elementary reactions in model.
         """
         f_rate_expressions, r_rate_expressions = [], []
-        for rxn_list in self._rxns_list:
-            f_expr, r_expr = self.get_elementary_rate_expression(rxn_list)
-            idx = self._rxns_list.index(rxn_list)
+        rxn_expressions = self._owner.rxn_expressions()
+
+        # Loop over all rxn expressions to get all rate expressions.
+        for idx, rxn_expression in enumerate(rxn_expressions):
+            f_expr, r_expr = self.get_elementary_rate_expression(rxn_expression)
             f_rate_expressions.append('rfs[' + str(idx) + '] = ' + f_expr)
             r_rate_expressions.append('rrs[' + str(idx) + '] = ' + r_expr)
 

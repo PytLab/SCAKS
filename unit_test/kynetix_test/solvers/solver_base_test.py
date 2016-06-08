@@ -164,19 +164,19 @@ class SolverBaseTest(unittest.TestCase):
         parser = model.parser()
         solver = model.solver()
 
-        rxn_list = [['CO_g', '*_s'], ['CO_s']]
+        rxn_expression = 'CO_g + *_s -> CO_s'
         ref_f_expr = "kf[0]*p['CO_g']*theta['*_s']"
         ref_r_expr = "kr[0]*theta['CO_s']"
-        ret_f_expr, ret_r_expr = solver.get_elementary_rate_expression(rxn_list)
+        ret_f_expr, ret_r_expr = solver.get_elementary_rate_expression(rxn_expression)
 
         self.assertEqual(ref_f_expr, ret_f_expr)
         self.assertEqual(ref_r_expr, ret_r_expr)
 
         # Check elementary reaction with TS.
-        rxn_list = [['CO_s', 'O_s'], ['CO-O_2s'], ['CO2_g', '2*_s']]
+        rxn_expression = 'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s'
         ref_f_expr = "kf[2]*theta['CO_s']*theta['O_s']"
         ref_r_expr = "kr[2]*p['CO2_g']*theta['*_s']**2"
-        ret_f_expr, ret_r_expr = solver.get_elementary_rate_expression(rxn_list)
+        ret_f_expr, ret_r_expr = solver.get_elementary_rate_expression(rxn_expression)
 
         self.assertEqual(ref_f_expr, ret_f_expr)
         self.assertEqual(ref_r_expr, ret_r_expr)
