@@ -280,6 +280,7 @@ class ParserBase(ModelShell):
             return molecular_mass
 
     def get_relative_energies(self, rxn_expression):
+        # {{{
         """
         Function to get relative energies:
             forward barrier,
@@ -348,6 +349,7 @@ class ParserBase(ModelShell):
         reaction_energy = G_FS - G_IS
 
         return f_barrier, r_barrier, reaction_energy
+        # }}}
 
     def get_relative_from_absolute(self):
         """
