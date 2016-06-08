@@ -100,40 +100,40 @@ class RelativeEnergyParserTest(unittest.TestCase):
         self.assertListEqual(ref_vectors, ret_vectors)
         self.assertAlmostEqual(ref_dG, ret_dG)
 
-#    def test_data_conversion(self):
-#        " Test relative energy can be converted to absolute energy. "
-#        # Construction.
-#        model = KineticModel(setup_file="input_files/relative_energy_parser.mkm",
-#                             verbosity=logging.WARNING)
-#        parser = model.parser()
-#
-#        # Check G dict before conversion.
-#        self.assertDictEqual({}, parser._RelativeEnergyParser__G_dict)
-#
-#        # Read relative energy data file.
-#        filename = "input_files/rel_energy.py"
-#        if os.path.exists(filename):
-#            globs, locs = {}, {}
-#            execfile(filename, globs, locs)
-#
-#            # Set variables in data file as attr of parser
-#            for key in locs:
-#                attribute_name = mangled_name(parser, key)
-#                setattr(parser, attribute_name, locs[key])
-#        else:
-#            raise IOError("{} is not found.".format(filename))
-#
-#        # Check after conversion.
-#        parser._RelativeEnergyParser__convert_data()
-#        ref_G_dict = {'CO-O_2s': 0.9259999999999999,
-#                      'CO2_g': 0.0,
-#                      'CO_g': 0.0,
-#                      'CO_s': -0.758,
-#                      'O2_g': 3.508,
-#                      'O_s': 0.43399999999999994,
-#                      's': 0.0}
-#        ret_G_dict = parser._RelativeEnergyParser__G_dict
-#        self.assertDictEqual(ref_G_dict, ret_G_dict)
+    def test_data_conversion(self):
+        " Test relative energy can be converted to absolute energy. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/relative_energy_parser.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+
+        # Check G dict before conversion.
+        self.assertDictEqual({}, parser._RelativeEnergyParser__G_dict)
+
+        # Read relative energy data file.
+        filename = "input_files/rel_energy.py"
+        if os.path.exists(filename):
+            globs, locs = {}, {}
+            execfile(filename, globs, locs)
+
+            # Set variables in data file as attr of parser
+            for key in locs:
+                attribute_name = mangled_name(parser, key)
+                setattr(parser, attribute_name, locs[key])
+        else:
+            raise IOError("{} is not found.".format(filename))
+
+        # Check after conversion.
+        parser._RelativeEnergyParser__convert_data()
+        ref_G_dict = {'CO-O_2s': 0.9259999999999999,
+                      'CO2_g': 0.0,
+                      'CO_g': 0.0,
+                      'CO_s': -0.758,
+                      'O2_g': 3.508,
+                      'O_s': 0.43399999999999994,
+                      's': 0.0}
+        ret_G_dict = parser._RelativeEnergyParser__G_dict
+        self.assertDictEqual(ref_G_dict, ret_G_dict)
 #
 #    def test_data_parse(self):
 #        " Test data in relative energy file can be parsed correctly. "
