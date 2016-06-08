@@ -43,7 +43,10 @@ class RelativeEnergyParser(ParserBase):
     ####### Use matrix to get generalized formation energy ########
 
     def __get_unknown_species(self):
-        "Get species whose free energy is unknown."
+        # {{{
+        """
+        Private function to get species whose free energy is unknown.
+        """
         # Get all species.
         all_species = (self._owner.site_names() + self._owner.gas_names() +
                        self._owner.liquid_names() + self._owner.adsorbate_names() +
@@ -62,6 +65,7 @@ class RelativeEnergyParser(ParserBase):
         self.__logger.debug('{} unknown species.'.format(len(unknown_species)))
 
         return unknown_species
+        # }}}
 
     def __get_unknown_coeff_vector(self, rxn_expression):
         # {{{
@@ -224,14 +228,22 @@ class RelativeEnergyParser(ParserBase):
         return relative_energies
 
     def parse_data(self, relative=False, filename="./rel_energy.py"):
-        '''
+        # {{{
+        """
         Put generalized formation energy into species_definitions.
+
+        Parameters:
+        -----------
+        relative: Only relative energies or not, default to be False.
+                  If true, no absolute energies would be put to species definitions.
+
+        filename: The filename of relative energies data.
 
         NOTE: This function will change the species definition of model.
               If relative is true, then the relative_energies of model will be set.
               If relative is false, formation energy in species_definitions
               and realtive energies will be set.
-        '''
+        """
         # Read relative energy data file.
         if os.path.exists(filename):
             globs, locs = {}, {}
@@ -302,6 +314,7 @@ class RelativeEnergyParser(ParserBase):
                 raise ValueError(msg)
 
         return
+        # }}}
 
     @return_deepcopy
     def Ga(self):
