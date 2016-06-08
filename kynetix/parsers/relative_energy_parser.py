@@ -31,11 +31,11 @@ class RelativeEnergyParser(ParserBase):
         """
 
         if hasattr(self, "_RelativeEnergyParser__Ga"):
-            if len(self.__Ga) != len(self._owner.elementary_rxns_list()):
+            if len(self.__Ga) != len(self._owner.rxn_expressions()):
                 raise ValueError("Invalid shape of Ga.")
 
         if hasattr(self, "_RelativeEnergyParser__dG"):
-            if len(self.__dG) != len(self._owner.elementary_rxns_list()):
+            if len(self.__dG) != len(self._owner.rxn_expressions()):
                 raise ValueError("Invalid shape of dG.")
 
         return
@@ -43,7 +43,10 @@ class RelativeEnergyParser(ParserBase):
     ####### Use matrix to get generalized formation energy ########
 
     def __get_unknown_species(self):
-        "Get species whose free energy is unknown."
+        # {{{
+        """
+        Private function to get species whose free energy is unknown.
+        """
         # Get all species.
         all_species = (self._owner.site_names() + self._owner.gas_names() +
                        self._owner.liquid_names() + self._owner.adsorbate_names() +
@@ -62,20 +65,10 @@ class RelativeEnergyParser(ParserBase):
         self.__logger.debug('{} unknown species.'.format(len(unknown_species)))
 
         return unknown_species
+        # }}}
 
-    def __list2dict(self, state_list):
-        """
-        Private helper function to convert a state list to dict.
-        ['*_s', 'NO_g'] -> {'*_s': 1, 'NO_g': 1}.
-        """
-        state_dict = {}
-        for sp_str in state_list:
-            stoichiometry, species_name = self.split_species(sp_str)
-            state_dict.setdefault(species_name, stoichiometry)
-
-        return state_dict
-
-    def __get_unknown_coeff_vector(self, elementary_rxn_list):
+    def __get_unknown_coeff_vector(self, rxn_expression):
+        # {{{
         """
         Private helper function to get coefficient vector for unknown species.
 
@@ -93,43 +86,64 @@ class RelativeEnergyParser(ParserBase):
         -----
         The shape of coefficient vector is the same with that of unknown_species.
         """
-        idx = self._owner.elementary_rxns_list().index(elementary_rxn_list)
+        # Get relative energies for the elementary reaction.
+        idx = self._owner.rxn_expressions().index(rxn_expression)
         Ga, dG = self.__Ga[idx], self.__dG[idx]
 
+        # Get ChemState object list.
+        rxn_equation = RxnEquation(rxn_expression)
+        states = rxn_equation.tolist()
+
+        # Unknown species names.
         unknown_species = self.__get_unknown_species()
 
         coeff_vects = []
-        if Ga != 0 and len(elementary_rxn_list) != 2:  # has barrier
+
+        # Equation for E(TS) - E(IS) = Ea.
+        if Ga != 0 and len(states) != 2:
             # Get ts coefficient vector
-            is_list, ts_list = elementary_rxn_list[0], elementary_rxn_list[1]
-            is_dict, ts_dict = self.__list2dict(is_list), self.__list2dict(ts_list)
+            istate, tstate = states[0], states[1]
+            is_species_sites = istate.get_species_site_list()
+            ts_species_sites = tstate.get_species_site_list()
             coeff_vect = []
+
             for unknown in unknown_species:
-                if unknown in is_dict:
-                    coeff = -is_dict[unknown]
-                elif unknown in ts_dict:
-                    coeff = ts_dict[unknown]
+                if unknown in is_species_sites:
+                    formula_idx = is_species_sites.index(unknown)
+                    formula = istate.tolist()[formula_idx]
+                    coeff = -formula.stoichiometry()
+                elif unknown in ts_species_sites:
+                    formula_idx = ts_species_sites.index(unknown)
+                    formula = tstate.tolist()[formula_idx]
+                    coeff = formula.stoichiometry()
                 else:
                     coeff = 0
                 coeff_vect.append(coeff)
             coeff_vects.append(coeff_vect)
 
-        # Coefficient vector for dG
-        is_list, fs_list = elementary_rxn_list[0], elementary_rxn_list[-1]
-        is_dict, fs_dict = self.__list2dict(is_list), self.__list2dict(fs_list)
+        # Equation for E(FS) - E(IS) = dE.
+        istate, fstate = states[0], states[-1]
+        is_species_sites = istate.get_species_site_list()
+        fs_species_sites = fstate.get_species_site_list()
         coeff_vect = []
+
         for unknown in unknown_species:
-            if unknown in is_dict:
-                coeff = -is_dict[unknown]
-            elif unknown in fs_dict:
-                coeff = fs_dict[unknown]
+            if unknown in is_species_sites:
+                formula_idx = is_species_sites.index(unknown)
+                formula = istate.tolist()[formula_idx]
+                coeff = -formula.stoichiometry()
+            elif unknown in fs_species_sites:
+                formula_idx = fs_species_sites.index(unknown)
+                formula = fstate.tolist()[formula_idx]
+                coeff = formula.stoichiometry()
             else:
                 coeff = 0
             coeff_vect.append(coeff)
+
         coeff_vects.append(coeff_vect)
 
         # Debug info output
-        self.__logger.debug('elementary rxn: {}'.format(elementary_rxn_list))
+        self.__logger.debug('elementary rxn: {}'.format(rxn_expression))
         self.__logger.debug('unknown species coeffs: {}'.format(coeff_vects))
 
         if Ga:
@@ -138,18 +152,20 @@ class RelativeEnergyParser(ParserBase):
         else:
             self.__logger.debug('dG: {}'.format(dG))
             return coeff_vects, [dG]
+        # }}}
 
     def __convert_data(self):
-        '''
+        # {{{
+        """
         Solve Axb equation to get value of generalized free energies.
         Convert relative energies to absolute energies,
         then pass values to its owner.
-        '''
+        """
 
         # Get coefficients matrix A and values vector b
         A, b = [], []
-        for rxn_list in self._owner.elementary_rxns_list():
-            coeff_vects, value = self.__get_unknown_coeff_vector(rxn_list)
+        for rxn_expression in self._owner.rxn_expressions():
+            coeff_vects, value = self.__get_unknown_coeff_vector(rxn_expression)
             A.extend(coeff_vects)
             b.extend(value)
 
@@ -182,6 +198,7 @@ class RelativeEnergyParser(ParserBase):
             self.__G_dict.setdefault(sp_name, G)
 
         return
+        # }}}
 
     @staticmethod
     def __compare_relative_energies(dict1, dict2):
@@ -211,14 +228,22 @@ class RelativeEnergyParser(ParserBase):
         return relative_energies
 
     def parse_data(self, relative=False, filename="./rel_energy.py"):
-        '''
+        # {{{
+        """
         Put generalized formation energy into species_definitions.
+
+        Parameters:
+        -----------
+        relative: Only relative energies or not, default to be False.
+                  If true, no absolute energies would be put to species definitions.
+
+        filename: The filename of relative energies data.
 
         NOTE: This function will change the species definition of model.
               If relative is true, then the relative_energies of model will be set.
               If relative is false, formation energy in species_definitions
               and realtive energies will be set.
-        '''
+        """
         # Read relative energy data file.
         if os.path.exists(filename):
             globs, locs = {}, {}
@@ -243,10 +268,20 @@ class RelativeEnergyParser(ParserBase):
             attribute_name = mangled_name(self._owner, "species_definitions")
             species_definitions = getattr(self._owner, attribute_name)
 
-            # Update formation energies in model's species definitions.
-            for sp_name in self.__G_dict:
-                species_definitions[sp_name].setdefault('formation_energy',
-                                                        self.__G_dict[sp_name])
+            # Update reference species formation energies.
+            for species in self._owner.ref_species():
+                if species in species_definitions:
+                    species_definitions[species]["formation_energy"] = 0.0
+                else:
+                    species_definitions.setdefault(species, {"formation_energy": 0.0})
+
+            # Add unknown species formation energies.
+            for species in self.__G_dict:
+                if species not in species_definitions:
+                    energy_dict = {"formation_energy": self.__G_dict[species]}
+                    species_definitions.setdefault(species, energy_dict)
+                else:
+                    species_definitions[species]["formation_energy"] = self.__G_dict[species]
 
             # Set flag.
             attribute_name = mangled_name(self._owner, "has_absolute_energy")
@@ -279,6 +314,7 @@ class RelativeEnergyParser(ParserBase):
                 raise ValueError(msg)
 
         return
+        # }}}
 
     @return_deepcopy
     def Ga(self):

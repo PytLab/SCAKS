@@ -506,7 +506,6 @@ class KineticModel(object):
         """
         return self.__decimal_precision
 
-    @return_deepcopy
     def elementary_rxns_list(self):
         """
         Query function for elementary reactions list.

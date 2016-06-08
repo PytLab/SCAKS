@@ -54,7 +54,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
         parser = model.parser()
 
         # Read relative energy data file.
-        filename = "./rel_energy.py"
+        filename = "input_files/rel_energy.py"
         if os.path.exists(filename):
             globs, locs = {}, {}
             execfile(filename, globs, locs)
@@ -66,25 +66,36 @@ class RelativeEnergyParserTest(unittest.TestCase):
         else:
             raise IOError("{} is not found.".format(filename))
 
-        rxn_list = [['CO_s', 'O_s'], ['CO-O_2s'], ['CO2_g', '2*_s']]
+        rxn_expression = 'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s'
         ref_vectors = [[0, -1, -1, 1], [0, -1, -1, 0]]
         ref_Ga = 1.25
         ref_dG = 0.324
 
         ret_vectors, [ret_Ga, ret_dG] = \
-            parser._RelativeEnergyParser__get_unknown_coeff_vector(rxn_list)
+            parser._RelativeEnergyParser__get_unknown_coeff_vector(rxn_expression)
 
         self.assertListEqual(ref_vectors, ret_vectors)
         self.assertAlmostEqual(ref_Ga, ret_Ga)
         self.assertAlmostEqual(ref_dG, ret_dG)
 
         # Reaction without TS.
-        rxn_list = [['CO_g', '*_s'], ['CO_s']]
+        rxn_expression = 'CO_g + *_s -> CO_s'
         ref_vectors = [[0, 1, 0, 0]]
         ref_dG = -0.758
 
         ret_vectors, [ret_dG] = \
-            parser._RelativeEnergyParser__get_unknown_coeff_vector(rxn_list)
+            parser._RelativeEnergyParser__get_unknown_coeff_vector(rxn_expression)
+
+        self.assertListEqual(ref_vectors, ret_vectors)
+        self.assertAlmostEqual(ref_dG, ret_dG)
+
+        # Another one.
+        rxn_expression = 'O2_g + 2*_s -> 2O_s'
+        ref_vectors = [[-1, 0, 2, 0]]
+        ref_dG = -2.64
+
+        ret_vectors, [ret_dG] = \
+            parser._RelativeEnergyParser__get_unknown_coeff_vector(rxn_expression)
 
         self.assertListEqual(ref_vectors, ret_vectors)
         self.assertAlmostEqual(ref_dG, ret_dG)
@@ -100,7 +111,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
         self.assertDictEqual({}, parser._RelativeEnergyParser__G_dict)
 
         # Read relative energy data file.
-        filename = "./rel_energy.py"
+        filename = "input_files/rel_energy.py"
         if os.path.exists(filename):
             globs, locs = {}, {}
             execfile(filename, globs, locs)
@@ -133,33 +144,9 @@ class RelativeEnergyParserTest(unittest.TestCase):
         parser = model.parser()
 
         # Check before parse.
-        ref_species_definitions = {'CO-O_2s': {'elements': {'C': 1, 'O': 2},
-                                    'site': 's',
-                                    'site_number': 2,
-                                    'type': 'transition_state'},
-                                   'CO2_g': {'elements': {'C': 1, 'O': 2},
-                                    'pressure': 0.0,
-                                    'site': 'g',
-                                    'site_number': 1,
-                                    'type': 'gas'},
-                                   'CO_g': {'elements': {'C': 1, 'O': 1},
-                                    'pressure': 1.0,
-                                    'site': 'g',
-                                    'site_number': 1,
-                                    'type': 'gas'},
-                                   'CO_s': {'elements': {'C': 1, 'O': 1},
-                                    'site': 's',
-                                    'site_number': 1,
-                                    'type': 'adsorbate'},
-                                   'O2_g': {'elements': {'O': 2},
-                                    'pressure': 0.3333333333333333,
-                                    'site': 'g',
-                                    'site_number': 1,
-                                    'type': 'gas'},
-                                   'O_s': {'elements': {'O': 1},
-                                    'site': 's',
-                                    'site_number': 1,
-                                    'type': 'adsorbate'},
+        ref_species_definitions = {'CO2_g': {'pressure': 0.0},
+                                   'CO_g': {'pressure': 1.0},
+                                   'O2_g': {'pressure': 0.3333333333333333},
                                    's': {'site_name': '111', 'total': 1.0, 'type': 'site'}}
         self.assertDictEqual(ref_species_definitions, model.species_definitions())
 
@@ -167,44 +154,17 @@ class RelativeEnergyParserTest(unittest.TestCase):
         self.assertFalse(model.has_relative_energy())
 
         # Parse absolute data.
-        parser.parse_data(relative=False)
-        ref_species_definitions = {'CO-O_2s': {'elements': {'C': 1, 'O': 2},
-                                    'formation_energy': 0.9259999999999999,
-                                    'site': 's',
-                                    'site_number': 2,
-                                    'type': 'transition_state'},
-                                   'CO2_g': {'elements': {'C': 1, 'O': 2},
-                                    'formation_energy': 0.0,
-                                    'pressure': 0.0,
-                                    'site': 'g',
-                                    'site_number': 1,
-                                    'type': 'gas'},
-                                   'CO_g': {'elements': {'C': 1, 'O': 1},
-                                    'formation_energy': 0.0,
-                                    'pressure': 1.0,
-                                    'site': 'g',
-                                    'site_number': 1,
-                                    'type': 'gas'},
-                                   'CO_s': {'elements': {'C': 1, 'O': 1},
-                                    'formation_energy': -0.758,
-                                    'site': 's',
-                                    'site_number': 1,
-                                    'type': 'adsorbate'},
-                                   'O2_g': {'elements': {'O': 2},
-                                    'formation_energy': 3.508,
-                                    'pressure': 0.3333333333333333,
-                                    'site': 'g',
-                                    'site_number': 1,
-                                    'type': 'gas'},
-                                   'O_s': {'elements': {'O': 1},
-                                    'formation_energy': 0.43399999999999994,
-                                    'site': 's',
-                                    'site_number': 1,
-                                    'type': 'adsorbate'},
+        parser.parse_data(relative=False, filename="input_files/rel_energy.py")
+        ref_species_definitions = {'CO-O_2s': {'formation_energy': 0.9259999999999999},
+                                   'CO2_g': {'formation_energy': 0.0, 'pressure': 0.0},
+                                   'CO_g': {'formation_energy': 0.0, 'pressure': 1.0},
+                                   'CO_s': {'formation_energy': -0.758},
+                                   'O2_g': {'formation_energy': 3.508, 'pressure': 0.3333333333333333},
+                                   'O_s': {'formation_energy': 0.43399999999999994},
                                    's': {'formation_energy': 0.0,
-                                    'site_name': '111',
-                                    'total': 1.0,
-                                    'type': 'site'}}
+                                         'site_name': '111',
+                                         'total': 1.0,
+                                         'type': 'site'}}
 
         self.assertTrue(hasattr(parser, "_RelativeEnergyParser__Ga"))
         self.assertTrue(hasattr(parser, "_RelativeEnergyParser__dG"))
@@ -222,7 +182,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
         parser = model.parser()
 
         # Check.
-        parser.parse_data(relative=True)
+        parser.parse_data(relative=True, filename="input_files/rel_energy.py")
         ref_relative_energies = {'Gaf': [0.0, 0.0, 1.25],
                                  'Gar': [0.758, 2.64, 0.9259999999999999],
                                  'dG': [-0.758, -2.64, 0.324]}

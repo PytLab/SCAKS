@@ -16,12 +16,13 @@ class CsvParser(ParserBase):
         ----------
         owner: The KineticModel object.
         """
-        ParserBase.__init__(self, owner)
+        super(CsvParser, self).__init__(owner)
 
         # Set tools logger as child of model's
-        self.__logger = logging.getLogger('model.parsers.CsvParser')
+        self.__logger = logging.getLogger('model.parser.CsvParser')
 
     def parse_data(self, filename="./energy.csv", relative=False):
+        # {{{
         """
         Read data in csv data file and update the species definitions.
 
@@ -37,7 +38,7 @@ class CsvParser(ParserBase):
         --------
         species_definitions: The updated species definition of model.
         """
-        # Get the REFERENCE of model's species definitions.
+        # NOTE: Get the REFERENCE of model's species definitions.
         attribute_name = mangled_name(self._owner, "species_definitions")
         species_definitions = getattr(self._owner, attribute_name)
 
@@ -76,14 +77,8 @@ class CsvParser(ParserBase):
                 else:
                     full_name = species_name + '_' + site_symbol
 
-            # Check fullname.
-            if full_name not in species_definitions:
-                msg = (("'{}' is not in model's species definition, " +
-                        "it will be igonred").format(full_name))
-                self.__logger.warning(msg)
-                continue
-
-            # Update species_definition
+            # Add to species_definition
+            species_definitions.setdefault(full_name, {})
             for key in ['DFT_energy', 'formation_energy', 'information']:
                 species_definitions[full_name].setdefault(key, eval(key))
 
@@ -104,6 +99,7 @@ class CsvParser(ParserBase):
         setattr(self._owner, attribute_name, True)
 
         return
+        # }}}
 
     def has_relative_energy(self):
         """
