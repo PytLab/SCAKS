@@ -279,7 +279,7 @@ class ParserBase(ModelShell):
         else:
             return molecular_mass
 
-    def get_relative_energies(self, elementary_rxn_list):
+    def get_relative_energies(self, rxn_expression):
         """
         Function to get relative energies:
             forward barrier,
@@ -288,7 +288,7 @@ class ParserBase(ModelShell):
 
         Parameters:
         -----------
-        elementary_rxn_list: elementary reaction in list format.
+        rxn_expression: elementary reaction expression, str.
 
         Returns:
         --------
@@ -298,44 +298,49 @@ class ParserBase(ModelShell):
         """
         # Check.
         if not self._owner.has_absolute_energy():
-            raise AttributeError("Absolute energie are needed for getting barriers.")
+            msg = "Absolute energie are needed for getting barriers."
+            raise AttributeError(msg)
+
+        # Get RxnEquation object.
+        rxn_equation = RxnEquation(rxn_expression)
 
         # Get free energy for states
         G_IS, G_TS, G_FS = 0.0, 0.0, 0.0
 
         species_definitions = self._owner.species_definitions()
 
-        # Inner function to get species energy.
-        def get_species_energy(species_name):
-            # Extract site type.
-            if "*" in species_name:
-                regex = self.__regex_dict["empty_site"][0]
-                m = regex.search(species_name)
-                species_name = m.groups()[-1]
+        def get_state_energy(state):
+            " Inner function to get state energy. "
+            species_site_dict = state.get_species_site_dict()
+            site_dict = state.get_sites_dict()
+            energy = 0.0
 
-            return species_definitions[species_name]["formation_energy"]
+            # Add adsorbate energies.
+            for species_site, n in species_site_dict.iteritems():
+                if "*" not in species_site:
+                    energy += n*species_definitions[species_site]["formation_energy"]
+
+            # Add empty site energies.
+            for site, n in site_dict.iteritems():
+                energy += n*species_definitions[site]["formation_energy"]
+
+            return energy
+
+        # State list.
+        states = rxn_equation.tolist()
 
         # IS energy.
-        for sp in elementary_rxn_list[0]:
-            stoichiometry, species_name = self.split_species(sp)
-            species_energy = get_species_energy(species_name)
-            G_IS += stoichiometry*species_energy
+        G_IS = get_state_energy(states[0])
 
         # FS energy.
-        for sp in elementary_rxn_list[-1]:
-            stoichiometry, species_name = self.split_species(sp)
-            species_energy = get_species_energy(species_name)
-            G_FS += stoichiometry*species_energy
+        G_FS = get_state_energy(states[-1])
 
         # TS energy.
-        if len(elementary_rxn_list) == 2:
+        if len(states) == 2:
             G_TS = max(G_IS, G_FS)
 
-        if len(elementary_rxn_list) == 3:
-            for sp in elementary_rxn_list[1]:
-                stoichiometry, species_name = self.split_species(sp)
-                species_energy = get_species_energy(species_name)
-                G_TS += stoichiometry*species_energy
+        if len(states) == 3:
+            G_TS = get_state_energy(states[1])
 
         # Get relative energies.
         f_barrier = G_TS - G_IS
@@ -351,8 +356,8 @@ class ParserBase(ModelShell):
         """
         Gafs, Gars, dGs = [], [], []
 
-        for rxn_list in self._owner.elementary_rxns_list():
-            Gaf, Gar, dG = self.get_relative_energies(rxn_list)
+        for rxn_expression in self._owner.rxn_expressions():
+            Gaf, Gar, dG = self.get_relative_energies(rxn_expression)
             Gafs.append(Gaf)
             Gars.append(Gar)
             dGs.append(dG)

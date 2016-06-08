@@ -151,11 +151,12 @@ class RelativeEnergyParser(ParserBase):
         # }}}
 
     def __convert_data(self):
-        '''
+        # {{{
+        """
         Solve Axb equation to get value of generalized free energies.
         Convert relative energies to absolute energies,
         then pass values to its owner.
-        '''
+        """
 
         # Get coefficients matrix A and values vector b
         A, b = [], []
@@ -193,6 +194,7 @@ class RelativeEnergyParser(ParserBase):
             self.__G_dict.setdefault(sp_name, G)
 
         return
+        # }}}
 
     @staticmethod
     def __compare_relative_energies(dict1, dict2):
@@ -254,10 +256,20 @@ class RelativeEnergyParser(ParserBase):
             attribute_name = mangled_name(self._owner, "species_definitions")
             species_definitions = getattr(self._owner, attribute_name)
 
-            # Update formation energies in model's species definitions.
-            for sp_name in self.__G_dict:
-                species_definitions[sp_name].setdefault('formation_energy',
-                                                        self.__G_dict[sp_name])
+            # Update reference species formation energies.
+            for species in self._owner.ref_species():
+                if species in species_definitions:
+                    species_definitions[species]["formation_energy"] = 0.0
+                else:
+                    species_definitions.setdefault(species, {"formation_energy": 0.0})
+
+            # Add unknown species formation energies.
+            for species in self.__G_dict:
+                if species not in species_definitions:
+                    energy_dict = {"formation_energy": self.__G_dict[species]}
+                    species_definitions.setdefault(species, energy_dict)
+                else:
+                    species_definitions[species]["formation_energy"] = self.__G_dict[species]
 
             # Set flag.
             attribute_name = mangled_name(self._owner, "has_absolute_energy")
