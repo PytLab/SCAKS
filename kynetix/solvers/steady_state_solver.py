@@ -3,15 +3,16 @@ import logging
 import random
 import signal
 
-from scipy.optimize import fsolve
-from scipy.linalg import norm
 from scipy.integrate import odeint, ode
+from scipy.linalg import norm
+from scipy.optimize import fsolve
 
-from kynetix.solvers.solver_base import *
-from kynetix.solvers.rootfinding_iterators import *
 from kynetix import file_header
-from kynetix.functions import get_list_string
 from kynetix.errors.error import *
+from kynetix.functions import get_list_string
+from kynetix.parsers.rxn_parser import *
+from kynetix.solvers.rootfinding_iterators import *
+from kynetix.solvers.solver_base import *
 
 
 class SteadyStateSolver(SolverBase):
@@ -106,7 +107,7 @@ class SteadyStateSolver(SolverBase):
 
     def get_elementary_dtheta_dt_expression(self,
                                             adsorbate_name,
-                                            elementary_rxn_list):
+                                            rxn_expression):
         """
         Function to get dtheta_dt of the corresponding adsorbate in single
         elementary equation.
@@ -115,7 +116,7 @@ class SteadyStateSolver(SolverBase):
         -----------
         adsorbate_name: The adsorbate name whose coverage is derived wrt time, str.
 
-        elementary_rxn_list: The list form of an elementary reaction.
+        rxn_expression: The string expression of an elementary reaction.
 
         Returns:
         --------
@@ -123,29 +124,38 @@ class SteadyStateSolver(SolverBase):
 
         Example:
         --------
-        >>> s.get_elementary_dtheta_dt_expression("O_s", [['O2_g', '2*_s'], ['2O_s']])
+        >>> s.get_elementary_dtheta_dt_expression("O_s", 'O2_g + 2*_s -> 2O_s')
         >>> "2*kf[1]*p['O2_g']*theta['*_s']**2 - 2*kr[1]*theta['O_s']**2"
         """
         # Check adsorbate name.
         if adsorbate_name not in self._owner.adsorbate_names():
             raise ValueError("'{}' is not an adsorbate!".format(adsorbate_name))
 
-        for state_list in elementary_rxn_list:
-            for species_str in state_list:
-                stoichiometry, site_name = self.split_species(species_str)
-                if site_name == adsorbate_name:
+        # Get formula object list of the rxn_expression.
+        rxn_equation = RxnEquation(rxn_expression)
+        elementary_rxn_list = rxn_equation.to_formula_list()
+
+        # Find formula list index.
+        for formula_list in elementary_rxn_list:
+            for formula in formula_list:
+                stoichiometry = formula.stoichiometry()
+                current_species = formula.species_site()
+                if current_species == adsorbate_name:
                     break
-            if site_name == adsorbate_name:
+
+            if current_species == adsorbate_name:
                 # Get state idx to get direction info.
-                state_idx = elementary_rxn_list.index(state_list)
+                state_idx = elementary_rxn_list.index(formula_list)
                 break
 
-        # If adsorbate name not in elementary_rxn list, stop.
-        if site_name != adsorbate_name:
-            return
+        # If adsorbate name not in reaction, stop.
+        if current_species != adsorbate_name:
+            msg_template = "Adsorbate '{}' is not in elementary reaction '{}'"
+            msg = msg_template.format(adsorbate_name, rxn_expression)
+            raise ParameterError(msg)
 
         # Get rate expression of the elementary equation.
-        f_expr, r_expr = self.get_elementary_rate_expression(elementary_rxn_list)
+        f_expr, r_expr = self.get_elementary_rate_expression(rxn_expression)
 
         # Adsorbate is consumed
         if state_idx == 0:
