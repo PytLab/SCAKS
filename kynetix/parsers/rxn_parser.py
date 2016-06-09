@@ -29,6 +29,20 @@ class RxnEquation(object):
 
         return state_list
 
+    def to_formula_list(self):
+        """
+        Function to get list of formulas for the reaction equation.
+        """
+        state_list = []
+
+        for state in self.tolist():
+            formula_list = []
+            for formula in state.tolist():
+                formula_list.append(formula)
+            state_list.append(formula_list)
+
+        return state_list
+
     def check_conservation(self):
         """
         Function to check reaction equation conservation.
