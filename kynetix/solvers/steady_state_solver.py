@@ -206,15 +206,12 @@ class SteadyStateSolver(SolverBase):
         return a tuple of dtheta_dt_expressions.
         """
         dtheta_dt_expressions_list = []
-        for adsorbate_name in self._owner.adsorbate_names():
-            adsorbate_idx = self._owner.adsorbate_names().index(adsorbate_name)
-            dtheta_dt_expression = "dtheta_dt[" + str(adsorbate_idx) + "] = "
-            dtheta_dt_expression += \
-                self.get_adsorbate_dtheta_dt_expression(adsorbate_name)
+        for idx, adsorbate_name in enumerate(self._owner.adsorbate_names()):
+            dtheta_dt_expression = "dtheta_dt[" + str(idx) + "] = "
+            dtheta_dt_expression += self.get_adsorbate_dtheta_dt_expression(adsorbate_name)
             dtheta_dt_expressions_list.append(dtheta_dt_expression)
 
         dtheta_dt_expressions_tup = tuple(dtheta_dt_expressions_list)
-        setattr(self, 'dtheta_dt_expressions', dtheta_dt_expressions_tup)
 
         return dtheta_dt_expressions_tup
 
