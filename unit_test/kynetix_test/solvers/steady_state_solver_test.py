@@ -128,24 +128,24 @@ class SteadyStateSolverTest(unittest.TestCase):
         ret_dtheta_dt = solver.get_elementary_dtheta_dt_expression(adsorbate, rxn)
         self.assertEqual(ref_dtheta_dt, ret_dtheta_dt)
 
-#    def test_adsorbate_dtheta_dt_expression(self):
-#        " Test get_adsorbate_dtheta_dt_expression() function. "
-#        # Construction.
-#        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
-#                             verbosity=logging.WARNING)
-#        solver = model.solver()
-#
-#        ref_dtheta_dt = ("kf[0]*p['CO_g']*theta['*_s'] - kr[0]*theta['CO_s'] + " +
-#                         "kr[2]*p['CO2_g']*theta['*_s']**2 - " +
-#                         "kf[2]*theta['CO_s']*theta['O_s']")
-#        ret_dtheta_dt = solver.get_adsorbate_dtheta_dt_expression("CO_s")
-#
-#        ref_dtheta_dt = ("2*kf[1]*p['O2_g']*theta['*_s']**2 - " +
-#                         "2*kr[1]*theta['O_s']**2 + " +
-#                         "kr[2]*p['CO2_g']*theta['*_s']**2 - " +
-#                         "kf[2]*theta['CO_s']*theta['O_s']")
-#        ret_dtheta_dt = solver.get_adsorbate_dtheta_dt_expression("O_s")
-#
+    def test_adsorbate_dtheta_dt_expression(self):
+        " Test get_adsorbate_dtheta_dt_expression() function. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+                             verbosity=logging.WARNING)
+        solver = model.solver()
+
+        ref_dtheta_dt = ("kf[0]*p['CO_g']*theta['*_s'] - kr[0]*theta['CO_s'] + " +
+                         "kr[2]*p['CO2_g']*theta['*_s']**2 - " +
+                         "kf[2]*theta['CO_s']*theta['O_s']")
+        ret_dtheta_dt = solver.get_adsorbate_dtheta_dt_expression("CO_s")
+
+        ref_dtheta_dt = ("2*kf[1]*p['O2_g']*theta['*_s']**2 - " +
+                         "2*kr[1]*theta['O_s']**2 + " +
+                         "kr[2]*p['CO2_g']*theta['*_s']**2 - " +
+                         "kf[2]*theta['CO_s']*theta['O_s']")
+        ret_dtheta_dt = solver.get_adsorbate_dtheta_dt_expression("O_s")
+
 #    def test_dtheta_dt_expression(self):
 #        " Make sure we can get dtheta/dt expression correctly. "
 #        # Construction.

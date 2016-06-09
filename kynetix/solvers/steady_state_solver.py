@@ -150,9 +150,7 @@ class SteadyStateSolver(SolverBase):
 
         # If adsorbate name not in reaction, stop.
         if current_species != adsorbate_name:
-            msg_template = "Adsorbate '{}' is not in elementary reaction '{}'"
-            msg = msg_template.format(adsorbate_name, rxn_expression)
-            raise ParameterError(msg)
+            return
 
         # Get rate expression of the elementary equation.
         f_expr, r_expr = self.get_elementary_rate_expression(rxn_expression)
@@ -191,9 +189,9 @@ class SteadyStateSolver(SolverBase):
         # Collect all dtheta/dt exprression for an elementary reaction.
         dtheta_dt_expression_list = []
 
-        for elementary_rxn_list in self._rxns_list:
+        for rxn_expression in self._owner.rxn_expressions():
             single_dtheta_dt = self.get_elementary_dtheta_dt_expression(adsorbate_name,
-                                                                        elementary_rxn_list)
+                                                                        rxn_expression)
             if single_dtheta_dt:
                 dtheta_dt_expression_list.append(single_dtheta_dt)
 
