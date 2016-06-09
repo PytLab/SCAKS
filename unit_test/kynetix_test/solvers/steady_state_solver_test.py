@@ -165,69 +165,69 @@ class SteadyStateSolverTest(unittest.TestCase):
 
         self.assertTupleEqual(ret_dtheta_dt, ref_dtheta_dt)
 
-#    def test_steady_state_function(self):
-#        " Test steady_state_function(). "
-#        # Construction.
-#        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
-#                             verbosity=logging.WARNING)
-#        parser = model.parser()
-#        solver = model.solver()
-#
-#        # Get data.
-#        parser.parse_data(filename="input_files/rel_energy.py")
-#        solver.get_data()
-#
-#        # Check.
-#        coverages = (0.2, 0.5)
-#        ref_dtheta_dt = (mpf('2812943317895.314716929552474856840195790042878389374664419807065157914105124045016669624216006091895869'),
-#                         mpf('562588664794.8844858075949325690317587695978287990072657061366848036962738449361619993106651762296008292'))
-#        ret_dtheta_dt = solver.steady_state_function(coverages)
-#
-#        self.assertTupleEqual(ref_dtheta_dt, ret_dtheta_dt)
-#
-#    def test_term_adsorbate_derivation(self):
-#        " Test private function __term_adsorbate_derivation(). "
-#        # Construction.
-#        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
-#                             verbosity=logging.WARNING)
-#        solver = model.solver()
-#
-#        # Check.
-#        adsorbate = "CO_s"
-#        term = "kf[2]*theta['CO_s']*theta['*_s']" 
-#        ref_derivation = "kf[2]*theta['*_s']"
-#        ret_derivation = solver._SteadyStateSolver__term_adsorbate_derivation(adsorbate, term)
-#        self.assertEqual(ref_derivation, ret_derivation)
-#
-#        adsorbate = "O_s"
-#        term = "2*kr[1]*theta['O_s']**2"
-#        ref_derivation = "2*2*kr[1]*theta['O_s']**1"
-#        ret_derivation = solver._SteadyStateSolver__term_adsorbate_derivation(adsorbate, term)
-#        self.assertEqual(ref_derivation, ret_derivation)
-#
-#    def test_total_term_adsorbate_derivation(self):
-#        " Test private function __total_term_adsorbate_derivation(). "
-#        # Construction.
-#        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
-#                             verbosity=logging.WARNING)
-#        solver = model.solver()
-#
-#        # Check.
-#        adsorbate = "O_s"
-#        term = "2*kf[1]*p['O2_g']*theta['*_s']**2"
-#        ret_derivation = solver._SteadyStateSolver__total_term_adsorbate_derivation(adsorbate,
-#                                                                                    term)
-#        ref_derivation = "-2*2*kf[1]*p['O2_g']*(1.0 - theta['CO_s'] - theta['O_s'])**1"
-#        self.assertEqual(ref_derivation, ret_derivation)
-#
-#        adsorbate = "O_s"
-#        term = "2*kf[1]*p['O2_g']*theta['*_s']**2*theta['O_s']"
-#        ret_derivation = solver._SteadyStateSolver__total_term_adsorbate_derivation(adsorbate,
-#                                                                                    term)
-#        ref_derivation = ("1*2*kf[1]*p['O2_g']*theta['*_s']**2 + " +
-#                          "-2*2*kf[1]*p['O2_g']*(1.0 - theta['CO_s'] - theta['O_s'])**1*theta['O_s']")
-#        self.assertEqual(ref_derivation, ret_derivation)
-#
+    def test_steady_state_function(self):
+        " Test steady_state_function(). "
+        # Construction.
+        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        # Get data.
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+
+        # Check.
+        coverages = (0.2, 0.5)
+        ref_dtheta_dt = (mpf('2812943317895.314716929552474856840195790042878389374664419807065157914105124045016669624216006091895869'),
+                         mpf('562588664794.8844858075949325690317587695978287990072657061366848036962738449361619993106651762296008292'))
+        ret_dtheta_dt = solver.steady_state_function(coverages)
+
+        self.assertTupleEqual(ref_dtheta_dt, ret_dtheta_dt)
+
+    def test_term_adsorbate_derivation(self):
+        " Test private function __term_adsorbate_derivation(). "
+        # Construction.
+        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+                             verbosity=logging.WARNING)
+        solver = model.solver()
+
+        # Check.
+        adsorbate = "CO_s"
+        term = "kf[2]*theta['CO_s']*theta['*_s']" 
+        ref_derivation = "kf[2]*theta['*_s']"
+        ret_derivation = solver._SteadyStateSolver__term_adsorbate_derivation(adsorbate, term)
+        self.assertEqual(ref_derivation, ret_derivation)
+
+        adsorbate = "O_s"
+        term = "2*kr[1]*theta['O_s']**2"
+        ref_derivation = "2*2*kr[1]*theta['O_s']**1"
+        ret_derivation = solver._SteadyStateSolver__term_adsorbate_derivation(adsorbate, term)
+        self.assertEqual(ref_derivation, ret_derivation)
+
+    def test_total_term_adsorbate_derivation(self):
+        " Test private function __total_term_adsorbate_derivation(). "
+        # Construction.
+        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+                             verbosity=logging.WARNING)
+        solver = model.solver()
+
+        # Check.
+        adsorbate = "O_s"
+        term = "2*kf[1]*p['O2_g']*theta['*_s']**2"
+        ret_derivation = solver._SteadyStateSolver__total_term_adsorbate_derivation(adsorbate,
+                                                                                    term)
+        ref_derivation = "-2*2*kf[1]*p['O2_g']*(1.0 - theta['CO_s'] - theta['O_s'])**1"
+        self.assertEqual(ref_derivation, ret_derivation)
+
+        adsorbate = "O_s"
+        term = "2*kf[1]*p['O2_g']*theta['*_s']**2*theta['O_s']"
+        ret_derivation = solver._SteadyStateSolver__total_term_adsorbate_derivation(adsorbate,
+                                                                                    term)
+        ref_derivation = ("1*2*kf[1]*p['O2_g']*theta['*_s']**2 + " +
+                          "-2*2*kf[1]*p['O2_g']*(1.0 - theta['CO_s'] - theta['O_s'])**1*theta['O_s']")
+        self.assertEqual(ref_derivation, ret_derivation)
+
 #    def test_poly_adsorbate_derivation(self):
 #        " Test we can derive dtheta/dt expression correctly. "
 #        # Construction.

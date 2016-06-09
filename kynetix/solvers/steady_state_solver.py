@@ -316,9 +316,13 @@ class SteadyStateSolver(SolverBase):
         def theta(sp_name):
             return "theta['{}']".format(sp_name)
 
+        # Get all sites in term_expression.
         site_cvg_regex = r"theta\['\*_(\w*)'\]"
         sites_list = re.findall(site_cvg_regex, term_expression)
-        site_name = self._owner.species_definitions()[adsorbate_name]['site']
+
+        # Get site info of adsorbate.
+        formula = ChemFormula(adsorbate_name)
+        site_name = formula.site()
         site_cvg_expr = theta('*_' + site_name)
         site_total = self._owner.species_definitions()[site_name]['total']
 
