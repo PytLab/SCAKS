@@ -58,12 +58,13 @@ class SolverBase(KineticCoreComponent):
         self._rxns_num = len(self._rxns_list)
 
         # set constants symbol dict
-        self.k_B_sym, self.h_sym, self.T_sym = sym.symbols('k_B, h, T', is_real=True)
+        self._kB_sym, self._h_sym, self._T_sym = sym.symbols('kB, h, T', is_real=True)
 
-        self.constants_subs_dict = {
-            self.k_B_sym: self._mpf(self._owner.kB()),
-            self.h_sym: self._mpf(self._owner.h()),
-            self.T_sym: self._mpf(self._owner.temperature()),
+        # Constant symbols substitution dict.
+        self._constants_subs_dict = {
+            self._kB_sym: self._mpf(self._owner.kB()),
+            self._h_sym: self._mpf(self._owner.h()),
+            self._T_sym: self._mpf(self._owner.temperature()),
         }
 
         # classify adsorbates according to site type
@@ -607,90 +608,107 @@ class SolverBase(KineticCoreComponent):
     ######################################################
 
     def get_data_symbols(self):
-        "Get Sympy Symbol objects tuple for P, G, coverage."
-        #get pressure symbols objects
-        self.p_sym = \
-            tuple([sym.Symbol('p_' + gas_name, real=True, positive=True)
-                   for gas_name in self._owner.gas_names()])
-        #get concentration symbols objects
-        self.c_sym = \
-            tuple([sym.Symbol('c_' + liquid_name, real=True, positive=True)
-                   for liquid_name in self._owner.liquid_names()])
+        """
+        Get Sympy Symbol objects tuple for P, G, coverage.
+        """
+        # Pressure symbols objects.
+        self._p_sym = tuple([sym.Symbol('p_' + gas_name, real=True, positive=True)
+                             for gas_name in self._owner.gas_names()])
 
-        #get coverage symnols objects
-        #for adsorbates
-        self.ads_theta_sym = tuple(
-            [sym.Symbol(r'theta_' + ads_name, real=True, positive=True)
-             for ads_name in self._owner.adsorbate_names()]
-            )
-        #for free sites
+        # Concentration symbols objects.
+        self._c_sym = tuple([sym.Symbol('c_' + liquid_name, real=True, positive=True)
+                             for liquid_name in self._owner.liquid_names()])
+
+        # Coverage symnols objects.
+        # Adsorbates.
+        self._ads_theta_sym = tuple([sym.Symbol(r'theta_' + ads_name, real=True, positive=True)
+                                     for ads_name in self._owner.adsorbate_names()])
+
+        # Free sites.
         fsite_theta_sym = []
         for site_name in self._owner.site_names():
             total = self._owner.species_definitions()[site_name]['total']
             #free_site_cvg = sym.Symbol(str(total), is_real=True)
             free_site_cvg = total
             for ads_name in self._classified_adsorbates[site_name]:
-                free_site_cvg -= self.extract_symbol(sp_name=ads_name,
-                                                     symbol_type='ads_cvg')
+                free_site_cvg -= self._extract_symbol(sp_name=ads_name,
+                                                      symbol_type='ads_cvg')
             fsite_theta_sym.append(free_site_cvg)
-        self.fsite_theta_sym = tuple(fsite_theta_sym)
+        self._fsite_theta_sym = tuple(fsite_theta_sym)
 
-        #get free energies symbols for each species
+        # Free energies symbols for each species.
         sp_list = self._owner.species_definitions().keys()
         G_sym_list = []
         for idx, sp_name in enumerate(sp_list):
+            # Add star symbol.
             if sp_name in self._owner.site_names():
                 sp_name = '*_' + sp_name
                 sp_list[idx] = sp_name
-            G_sym_list.append(sym.Symbol('G_' + sp_name, real=True,
-                                         positive=True))
-        self.G_sym = tuple(G_sym_list)
 
-        #get equilibrium constants(K) symbols for each elementary rxn
+            G_sym_list.append(sym.Symbol('G_' + sp_name, real=True, positive=True))
+        self._G_sym = tuple(G_sym_list)
+
+        # Equilibrium constants(K) symbols for each elementary rxn.
         K_sym_list = []
-        for i in xrange(len(self.rxns_list)):
+        for i in xrange(self._rxns_num):
             #subscript = i + 1
             K_sym = sym.Symbol('K_' + str(i), real=True, positive=True)
             K_sym_list.append(K_sym)
-        self.K_sym = tuple(K_sym_list)
+        self._K_sym = tuple(K_sym_list)
 
         self._has_symbols = True
-        self.sp_list = sp_list
 
         return
 
-    def extract_symbol(self, sp_name, symbol_type):
+    def _extract_symbol(self, sp_name, symbol_type):
+        # {{{
         """
-        Expect a species name string,
-        symbol_tup must be in
-        ['pressure', 'concentration', 'ads_cvg', 'free_site_cvg', 'free_energy'],
-        return corresponding symbol from symbol tuple.
+        Protected helper function to get species symbol.
+
+        Parameters:
+        -----------
+        sp_name: species name, str.
+
+        symbol_type: ['pressure', 'concentration',
+                      'ads_cvg', 'free_site_cvg',
+                      'free_energy'],
+
+        Returns:
+        --------
+        Symbol of species.
         """
+        # Set species list and symbols tuple.
         if symbol_type == 'pressure':
             sp_list = self._owner.gas_names()
-            symbol_tup = self.p_sym
+            symbol_tup = self._p_sym
         elif symbol_type == 'concentration':
             sp_list = self._owner.liquid_names()
-            symbol_tup = self.c_sym
+            symbol_tup = self._c_sym
         elif symbol_type == 'ads_cvg':
             sp_list = self._owner.adsorbate_names()
-            symbol_tup = self.ads_theta_sym
+            symbol_tup = self._ads_theta_sym
         elif symbol_type == 'free_site_cvg':
             sp_list = self._owner.site_names()
-            symbol_tup = self.fsite_theta_sym
+            symbol_tup = self._fsite_theta_sym
         elif symbol_type == 'free_energy':
-            sp_list = self.sp_list
-            symbol_tup = self.G_sym
+            sp_list = self._owner.species_definitions().keys()
+            symbol_tup = self._G_sym
         else:
-            raise ValueError(
-                "illegal symbol_type. symbol_type must be in" +
-                "['pressure', 'concentration', 'ads_cvg', " +
-                "'free_site_cvg', 'free_energy']"
-            )
-        #extract corresponding symbol from symbol tuple
-        idx = sp_list.index(sp_name)
+            msg_template = ("illegal symbol_type. symbol_type must be in {}")
+            type_list = ['pressure', 'concentration', 'ads_cvg', 'free_site_cvg', 'free_energy']
+            msg = msg_template.format(type_list)
+            raise ValueError(msg)
+
+        # Extract corresponding symbol from symbol tuple
+        try:
+            idx = sp_list.index(sp_name)
+        except ValueError:
+            msg_template = "species '{}' is not in list '{}'"
+            msg = msg_template.format(sp_name, sp_list)
+            raise ParameterError(msg)
 
         return symbol_tup[idx]
+        # }}}
 
     @staticmethod
     def get_latex_strs(part1, part2, symbols):
@@ -723,8 +741,8 @@ class SolverBase(KineticCoreComponent):
             state_energy_sym = sym.Symbol('0', is_real=True)
             for sp_str in state_list:
                 stoichiometry, species_name = self.split_species(sp_str)
-                sp_sym = self.extract_symbol(sp_name=species_name,
-                                             symbol_type='free_energy')
+                sp_sym = self._extract_symbol(sp_name=species_name,
+                                              symbol_type='free_energy')
                 if stoichiometry == 1:
                     sp_energy_sym = sp_sym
                 else:
@@ -801,8 +819,8 @@ class SolverBase(KineticCoreComponent):
 
     def get_rate_constant_syms(self):
         "Go through elementary_rxns_list to get symbols of rate constants."
-        #k_B, h, T = sym.symbols('k_B, h, T', is_real=True)
-        k_B, h, T = self.k_B_sym, self.h_sym, self.T_sym
+        #kB, h, T = sym.symbols('kB, h, T', is_real=True)
+        kB, h, T = self._kB_sym, self._h_sym, self._T_sym
         kf_syms, kr_syms = [], []
         for idx, elementary_rxn_list in\
                 enumerate(self.rxns_list):
@@ -811,11 +829,11 @@ class SolverBase(KineticCoreComponent):
                 self.get_delta_G_symbols()
 
             delta_Gf = self.delta_Gf_syms[idx]
-            kf_sym = k_B*T/h*sym.E**(-delta_Gf/(k_B*T))
+            kf_sym = kB*T/h*sym.E**(-delta_Gf/(kB*T))
             kf_syms.append(kf_sym)
 
             delta_Gr = self.delta_Gr_syms[idx]
-            kr_sym = k_B*T/h*sym.E**(-delta_Gr/(k_B*T))
+            kr_sym = kB*T/h*sym.E**(-delta_Gr/(kB*T))
             kr_syms.append(kr_sym)
 
         self.kf_syms, self.kr_syms = kf_syms, kr_syms
@@ -828,12 +846,12 @@ class SolverBase(KineticCoreComponent):
         [['HCOOH_s', '*_s'], ['HCO-OH_s', '*_s'], ['HCO_s', 'OH_s']]
 
         return corresponding forward rate and reverse rate symbols.
-        e.g. [T*k_B*theta_HCOOH_s*(1 - theta_CO_s - theta_H2O_s - theta_HCOOH_s -
+        e.g. [T*kB*theta_HCOOH_s*(1 - theta_CO_s - theta_H2O_s - theta_HCOOH_s -
               theta_HCO_s - theta_H_s - theta_OH_s)*
-              exp((-G_HCO-OH_s + G_HCOOH_s)/(T*k_B))/h,
+              exp((-G_HCO-OH_s + G_HCOOH_s)/(T*kB))/h,
 
-              T*k_B*theta_HCO_s*theta_OH_s*
-              exp((-G_*_s - G_HCO-OH_s + G_HCO_s + G_OH_s)/(T*k_B))/h]
+              T*kB*theta_HCO_s*theta_OH_s*
+              exp((-G_*_s - G_HCO-OH_s + G_HCO_s + G_OH_s)/(T*kB))/h]
         """
         rxn_idx = self.rxns_list.index(elementary_rxn_list)
         #get rate constant symbols
@@ -862,7 +880,7 @@ class SolverBase(KineticCoreComponent):
                 else:
                     symbol_type = 'ads_cvg'
 
-                sp_data_sym = self.extract_symbol(species_name, symbol_type)
+                sp_data_sym = self._extract_symbol(species_name, symbol_type)
                 rate_sym *= sp_data_sym**stoichiometry
             rate_syms.append(rate_sym)
 
@@ -904,7 +922,7 @@ class SolverBase(KineticCoreComponent):
         #concentration substution dict
         c_subs_dict = self.get_c_subs_dict()
         #constants substitution dict
-        constants_subs_dict = self.constants_subs_dict
+        constants_subs_dict = self._constants_subs_dict
         #get dicts list
         if 'cvgs_tuple' in kwargs:
             dicts_list = [G_subs_dict, theta_subs_dict, constants_subs_dict,
@@ -981,14 +999,14 @@ class SolverBase(KineticCoreComponent):
         #free energy value dict
         G_dict = {}
         for idx, sp_name in enumerate(self.sp_list):
-            G_dict.setdefault(self.G_sym[idx], self.E[sp_name])
+            G_dict.setdefault(self._G_sym[idx], self.E[sp_name])
 
         return G_dict
 
     def get_theta_subs_dict(self, cvgs_tuple):
         theta_dict = {}
         for idx, ads_name in enumerate(self._owner.adsorbate_names()):
-            theta_dict.setdefault(self.ads_theta_sym[idx], cvgs_tuple[idx])
+            theta_dict.setdefault(self._ads_theta_sym[idx], cvgs_tuple[idx])
 
         return theta_dict
 
@@ -996,7 +1014,7 @@ class SolverBase(KineticCoreComponent):
         "Get values from solver's data dict."
         p_dict = {}
         for idx, gas_name in enumerate(self._owner.gas_names()):
-            p_dict.setdefault(self.p_sym[idx], self.p[gas_name])
+            p_dict.setdefault(self._p_sym[idx], self.p[gas_name])
 
         return p_dict
 
@@ -1004,7 +1022,7 @@ class SolverBase(KineticCoreComponent):
         "Get values from solver's data dict."
         c_dict = {}
         for idx, liquid_name in enumerate(self._owner.liquid_names()):
-            c_dict.setdefault(self.c_sym[idx], self.c[liquid_name])
+            c_dict.setdefault(self._c_sym[idx], self.c[liquid_name])
 
         return c_dict
 

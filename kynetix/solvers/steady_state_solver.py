@@ -579,7 +579,7 @@ class SteadyStateSolver(SolverBase):
             dthe_dt_sym = dtheta_dt_syms[i]
             for j in xrange(n):
                 ads_name = self._owner.adsorbate_names()[j]
-                theta_sym = self.extract_symbol(ads_name, 'ads_cvg')
+                theta_sym = self._extract_symbol(ads_name, 'ads_cvg')
                 sym_jacobian[i, j] = \
                     sym.Derivative(dthe_dt_sym, theta_sym).doit()
 

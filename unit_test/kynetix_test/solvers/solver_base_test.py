@@ -260,6 +260,91 @@ class SolverBaseTest(unittest.TestCase):
 
         self.assertListEqual(ref_tof, ret_tof)
 
+    # ----------------------------------------------------------------
+    # Symbol tests.
+
+    def test_get_data_symbols(self):
+        # {{{
+        " Make sure we can get all correct symbols. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/solver_base.mkm",
+                             verbosity=logging.WARNING)
+        solver = model.solver()
+
+        solver.get_data_symbols()
+
+        # Check P symbols.
+        ref_p_symbols = ('p_CO2_g', 'p_CO_g', 'p_O2_g')
+        ret_p_symbols = solver._p_sym
+
+        for p, p_str in zip(ret_p_symbols, ref_p_symbols):
+            self.assertEqual(p.name, p_str)
+
+        # Check concentration symbols.
+        ref_c_symbols = ()
+        ret_c_symbols = solver._c_sym
+
+        for p, p_str in zip(ret_p_symbols, ref_p_symbols):
+            self.assertEqual(p.name, p_str)
+
+        # Check adsorbate coverage symbols.
+        ref_ads_theta_symbols = ()
+        ret_ads_theta_symbols = solver._ads_theta_sym
+
+        for ads_theta, ads_theta_str in zip(ret_ads_theta_symbols, ref_ads_theta_symbols):
+            self.assertEqual(ads_theta.name, ads_theta_str)
+
+        # Check free site coverage symbols.
+        ref_fsite_theta_symbols = ()
+        ret_fsite_theta_symbols = solver._fsite_theta_sym
+
+        for fsite_theta, fsite_theta_str in zip(ret_fsite_theta_symbols, ref_fsite_theta_symbols):
+            self.assertEqual(fsite_theta.name, fsite_theta_str)
+
+        # Check free energy coverage symbols.
+        ref_G_symbols = ()
+        ret_G_symbols = solver._G_sym
+
+        for G, G_str in zip(ret_G_symbols, ref_G_symbols):
+            self.assertEqual(G.name, G_str)
+
+        # Check K coverage symbols.
+        ref_K_symbols = ()
+        ret_K_symbols = solver._K_sym
+
+        for K, K_str in zip(ret_K_symbols, ref_K_symbols):
+            self.assertEqual(K.name, K_str)
+        # }}}
+
+    def test_extract_symbol(self):
+        " Test protected function _extract_symbol(). "
+        # Construction.
+        model = KineticModel(setup_file="input_files/solver_base.mkm",
+                             verbosity=logging.WARNING)
+        solver = model.solver()
+
+        solver.get_data_symbols()
+
+        # Pressure symbol.
+        ref_pressure = 'p_CO2_g'
+        ret_pressure = solver._extract_symbol('CO2_g', 'pressure')
+        self.assertEqual(ret_pressure.name, ref_pressure)
+
+        # Adsorbate symbol.
+        ref_cvg = 'theta_CO_s'
+        ret_cvg = solver._extract_symbol('CO_s', 'ads_cvg')
+        self.assertEqual(ret_cvg.name, ref_cvg)
+
+        # Empty site symbol.
+        ref_cvg = '-theta_CO_s - theta_O_s + 1.0'
+        ret_cvg = solver._extract_symbol('s', 'free_site_cvg')
+        self.assertEqual(ret_cvg.name, ref_cvg)
+
+        # Free energy symbol.
+        ref_G = 'G_CO_g'
+        ret_G = solver._extract_symbol('CO_g', 'free_energy')
+        self.assertEqual(ret_G.name, ref_G)
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(SolverBaseTest)
     unittest.TextTestRunner(verbosity=2).run(suite)
