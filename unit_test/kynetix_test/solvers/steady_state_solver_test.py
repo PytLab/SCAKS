@@ -228,154 +228,154 @@ class SteadyStateSolverTest(unittest.TestCase):
                           "-2*2*kf[1]*p['O2_g']*(1.0 - theta['CO_s'] - theta['O_s'])**1*theta['O_s']")
         self.assertEqual(ref_derivation, ret_derivation)
 
-#    def test_poly_adsorbate_derivation(self):
-#        " Test we can derive dtheta/dt expression correctly. "
-#        # Construction.
-#        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
-#                             verbosity=logging.WARNING)
-#        solver = model.solver()
-#
-#        adsorbate = "CO_s"
-#        poly_expression = ("dtheta_dt[0] = kf[0]*p['CO_g']*theta['*_s'] - " +
-#                           "kr[0]*theta['CO_s'] + kr[2]*p['CO2_g']*theta['*_s']**2 - " +
-#                           "kf[2]*theta['CO_s']*theta['O_s']")
-#        ref_expression = ("-kf[0]*p['CO_g'] - kr[0] + " +
-#                          "-2*kr[2]*p['CO2_g']*(1.0 - theta['CO_s'] - theta['O_s'])**1 - " +
-#                          "kf[2]*theta['O_s']")
-#        ret_expression = solver.poly_adsorbate_derivation(adsorbate, poly_expression)
-#        self.assertEqual(ref_expression, ret_expression)
-#
-#        adsorbate = "O_s"
-#        poly_expression = ("dtheta_dt[1] = 2*kf[1]*p['O2_g']*theta['*_s']**2 - " +
-#                           "2*kr[1]*theta['O_s']**2 + kr[2]*p['CO2_g']*theta['*_s']**2 - " +
-#                           "kf[2]*theta['CO_s']*theta['O_s']")
-#        ref_expression = ("-2*2*kf[1]*p['O2_g']*(1.0 - theta['CO_s'] - theta['O_s'])**1 - " +
-#                          "2*2*kr[1]*theta['O_s']**1 + " +
-#                          "-2*kr[2]*p['CO2_g']*(1.0 - theta['CO_s'] - theta['O_s'])**1 - " +
-#                          "kf[2]*theta['CO_s']")
-#        ret_expression = solver.poly_adsorbate_derivation(adsorbate, poly_expression)
-#        self.assertEqual(ref_expression, ret_expression)
-#
-#    def test_analytical_jacobian(self):
-#        " Make sure we can get analytical Jacobian matrix correctly. "
-#        # Construction.
-#        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
-#                             verbosity=logging.WARNING)
-#        parser = model.parser()
-#        solver = model.solver()
-#
-#        parser.parse_data(filename="input_files/rel_energy.py")
-#        solver.get_data()
-#
-#        # Check.
-#        coverages = (0.2, 0.4)
-#        ref_jacobian = \
-#            [[mpf('-9376477776977.325529152146275592601226578547583860255160845870399909908707423189398400433251115064142969'),
-#              mpf('-9376477746581.581348144746485471400972547261919826208563429346043157057434712822741984254838669163188788')],
-#            [mpf('-5000788131510.204262305677225587384258732494296102303565975254275297829626321443425939601899076029921783'),
-#             mpf('-5000788131510.185482786259657444444790044255747964731910321536357200218091672598363190527537210968397623')]]
-#        ret_jacobian = solver.analytical_jacobian(coverages).tolist()
-#        self.assertListEqual(ref_jacobian, ret_jacobian)
-#
-#    def test_get_residual(self):
-#        " Test we can get correct residual. "
-#        # Construction.
-#        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
-#                             verbosity=logging.WARNING)
-#        parser = model.parser()
-#        solver = model.solver()
-#
-#        parser.parse_data(filename="input_files/rel_energy.py")
-#        solver.get_data()
-#
-#        coverages = (0.99, 0.01)
-#        ref_residual = mpf('30091.7690770593132993749732280040438170939546090401684804502584011824620182098839677033574048380638922')
-#        ret_residual = solver.get_residual(coverages)
-#
-#        self.assertEqual(ref_residual, ret_residual)
-#
-#    def test_coarse_steady_state_cvgs(self):
-#        " Make sure we can get a coarse coverages. "
-#        # Construction.
-#        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
-#                             verbosity=logging.WARNING)
-#        parser = model.parser()
-#        solver = model.solver()
-#
-#        parser.parse_data(filename="input_files/rel_energy.py")
-#        solver.get_data()
-#
-#        coverages = (0.99, 0.0)
-#        ref_coarse_cvgs = np.array([9.99305118e-01, 6.94878644e-04])
-#        ret_coarse_cvgs = solver.coarse_steady_state_cvgs(coverages)
-#
-#        self.assertTrue(np.allclose(ref_coarse_cvgs, ret_coarse_cvgs))
-#
-#    def test_get_steady_state_coverages(self):
-#        " Test we can get correct steady state coverages. "
-#        # Construction.
-#        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
-#                             verbosity=logging.WARNING)
-#        parser = model.parser()
-#        solver = model.solver()
-#
-#        parser.parse_data(filename="input_files/rel_energy.py")
-#        solver.get_data()
-#        
-#        # Check.
-#        coverages = solver.boltzmann_coverages()
-#        ref_sscvg = (mpf('0.9993009023315727974778177681208650925107462317706412753934079954585578629794007870326052571832315224074'),
-#                     mpf('0.0006990944289937278999185466825600445954918013941899906934858302326203804780394631662799688248593916870043'))
-#        ret_sscvg = solver.get_steady_state_cvgs(coverages)
-#        self.assertTupleEqual(ref_sscvg, ret_sscvg)
-#
-#        # Check error.
-#        ref_error = mpf('0.00000000000003168526264202393143682820950745746086660249326055772811983321415704726691709333379630093057684318328861')
-#        ret_error = solver.error()
-#        self.assertEqual(ret_error, ref_error)
-#
-#    def test_get_intermediates_Gs(self):
-#        " Test private function __get_intermediates_Gs(). "
-#        # Construction.
-#        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
-#                             verbosity=logging.WARNING)
-#        parser = model.parser()
-#        solver = model.solver()
-#
-#        parser.parse_data(filename="input_files/rel_energy.py")
-#        solver.get_data()
-#
-#        # Check.
-#        ref_Gs = [mpf('-0.75800000000000000710542735760100185871124267578125'),
-#                  mpf('0.4339999999999999413802242997917346656322479248046875'),
-#                  mpf('0.9259999999999999342747969421907328069210052490234375')]
-#        ret_Gs = solver._SteadyStateSolver__get_intermediates_Gs()
-#
-#        self.assertListEqual(ref_Gs, ret_Gs)
-#
-#    def test_get_Gs_tof(self):
-#        " Test private function __get_Gs_tof(). "
-#        # Construction.
-#        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
-#                             verbosity=logging.WARNING)
-#        parser = model.parser()
-#        solver = model.solver()
-#
-#        parser.parse_data(filename="input_files/rel_energy.py")
-#        solver.get_data()
-#
-#        # Get steady state converages first.
-#        coverages = solver.boltzmann_coverages()
-#        solver.get_steady_state_cvgs(coverages)
-#
-#        # Check.
-#        Gs = solver._SteadyStateSolver__get_intermediates_Gs()
-#        ref_tof = [mpf('0.00006559739595110368600498031342965082631709276536276896384863121614360978577485627423068419453387406309781'),
-#                   mpf('-0.00006559739597350071441731557982863535625087290032441771661460764080034748406280044847430181035649452593027'),
-#                   mpf('-0.0000327986979867581915044675535448405758347302265953113244359216100377718956030035681169078255245732720541')]
-#        ret_tof = solver._SteadyStateSolver__get_Gs_tof(Gs)
-#
-#        self.assertListEqual(ref_tof, ret_tof)
+    def test_poly_adsorbate_derivation(self):
+        " Test we can derive dtheta/dt expression correctly. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+                             verbosity=logging.WARNING)
+        solver = model.solver()
+
+        adsorbate = "CO_s"
+        poly_expression = ("dtheta_dt[0] = kf[0]*p['CO_g']*theta['*_s'] - " +
+                           "kr[0]*theta['CO_s'] + kr[2]*p['CO2_g']*theta['*_s']**2 - " +
+                           "kf[2]*theta['CO_s']*theta['O_s']")
+        ref_expression = ("-kf[0]*p['CO_g'] - kr[0] + " +
+                          "-2*kr[2]*p['CO2_g']*(1.0 - theta['CO_s'] - theta['O_s'])**1 - " +
+                          "kf[2]*theta['O_s']")
+        ret_expression = solver.poly_adsorbate_derivation(adsorbate, poly_expression)
+        self.assertEqual(ref_expression, ret_expression)
+
+        adsorbate = "O_s"
+        poly_expression = ("dtheta_dt[1] = 2*kf[1]*p['O2_g']*theta['*_s']**2 - " +
+                           "2*kr[1]*theta['O_s']**2 + kr[2]*p['CO2_g']*theta['*_s']**2 - " +
+                           "kf[2]*theta['CO_s']*theta['O_s']")
+        ref_expression = ("-2*2*kf[1]*p['O2_g']*(1.0 - theta['CO_s'] - theta['O_s'])**1 - " +
+                          "2*2*kr[1]*theta['O_s']**1 + " +
+                          "-2*kr[2]*p['CO2_g']*(1.0 - theta['CO_s'] - theta['O_s'])**1 - " +
+                          "kf[2]*theta['CO_s']")
+        ret_expression = solver.poly_adsorbate_derivation(adsorbate, poly_expression)
+        self.assertEqual(ref_expression, ret_expression)
+
+    def test_analytical_jacobian(self):
+        " Make sure we can get analytical Jacobian matrix correctly. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+
+        # Check.
+        coverages = (0.2, 0.4)
+        ref_jacobian = \
+            [[mpf('-9376477776977.325529152146275592601226578547583860255160845870399909908707423189398400433251115064142969'),
+              mpf('-9376477746581.581348144746485471400972547261919826208563429346043157057434712822741984254838669163188788')],
+            [mpf('-5000788131510.204262305677225587384258732494296102303565975254275297829626321443425939601899076029921783'),
+             mpf('-5000788131510.185482786259657444444790044255747964731910321536357200218091672598363190527537210968397623')]]
+        ret_jacobian = solver.analytical_jacobian(coverages).tolist()
+        self.assertListEqual(ref_jacobian, ret_jacobian)
+
+    def test_get_residual(self):
+        " Test we can get correct residual. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+
+        coverages = (0.99, 0.01)
+        ref_residual = mpf('30091.7690770593132993749732280040438170939546090401684804502584011824620182098839677033574048380638922')
+        ret_residual = solver.get_residual(coverages)
+
+        self.assertEqual(ref_residual, ret_residual)
+
+    def test_coarse_steady_state_cvgs(self):
+        " Make sure we can get a coarse coverages. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+
+        coverages = (0.99, 0.0)
+        ref_coarse_cvgs = np.array([9.99305118e-01, 6.94878644e-04])
+        ret_coarse_cvgs = solver.coarse_steady_state_cvgs(coverages)
+
+        self.assertTrue(np.allclose(ref_coarse_cvgs, ret_coarse_cvgs))
+
+    def test_get_steady_state_coverages(self):
+        " Test we can get correct steady state coverages. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+        
+        # Check.
+        coverages = solver.boltzmann_coverages()
+        ref_sscvg = (mpf('0.9993009023315727974778177681208650925107462317706412753934079954585578629794007870326052571832315224074'),
+                     mpf('0.0006990944289937278999185466825600445954918013941899906934858302326203804780394631662799688248593916870043'))
+        ret_sscvg = solver.get_steady_state_cvgs(coverages)
+        self.assertTupleEqual(ref_sscvg, ret_sscvg)
+
+        # Check error.
+        ref_error = mpf('0.00000000000003168526264202393143682820950745746086660249326055772811983321415704726691709333379630093057684318328861')
+        ret_error = solver.error()
+        self.assertEqual(ret_error, ref_error)
+
+    def test_get_intermediates_Gs(self):
+        " Test private function __get_intermediates_Gs(). "
+        # Construction.
+        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+
+        # Check.
+        ref_Gs = [mpf('-0.75800000000000000710542735760100185871124267578125'),
+                  mpf('0.4339999999999999413802242997917346656322479248046875'),
+                  mpf('0.9259999999999999342747969421907328069210052490234375')]
+        ret_Gs = solver._SteadyStateSolver__get_intermediates_Gs()
+
+        self.assertListEqual(ref_Gs, ret_Gs)
+
+    def test_get_Gs_tof(self):
+        " Test private function __get_Gs_tof(). "
+        # Construction.
+        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+
+        # Get steady state converages first.
+        coverages = solver.boltzmann_coverages()
+        solver.get_steady_state_cvgs(coverages)
+
+        # Check.
+        Gs = solver._SteadyStateSolver__get_intermediates_Gs()
+        ref_tof = [mpf('0.00006559739595110368600498031342965082631709276536276896384863121614360978577485627423068419453387406309781'),
+                   mpf('-0.00006559739597350071441731557982863535625087290032441771661460764080034748406280044847430181035649452593027'),
+                   mpf('-0.0000327986979867581915044675535448405758347302265953113244359216100377718956030035681169078255245732720541')]
+        ret_tof = solver._SteadyStateSolver__get_Gs_tof(Gs)
+
+        self.assertListEqual(ref_tof, ret_tof)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(SteadyStateSolverTest)

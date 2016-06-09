@@ -243,6 +243,7 @@ class SteadyStateSolver(SolverBase):
 
     @staticmethod
     def __term_adsorbate_derivation(adsorbate_name, term_expression):
+        # {{{
         """
         Expect a single expression and an adsorbate_name
         e.g. "kf[2]*theta['CO_s']*theta['*_s']" 'CO_s',
@@ -290,10 +291,12 @@ class SteadyStateSolver(SolverBase):
 #            derivation_expression = '0'
 
         return derivation_expression
+        # }}}
 
     def __total_term_adsorbate_derivation(self,
                                           adsorbate_name,
                                           term_expression):
+        # {{{
         """
         Private function to get derivation expression taking FREE SITE into consideration.
 
@@ -379,6 +382,7 @@ class SteadyStateSolver(SolverBase):
             derivation_expression = '0'
 
         return derivation_expression
+        # }}}
 
     def poly_adsorbate_derivation(self, adsorbate_name, poly_expression):
         """
