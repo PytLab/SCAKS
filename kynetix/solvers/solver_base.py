@@ -1027,11 +1027,14 @@ class SolverBase(KineticCoreComponent):
 
         return theta_dict
 
-    def get_p_subs_dict(self):
-        "Get values from solver's data dict."
+    def _get_p_subs_dict(self):
+        """
+        Protected function to get gas pressure symbols substitution dict.
+        """
         p_dict = {}
-        for idx, gas_name in enumerate(self._owner.gas_names()):
-            p_dict.setdefault(self._p_sym[idx], self.p[gas_name])
+        gas_names = self._owner.gas_names()
+        for p_sym, gas_name in zip(self._p_sym, gas_names):
+            p_dict.setdefault(p_sym, self._p[gas_name])
 
         return p_dict
 

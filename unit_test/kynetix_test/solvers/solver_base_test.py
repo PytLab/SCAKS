@@ -613,6 +613,29 @@ class SolverBaseTest(unittest.TestCase):
         
         self.assertDictEqual(ref_dict, ret_dict)
 
+    def test_get_p_subs_dict(self):
+        " Test protected function _get_p_subs_dict(). "
+        # Construction.
+        model = KineticModel(setup_file="input_files/solver_base.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+        solver.get_data_symbols()
+
+        p_CO2_g = solver._extract_symbol("CO2_g", "pressure")
+        p_O2_g = solver._extract_symbol("O2_g", "pressure")
+        p_CO_g = solver._extract_symbol("CO_g", "pressure")
+
+        ref_dict = {p_O2_g: mpf('0.3333333333321'),
+                    p_CO_g: mpf('1.0'),
+                    p_CO2_g: mpf('0.0')}
+        ret_dict = solver._get_p_subs_dict()
+
+        self.assertDictEqual(ref_dict, ret_dict)
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(SolverBaseTest)
     unittest.TextTestRunner(verbosity=2).run(suite)
