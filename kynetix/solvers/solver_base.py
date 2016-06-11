@@ -919,29 +919,44 @@ class SolverBase(KineticCoreComponent):
         return rf_syms, rr_syms
         # }}}
 
-    def get_subs_dict(self, **kwargs):
+    def get_subs_dict(self, coverages=None):
         "get substitution dict(e.g. G, theta, p, constants dicts)."
+        """
+        Function to get substitution dict for all symbols.
+
+        Parameters:
+        -----------
+        coverages: optional, adsorbate coverages, tuple of float.
+
+        Returns:
+        --------
+        Substitution dict whose keys are Sympy.Symbol object and values are float.
+        """
 
         # Free energy substitution dict.
         G_subs_dict = self._get_G_subs_dict()
-        #coverage substitution dict
-        if 'cvgs_tuple' in kwargs:
-            theta_subs_dict = self._get_theta_subs_dict(kwargs['cvgs_tuple'])
-        #pressure substitution dict
-        p_subs_dict = self.get_p_subs_dict()
-        #concentration substution dict
-        c_subs_dict = self.get_c_subs_dict()
-        #constants substitution dict
+
+        # Coverage substitution dict.
+        if coverages:
+            theta_subs_dict = self._get_theta_subs_dict(coverages)
+
+        # Pressure substitution dict.
+        p_subs_dict = self._get_p_subs_dict()
+
+        # Concentration substution dict.
+        c_subs_dict = self._get_c_subs_dict()
+
+        # Constants substitution dict
         constants_subs_dict = self._constants_subs_dict
-        #get dicts list
-        if 'cvgs_tuple' in kwargs:
+
+        # Get dicts list.
+        if coverages:
             dicts_list = [G_subs_dict, theta_subs_dict, constants_subs_dict,
                           p_subs_dict, c_subs_dict]
         else:
-            dicts_list = [G_subs_dict, constants_subs_dict,
-                          p_subs_dict, c_subs_dict]
+            dicts_list = [G_subs_dict, constants_subs_dict, p_subs_dict, c_subs_dict]
 
-        #merge dicts
+        # Merge dicts.
         subs_dict = {}
         for dic in dicts_list:
             subs_dict = dict(subs_dict, **dic)
@@ -1038,11 +1053,14 @@ class SolverBase(KineticCoreComponent):
 
         return p_dict
 
-    def get_c_subs_dict(self):
-        "Get values from solver's data dict."
+    def _get_c_subs_dict(self):
+        """
+        Protected function to get concentration symbols substitution dict.
+        """
         c_dict = {}
-        for idx, liquid_name in enumerate(self._owner.liquid_names()):
-            c_dict.setdefault(self._c_sym[idx], self.c[liquid_name])
+        liquid_names = self._owner.liquid_names()
+        for c_sym, liquid_name in zip(self._c_sym, liquid_names):
+            c_dict.setdefault(c_sym, self._c[liquid_names])
 
         return c_dict
 

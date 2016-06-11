@@ -636,6 +636,69 @@ class SolverBaseTest(unittest.TestCase):
 
         self.assertDictEqual(ref_dict, ret_dict)
 
+    def test_get_c_sub_dict(self):
+        " Test protected function _get_c_sub_dict(). "
+        # Need Implimentation.
+
+    def test_get_subs_dict(self):
+        " Make sure we can get correct substitution dict for all symbols. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/solver_base.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+        solver.get_data_symbols()
+
+        # Get symbols.
+
+        # Free energy.
+        G_COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
+        G_CO_s = solver._extract_symbol("CO_s", "free_energy")
+        G_O_s = solver._extract_symbol("O_s", "free_energy")
+        G_CO2_g = solver._extract_symbol("CO2_g", "free_energy")
+        G_O2_g = solver._extract_symbol("O2_g", "free_energy")
+        G_CO_g = solver._extract_symbol("CO_g", "free_energy")
+        G_s = solver._extract_symbol("s", "free_energy")
+
+        # Coverage.
+        c_CO_s = solver._extract_symbol("CO_s", "ads_cvg")
+        c_O_s = solver._extract_symbol("O_s", "ads_cvg")
+        c_s = solver._extract_symbol("s", "free_site_cvg")
+
+        # Pressure.
+        p_CO2_g = solver._extract_symbol("CO2_g", "pressure")
+        p_O2_g = solver._extract_symbol("O2_g", "pressure")
+        p_CO_g = solver._extract_symbol("CO_g", "pressure")
+
+        # Constants.
+        kB = solver._kB_sym
+        T = solver._T_sym
+        h = solver._h_sym
+        
+        coverages = (0.5, 0.4)
+
+        ref_dict = {G_O2_g: mpf('3.508000000002'),
+                    c_CO_s: 0.5,
+                    T: mpf('450.0'),
+                    G_CO2_g: mpf('0.0'),
+                    G_CO_g: mpf('0.0'),
+                    G_COO_2s: mpf('0.9259999999995'),
+                    p_O2_g: mpf('0.3333333333321'),
+                    c_O_s: 0.4,
+                    kB: mpf('8.617332400007e-5'),
+                    h: mpf('4.135667662e-15'),
+                    G_s: mpf('0.0'),
+                    G_CO_s: mpf('-0.7580000000016'),
+                    p_CO_g: mpf('1.0'),
+                    G_O_s: mpf('0.4340000000011'),
+                    p_CO2_g: mpf('0.0')}
+        ret_dict = solver.get_subs_dict(coverages)
+
+        self.assertDictEqual(ref_dict, ret_dict)
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(SolverBaseTest)
     unittest.TextTestRunner(verbosity=2).run(suite)
