@@ -386,12 +386,12 @@ class SolverBaseTest(unittest.TestCase):
         ret_Gaf_symbols, ret_Gar_symbols = solver.get_barrier_symbols()
 
         # Get references.
-        COO_2s = solver._extract_symbol("CO-O_2s","free_energy")
-        CO_s = solver._extract_symbol("CO_s","free_energy")
-        O_s = solver._extract_symbol("O_s","free_energy")
-        CO2_g = solver._extract_symbol("CO2_g","free_energy")
-        O2_g = solver._extract_symbol("O2_g","free_energy")
-        CO_g = solver._extract_symbol("CO_g","free_energy")
+        COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
+        CO_s = solver._extract_symbol("CO_s", "free_energy")
+        O_s = solver._extract_symbol("O_s", "free_energy")
+        CO2_g = solver._extract_symbol("CO2_g", "free_energy")
+        O2_g = solver._extract_symbol("O2_g", "free_energy")
+        CO_g = solver._extract_symbol("CO_g", "free_energy")
         s = solver._extract_symbol("s", "free_energy")
 
         ref_Gaf_symbols = [0, 0, COO_2s - CO_s - O_s]
@@ -401,6 +401,41 @@ class SolverBaseTest(unittest.TestCase):
 
         self.assertListEqual(ret_Gaf_symbols, ref_Gaf_symbols)
         self.assertListEqual(ret_Gar_symbols, ref_Gar_symbols)
+
+    def test_get_rate_constant_symbols(self):
+        " Test we can get get correct rate constants symbols. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/solver_base.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+        solver.get_data_symbols()
+
+        # Get symbols.
+        COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
+        CO_s = solver._extract_symbol("CO_s", "free_energy")
+        O_s = solver._extract_symbol("O_s", "free_energy")
+        CO2_g = solver._extract_symbol("CO2_g", "free_energy")
+        O2_g = solver._extract_symbol("O2_g", "free_energy")
+        CO_g = solver._extract_symbol("CO_g", "free_energy")
+        s = solver._extract_symbol("s", "free_energy")
+        kB = solver._kB_sym
+        T = solver._T_sym
+        h = solver._h_sym
+        from sympy import E
+
+        ref_kf_syms = [T*kB/h, T*kB/h, T*kB*E**((-COO_2s + CO_s + O_s)/(T*kB))/h]
+        ref_kr_syms = [T*kB*E**((-s - CO_g + CO_s)/(T*kB))/h,
+                       T*kB*E**((-2*s - O2_g + 2*O_s)/(T*kB))/h,
+                       T*kB*E**((2*s - COO_2s + CO2_g)/(T*kB))/h]
+
+        ret_kf_syms, ret_kr_syms = solver.get_rate_constant_syms()
+
+        self.assertListEqual(ref_kf_syms, ret_kf_syms)
+        self.assertListEqual(ref_kr_syms, ret_kr_syms)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(SolverBaseTest)

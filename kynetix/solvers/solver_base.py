@@ -812,25 +812,23 @@ class SolverBase(KineticCoreComponent):
         return K_syms
 
     def get_rate_constant_syms(self):
-        "Go through elementary_rxns_list to get symbols of rate constants."
-        #kB, h, T = sym.symbols('kB, h, T', is_real=True)
+        """
+        Fucntion to get rate constant expression symbols.
+        """
+        # Go through rxn expressions to get symbols of rate constants.
         kB, h, T = self._kB_sym, self._h_sym, self._T_sym
         kf_syms, kr_syms = [], []
-        for idx, elementary_rxn_list in\
-                enumerate(self.rxns_list):
-            if not hasattr(self, 'delta_Gf_syms') or\
-                    not hasattr(self, 'delta_Gr_syms'):
-                self.get_delta_G_symbols()
 
-            delta_Gf = self.delta_Gf_syms[idx]
-            kf_sym = kB*T/h*sym.E**(-delta_Gf/(kB*T))
+        for idx, rxn_expression in enumerate(self._owner.rxn_expressions()):
+            Gaf_syms, Gar_syms = self.get_barrier_symbols()
+
+            Gaf = Gaf_syms[idx]
+            kf_sym = kB*T/h*sym.E**(-Gaf/(kB*T))
             kf_syms.append(kf_sym)
 
-            delta_Gr = self.delta_Gr_syms[idx]
-            kr_sym = kB*T/h*sym.E**(-delta_Gr/(kB*T))
+            Gar = Gar_syms[idx]
+            kr_sym = kB*T/h*sym.E**(-Gar/(kB*T))
             kr_syms.append(kr_sym)
-
-        self.kf_syms, self.kr_syms = kf_syms, kr_syms
 
         return kf_syms, kr_syms
 
