@@ -834,17 +834,17 @@ class SolverBase(KineticCoreComponent):
         return kf_syms, kr_syms
 
     def get_single_rate_sym(self, rxn_expression):
+        # {{{
         """
-        Expect a elementary_rxn_list e.g.
-        [['HCOOH_s', '*_s'], ['HCO-OH_s', '*_s'], ['HCO_s', 'OH_s']]
+        Function to get rate expression for an elementary reaction.
 
-        return corresponding forward rate and reverse rate symbols.
-        e.g. [T*kB*theta_HCOOH_s*(1 - theta_CO_s - theta_H2O_s - theta_HCOOH_s -
-              theta_HCO_s - theta_H_s - theta_OH_s)*
-              exp((-G_HCO-OH_s + G_HCOOH_s)/(T*kB))/h,
+        Parameters:
+        -----------
+        rxn_expression: An elementary expression, str.
 
-              T*kB*theta_HCO_s*theta_OH_s*
-              exp((-G_*_s - G_HCO-OH_s + G_HCO_s + G_OH_s)/(T*kB))/h]
+        Returns:
+        --------
+        Forward and reverse rate expression symbols.
         """
         # Get expression index.
         rxn_idx = self._owner.rxn_expressions().index(rxn_expression)
@@ -892,30 +892,33 @@ class SolverBase(KineticCoreComponent):
             rate_syms.append(rate_sym)
 
         return tuple(rate_syms)
+        # }}}
 
     def get_rate_syms(self, log_latex=False):
+        # {{{
+        """
+        Function to get all rate expressions for all elementary reactions.
+        """
+        # Loop over all elementary reaction.
         rf_syms, rr_syms = [], []
-        for elementary_rxn_list in self._owner.elementary_rxns_list():
-            rf_sym, rr_sym = self.get_single_rate_sym(elementary_rxn_list)
+        for rxn_expression in self._owner.rxn_expressions():
+            rf_sym, rr_sym = self.get_single_rate_sym(rxn_expression)
             rf_syms.append(rf_sym)
             rr_syms.append(rr_sym)
 
-        self.rf_syms = rf_syms
-        self.rr_syms = rr_syms
-
-        #latex strings
+        # Latex strings.
         rf_latexs = self.get_latex_strs(part1=r'r_{f', part2=r'^{+}}',
                                         symbols=rf_syms)
         rr_latexs = self.get_latex_strs(part1=r'r_{r', part2=r'^{-}}',
                                         symbols=rf_syms)
-        self.r_latex = (tuple(rf_latexs), tuple(rr_latexs))
 
         if log_latex:
-            #log it
+            # log it.
             self.log_latex(rf_latexs)
             self.log_latex(rr_latexs)
 
         return rf_syms, rr_syms
+        # }}}
 
     def get_subs_dict(self, **kwargs):
         "get substitution dict(e.g. G, theta, p, constants dicts)."

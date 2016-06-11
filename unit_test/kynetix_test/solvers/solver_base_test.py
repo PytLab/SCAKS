@@ -553,6 +553,10 @@ class SolverBaseTest(unittest.TestCase):
         self.assertEqual(ref_rr, ret_rr)
         # }}}
 
+    def test_get_rate_syms(self):
+        " Test we can get rate expressions correctly. "
+        # Need Implimentation.
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(SolverBaseTest)
     unittest.TextTestRunner(verbosity=2).run(suite)
