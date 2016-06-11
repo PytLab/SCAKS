@@ -688,11 +688,8 @@ class SolverBase(KineticCoreComponent):
         # }}}
 
     def get_single_barrier_symbols(self, rxn_expression):
+        # {{{
         """
-        Expect a elementary_rxn_list,
-        e.g. [['HCOOH_s', '*_s'], ['HCO-OH_s', '*_s'], ['HCO_s', 'OH_s']]
-        return sympy expression of delta Gf and Gr.
-        e.g. (G_HCO-OH_s - G_HCOOH_s, G_*_s + G_HCO-OH_s - G_HCO_s - G_OH_s)
         Function to get forward and reverse barrier expression symbols
         for an elementary reaction expression.
 
@@ -749,7 +746,7 @@ class SolverBase(KineticCoreComponent):
             ts_energy_sym = state_energy_sym_list[1]
         elif len(state_energy_sym_list) == 2:
             # Get TS symbol.
-            rxn_idx = self._owner.rxn_expressions.index(rxn_expression)
+            rxn_idx = self._owner.rxn_expressions().index(rxn_expression)
             dG = self._relative_energies['dG'][rxn_idx]
             ts_idx = 0 if dG < 0 else -1
             ts_energy_sym = state_energy_sym_list[ts_idx]
@@ -758,6 +755,7 @@ class SolverBase(KineticCoreComponent):
         Gar_sym = ts_energy_sym - fs_energy_sym
 
         return Gaf_sym, Gar_sym
+        # }}}
 
     @staticmethod
     def get_latex_strs(part1, part2, symbols):
@@ -774,31 +772,29 @@ class SolverBase(KineticCoreComponent):
 
         return tuple(latex_strs)
 
-    def get_delta_G_symbols(self, log_latex=False):
-        "Go through elementary_rxns_list to get symbols of delta G."
-        delta_Gf_syms, delta_Gr_syms = [], []
-        for elementary_rxn_list in self.rxns_list:
-            delta_Gf_sym, delta_Gr_sym =\
-                self.get_single_relative_energy_symbols(elementary_rxn_list)
-            delta_Gf_syms.append(delta_Gf_sym)
-            delta_Gr_syms.append(delta_Gr_sym)
+    def get_barrier_symbols(self, log_latex=False):
+        """
+        Function to get all barrier expression symbols.
+        """
+        # Go through all reaction expressions to get symbols of barriers.
+        Gaf_syms, Gar_syms = [], []
+        for rxn_expression in self._owner.rxn_expressions():
+            Gaf_sym, Gar_sym = self.get_single_barrier_symbols(rxn_expression)
+            Gaf_syms.append(Gaf_sym)
+            Gar_syms.append(Gar_sym)
 
-        self.delta_Gf_syms = delta_Gf_syms
-        self.delta_Gr_syms = delta_Gr_syms
-
-        #latex strings
+        # latex strings.
         f_latexs = self.get_latex_strs(part1=r'\Delta G_{', part2=r'+}',
-                                       symbols=delta_Gf_syms)
+                                       symbols=Gaf_syms)
         r_latexs = self.get_latex_strs(part1=r'\Delta G_{', part2=r'-}',
-                                       symbols=delta_Gr_syms)
-        self.delta_G_latex = (tuple(f_latexs), tuple(r_latexs))
+                                       symbols=Gar_syms)
 
         if log_latex:
-            #log it
+            # Log it.
             self.log_latex(f_latexs)
             self.log_latex(r_latexs)
 
-        return delta_Gf_syms, delta_Gr_syms
+        return Gaf_syms, Gar_syms
 
     def get_K_syms(self):
         "Go through elementary_rxns_list to get symbols of equilibrium constant."
