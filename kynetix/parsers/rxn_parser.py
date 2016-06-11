@@ -285,7 +285,10 @@ class ChemFormula(object):
         elif self.__site == "l":
             return "liquid"
         else:
-            return "adsorbate"
+            if "*" in self.__species_site:
+                return "site"
+            else:
+                return "adsorbate"
 
     def get_elements_dict(self):
         """

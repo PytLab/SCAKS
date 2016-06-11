@@ -25,6 +25,11 @@ class ChemFormulaTest(unittest.TestCase):
         formula = ChemFormula(formula_str)
         self.assertEqual("liquid", formula.type())
 
+        # Site.
+        formula_str = "3*_s"
+        formula = ChemFormula(formula_str)
+        self.assertEqual("site", formula.type())
+
         # Adsorbate.
         formula_str = "CO2_s"
         formula = ChemFormula(formula_str)
