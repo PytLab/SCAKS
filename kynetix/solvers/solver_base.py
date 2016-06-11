@@ -926,7 +926,7 @@ class SolverBase(KineticCoreComponent):
         G_subs_dict = self._get_G_subs_dict()
         #coverage substitution dict
         if 'cvgs_tuple' in kwargs:
-            theta_subs_dict = self.get_theta_subs_dict(kwargs['cvgs_tuple'])
+            theta_subs_dict = self._get_theta_subs_dict(kwargs['cvgs_tuple'])
         #pressure substitution dict
         p_subs_dict = self.get_p_subs_dict()
         #concentration substution dict
@@ -999,7 +999,9 @@ class SolverBase(KineticCoreComponent):
         return tuple(rfs), tuple(rrs)
 
     def _get_G_subs_dict(self):
-        "Get values from solver's data dict."
+        """
+        Protected function to get free energies symbols substitution dict.
+        """
         # Get value dict for solver.
         if not self._has_absolute_energy:
             msg = "Solver has no absolute energy, try get_data(relative=False)."
@@ -1015,10 +1017,13 @@ class SolverBase(KineticCoreComponent):
 
         return G_dict
 
-    def get_theta_subs_dict(self, cvgs_tuple):
+    def _get_theta_subs_dict(self, cvgs_tuple):
+        """
+        Protected function to get adsorbate coverages symbols substitution dict.
+        """
         theta_dict = {}
-        for idx, ads_name in enumerate(self._owner.adsorbate_names()):
-            theta_dict.setdefault(self._ads_theta_sym[idx], cvgs_tuple[idx])
+        for cvg_sym, cvg in zip(self._ads_theta_sym, cvgs_tuple):
+            theta_dict.setdefault(cvg_sym, cvg)
 
         return theta_dict
 

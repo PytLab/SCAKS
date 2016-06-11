@@ -590,6 +590,29 @@ class SolverBaseTest(unittest.TestCase):
 
         self.assertDictEqual(ref_dict, ret_dict)
 
+    def test_get_theta_subs_dict(self):
+        " Test protected function _get_theta_subs_dict(). "
+        # Construction.
+        model = KineticModel(setup_file="input_files/solver_base.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+        solver.get_data_symbols()
+
+        coverages = (0.5, 0.3)
+
+        c_CO_s = solver._extract_symbol("CO_s", "ads_cvg")
+        c_O_s = solver._extract_symbol("O_s", "ads_cvg")
+        c_s = solver._extract_symbol("s", "free_site_cvg")
+
+        ref_dict = {c_CO_s: 0.5, c_O_s: 0.3}
+        ret_dict = solver._get_theta_subs_dict(coverages)
+        
+        self.assertDictEqual(ref_dict, ret_dict)
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(SolverBaseTest)
     unittest.TextTestRunner(verbosity=2).run(suite)
