@@ -557,6 +557,39 @@ class SolverBaseTest(unittest.TestCase):
         " Test we can get rate expressions correctly. "
         # Need Implimentation.
 
+    def test_get_G_sub_dict(self):
+        " Test private function _get_G_sub_dict(). "
+        # Construction.
+        model = KineticModel(setup_file="input_files/solver_base.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+        solver.get_data_symbols()
+
+        # Check.
+        G_COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
+        G_CO_s = solver._extract_symbol("CO_s", "free_energy")
+        G_O_s = solver._extract_symbol("O_s", "free_energy")
+        G_CO2_g = solver._extract_symbol("CO2_g", "free_energy")
+        G_O2_g = solver._extract_symbol("O2_g", "free_energy")
+        G_CO_g = solver._extract_symbol("CO_g", "free_energy")
+        G_s = solver._extract_symbol("s", "free_energy")
+
+        ref_dict = {G_O2_g: mpf('3.508000000002'),
+                    G_CO2_g: mpf('0.0'),
+                    G_CO_g: mpf('0.0'),
+                    G_COO_2s: mpf('0.9259999999995'),
+                    G_s: mpf('0.0'),
+                    G_CO_s: mpf('-0.7580000000016'),
+                    G_O_s: mpf('0.4340000000011')}
+
+        ret_dict = solver._get_G_subs_dict()
+
+        self.assertDictEqual(ref_dict, ret_dict)
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(SolverBaseTest)
     unittest.TextTestRunner(verbosity=2).run(suite)

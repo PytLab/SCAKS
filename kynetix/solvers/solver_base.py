@@ -604,7 +604,6 @@ class SolverBase(KineticCoreComponent):
         fsite_theta_sym = []
         for site_name in self._owner.site_names():
             total = self._owner.species_definitions()[site_name]['total']
-            #free_site_cvg = sym.Symbol(str(total), is_real=True)
             free_site_cvg = total
             for ads_name in self._classified_adsorbates[site_name]:
                 free_site_cvg -= self._extract_symbol(sp_name=ads_name,
@@ -922,8 +921,9 @@ class SolverBase(KineticCoreComponent):
 
     def get_subs_dict(self, **kwargs):
         "get substitution dict(e.g. G, theta, p, constants dicts)."
-        #free energy substitution dict
-        G_subs_dict = self.get_G_subs_dict()
+
+        # Free energy substitution dict.
+        G_subs_dict = self._get_G_subs_dict()
         #coverage substitution dict
         if 'cvgs_tuple' in kwargs:
             theta_subs_dict = self.get_theta_subs_dict(kwargs['cvgs_tuple'])
@@ -998,18 +998,20 @@ class SolverBase(KineticCoreComponent):
 
         return tuple(rfs), tuple(rrs)
 
-    def get_G_subs_dict(self):
+    def _get_G_subs_dict(self):
         "Get values from solver's data dict."
-        #get value dict for solver
+        # Get value dict for solver.
         if not self._has_absolute_energy:
-            self.get_data()
-        if not self._has_absolute_energy:
-            raise IOError('No absolute energies read, ' +
-                          'could not get substitution dictionary for G symbol.')
-        #free energy value dict
+            msg = "Solver has no absolute energy, try get_data(relative=False)."
+            raise AttributeError(msg)
+
+        # Free energy value dict.
         G_dict = {}
-        for idx, sp_name in enumerate(self.sp_list):
-            G_dict.setdefault(self._G_sym[idx], self.E[sp_name])
+        sp_list = self._owner.species_definitions().keys()
+        for G_sym, sp_name in zip(self._G_sym, sp_list):
+            if sp_name in self._owner.site_names():
+                sp_name = "*_" + sp_name
+            G_dict.setdefault(G_sym, self._G[sp_name])
 
         return G_dict
 
