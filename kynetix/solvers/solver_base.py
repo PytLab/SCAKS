@@ -833,7 +833,7 @@ class SolverBase(KineticCoreComponent):
 
         return kf_syms, kr_syms
 
-    def get_single_rate_sym(self, elementary_rxn_list):
+    def get_single_rate_sym(self, rxn_expression):
         """
         Expect a elementary_rxn_list e.g.
         [['HCOOH_s', '*_s'], ['HCO-OH_s', '*_s'], ['HCO_s', 'OH_s']]
@@ -846,24 +846,38 @@ class SolverBase(KineticCoreComponent):
               T*kB*theta_HCO_s*theta_OH_s*
               exp((-G_*_s - G_HCO-OH_s + G_HCO_s + G_OH_s)/(T*kB))/h]
         """
-        rxn_idx = self.rxns_list.index(elementary_rxn_list)
-        #get rate constant symbols
-        if not hasattr(self, 'kf_syms') or not hasattr(self, 'kr_syms'):
-            self.get_rate_constant_syms()
-        k_syms = self.kf_syms[rxn_idx], self.kr_syms[rxn_idx]  # tuple
+        # Get expression index.
+        rxn_idx = self._owner.rxn_expressions().index(rxn_expression)
+
+        # Get rate constant symbols.
+        kf_syms, kr_syms = self.get_rate_constant_syms()
+        k_syms = (kf_syms[rxn_idx], kr_syms[rxn_idx])
+
+        # Get formula list.
+        rxn_equation = RxnEquation(rxn_expression)
+        elementary_rxn_list = rxn_equation.to_formula_list()
 
         rate_syms = []
+
+        # IS and FS.
         for i in [0, -1]:
             rate_sym = k_syms[i]
-            for sp_str in elementary_rxn_list[i]:
-                stoichiometry, species_name = self.split_species(sp_str)
-                #get species type
-                if '*' in species_name:
-                    species_name = species_name.split('_')[-1]
+
+            # Each formula in state.
+            for formula in elementary_rxn_list[i]:
+                # Split.
+                stoichiometry = formula.stoichiometry()
+                species_site = formula.species_site()
+
+                # Get species name and type.
+                if '*' in species_site:
+                    species_name = formula.site()
                     sp_type = 'site'
                 else:
-                    sp_type = self._owner.species_definitions()[species_name]['type']
-                #set symbol_type
+                    species_name = species_site
+                    sp_type = formula.type()
+
+                # Set symbol_type.
                 if sp_type == 'gas':
                     symbol_type = 'pressure'
                 elif sp_type == 'liquid':

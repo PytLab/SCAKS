@@ -16,6 +16,7 @@ class SolverBaseTest(unittest.TestCase):
         self.maxDiff = None
 
     def test_solver_construction_query(self):
+        # {{{
         " Test solver can be constructed in kinetic model. "
         # Construction.
         model = KineticModel(setup_file="input_files/solver_base.mkm",
@@ -50,8 +51,10 @@ class SolverBaseTest(unittest.TestCase):
 
         ref_classified_adsorbates = {'s': ['CO_s', 'O_s']}
         self.assertDictEqual(ref_classified_adsorbates, solver.classified_adsorbates())
+        # }}}
 
     def test_get_data(self):
+        # {{{
         " Test solver can get data correctly. "
         # Construction.
         model = KineticModel(setup_file="input_files/solver_base.mkm",
@@ -100,8 +103,10 @@ class SolverBaseTest(unittest.TestCase):
                                   'O2_g': mpf('3.508000000002'),
                                   'O_s': mpf('0.4340000000011')}
         self.assertDictEqual(ref_formation_energies, solver.formation_energies())
+        # }}}
 
     def test_get_rate_constants(self):
+        # {{{
         " Make sure we can get rate constants correctly. "
         # Construction.
         model = KineticModel(setup_file="input_files/solver_base.mkm",
@@ -124,8 +129,10 @@ class SolverBaseTest(unittest.TestCase):
         ret_forward_rate_constants, ret_reverse_rate_constants = solver.get_rate_constants()
         self.assertTupleEqual(ref_forward_rate_constants, ret_forward_rate_constants)
         self.assertTupleEqual(ref_reverse_rate_constants, ret_reverse_rate_constants)
+        # }}}
 
     def test_boltzmann_coverages(self):
+        # {{{
         " Test we can get the Boltzmann converages. "
         # Construction.
         model = KineticModel(setup_file="input_files/solver_base.mkm",
@@ -155,8 +162,10 @@ class SolverBaseTest(unittest.TestCase):
         ret_coverages = solver.boltzmann_coverages(include_empty_site=False)
 
         self.assertTupleEqual(ref_coverages, ret_coverages)
+        # }}}
 
     def test_elementary_rate_expression(self):
+        # {{{
         "Make sure we can get the rate expression for an elementary reaction correctly. "
         # Construction.
         model = KineticModel(setup_file="input_files/solver_base.mkm",
@@ -180,8 +189,10 @@ class SolverBaseTest(unittest.TestCase):
 
         self.assertEqual(ref_f_expr, ret_f_expr)
         self.assertEqual(ref_r_expr, ret_r_expr)
+        # }}}
 
     def test_rate_expressions(self):
+        # {{{
         " Test we can get all rate expressions correctly. "
         # Construction.
         model = KineticModel(setup_file="input_files/solver_base.mkm",
@@ -197,8 +208,10 @@ class SolverBaseTest(unittest.TestCase):
         ret_rate_expressions = solver.get_rate_expressions()
 
         self.assertTupleEqual(ref_rate_expressions, ret_rate_expressions)
+        # }}}
 
     def test_get_rates(self):
+        # {{{
         " Make sure we can get rates correctly. "
         # Construction.
         model = KineticModel(setup_file="input_files/solver_base.mkm",
@@ -223,8 +236,10 @@ class SolverBaseTest(unittest.TestCase):
                          mpf('0.02347439927166'))
         ret_net_rates = solver.get_net_rates(coverages)
         self.assertTupleEqual(ref_net_rates, ret_net_rates)
+        # }}}
 
     def test_get_reversibilities(self):
+        # {{{
         " Make sure we can get the correct reversibilities. "
         # Construction.
         model = KineticModel(setup_file="input_files/solver_base.mkm",
@@ -240,8 +255,10 @@ class SolverBaseTest(unittest.TestCase):
         ret_reversibilities = solver.get_reversibilities(rfs, rrs)
 
         self.assertListEqual(ref_reversibilities, ret_reversibilities)
+        # }}}
 
     def test_get_tof(self):
+        # {{{
         " Test we can get TOF correctly. "
         # Construction.
         model = KineticModel(setup_file="input_files/solver_base.mkm",
@@ -259,6 +276,7 @@ class SolverBaseTest(unittest.TestCase):
         ret_tof = solver.get_tof(coverages)
 
         self.assertListEqual(ref_tof, ret_tof)
+        # }}}
 
     # ----------------------------------------------------------------
     # Symbol tests.
@@ -317,6 +335,7 @@ class SolverBaseTest(unittest.TestCase):
         # }}}
 
     def test_extract_symbol(self):
+        # {{{
         " Test protected function _extract_symbol(). "
         # Construction.
         model = KineticModel(setup_file="input_files/solver_base.mkm",
@@ -346,8 +365,10 @@ class SolverBaseTest(unittest.TestCase):
         ref_G = 'G_CO_g'
         ret_G = solver._extract_symbol('CO_g', 'free_energy')
         self.assertEqual(ret_G.name, ref_G)
+        # }}}
 
     def test_get_single_barrier_symbols(self):
+        # {{{
         " Make sure we can get correct barrier expression for an elementary reaction. "
         # Construction.
         model = KineticModel(setup_file="input_files/solver_base.mkm",
@@ -369,8 +390,10 @@ class SolverBaseTest(unittest.TestCase):
         ref_barrier_symbols = (COO_2s - CO_s - O_s, -2*s + COO_2s - CO2_g)
 
         self.assertTupleEqual(ref_barrier_symbols, ret_barrier_symbols)
+        # }}}
 
     def test_get_barrier_symbols(self):
+        # {{{
         " Make sure we can get all barrier expressions correctly. "
         # Construction.
         model = KineticModel(setup_file="input_files/solver_base.mkm",
@@ -401,8 +424,10 @@ class SolverBaseTest(unittest.TestCase):
 
         self.assertListEqual(ret_Gaf_symbols, ref_Gaf_symbols)
         self.assertListEqual(ret_Gar_symbols, ref_Gar_symbols)
+        # }}}
 
     def test_get_rate_constant_symbols(self):
+        # {{{
         " Test we can get get correct rate constants symbols. "
         # Construction.
         model = KineticModel(setup_file="input_files/solver_base.mkm",
@@ -436,8 +461,10 @@ class SolverBaseTest(unittest.TestCase):
 
         self.assertListEqual(ref_kf_syms, ret_kf_syms)
         self.assertListEqual(ref_kr_syms, ret_kr_syms)
+        # }}}
 
     def test_get_equilibrium_constant_symbols(self):
+        # {{{
         " Test we can get get correct equilibrium constants symbols. "
         # Construction.
         model = KineticModel(setup_file="input_files/solver_base.mkm",
@@ -471,6 +498,60 @@ class SolverBaseTest(unittest.TestCase):
         ret_K = solver.get_equilibrium_constant_syms()
 
         self.assertTupleEqual(ref_K, ret_K)
+        # }}}
+
+    def test_get_single_rate_sym(self):
+        # {{{
+        " Make sure we can get correct rate expression for an elementary reaction. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/solver_base.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+        solver.get_data_symbols()
+
+        # Get symbols.
+
+        # Free energy.
+        G_COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
+        G_CO_s = solver._extract_symbol("CO_s", "free_energy")
+        G_O_s = solver._extract_symbol("O_s", "free_energy")
+        G_CO2_g = solver._extract_symbol("CO2_g", "free_energy")
+        G_O2_g = solver._extract_symbol("O2_g", "free_energy")
+        G_CO_g = solver._extract_symbol("CO_g", "free_energy")
+        G_s = solver._extract_symbol("s", "free_energy")
+
+        # Coverage.
+        c_CO_s = solver._extract_symbol("CO_s", "ads_cvg")
+        c_O_s = solver._extract_symbol("O_s", "ads_cvg")
+        c_s = solver._extract_symbol("s", "free_site_cvg")
+
+        # Pressure.
+        p_CO2_g = solver._extract_symbol("CO2_g", "pressure")
+        p_O2_g = solver._extract_symbol("O2_g", "pressure")
+        p_CO_g = solver._extract_symbol("CO_g", "pressure")
+
+        # Constants.
+        kB = solver._kB_sym
+        T = solver._T_sym
+        h = solver._h_sym
+        from sympy import E
+
+        kf = T*kB*E**((-G_COO_2s + G_CO_s + G_O_s)/(T*kB))/h
+        kr = T*kB*E**((2*G_s - G_COO_2s + G_CO2_g)/(T*kB))/h
+
+        rxn_expression = 'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s'
+        ref_rf = kf*c_CO_s*c_O_s
+        ref_rr = kr*p_CO2_g*c_s**2
+
+        ret_rf, ret_rr = solver.get_single_rate_sym(rxn_expression)
+
+        self.assertEqual(ref_rf, ret_rf)
+        self.assertEqual(ref_rr, ret_rr)
+        # }}}
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(SolverBaseTest)
