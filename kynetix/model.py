@@ -1,13 +1,14 @@
-import os
-import sys
+import cPickle as cpkl
 import inspect
 import logging
 import logging.config
-import cPickle as cpkl
+import os
+import sys
 
-from kynetix.functions import *
-from kynetix.errors.error import *
+
 from kynetix.database.thermo_data import kB_eV, h_eV
+from kynetix.errors.error import *
+from kynetix.functions import *
 from kynetix.utilities.check_utilities import *
 
 
@@ -33,15 +34,15 @@ class KineticModel(object):
         # Get class name.
         self.__class_name = self.__class__.__name__
 
-        # set physical constants
+        # Set physical constants.
         self.__kB = kB_eV  # Boltzmann constant from NIST, eV/K
         self.__h = h_eV    # Planck constant from NIST, eV s
 
-        # parse in keyword args
+        # Parse in keyword args.
         for key in kwargs:
             setattr(self, "_" + self.__class_name + "__" + key, kwargs[key])
 
-        # set logger
+        # Set logger.
         self.__set_logger()
 
         # Energy flags.
@@ -49,7 +50,7 @@ class KineticModel(object):
         self.__has_relative_energy = False
         self.__relative_energies = {}
 
-        # load setup file
+        # Load setup file.
         if hasattr(self, '_' + self.__class_name + '__setup_file'):
             self.__logger.info('setup file [ {} ] is found'.format(self.__setup_file))
             model_name = self.__setup_file.rsplit('.', 1)[0]

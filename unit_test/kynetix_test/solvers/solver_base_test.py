@@ -336,14 +336,39 @@ class SolverBaseTest(unittest.TestCase):
         self.assertEqual(ret_cvg.name, ref_cvg)
 
         # Empty site symbol.
-        ref_cvg = '-theta_CO_s - theta_O_s + 1.0'
         ret_cvg = solver._extract_symbol('s', 'free_site_cvg')
-        self.assertEqual(ret_cvg.name, ref_cvg)
+        CO = solver._extract_symbol('CO_s', 'ads_cvg')
+        O = solver._extract_symbol('O_s', 'ads_cvg')
+        ref_cvg = 1.0 - CO - O
+        self.assertEqual(ret_cvg, ref_cvg)
 
         # Free energy symbol.
         ref_G = 'G_CO_g'
         ret_G = solver._extract_symbol('CO_g', 'free_energy')
         self.assertEqual(ret_G.name, ref_G)
+
+    def test_get_single_barrier_symbols(self):
+        " Make sure we can get correct barrier expression for an elementary reaction. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/solver_base.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+        solver.get_data_symbols()
+
+        rxn_expression = 'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s'
+        ret_barrier_symbols = solver.get_single_barrier_symbols(rxn_expression)
+        COO_2s = solver._extract_symbol("CO-O_2s","free_energy")
+        CO_s = solver._extract_symbol("CO_s","free_energy")
+        O_s = solver._extract_symbol("O_s","free_energy")
+        CO2_g = solver._extract_symbol("CO2_g","free_energy")
+        s = solver._extract_symbol("s","free_energy")
+        ref_barrier_symbols = (COO_2s - CO_s - O_s, -2*s + COO_2s - CO2_g)
+
+        self.assertTupleEqual(ref_barrier_symbols, ret_barrier_symbols)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(SolverBaseTest)

@@ -71,6 +71,7 @@ class SolverBase(KineticCoreComponent):
         self._classified_adsorbates = self.__classify_adsorbates()
 
     def __set_numerical_representation(self):
+        # {{{
         """
         Private helper function to set numerical representation.
         """
@@ -120,6 +121,7 @@ class SolverBase(KineticCoreComponent):
             self._matrix = cus_matrix
             self._Axb_solver = lambda A, b: A.LUsolve(b)
             self._norm = lambda x: sym.sqrt((x.transpose()*x)[0])  # x is a column vector
+        # }}}
 
     def log_latex(self, latex_tup):
         "Append latex strings to 'formulas.tex'."
@@ -226,33 +228,6 @@ class SolverBase(KineticCoreComponent):
             # Set flags.
             self._has_energy_correction = False
             self._has_absolute_energy = True
-
-    def get_single_state_energy_dict(self, elementary_rxn_list):
-        """
-        Go through elementary_rxn_list,
-        return a dict containing energies of states.
-        """
-        single_state_energy_dict = {}
-        for state in elementary_rxn_list:
-            state_energy = 0.0
-            for sp in state:
-                stoichiometry, species_name = self.split_species(sp)
-                sp_energy = stoichiometry*self.E[species_name]
-                state_energy += sp_energy
-            state_str = ' + '.join(state)
-            single_state_energy_dict.setdefault(state_str, state_energy)
-
-        return single_state_energy_dict
-
-    def get_state_energy_dict(self):
-        state_energy_dict = {}
-        for elementary_rxn_list in self._owner.elementary_rxns_list():
-            single_state_energy_dict = \
-                self.get_single_state_energy_dict(elementary_rxn_list)
-            state_energy_dict.update(single_state_energy_dict)
-        setattr(self._owner, 'state_energy_dict', state_energy_dict)
-
-        return state_energy_dict
 
     def get_rate_constants(self, relative_energies=None):
         """
@@ -608,6 +583,7 @@ class SolverBase(KineticCoreComponent):
     ######################################################
 
     def get_data_symbols(self):
+        # {{{
         """
         Get Sympy Symbol objects tuple for P, G, coverage.
         """
@@ -659,6 +635,7 @@ class SolverBase(KineticCoreComponent):
         self._has_symbols = True
 
         return
+        # }}}
 
     def _extract_symbol(self, sp_name, symbol_type):
         # {{{
@@ -710,6 +687,78 @@ class SolverBase(KineticCoreComponent):
         return symbol_tup[idx]
         # }}}
 
+    def get_single_barrier_symbols(self, rxn_expression):
+        """
+        Expect a elementary_rxn_list,
+        e.g. [['HCOOH_s', '*_s'], ['HCO-OH_s', '*_s'], ['HCO_s', 'OH_s']]
+        return sympy expression of delta Gf and Gr.
+        e.g. (G_HCO-OH_s - G_HCOOH_s, G_*_s + G_HCO-OH_s - G_HCO_s - G_OH_s)
+        Function to get forward and reverse barrier expression symbols
+        for an elementary reaction expression.
+
+        Paramters:
+        ----------
+        rxn_expression: An elementary reaction expression, str.
+
+        Returns:
+        --------
+        Barrier expression symbols, tuple of Add objects of Sympy.
+
+        Example:
+        --------
+        >>> rxn_expression = 'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s'
+        >>> solver.get_single_barrier_symbols(rxn_expression)
+        """
+        if not self._has_symbols:
+            msg = "Solver has no data symbol, try get_data_symbols() first."
+            raise AttributeError(msg)
+
+        # Get formula list.
+        rxn_equation = RxnEquation(rxn_expression)
+        elementary_rxn_list = rxn_equation.to_formula_list()
+
+        # Get symbols of state energy.
+        state_energy_sym_list = []  # list to gather state energy symbols
+
+        for formula_list in elementary_rxn_list:
+            state_energy_sym = sym.Symbol('0', is_real=True)
+            for formula in formula_list:
+                # Split.
+                stoichiometry = formula.stoichiometry()
+                species = formula.species_site()
+
+                # Empty site.
+                if "*" in species:
+                    species = formula.site()
+
+                sp_sym = self._extract_symbol(sp_name=species, symbol_type='free_energy')
+                if stoichiometry == 1:
+                    sp_energy_sym = sp_sym
+                else:
+                    sp_energy_sym = stoichiometry*sp_sym
+
+                state_energy_sym += sp_energy_sym
+
+            state_energy_sym_list.append(state_energy_sym)
+
+        # Get relative energy expressions.
+        is_energy_sym = state_energy_sym_list[0]
+        fs_energy_sym = state_energy_sym_list[-1]
+
+        if len(state_energy_sym_list) == 3:
+            ts_energy_sym = state_energy_sym_list[1]
+        elif len(state_energy_sym_list) == 2:
+            # Get TS symbol.
+            rxn_idx = self._owner.rxn_expressions.index(rxn_expression)
+            dG = self._relative_energies['dG'][rxn_idx]
+            ts_idx = 0 if dG < 0 else -1
+            ts_energy_sym = state_energy_sym_list[ts_idx]
+
+        Gaf_sym = ts_energy_sym - is_energy_sym
+        Gar_sym = ts_energy_sym - fs_energy_sym
+
+        return Gaf_sym, Gar_sym
+
     @staticmethod
     def get_latex_strs(part1, part2, symbols):
         """
@@ -725,63 +774,12 @@ class SolverBase(KineticCoreComponent):
 
         return tuple(latex_strs)
 
-    def get_single_delta_G_symbols(self, elementary_rxn_list):
-        """
-        Expect a elementary_rxn_list,
-        e.g. [['HCOOH_s', '*_s'], ['HCO-OH_s', '*_s'], ['HCO_s', 'OH_s']]
-        return sympy expression of delta Gf and Gr.
-        e.g. (G_HCO-OH_s - G_HCOOH_s, G_*_s + G_HCO-OH_s - G_HCO_s - G_OH_s)
-        """
-        if not self._has_symbols:
-            raise AttributeError('Solver has no data symbol.')
-
-        #get symbols of state energy
-        state_energy_sym_list = []  # list to gather state energy symbols
-        for state_list in elementary_rxn_list:
-            state_energy_sym = sym.Symbol('0', is_real=True)
-            for sp_str in state_list:
-                stoichiometry, species_name = self.split_species(sp_str)
-                sp_sym = self._extract_symbol(sp_name=species_name,
-                                              symbol_type='free_energy')
-                if stoichiometry == 1:
-                    sp_energy_sym = sp_sym
-                else:
-                    sp_energy_sym = stoichiometry*sp_sym
-                state_energy_sym += sp_energy_sym
-            state_energy_sym_list.append(state_energy_sym)
-
-        #get delta G symbols
-        IS_energy_sym = state_energy_sym_list[0]
-        FS_energy_sym = state_energy_sym_list[-1]
-
-        if len(state_energy_sym_list) == 3:
-            TS_energy_sym = state_energy_sym_list[1]
-        elif len(state_energy_sym_list) == 2:
-            if not hasattr(self._owner, 'state_energy_dict'):
-                if not self._has_absolute_energy:
-                    self.get_data()
-                self.get_state_energy_dict()
-
-            def get_state_energy(sp_list):
-                state_str = ' + '.join(sp_list)
-                return self._owner.state_energy_dict[state_str]
-
-            IS_energy = get_state_energy(elementary_rxn_list[0])
-            FS_energy = get_state_energy(elementary_rxn_list[-1])
-            TS_idx = -1 if IS_energy <= FS_energy else 0
-            TS_energy_sym = state_energy_sym_list[TS_idx]
-
-        delta_Gf_sym = TS_energy_sym - IS_energy_sym
-        delta_Gr_sym = TS_energy_sym - FS_energy_sym
-
-        return delta_Gf_sym, delta_Gr_sym
-
     def get_delta_G_symbols(self, log_latex=False):
         "Go through elementary_rxns_list to get symbols of delta G."
         delta_Gf_syms, delta_Gr_syms = [], []
         for elementary_rxn_list in self.rxns_list:
             delta_Gf_sym, delta_Gr_sym =\
-                self.get_single_delta_G_symbols(elementary_rxn_list)
+                self.get_single_relative_energy_symbols(elementary_rxn_list)
             delta_Gf_syms.append(delta_Gf_sym)
             delta_Gr_syms.append(delta_Gr_sym)
 
