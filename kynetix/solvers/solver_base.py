@@ -796,18 +796,19 @@ class SolverBase(KineticCoreComponent):
 
         return Gaf_syms, Gar_syms
 
-    def get_K_syms(self):
-        "Go through elementary_rxns_list to get symbols of equilibrium constant."
-        #get rate constant symbols
-        if not hasattr(self, 'kf_syms') or not hasattr(self, 'kr_syms'):
-            self.get_rate_constant_syms()
+    def get_equilibrium_constant_syms(self):
+        """
+        Function to get symbols of equilibrium constant.
+        """
+        # Get rate constant symbols
+        kf_syms, kr_syms = self.get_rate_constant_syms()
         K_syms = []
-        for kf_sym, kr_sym in zip(self.kf_syms, self.kr_syms):
+
+        for kf_sym, kr_sym in zip(kf_syms, kr_syms):
             K_sym = kf_sym/kr_sym
             K_syms.append(K_sym)
 
         K_syms = tuple(K_syms)
-        self.K_expr_syms = K_syms
 
         return K_syms
 
