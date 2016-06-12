@@ -31,7 +31,7 @@ plotter = 'EnergyProfilePlotter'
 ref_species = ['CO_g', 'CO2_g', 's']
 
 numerical_representation = 'mpmath'
-archived_variables = ['steady_state_coverage', 'rates', 'initial_guess']
+archived_variables = []
 
 #parameters for solver
 decimal_precision = 100
