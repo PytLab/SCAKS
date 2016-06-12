@@ -497,7 +497,8 @@ class SteadyStateSolver(SolverBase):
 
     def get_elementary_dtheta_dt_sym(self, adsorbate_name, rxn_expression):
         """
-        Function to get dtheta/dt expression symbol for an adsorbate.
+        Function to get dtheta/dt expression symbol
+        for an adsorbate and an elementary reaction.
         """
         # {{{
         # Check adsorbate name.
@@ -544,38 +545,43 @@ class SteadyStateSolver(SolverBase):
 
     def get_adsorbate_dtheta_dt_sym(self, adsorbate_name):
         """
-        Expect a adsorbate_name, and go through self.rxns_list,
-        return dtheta_dt of the adsorbate.
+        Function to get dtheta/dt for an adsorbate.
+
+        Parameters:
+        -----------
+        adsorbate_name: The adsorbate name, str.
         """
-        #total_dtheta_dt_sym = sym.Symbol('0', is_real=True)
         total_dtheta_dt_sym = 0
-        for elementary_rxn_list in self._rxns_list:
-            dtheta_dt_sym = \
-                self.get_elementary_dtheta_dt_sym(adsorbate_name,
-                                                  elementary_rxn_list)
-            if not dtheta_dt_sym:  # rxn equation do not contain the adsorbate
+
+        # Loop over all elementary reactions.
+        for rxn_expression in self._owner.rxn_expressions():
+            dtheta_dt_sym = self.get_elementary_dtheta_dt_sym(adsorbate_name,
+                                                              rxn_expression)
+            # Adsorbate not in this reaction expression.
+            if dtheta_dt_sym is None:
                 continue
-            total_dtheta_dt_sym = total_dtheta_dt_sym + dtheta_dt_sym
+            else:
+                total_dtheta_dt_sym += dtheta_dt_sym
 
         return total_dtheta_dt_sym
 
     def get_dtheta_dt_syms(self, log_latex=False):
-        "Go through adsorbate_names to get dtheta_dts list."
+        """
+        Function to get dtheta/dt expressions for all adsorbates.
+        """
         dtheta_dt_syms = []
         for adsorbate_name in self._owner.adsorbate_names():
             dtheta_dt_sym = self.get_adsorbate_dtheta_dt_sym(adsorbate_name)
             dtheta_dt_syms.append(dtheta_dt_sym)
 
         dtheta_dt_syms = tuple(dtheta_dt_syms)
-        self.dtheta_dt_syms = dtheta_dt_syms
 
-        #latex strings
+        # Latex strings.
         dtheta_dt_latexs = self.get_latex_strs(part1=r'\frac{d\theta_{', part2=r'}}{dt}} ',
                                                symbols=dtheta_dt_syms)
-        self.dtheta_dt_latex = tuple(dtheta_dt_latexs)
 
+        # Log it.
         if log_latex:
-            #log it
             self.log_latex(self.dtheta_dt_latex)
 
         return dtheta_dt_syms
@@ -585,54 +591,65 @@ class SteadyStateSolver(SolverBase):
         Recieve a coverages tuple containing coverages of adsorbates,
         return a tuple of dtheta_dts of corresponding adsorbates.
         """
-        if not hasattr(self, 'dtheta_dt_syms'):
-            self.get_dtheta_dt_syms()
-        #get substitution dict
-        subs_dict = self.get_subs_dict(cvgs_tuple=cvgs_tuple)
-        #loop to get values of dtheta/dt
+        # Get dtheta/dt expressions.
+        dtheta_dt_syms = self.get_dtheta_dt_syms()
+
+        # Get substitution dict.
+        subs_dict = self.get_subs_dict(coverages=cvgs_tuple)
+
+        # Loop to get values of dtheta/dt.
         dtheta_dts = []
-        for dtheta_dt_sym in self.dtheta_dt_syms:
+        for dtheta_dt_sym in dtheta_dt_syms:
             dtheta_dt = self._mpf(dtheta_dt_sym.evalf(subs=subs_dict))
             dtheta_dts.append(dtheta_dt)
 
         return tuple(dtheta_dts)
 
-    def analytical_jacobian_sym(self, dtheta_dt_syms):
+    def analytical_jacobian_sym(self):
         """
-        Get the jacobian matrix symbol expressions of
+        Function to get the jacobian matrix symbol expressions of
         the dtheta/dt nonlinear equations.
-        Return a jacobian matrix(in self._matrix form).
         """
+        # Get dtheta/dt expressions.
+        dtheta_dt_syms = self.get_dtheta_dt_syms()
+
+        # Allocate memories for jacobian matrix.
         m = n = len(dtheta_dt_syms)
-        sym_jacobian = self._matrix(m, n)
+        sym_jacobian = [[0.0]*m, [0.0]*n]
+
+        # dtheta/dt (row).
         for i in xrange(m):
             dthe_dt_sym = dtheta_dt_syms[i]
+            # adsorbate (column).
             for j in xrange(n):
                 ads_name = self._owner.adsorbate_names()[j]
                 theta_sym = self._extract_symbol(ads_name, 'ads_cvg')
-                sym_jacobian[i, j] = \
-                    sym.Derivative(dthe_dt_sym, theta_sym).doit()
+                sym_jacobian[i][j] = sym.Derivative(dthe_dt_sym, theta_sym).doit()
 
         return sym_jacobian
 
-    def analytical_jacobian_by_sym(self, dtheta_dt_syms, cvgs_tuple):
+    def analytical_jacobian_by_sym(self, cvgs_tuple):
         """
         Get the jacobian matrix of the dtheta/dt nonlinear equations.
         Return a jacobian matrix(in self._matrix form).
         """
-        #get substitution dicts
-        subs_dict = self.get_subs_dict(cvgs_tuple=cvgs_tuple)
-        #get symbol jacobian matrix
-        sym_jacobian = self.analytical_jacobian_sym(dtheta_dt_syms)
-        #get numerial jacobian matrix
-        num_jacobian = sym_jacobian.evalf(subs=subs_dict)
-        #keep precision
-#        m, n = num_jacobian.shape
-#        for i in xrange(m):
-#            for j in xrange(n):
-#                num_jacobian[i, j] = self._mpf(num_jacobian[i, j])
+        # NOTE: precision may lose here.
 
-        return num_jacobian  # may lose precision
+        # Get substitution dicts.
+        subs_dict = self.get_subs_dict(coverages=cvgs_tuple)
+
+        # Get symbol jacobian matrix.
+        sym_jacobian = self.analytical_jacobian_sym()
+
+        m = n = len(sym_jacobian)
+        num_jacobian = [[0.0]*m, [0.0]*n]
+
+        for i in xrange(m):
+            for j in xrange(n):
+                entry_value = sym_jacobian[i][j].evalf(subs=subs_dict)
+                num_jacobian[i][j] = self._mpf(entry_value)
+
+        return self._matrix(num_jacobian)
 
     def get_rate_control_by_sym(self, RDS):
         """
