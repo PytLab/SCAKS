@@ -782,4 +782,5 @@ def plot_multi_energy_diagram(*args, **kwargs):
         raise ValueError('Unrecognized show mode parameter : ' + show_mode)
 
     return fig, total_x, total_y
+    # }}}
 
