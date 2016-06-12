@@ -17,6 +17,7 @@ from kynetix.solvers.solver_base import *
 
 class SteadyStateSolver(SolverBase):
     def __init__(self, owner):
+        # {{{
         super(SteadyStateSolver, self).__init__(owner)
 
         # set logger
@@ -35,12 +36,14 @@ class SteadyStateSolver(SolverBase):
         protected_defaults = {"_{}".format(key): value
                               for key, value in defaults.iteritems()}
         self.__dict__.update(protected_defaults)
+        # }}}
 
     def __constrain_converage(self, cvgs_tuple):
         """
         Private function to constrain coverages of absorbates
         between 0.0 and 1.0 or total number.
         """
+        # {{{
         species_definitions = self._owner.species_definitions()
         adsorbate_names = self._owner.adsorbate_names()
         site_names = self._owner.site_names()
@@ -104,6 +107,7 @@ class SteadyStateSolver(SolverBase):
                                 str(map(float, constrained_cvgs_tuple)))
 
         return constrained_cvgs_tuple
+        # }}}
 
     def get_elementary_dtheta_dt_expression(self,
                                             adsorbate_name,
@@ -127,6 +131,7 @@ class SteadyStateSolver(SolverBase):
         >>> s.get_elementary_dtheta_dt_expression("O_s", 'O2_g + 2*_s -> 2O_s')
         >>> "2*kf[1]*p['O2_g']*theta['*_s']**2 - 2*kr[1]*theta['O_s']**2"
         """
+        # {{{
         # Check adsorbate name.
         if adsorbate_name not in self._owner.adsorbate_names():
             raise ValueError("'{}' is not an adsorbate!".format(adsorbate_name))
@@ -172,6 +177,7 @@ class SteadyStateSolver(SolverBase):
 
         # Return.
         return increase_rate + ' - ' + decrease_rate
+        # }}}
 
     def get_adsorbate_dtheta_dt_expression(self, adsorbate_name):
         """
@@ -186,6 +192,7 @@ class SteadyStateSolver(SolverBase):
         --------
         dtheta_dt_expression: String of dtheta/dt expression.
         """
+        # {{{
         # Collect all dtheta/dt exprression for an elementary reaction.
         dtheta_dt_expression_list = []
 
@@ -199,12 +206,13 @@ class SteadyStateSolver(SolverBase):
         dtheta_dt_expression = ' + '.join(dtheta_dt_expression_list)
 
         return dtheta_dt_expression
+        # }}}
 
     def get_dtheta_dt_expressions(self):
         """
-        Go through adsorbate_names,
-        return a tuple of dtheta_dt_expressions.
+        Function to get dtheta/dt expression strings for all adsorbatets.
         """
+        # {{{
         dtheta_dt_expressions_list = []
         for idx, adsorbate_name in enumerate(self._owner.adsorbate_names()):
             dtheta_dt_expression = "dtheta_dt[" + str(idx) + "] = "
@@ -214,12 +222,14 @@ class SteadyStateSolver(SolverBase):
         dtheta_dt_expressions_tup = tuple(dtheta_dt_expressions_list)
 
         return dtheta_dt_expressions_tup
+        # }}}
 
     def steady_state_function(self, cvgs_tuple):
         """
         Recieve a coverages tuple containing coverages of adsorbates,
         return a tuple of dtheta_dts of corresponding adsorbates.
         """
+        # {{{
         # Set theta, kf, kr, p, dtheta_dt
         # Coverages(theta).
         theta = self._cvg_tuple2dict(cvgs_tuple)
@@ -240,15 +250,16 @@ class SteadyStateSolver(SolverBase):
         exec dtheta_dt_expressions in locals()
 
         return tuple(dtheta_dt)
+        # }}}
 
     @staticmethod
     def __term_adsorbate_derivation(adsorbate_name, term_expression):
-        # {{{
         """
         Expect a single expression and an adsorbate_name
         e.g. "kf[2]*theta['CO_s']*theta['*_s']" 'CO_s',
         return a derivation expression wrt adsorbate_name.
         """
+        # {{{
         # Escape.
         if '*' in adsorbate_name:
             adsorbate_name = '\\' + adsorbate_name
@@ -296,7 +307,6 @@ class SteadyStateSolver(SolverBase):
     def __total_term_adsorbate_derivation(self,
                                           adsorbate_name,
                                           term_expression):
-        # {{{
         """
         Private function to get derivation expression taking FREE SITE into consideration.
 
@@ -313,6 +323,7 @@ class SteadyStateSolver(SolverBase):
         --------
         The derivation expression, str.
         """
+        # {{{
         if adsorbate_name not in self._owner.adsorbate_names():
             raise ValueError("'" + adsorbate_name + "' is not in adsorbate_names")
 
@@ -405,6 +416,7 @@ class SteadyStateSolver(SolverBase):
         >>> poly_expression = "dtheta_dt[0] = kf[0]*p['CO_g']*theta['*_s'] - kr[0]*theta['CO_s']"
         >>> solver.poly_adsorbate_derivation(adsorbate, poly_expression)
         """
+        # {{{
         # Split poly_expression.
         poly_list = poly_expression.split()
         operators, terms = poly_list[3::2], poly_list[2::2]
@@ -422,6 +434,7 @@ class SteadyStateSolver(SolverBase):
 
         # Join and return.
         return ' '.join(derived_poly_list)
+        # }}}
 
     def analytical_jacobian(self, cvgs_tuple):
         """
@@ -436,6 +449,7 @@ class SteadyStateSolver(SolverBase):
         The analytical Jacobian matrix, N x N matrix of float.
         N is the number of adsorbates.
         """
+        # {{{
         # Check input parameter.
         dtheta_dt_expressions = self.get_dtheta_dt_expressions()
         m, n = len(dtheta_dt_expressions), len(cvgs_tuple)
@@ -473,6 +487,7 @@ class SteadyStateSolver(SolverBase):
 
         # Return Jacobian matrix.
         return J
+        # }}}
 
     ######################################################
     ######                                          ######

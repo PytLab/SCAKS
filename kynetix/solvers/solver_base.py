@@ -1110,7 +1110,9 @@ class SolverBase(KineticCoreComponent):
         # }}}
 
     def get_tof_syms(self):
-        "Return a tuple containing turnover frequencies of gases."
+        """
+        Function to get TOF symbols for all elementary reactions.
+        """
         _, gas_matrix = self._owner.parser().get_stoichiometry_matrices()
         gas_matrix = -sym.Matrix(gas_matrix)
 
