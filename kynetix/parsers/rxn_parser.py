@@ -217,10 +217,11 @@ class ChemState(object):
         """
         Get tex string.
         """
-        first_sp = ChemFormula(self.__sp_list[0])
+        formula_list = self.tolist()
+        first_sp = formula_list[0]
         tex_str = first_sp.texen()
-        for sp in self.__sp_list[1:]:
-            tex_str += r' + ' + ChemFormula(sp).texen()
+        for formula in formula_list[1:]:
+            tex_str += r' + ' + formula.texen()
 
         return tex_str
 
