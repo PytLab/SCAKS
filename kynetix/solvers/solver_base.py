@@ -920,7 +920,7 @@ class SolverBase(KineticCoreComponent):
         # }}}
 
     def get_subs_dict(self, coverages=None):
-        "get substitution dict(e.g. G, theta, p, constants dicts)."
+        # {{{
         """
         Function to get substitution dict for all symbols.
 
@@ -962,28 +962,29 @@ class SolverBase(KineticCoreComponent):
             subs_dict = dict(subs_dict, **dic)
 
         return subs_dict
+        # }}}
 
     def get_rate_constants_by_sym(self):
         """
         Calculate rate constants values
         by back substitution to symbol expressions.
         """
-        if not hasattr(self, 'kf_syms') or not hasattr(self, 'kr_syms'):
-            self.get_rate_constant_syms()
-        #get substitution dict(need G_dict and constants dict)
+        # Rate constant symbols.
+        kf_syms, kr_syms = self.get_rate_constant_syms()
+
+        # Substitution dict(need G_dict and constants dict)
         subs_dict = self.get_subs_dict()
 
+        # Collect kfs & krs values.
         kfs, krs = [], []
-        #calculate kfs
-        for kf_sym in self.kf_syms:
+
+        for kf_sym in kf_syms:
             kf = self._mpf(kf_sym.evalf(subs=subs_dict))
             kfs.append(kf)
-        #krs
-        for kr_sym in self.kr_syms:
+
+        for kr_sym in kr_syms:
             kr = self._mpf(kr_sym.evalf(subs=subs_dict))
             krs.append(kr)
-
-        self.kfs, self.krs = tuple(kfs), tuple(krs)
 
         return kfs, krs
 

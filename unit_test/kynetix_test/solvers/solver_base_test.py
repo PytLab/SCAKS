@@ -558,6 +558,7 @@ class SolverBaseTest(unittest.TestCase):
         # Need Implimentation.
 
     def test_get_G_sub_dict(self):
+        # {{{
         " Test private function _get_G_sub_dict(). "
         # Construction.
         model = KineticModel(setup_file="input_files/solver_base.mkm",
@@ -612,8 +613,10 @@ class SolverBaseTest(unittest.TestCase):
         ret_dict = solver._get_theta_subs_dict(coverages)
         
         self.assertDictEqual(ref_dict, ret_dict)
+        # }}}
 
     def test_get_p_subs_dict(self):
+        # {{{
         " Test protected function _get_p_subs_dict(). "
         # Construction.
         model = KineticModel(setup_file="input_files/solver_base.mkm",
@@ -635,12 +638,14 @@ class SolverBaseTest(unittest.TestCase):
         ret_dict = solver._get_p_subs_dict()
 
         self.assertDictEqual(ref_dict, ret_dict)
+        # }}}
 
     def test_get_c_sub_dict(self):
         " Test protected function _get_c_sub_dict(). "
         # Need Implimentation.
 
     def test_get_subs_dict(self):
+        # {{{
         " Make sure we can get correct substitution dict for all symbols. "
         # Construction.
         model = KineticModel(setup_file="input_files/solver_base.mkm",
@@ -698,6 +703,28 @@ class SolverBaseTest(unittest.TestCase):
         ret_dict = solver.get_subs_dict(coverages)
 
         self.assertDictEqual(ref_dict, ret_dict)
+        # }}}
+
+    def test_get_rate_constants_by_sym(self):
+        " Make sure we can get rate constant correctly by symbols derivation. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/solver_base.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+        solver.get_data_symbols()
+
+        # Check.
+        ref_kfs = [mpf('9376477746560.0'), mpf('9376477746560.0'), mpf('0.09389759709029')]
+        ref_krs = [mpf('30395.72540069'), mpf('2.542951527153e-17'), mpf('399.2961612232')]
+
+        ret_kfs, ret_krs = solver.get_rate_constants_by_sym()
+
+        self.assertListEqual(ref_kfs, ret_kfs)
+        self.assertListEqual(ref_krs, ret_krs)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(SolverBaseTest)
