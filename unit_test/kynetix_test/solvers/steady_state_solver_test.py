@@ -377,6 +377,58 @@ class SteadyStateSolverTest(unittest.TestCase):
 
         self.assertListEqual(ref_tof, ret_tof)
 
+    def test_get_elementary_dtheta_dt_sym(self):
+        " Test we can get correct dtheta/dt expression for an elementary reaction. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+        solver.get_data_symbols()
+
+        # Get symbols.
+
+        # Free energy.
+        G_COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
+        G_CO_s = solver._extract_symbol("CO_s", "free_energy")
+        G_O_s = solver._extract_symbol("O_s", "free_energy")
+        G_CO2_g = solver._extract_symbol("CO2_g", "free_energy")
+        G_O2_g = solver._extract_symbol("O2_g", "free_energy")
+        G_CO_g = solver._extract_symbol("CO_g", "free_energy")
+        G_s = solver._extract_symbol("s", "free_energy")
+
+        # Coverage.
+        c_CO_s = solver._extract_symbol("CO_s", "ads_cvg")
+        c_O_s = solver._extract_symbol("O_s", "ads_cvg")
+        c_s = solver._extract_symbol("s", "free_site_cvg")
+
+        # Pressure.
+        p_CO2_g = solver._extract_symbol("CO2_g", "pressure")
+        p_O2_g = solver._extract_symbol("O2_g", "pressure")
+        p_CO_g = solver._extract_symbol("CO_g", "pressure")
+
+        # Constants.
+        kB = solver._kB_sym
+        T = solver._T_sym
+        h = solver._h_sym
+        from sympy import E
+
+        kf = T*kB*E**((-G_COO_2s + G_CO_s + G_O_s)/(T*kB))/h
+        kr = T*kB*E**((2*G_s - G_COO_2s + G_CO2_g)/(T*kB))/h
+
+        rxn_expression = 'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s'
+        rf = kf*c_CO_s*c_O_s
+        rr = kr*p_CO2_g*c_s**2
+
+        ref_dtheta_dt = rr - rf
+        adsorbate = "CO_s"
+        ret_dtheta_dt = solver.get_elementary_dtheta_dt_sym(adsorbate, rxn_expression)
+
+        self.assertEqual(ref_dtheta_dt, ret_dtheta_dt)
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(SteadyStateSolverTest)
     unittest.TextTestRunner(verbosity=2).run(suite)

@@ -495,37 +495,48 @@ class SteadyStateSolver(SolverBase):
     ######                                          ######
     ######################################################
 
-    def get_elementary_dtheta_dt_sym(self, adsorbate_name,
-                                     elementary_rxn_list):
+    def get_elementary_dtheta_dt_sym(self, adsorbate_name, rxn_expression):
         """
         Expect elementary_rxn_list and an adsorbate_name in it,
         return dtheta_dt symbols of the corresponding adsorbate
         in single elementary equation.
         """
-        #species must be adsorbate
+        # {{{
+        # Species must be adsorbate.
         if adsorbate_name not in self._owner.adsorbate_names():
-            raise ValueError("'"+adsorbate_name+"' is not an adsorbate!")
+            raise ValueError("'{}' is not an adsorbate".format(adsorbate_name))
+
+        # Get formula list.
+        rxn_equation = RxnEquation(rxn_expression)
+        elementary_rxn_list = rxn_equation.to_formula_list()
+
         for state_list in elementary_rxn_list:
-            for species_str in state_list:
-                stoichiometry, site_name = self.split_species(species_str)
-                if site_name == adsorbate_name:
+            for formula in state_list:
+                stoichiometry = formula.stoichiometry()
+                species_site = formula.species_site()
+
+                # If find it, jump out.
+                if species_site == adsorbate_name:
                     break
-            if site_name == adsorbate_name:
-                #get state idx to get direction info
+
+            # Get state idx to get direction info.
+            if species_site == adsorbate_name:
                 state_idx = elementary_rxn_list.index(state_list)
                 break
-        #if adsorbate name not in elementary_rxn list, stop
-        if site_name != adsorbate_name:
+
+        # If adsorbate name not in elementary_rxn list, stop.
+        if species_site != adsorbate_name:
             return
 
-        #get dtheta_dt sym according rate symbols
-        rf_sym, rr_sym = self.get_single_rate_sym(elementary_rxn_list)
+        # Get dtheta_dt sym according rate symbols.
+        rf_sym, rr_sym = self.get_single_rate_sym(rxn_expression)
         if state_idx == 0:
             dtheta_dt_sym = -rf_sym + rr_sym
         else:
             dtheta_dt_sym = rf_sym - rr_sym
 
         return dtheta_dt_sym
+        # }}}
 
     def get_adsorbate_dtheta_dt_sym(self, adsorbate_name):
         """
