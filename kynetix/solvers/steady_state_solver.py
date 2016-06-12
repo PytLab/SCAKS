@@ -497,14 +497,18 @@ class SteadyStateSolver(SolverBase):
 
     def get_elementary_dtheta_dt_sym(self, adsorbate_name, rxn_expression):
         """
-        Expect elementary_rxn_list and an adsorbate_name in it,
-        return dtheta_dt symbols of the corresponding adsorbate
-        in single elementary equation.
+        Function to get dtheta/dt expression symbol for an adsorbate.
         """
         # {{{
-        # Species must be adsorbate.
+        # Check adsorbate name.
         if adsorbate_name not in self._owner.adsorbate_names():
-            raise ValueError("'{}' is not an adsorbate".format(adsorbate_name))
+            msg = "'{}' is not an adsorbate".format(adsorbate_name)
+            raise ParameterError(msg)
+
+        # Check rxn expression.
+        if rxn_expression not in self._owner.rxn_expressions():
+            msg = "'{}' not in model's rxn_expressions.".format(rxn_expression)
+            raise ParameterError(msg)
 
         # Get formula list.
         rxn_equation = RxnEquation(rxn_expression)
