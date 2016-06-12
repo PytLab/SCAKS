@@ -651,19 +651,19 @@ class SteadyStateSolver(SolverBase):
 
         return self._matrix(num_jacobian)
 
-    def get_rate_control_by_sym(self, RDS):
-        """
-        RDS: int, Rate Determining Step number.
-        """
-        #get quasi_quilibrium_solver instance
-        _temp = __import__('quasi_equilibrium_solver',
-                           globals(), locals(), ['QuasiEquilibriumSolver'])
-        qe_solver = _temp.QuasiEquilibriumSolver(owner=self._owner)
-        qe_solver.RDS = RDS  # set Rate Determining Step
-        XTRCs = qe_solver.get_XTRCs()
-        self.qe_solver = qe_solver
-
-        return XTRCs
+#    def get_rate_control_by_sym(self, RDS):
+#        """
+#        RDS: int, Rate Determining Step number.
+#        """
+#        #get quasi_quilibrium_solver instance
+#        _temp = __import__('quasi_equilibrium_solver',
+#                           globals(), locals(), ['QuasiEquilibriumSolver'])
+#        qe_solver = _temp.QuasiEquilibriumSolver(owner=self._owner)
+#        qe_solver.RDS = RDS  # set Rate Determining Step
+#        XTRCs = qe_solver.get_XTRCs()
+#        self.qe_solver = qe_solver
+#
+#        return XTRCs
 
     ##########################################################
     ###### calculate micro kinetic model with Sympy END ######
