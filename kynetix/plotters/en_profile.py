@@ -516,26 +516,27 @@ def plot_multi_energy_diagram(*args, **kwargs):
     --------
 
     """
-    ###############  args setting before plotting  ################
-    # for args
+    # {{{
+    # ##############  args setting before plotting  ################
+    # For args.
     if len(args) != 2:
-        raise ValueError("Need at least 2 args: " +
-                         "rxn_equations_list, energy_tuples.")
+        raise ValueError("Need at least 2 args: rxn_equations_list, energy_tuples.")
+
     rxn_equations_list, energy_tuples = args
 
-    # for kwargs
-    # peak widths
+    # For kwargs.
+
+    # Peak widths
     if 'peak_widths' in kwargs:
         peak_widths = kwargs['peak_widths']
         if len(peak_widths) != len(rxn_equations_list):
-            raise ValueError('number of peak widths and ' +
-                             'number of rxn equations are not matched.')
+            msg = "number of peak widths and number of rxn equations are not matched."
+            raise ValueError(msg)
     else:  # set to (1.0, 1.0, ...)
         peak_widths = tuple([1.0]*len(rxn_equations_list))
 
     n = kwargs['n'] if 'n' in kwargs else 100
-    subsection_length = \
-        kwargs['subsection_length'] if 'subsection_length' in kwargs else 1.0
+    subsection_length = kwargs['subsection_length'] if 'subsection_length' in kwargs else 1.0
     line_color = kwargs['line_color'] if 'line_color' in kwargs else '#000000'
     has_shadow = kwargs['has_shadow'] if 'has_shadow' in kwargs else True
     fmt = kwargs['fmt'] if 'fmt' in kwargs else 'png'
@@ -547,7 +548,7 @@ def plot_multi_energy_diagram(*args, **kwargs):
 
     #####################  args setting END  #######################
 
-    # convert rxn_equation_list(str) to elementary_rxns_list alike list
+    # Convert rxn_equation_list(str) to elementary_rxns_list alike list.
     rxns_list = [RxnEquation(rxn_equation).tolist()
                  for rxn_equation in rxn_equations_list]
 
@@ -555,26 +556,25 @@ def plot_multi_energy_diagram(*args, **kwargs):
     total_x, total_y = [], []
     piece_points = []  # collectors
 
-    for idx, (rxn_equation, peak_width) in \
-            enumerate(zip(rxn_equations_list, peak_widths)):
+    for idx, (rxn_equation, peak_width) in enumerate(zip(rxn_equations_list, peak_widths)):
         energy_tuple = get_relative_energy_tuple(energy_tuples[idx])
-        x, y, x2 = get_potential_energy_points(
-            energy_tuple=energy_tuple, n=n,
-            subsection_length=subsection_length,
-            peak_width=peak_widths[idx],
-        )
+        x, y, x2 = get_potential_energy_points(energy_tuple=energy_tuple, n=n,
+                                               subsection_length=subsection_length,
+                                               peak_width=peak_widths[idx])
         x_scale = 2*subsection_length + peak_width
-        # get total y
+
+        # Get total y.
         offseted_y = y + y_offset
         total_y.extend(offseted_y.tolist())
-        # get total x
+
+        # Get total x.
         offseted_x = x + x_offset
         total_x.extend(offseted_x.tolist())
 
         #######   collect values for adding annotations   #######
 
-        # there are 3 points in each part
-        p1 = (2*subsection_length+offseted_x[0], offseted_y[0])
+        # there are 3 points in each part.
+        p1 = (2*subsection_length + offseted_x[0], offseted_y[0])
         p3 = (offseted_x[-1], offseted_y[-1])
         if len(energy_tuple) == 3:
             p2 = (2*subsection_length + x2 + offseted_x[0],  # x2 is the x value of barrier
@@ -585,19 +585,20 @@ def plot_multi_energy_diagram(*args, **kwargs):
 
         ################   Collection End   ################
 
-        # update offset value for next loop
+        # Update offset value for next loop.
         x_offset += x_scale
         y_offset = offseted_y[-1]
 
     # Add extral line
 
-    # add head horizontal line
+    # Add head horizontal line.
     head_extral_x = np.linspace(0.0, subsection_length, n).tolist()
     offseted_total_x = (np.array(total_x)+subsection_length).tolist()
     head_extral_y = [total_y[0]]*n
     total_x = head_extral_x + offseted_total_x
     total_y = head_extral_y + total_y
-    # add the last horizontal line
+
+    # Add the last horizontal line.
     tail_extral_x = np.linspace(total_x[-1],
                                 total_x[-1]+subsection_length,
                                 n).tolist()
@@ -606,10 +607,11 @@ def plot_multi_energy_diagram(*args, **kwargs):
     total_y += tail_extral_y
     total_x, total_y = np.array(total_x), np.array(total_y)
 
-    # get extreme values of x and y
+    # Get extreme values of x and y.
     y_min, y_max = np.min(total_y), np.max(total_y)
     x_min, x_max = total_x[0], total_x[-1]
     y_scale = y_max-y_min
+
     ###################      start Artist Mode!      ######################
 
     multi = len(rxn_equations_list)/2.2
@@ -619,27 +621,27 @@ def plot_multi_energy_diagram(*args, **kwargs):
     ax.set_ylim(y_min - y_scale/10, y_max + y_scale/10)
     ax.set_xlim(x_min-subsection_length, x_max+subsection_length)
     ax.set_title('Energy Profile',
-                 fontdict={
-                     'fontsize': 15,
-                     'weight': 100,
-                     'verticalalignment': 'bottom'
-                     })
+                 fontdict={'fontsize': 15,
+                           'weight': 100,
+                           'verticalalignment': 'bottom'})
     ax.set_xlabel('Reaction Coordinate')
     ax.set_ylabel('Free Energy(eV)')
-    # add shadow
+
+    # Add shadow.
     if has_shadow:
-        _add_line_shadow(ax, total_x, total_y, depth=8,
-                        color='#595959')
-    # main line
+        _add_line_shadow(ax, total_x, total_y, depth=8, color='#595959')
+
+    # Add main line.
     ax.plot(total_x, total_y, color=line_color, linewidth=3)
 
-    # get state string list as notes
+    # Get state string list as notes.
     state_str_list = []
     for rxn_list in rxns_list:
         t = tuple([state_obj.texen() for state_obj in rxn_list[:-1]])
         state_str_list.append(t)
 
     ####################     Main loop to add notes     ###################
+
     # This is the main loop to add extral info to main line
     # For each single loop, we get 3 or 2 points(tuple) for each elementary rxn
     # and the first 2 or 1 latex reaction state string(involved in list)
@@ -648,38 +650,37 @@ def plot_multi_energy_diagram(*args, **kwargs):
         "function to add notes to a state"
         start_point, end_point = pts[0], pts[-1]
 
-        # add horizontal lines and vertical arrowa
+        # Add horizontal lines and vertical arrowa.
         if show_aux_line:
-            # plot horizontal lines
+
+            # Plot horizontal lines.
             hori_x = np.linspace(start_point[0],
                                  end_point[0]+2*subsection_length, 50)
             hori_y = np.linspace(start_point[-1], start_point[-1], 50)
             ax.plot(hori_x, hori_y, color=line_color, linewidth=1,
                     linestyle='dashed')
-            # plot vertical arrows
+
+            # Plot vertical arrows.
             if len(pts) == 3:
                 mid_point = pts[1]
-                # plot activation energy arrow
-                ax.annotate(
-                    '',
-                    xy=(mid_point[0], mid_point[-1]),
-                    xycoords='data',
-                    xytext=(mid_point[0], start_point[-1]),
-                    textcoords='data',
-                    arrowprops=dict(arrowstyle="<->")
-                    )
-            # plot reaction energy arrow
-            ax.annotate(
-                '',
-                xy=(end_point[0]+subsection_length, end_point[-1]),
-                xycoords='data',
-                xytext=(end_point[0]+subsection_length, start_point[-1]),
-                textcoords='data',
-                arrowprops=dict(arrowstyle="<->")
-                )
+
+                # Plot activation energy arrow.
+                ax.annotate('', xy=(mid_point[0], mid_point[-1]),
+                            xycoords='data',
+                            xytext=(mid_point[0], start_point[-1]),
+                            textcoords='data',
+                            arrowprops=dict(arrowstyle="<->"))
+            # Plot reaction energy arrow.
+            ax.annotate('', xy=(end_point[0]+subsection_length, end_point[-1]),
+                        xycoords='data',
+                        xytext=(end_point[0]+subsection_length, start_point[-1]),
+                        textcoords='data',
+                        arrowprops=dict(arrowstyle="<->"))
         if show_note:
-            # add species notes
-            if len(pts) == 3:  # those who have TS
+            # Add species notes.
+
+            # With TS.
+            if len(pts) == 3:
                 for state_idx, (pt, tex_state) in enumerate(zip(pts, tex_states)):
                     if state_idx == 0:  # for initial or final state
                         note_x = pt[0] - 1.8*subsection_length
@@ -691,7 +692,8 @@ def plot_multi_energy_diagram(*args, **kwargs):
                         note_y = pt[-1] + y_scale/50
                         ax.text(note_x, note_y, r'$\bf{'+tex_state+r'}$',
                                 fontdict={'fontsize': 13, 'color': '#CD5555'})
-            if len(pts) == 2:  # no TS
+            # Without TS.
+            if len(pts) == 2:
                 pt, tex_state = pts[0], tex_states[0]
                 note_x = pt[0] - 1.8*subsection_length
                 note_y = pt[-1] + y_scale/50
@@ -699,23 +701,25 @@ def plot_multi_energy_diagram(*args, **kwargs):
                         fontdict={'fontsize': 13, 'color': '#1874CD'})
 
         if show_arrow:
-            # add energy annotations
+            # Add energy annotations.
             el = Ellipse((2, -1), 0.5, 0.5)
-            # annotation between IS and FS
+
+            # Annotation between IS and FS.
             rxn_energy = round(end_point[-1] - start_point[-1], 2)
             rxn_energy_latex = r'$\bf{\Delta G = ' + str(rxn_energy) + r' eV}$'
-            ax.annotate(rxn_energy_latex, xy=(end_point[0]+subsection_length,
-                                              (start_point[-1]+end_point[-1])/2),
+            ax.annotate(rxn_energy_latex,
+                        xy=(end_point[0]+subsection_length,
+                            (start_point[-1]+end_point[-1])/2),
                         xycoords='data',
-                        xytext=(-70, 30), textcoords='offset points',
+                        xytext=(-70, 30),
+                        textcoords='offset points',
                         size=13, color='#8E388E',
                         arrowprops=dict(arrowstyle="simple",
                                         fc="0.6", ec="none",
                                         patchB=el,
-                                        connectionstyle="arc3,rad=0.2"),
-                        )
+                                        connectionstyle="arc3,rad=0.2"))
             if len(pts) == 3:
-                # annotation between TS and IS
+                # Annotation between TS and IS.
                 act_energy = round((mid_point[-1] - start_point[-1]), 2)
                 act_energy_latex = r'$\bf{G_{a} = '+str(act_energy)+r' eV}$'
                 ax.annotate(act_energy_latex,
@@ -726,11 +730,10 @@ def plot_multi_energy_diagram(*args, **kwargs):
                             arrowprops=dict(arrowstyle="simple",
                                             fc="0.6", ec="none",
                                             patchB=el,
-                                            connectionstyle="arc3,rad=-0.2"),
-                            )
+                                            connectionstyle="arc3,rad=-0.2"))
     #########    Main Loop END    ########
 
-    # use multiple thread to add notes
+    # Use multiple thread to add notes.
     note_threads = []
     nstates = len(state_str_list)
 
@@ -744,22 +747,25 @@ def plot_multi_energy_diagram(*args, **kwargs):
     for i in xrange(nstates):
         note_threads[i].join()
 
-    # add species note at last section
+    # Add species note at last section.
     if show_note:
         pt = pts[-1]
         tex_state = rxns_list[-1][-1].texen()
-        ax.text(pt[0]+0.2*subsection_length, pt[-1]+y_scale/50,
+        ax.text(pt[0] + 0.2*subsection_length,
+                pt[-1]+y_scale/50,
                 r'$\bf{'+tex_state+r'}$',
                 fontdict={'fontsize': 13, 'color': '#1874CD'})
-    # remove xticks
+
+    # Remove xticks.
     ax.set_xticks([])
 
     #####################   Artist Mode End   #####################
 
-    # creat path
+    # Creat path.
     if not os.path.exists("./energy_profile"):
         os.mkdir("./energy_profile")
-    # filename
+
+    # Filename.
     if 'fname' in kwargs:
         fname = kwargs['fname'] + '.' + fmt
     else:
