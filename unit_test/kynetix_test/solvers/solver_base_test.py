@@ -749,6 +749,58 @@ class SolverBaseTest(unittest.TestCase):
         self.assertTupleEqual(ref_rfs, ret_rfs)
         self.assertTupleEqual(ref_rrs, ret_rrs)
 
+    def test_get_net_rate_syms(self):
+        " Make sure we can get correct net rate symbols for all elementary reactions. "
+        # Need Implimentation.
+
+    def test_get_net_rates_by_sym(self):
+        " Test net rates calculating by symbol derivation. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/solver_base.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+        solver.get_data_symbols()
+
+        # Check.
+        coverages = (0.5, 0.3)
+
+        ref_net_rates = (mpf('1875295534112.0'),
+                         mpf('125019703287.0'),
+                         mpf('0.01408463956352'))
+        ret_net_rates = solver.get_net_rates_by_sym(coverages)
+
+        self.assertTupleEqual(ref_net_rates, ret_net_rates)
+
+    def test_get_tof_syms(self):
+        " Test we can get TOF symbols correctly. "
+        # NEED IMPLIMENTATION.
+
+    def test_get_tof_by_sym(self):
+        " Make sure we can get correct TOF value by symbols derivation. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/solver_base.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+        solver.get_data_symbols()
+
+        # Check.
+        coverages = (0.5, 0.3)
+
+        ref_tof = (mpf('0.01408463956352'),
+                   mpf('-1875295534112.0'),
+                   mpf('-125019703287.0'))
+        ret_tof = solver.get_tof_by_sym(coverages)
+
+        self.assertTupleEqual(ref_tof, ret_tof)
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(SolverBaseTest)
     unittest.TextTestRunner(verbosity=2).run(suite)

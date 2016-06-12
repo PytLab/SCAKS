@@ -989,9 +989,15 @@ class SolverBase(KineticCoreComponent):
 
     def get_rates_by_sym(self, cvgs_tuple):
         """
-        Expect a coverages tuple, and then calculate rates values
-        by back substitution to symbol expressions,
-        return rfs, rrs
+        Function to get forward and reverse rates for all elementary reactions.
+
+        Parameters:
+        -----------
+        cvgs_tuple: Coverages tuple for rate calculating.
+
+        Returns:
+        --------
+        Forward rates, reverse rates.
         """
         # Get rate symbols.
         rf_syms, rr_syms = self.get_rate_syms()
@@ -1065,51 +1071,54 @@ class SolverBase(KineticCoreComponent):
         return c_dict
 
     def get_net_rate_syms(self):
-        "Go through rfs and rrs, to get net rate symbolic expressions."
-        if not hasattr(self, 'rfs_syms') or not hasattr(self, 'rrs_syms'):
-            self.get_rate_syms()
+        """
+        Function to get net rate symbols for all elementary expressions.
+        """
+        rf_syms, rr_syms = self.get_rate_syms()
         net_rate_syms = []
-        for rf_sym, rr_sym in zip(self.rf_syms, self.rr_syms):
+        for rf_sym, rr_sym in zip(rf_syms, rr_syms):
             net_rate_sym = rf_sym - rr_sym
             net_rate_syms.append(net_rate_sym)
-
-        self.net_rate_syms = tuple(net_rate_syms)
 
         return tuple(net_rate_syms)
 
     def get_net_rates_by_sym(self, cvgs_tuple):
-        if not hasattr(self, 'net_rate_syms'):
-            self.get_net_rate_syms()
-        #get substitution dict
-        subs_dict = self.get_subs_dict(cvgs_tuple=cvgs_tuple)
-        net_rate_syms_vect = sym.Matrix(self.net_rate_syms)  # col vect
-        #back substitution
+        # {{{
+        """
+        Function to get net rates for all elementary reactions by symbol derivation.
+        """
+
+        # Net rate symbols.
+        net_rate_syms = self.get_net_rate_syms()
+
+        # Substitution dict.
+        subs_dict = self.get_subs_dict(coverages=cvgs_tuple)
+
+        # Back substitution.
+        net_rate_syms_vect = sym.Matrix(net_rate_syms)
         net_rates_vect = net_rate_syms_vect.evalf(subs=subs_dict)
-        #keep precision
-        net_rates_vect = [self._mpf(float(net_rate))
-                          for net_rate in net_rates_vect]
+
+        # Keep precision.
+        net_rates_vect = [self._mpf(float(net_rate)) for net_rate in net_rates_vect]
 
         net_rates_tup = tuple(net_rates_vect)
-        #archive
+
+        # Archive.
         self.archive_data('net_rates', net_rates_tup)
 
         return net_rates_tup
+        # }}}
 
     def get_tof_syms(self):
         "Return a tuple containing turnover frequencies of gases."
-        #get gas coefficients matrix
-        if hasattr(self._owner, 'gas_matrix'):
-            gas_matrix = self._owner.gas_matrix
-        else:
-            gas_matrix = \
-                self._owner.parser().get_stoichiometry_matrices()[1]
+        _, gas_matrix = self._owner.parser().get_stoichiometry_matrices()
         gas_matrix = -sym.Matrix(gas_matrix)
-        #get net rates symbolic expressions vector
-        if not hasattr(self, 'net_rate_syms'):
-            self.get_net_rate_syms()
-        rate_syms_vect = \
-            sym.Matrix(self.get_net_rate_syms()).transpose()  # row vector
-        #get tof symbolic expression vector(row vector)
+
+        # Get net rates symbolic expressions vector.
+        net_rates = self.get_net_rate_syms()
+        rate_syms_vect = sym.Matrix(net_rates).transpose()  # row vector
+
+        # Get tof symbolic expression vector(row vector).
         tof_vect = rate_syms_vect*gas_matrix
 
         tof_tup = tuple(tof_vect)
@@ -1117,15 +1126,19 @@ class SolverBase(KineticCoreComponent):
         return tof_tup
 
     def get_tof_by_sym(self, cvgs_tuple):
-        "Expect a coverage tuple, return a tuple of TOFs."
+        """
+        Function to get TOFs for all gas species.
+        """
+        # Get tof vector.
         tof_syms_vect = sym.Matrix(self.get_tof_syms())
-        subs_dict = self.get_subs_dict(cvgs_tuple=cvgs_tuple)
+        subs_dict = self.get_subs_dict(coverages=cvgs_tuple)
         tof_vect = tof_syms_vect.evalf(subs=subs_dict)
-        #keep precision
+
+        # Keep precision.
         tof_vect = [self._mpf(float(tof)) for tof in tof_vect]
 
         # log TOFs
-        self.log_tof(tof_vect, self._owner.gas_names())
+        self.__log_tof(tof_vect, self._owner.gas_names())
 
         return tuple(tof_vect)
 
