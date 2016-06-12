@@ -129,7 +129,7 @@ def get_potential_energy_points(energy_tuple, n=100,
         Length of each subsection(x_i, x_f)
     peak_width : float, default to be 1.0
     """
-    # }}}
+    # {{{
     # Use quadratic interpolation to get barrier points.
     if len(energy_tuple) == 3:
         y1, y2, y3 = energy_tuple  # E_is, E_ts, E_fs
@@ -258,16 +258,18 @@ def plot_single_energy_diagram(*args, **kwargs):
                                    fname='pytlab')
     >>> <matplotlib.figure.Figure at 0x5659f30>
     """
+    # {{{
     ###############  args setting before plotting  ################
 
-    # for args
+    # For args.
     if len(args) != 2:
         raise ValueError("Need at least 2 args: energy_tuple, rxn_equation.")
+
     energy_tuple, rxn_equation = args
-    # for kwargs
+
+    # For kwargs.
     n = kwargs['n'] if 'n' in kwargs else 100
-    subsection_length = \
-        kwargs['subsection_length'] if 'subsection_length' in kwargs else 1.0
+    subsection_length = kwargs['subsection_length'] if 'subsection_length' in kwargs else 1.0
     line_color = kwargs['line_color'] if 'line_color' in kwargs else '#000000'
     has_shadow = kwargs['has_shadow'] if 'has_shadow' in kwargs else True
     fmt = kwargs['fmt'] if 'fmt' in kwargs else 'png'
@@ -278,21 +280,26 @@ def plot_single_energy_diagram(*args, **kwargs):
 
     rxn_list = RxnEquation(rxn_equation).tolist()
     energy_tuple = get_relative_energy_tuple(energy_tuple)
-    # energy info
+
+    # Energy info.
     rxn_energy = round(energy_tuple[-1] - energy_tuple[0], 2)
     if len(energy_tuple) == 3:
         act_energy = round(energy_tuple[1] - energy_tuple[0], 2)
-    # get x, y array
+
+    # Get x, y array.
     x, y, x2 = get_potential_energy_points(energy_tuple, n=n,
-                                       subsection_length=subsection_length,
-                                       peak_width=peak_width)
-    # get maximum and minimum values of x and y axis
+                                           subsection_length=subsection_length,
+                                           peak_width=peak_width)
+
+    # Get maximum and minimum values of x and y axis.
     y_min, y_max = np.min(y), np.max(y)
     x_max = 3.7*subsection_length
+
     # scale of y
     y_scale = abs(y_max - y_min)
 
     ###################      start Artist Mode!      #######################
+
     fig = plt.figure(figsize=(10, 7))
     ax = fig.add_subplot(111)
     ax.set_ylim(y_min - y_scale/5, y_max + y_scale/5)
@@ -300,35 +307,36 @@ def plot_single_energy_diagram(*args, **kwargs):
     xlabel = ax.set_xlabel('Reaction Coordinate')
     ylabel = ax.set_ylabel('Free Energy(eV)')
     title = ax.set_title(r'$\bf{'+RxnEquation(rxn_equation).texen()+r'}$',
-                         fontdict={
-                             'fontsize': 13,
-                             'weight': 1000,
-                             'verticalalignment': 'bottom'
-                         })
+                         fontdict={'fontsize': 13,
+                                   'weight': 1000,
+                                   'verticalalignment': 'bottom'})
 
-    # add shadow
+    # Add shadow.
     if has_shadow:
         _add_line_shadow(ax, x, y, depth=8, color='#595959')
-    # main line
+
+    # Plot main line.
     ax.plot(x, y, color=line_color, linewidth=3)
 
-    # energy latex string
+    # Energy latex string.
     if 'act_energy' in dir():
         act_energy_latex = r'$\bf{G_{a} = ' + str(act_energy) + r' eV}$'
     rxn_energy_latex = r'$\bf{\Delta G = ' + str(rxn_energy) + r' eV}$'
 
     #######################   annotates   #######################
 
-    # add species annotation
-    # get annotate coordiantes
+    # Add species annotation.
+    # Get annotate coordinates.
     note_offset = y_scale/40
     param_list = []
-    # initial state
+
+    # Initial state.
     note_x_i = subsection_length/10
     note_y_i = energy_tuple[0] + note_offset
     note_str_i = r'$\bf{' + rxn_list[0].texen() + r'}$'
     param_list.append((note_x_i, note_y_i, note_str_i))
-    # final state
+
+    # Final state.
     note_x_f = subsection_length/10 + subsection_length + peak_width
     note_y_f = energy_tuple[-1] + note_offset
     note_str_f = r'$\bf{' + rxn_list[-1].texen() + r'}$'
@@ -343,14 +351,13 @@ def plot_single_energy_diagram(*args, **kwargs):
         #####################
         note_str_b = r'$\bf' + rxn_list[1].texen() + r'}$'
         param_list.append((note_x_b, note_y_b, note_str_b))
-    # add annotates
+
+    # Add annotates.
     for idx, param_tuple in enumerate(param_list):
         if idx == 2:
-            ax.text(*param_tuple, fontdict={'fontsize': 13,
-                                            'color': '#CD5555'})
+            ax.text(*param_tuple, fontdict={'fontsize': 13, 'color': '#CD5555'})
         else:
-            ax.text(*param_tuple, fontdict={'fontsize': 13,
-                                            'color': '#1874CD'})
+            ax.text(*param_tuple, fontdict={'fontsize': 13, 'color': '#1874CD'})
 
     ######################################################
     #                                                    #
@@ -361,14 +368,12 @@ def plot_single_energy_diagram(*args, **kwargs):
     #                                                    #
     ######################################################
 
-    # energy change annotation
+    # Energy change annotation.
 
-    # initial state horizontal line
-    hori_x_i = np.linspace(subsection_length,
-                           peak_width + 2*subsection_length, 50)
+    # Initial state horizontal line.
+    hori_x_i = np.linspace(subsection_length, peak_width + 2*subsection_length, 50)
     hori_y_i = np.linspace(energy_tuple[0], energy_tuple[0], 50)
-    ax.plot(hori_x_i, hori_y_i, color=line_color, linewidth=1,
-            linestyle='dashed')
+    ax.plot(hori_x_i, hori_y_i, color=line_color, linewidth=1, linestyle='dashed')
 
     el = Ellipse((2, -1), 0.5, 0.5)
 
@@ -385,39 +390,39 @@ def plot_single_energy_diagram(*args, **kwargs):
                     arrowprops=dict(arrowstyle="simple",
                                     fc="0.6", ec="none",
                                     patchB=el,
-                                    connectionstyle="arc3,rad=0.2"),
-                    )
+                                    connectionstyle="arc3,rad=0.2"))
 
     # arrow between reaction energy
-    ax.annotate(
-        '',
-        xy=(subsection_length*3/2 + peak_width, energy_tuple[-1]),
-        xycoords='data',
-        xytext=(subsection_length*3/2 + peak_width, energy_tuple[0]),
-        textcoords='data',
-        arrowprops=dict(arrowstyle="<->")
-    )
+    ax.annotate('', xy=(subsection_length*3/2 + peak_width, energy_tuple[-1]),
+                xycoords='data',
+                xytext=(subsection_length*3/2 + peak_width, energy_tuple[0]),
+                textcoords='data',
+                arrowprops=dict(arrowstyle="<->"))
+
     # text annotations of reaction energy
-    ax.annotate(
-        rxn_energy_latex,
-        xy=(subsection_length*3/2 + peak_width,
-            (energy_tuple[-1]+energy_tuple[0])/2),
-        xycoords='data',
-        xytext=(50, 30), textcoords='offset points',
-        size=13, color='#8E388E',
-        arrowprops=dict(arrowstyle="simple",
-                        fc="0.6", ec="none",
-                        patchB=el,
-                        connectionstyle="arc3,rad=-0.2"),
-    )
+    ax.annotate(rxn_energy_latex,
+                xy=(subsection_length*3/2 + peak_width, (energy_tuple[-1]+energy_tuple[0])/2),
+                xycoords='data',
+                xytext=(50, 30),
+                textcoords='offset points',
+                size=13, color='#8E388E',
+                arrowprops=dict(arrowstyle="simple",
+                                fc="0.6",
+                                ec="none",
+                                patchB=el,
+                                connectionstyle="arc3,rad=-0.2"))
+
           ##############      annotates end      ################
      #################      Artist Mode End !      #######################
+
     # remove xticks
     ax.set_xticks([])
-    # save the figure object
+
+    # Save the figure object.
     # creat path
     if not os.path.exists("./energy_profile"):
         os.mkdir("./energy_profile")
+
     # filename
     if 'fname' in kwargs:
         fname = kwargs['fname'] + '.' + fmt
@@ -435,6 +440,7 @@ def plot_single_energy_diagram(*args, **kwargs):
         raise ValueError('Unrecognized show mode parameter : ' + show_mode)
 
     return fig, x, y
+    # }}}
 
 
 def plot_multi_energy_diagram(*args, **kwargs):
