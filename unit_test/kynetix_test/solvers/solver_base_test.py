@@ -726,6 +726,29 @@ class SolverBaseTest(unittest.TestCase):
         self.assertListEqual(ref_kfs, ret_kfs)
         self.assertListEqual(ref_krs, ret_krs)
 
+    def test_get_rates_by_syms(self):
+        " Make sure we can get correct rates values by symbol derivation. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/solver_base.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+        solver.get_data_symbols()
+
+        # Check.
+        coverages = (0.5, 0.3)
+
+        ref_rfs = (mpf('1875295549312.0'), mpf('125019703287.0'), mpf('0.01408463956352'))
+        ref_rrs = (mpf('15197.86270034'), mpf('2.288656374422e-18'), mpf('0.0'))
+
+        ret_rfs, ret_rrs = solver.get_rates_by_sym(cvgs_tuple=coverages)
+
+        self.assertTupleEqual(ref_rfs, ret_rfs)
+        self.assertTupleEqual(ref_rrs, ret_rrs)
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(SolverBaseTest)
     unittest.TextTestRunner(verbosity=2).run(suite)

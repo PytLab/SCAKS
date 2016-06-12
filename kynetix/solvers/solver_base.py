@@ -966,8 +966,7 @@ class SolverBase(KineticCoreComponent):
 
     def get_rate_constants_by_sym(self):
         """
-        Calculate rate constants values
-        by back substitution to symbol expressions.
+        Function to get rate constants values by back substitution to symbol expressions.
         """
         # Rate constant symbols.
         kf_syms, kr_syms = self.get_rate_constant_syms()
@@ -994,23 +993,23 @@ class SolverBase(KineticCoreComponent):
         by back substitution to symbol expressions,
         return rfs, rrs
         """
-        if not hasattr(self, 'rf_syms') or not hasattr(self, 'rr_syms'):
-            self.get_rate_syms()
-        #get substitution dict(need G, theta, p, constants dicts)
-        subs_dict = self.get_subs_dict(cvgs_tuple=cvgs_tuple)
-        #calculate rfs
+        # Get rate symbols.
+        rf_syms, rr_syms = self.get_rate_syms()
+
+        # Substitution dict(need G, theta, p, constants dicts).
+        subs_dict = self.get_subs_dict(coverages=cvgs_tuple)
+
+        # Calculate rfs & rrs values.
         rfs, rrs = [], []
-        for rf_sym in self.rf_syms:
+        for rf_sym in rf_syms:
             rf = self._mpf(float(rf_sym.evalf(subs=subs_dict)))
             rfs.append(rf)
-        #cal rrs
-        for rr_sym in self.rr_syms:
+
+        for rr_sym in rr_syms:
             rr = self._mpf(float(rr_sym.evalf(subs=subs_dict)))
             rrs.append(rr)
 
-        self.rfs, self.rrs = tuple(rfs), tuple(rrs)
-
-        self.archive_data('rates', (self.rfs, self.rrs))
+        self.archive_data('rates', (rfs, rrs))
 
         return tuple(rfs), tuple(rrs)
 
