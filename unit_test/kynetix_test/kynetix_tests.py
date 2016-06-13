@@ -1,6 +1,7 @@
 import unittest
 
 from model import models_tests
+from plotters import plotters_tests
 from parsers import parsers_tests
 from solvers import solvers_tests
 from utilities import utilities_tests
@@ -11,7 +12,8 @@ def suite():
         [models_tests.suite(),
          parsers_tests.suite(),
          solvers_tests.suite(),
-         utilities_tests.suite()]
+         utilities_tests.suite(),
+         plotters_tests.suite()]
     )
     return suite
 
