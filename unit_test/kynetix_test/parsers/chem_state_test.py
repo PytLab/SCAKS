@@ -136,6 +136,24 @@ class ChemStateTest(unittest.TestCase):
         self.assertRaisesRegexp(ValueError, r"^Site", state_1.conserve, state_2)
         self.assertRaisesRegexp(ValueError, r"^Site", state_2.conserve, state_1)
 
+    def test_texen(self):
+        " Make sure we can get correct tex string for a state. "
+        state_str = "HCOOH_g + 2*_s"
+        state = ChemState(state_str)
+
+        ref_tex = r'HCOOH(g) + 2*(s)'
+        ret_tex = state.texen()
+
+        self.assertEqual(ref_tex, ret_tex)
+
+        state_str = "HCOO-H_s + *_s"
+        state = ChemState(state_str)
+
+        ref_tex = r'HCOO-H(s) + *(s)'
+        ret_tex = state.texen()
+
+        self.assertEqual(ref_tex, ret_tex)
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(ChemStateTest)
     unittest.TextTestRunner(verbosity=2).run(suite)
