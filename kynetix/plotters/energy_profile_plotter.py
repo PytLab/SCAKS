@@ -55,3 +55,36 @@ class EnergyProfilePlotter(PlotterBase):
         return fig
         # }}}
 
+    def plot_all(self, **kwargs):
+        """
+        Function to plot a merged energy profile with all elementary reactions.
+
+        Parameters:
+        -----------
+        kwargs: See doc string of kynetix.plotters.en_profile.plot_single_energy_diagram.
+
+        Returns:
+        --------
+        Matplotlib.figure.Figure object.
+        """
+        # Get reaction expressions.
+        rxn_expressions = self._owner.rxn_expressions()
+
+        # Get relative energies.
+        if not self._owner.has_relative_energy():
+            msg_template = "Model '{}' has no relative energy, please try to parse data."
+            msg = msg.format(self._owner)
+            raise AttributeError(msg)
+
+        relative_energies = self._owner.relative_energies()
+        energy_tuples = []
+        # Loop over all relative energies to collect energy tuples.
+        for Gaf, dG in zip(relative_energies['Gaf'], relative_energies['dG']):
+            energy_tuple = (0.0, Gaf, dG) if Gaf else (0.0, dG)
+            energy_tuples.append(energy_tuple)
+
+        # Plot.
+        fig, _, _ = plot_multi_energy_diagram(rxn_expressions, energy_tuples, **kwargs)
+
+        return fig
+
