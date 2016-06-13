@@ -6,6 +6,7 @@ import numpy as np
 from mpmath import mpf
 
 from kynetix.model import KineticModel
+from kynetix.parsers.rxn_parser import *
 from kynetix.solvers import *
 
 
@@ -104,6 +105,23 @@ class SolverBaseTest(unittest.TestCase):
                                   'O_s': mpf('0.4340000000011')}
         self.assertDictEqual(ref_formation_energies, solver.formation_energies())
         # }}}
+
+    def test_get_state_energy(self):
+        " Test we can get correct state energy. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/solver_base.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver = model.solver()
+        solver.get_data()
+
+        # Check.
+        state = ChemState('CO_s + O_s')
+        ref_G = solver._G['CO_s'] + solver._G['O_s']
+        ret_G = solver._get_state_energy(state)
+
+        self.assertEqual(ref_G, ret_G)
 
     def test_get_rate_constants(self):
         # {{{

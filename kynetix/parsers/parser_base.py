@@ -280,7 +280,17 @@ class ParserBase(ModelShell):
             return molecular_mass
 
     def _get_state_energy(self, state):
-        " Protected helper function to get state energy. "
+        """
+        Protected helper function to get state energy.
+
+        Parameters:
+        -----------
+        state: An object of ChemState.
+
+        Returns:
+        --------
+        Absolute free energy of the state, float.
+        """
         # Extract species info.
         species_site_dict = state.get_species_site_dict()
         site_dict = state.get_sites_dict()

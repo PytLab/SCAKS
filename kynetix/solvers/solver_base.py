@@ -229,6 +229,26 @@ class SolverBase(KineticCoreComponent):
             self._has_energy_correction = False
             self._has_absolute_energy = True
 
+    def _get_state_energy(self, state):
+        """ 
+        Protected helper function to get state energy.
+
+        Parameters:
+        -----------
+        state: An object of ChemState.
+
+        Returns:
+        --------
+        Absolute free energy of the state, float.
+        """
+        species_site_dict = state.get_species_site_dict()
+        energy = 0.0
+
+        for species_site, n in species_site_dict.iteritems():
+            energy += n*self._G[species_site]
+
+        return energy
+
     def get_rate_constants(self, relative_energies=None):
         """
         Function to get rate constants for all elementary reactions.
