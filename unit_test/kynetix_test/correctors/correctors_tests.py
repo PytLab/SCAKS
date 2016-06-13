@@ -5,7 +5,7 @@ from thermodynamic_corrector_test import ThermodynamicCorrectorTest
 
 def suite():
     suite = unittest.TestSuite(
-         [unittest.TestLoader().loadTestsFromTestCase(TermodynamicCorrectorTest),]
+         [unittest.TestLoader().loadTestsFromTestCase(ThermodynamicCorrectorTest),]
     )
     return suite
 
