@@ -7,4 +7,5 @@ class CorrectorBase(ModelShell):
         A class acts as a base class to be inherited by other
         corrector classes, it is not functional on its own.
         """
-        ModelShell.__init__(self, owner)
+        super(CorrectorBase, self).__init__(owner)
+
