@@ -1226,3 +1226,4 @@ class SteadyStateSolver(SolverBase):
         Query function for converaged coverages.
         """
         return self._coverages
+
