@@ -1015,8 +1015,17 @@ class SteadyStateSolver(SolverBase):
 
     def get_rate_control(self, epsilon=None):
         """
-        Expect free energies of intermediates in kinetic model,
-        return a matrix of partial derivation wrt intermediates.
+        Function to get DTRC matrix for all gas species.
+
+        Parameters:
+        -----------
+        epsilon: The perturbation size for numerical jacobian matrix.
+
+        Returns:
+        --------
+        An DTRC mpmath.matrix for all gas species.
+            - rows for gas species.
+            - columns for intermediates and transition states.
         """
         # Get intermediates formation energies.
         Gs = self.__get_intermediates_Gs()
