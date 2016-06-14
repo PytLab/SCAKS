@@ -987,11 +987,14 @@ class SteadyStateSolver(SolverBase):
         for intermediate, G in zip(Gs_order, Gs):
             self._G[intermediate] = G
 
+        # Get new relative energies.
+        relative_energies = self.get_relative_from_absolute()
+
         # Calculate the new steady state coverages.
-        steady_state_cvg = self.get_steady_state_cvgs(init_guess)
+        steady_state_cvg = self.get_steady_state_cvgs(init_guess, relative_energies)
 
         # Get turnover frequencies.
-        tof_list = self.get_tof(steady_state_cvg)
+        tof_list = self.get_tof(steady_state_cvg, relative_energies)
 
         # Recover solver's formation energy dict.
         self._G = G_copy
@@ -1010,7 +1013,7 @@ class SteadyStateSolver(SolverBase):
 
         return Gs
 
-    def get_rate_control(self):
+    def get_rate_control(self, epsilon=None):
         """
         Expect free energies of intermediates in kinetic model,
         return a matrix of partial derivation wrt intermediates.
@@ -1019,12 +1022,16 @@ class SteadyStateSolver(SolverBase):
         Gs = self.__get_intermediates_Gs()
 
         kT = self._owner.kB()*self._owner.temperature()
-        epsilon = self._mpf(self._perturbation_size)
+
+        if epsilon is None:
+            epsilon = self._mpf(self._perturbation_size)
 
         # Get dr/dG matrix.
-        drdG = numerical_jacobian(f=self.__get_Gs_tof, x=Gs,
+        drdG = numerical_jacobian(f=self.__get_Gs_tof,
+                                  x=Gs,
                                   num_repr=self._numerical_representation,
-                                  matrix=self._matrix, h=epsilon,
+                                  matrix=self._matrix,
+                                  h=epsilon,
                                   direction=self._perturbation_direction)
         r = self.__get_Gs_tof(Gs)
 

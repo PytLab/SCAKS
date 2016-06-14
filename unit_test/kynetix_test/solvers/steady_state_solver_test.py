@@ -4,6 +4,7 @@ import unittest
 
 import numpy as np
 from numpy import matrix
+import mpmath as mp
 from mpmath import mpf
 
 from kynetix.model import KineticModel
@@ -370,12 +371,16 @@ class SteadyStateSolverTest(unittest.TestCase):
 
         # Check.
         Gs = solver._SteadyStateSolver__get_intermediates_Gs()
-        ref_tof = [mpf('0.00006559739595110368600498031342965082631709276536276896384863121614360978577485627423068419453387406309781'),
-                   mpf('-0.00006559739597350071441731557982863535625087290032441771661460764080034748406280044847430181035649452593027'),
-                   mpf('-0.0000327986979867581915044675535448405758347302265953113244359216100377718956030035681169078255245732720541')]
+        ref_tof = [mpf('0.00006559739597348504582569068687266497794572561953500086994061078513167987279791908489175605080876748126192'),
+                   mpf('-0.00006559739597348504582569603662605801820385244191899058897456642691638578398916270096955307750209504881702'),
+                   mpf('-0.00003279869798674252291284802018432862165588276807371337253221752577905673865006909626288615796964311658381')]
         ret_tof = solver._SteadyStateSolver__get_Gs_tof(Gs)
 
         self.assertListEqual(ref_tof, ret_tof)
+
+    def test_get_rate_control(self):
+        " Test function get_rate_control(). "
+        # NEED IMPLIMENTATION.
 
     def test_get_elementary_dtheta_dt_sym(self):
         " Test we can get correct dtheta/dt expression for an elementary reaction. "
