@@ -123,6 +123,54 @@ class SolverBaseTest(unittest.TestCase):
 
         self.assertEqual(ref_G, ret_G)
 
+    def test_get_single_relative_energies(self):
+        " Make sure we can get correct relative energy for an elementary reaction. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/solver_base.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver = model.solver()
+        solver.get_data()
+
+        # Check.
+        rxn_expression = 'CO_g + *_s -> CO_s'
+        ref_e = (mpf('0.0'), mpf('0.7580000000016'), mpf('-0.7580000000016'))
+        ret_e = solver.get_single_relative_energies(rxn_expression)
+        self.assertTupleEqual(ref_e, ret_e)
+
+        rxn_expression = 'O2_g + 2*_s -> 2O_s'
+        ref_e = (mpf('0.0'), mpf('2.640000000014'), mpf('-2.640000000014'))
+        ret_e = solver.get_single_relative_energies(rxn_expression)
+        self.assertTupleEqual(ref_e, ret_e)
+
+        rxn_expression = 'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s'
+        ref_e = (mpf('1.25'), mpf('0.9259999999995'), mpf('0.3240000000005'))
+        ret_e = solver.get_single_relative_energies(rxn_expression)
+        self.assertTupleEqual(ref_e, ret_e)
+
+    def test_get_relative_from_absolute(self):
+        " Test we can get relative energies from absolute energies correctly. "
+        # Construction.
+        model = KineticModel(setup_file="input_files/solver_base.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver = model.solver()
+        solver.get_data()
+
+        # Check.
+        ref_e = {'Gaf': [mpf('0.0'), mpf('0.0'), mpf('1.25')],
+                 'Gar': [mpf('0.7580000000016'),
+                         mpf('2.640000000014'),
+                         mpf('0.9259999999995')],
+                 'dG': [mpf('-0.7580000000016'),
+                        mpf('-2.640000000014'),
+                        mpf('0.3240000000005')]}
+        ret_e = solver.get_relative_from_absolute()
+
+        self.assertDictEqual(ref_e, ret_e)
+
     def test_get_rate_constants(self):
         # {{{
         " Make sure we can get rate constants correctly. "

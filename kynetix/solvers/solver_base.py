@@ -249,6 +249,76 @@ class SolverBase(KineticCoreComponent):
 
         return energy
 
+    def get_single_relative_energies(self, rxn_expression):
+        """
+        Function to get relative energies for an elementary reaction:
+            forward barrier,
+            reverse barrier,
+            reaction energy
+
+        Parameters:
+        -----------
+        rxn_expression: elementary reaction expression, str.
+
+        Returns:
+        --------
+        f_barrier: forward barrier.
+        r_barrier: reverse barrier.
+        reaction_energy: reaction energy.
+        """
+        # Check.
+        if not self._has_absolute_energy:
+            msg = "Absolute energies are need for geting relative energies."
+            raise AttributeError(msg)
+
+        # Get RxnEquation object.
+        rxn_equation = RxnEquation(rxn_expression)
+
+        # Get free energies for states.
+        G_IS, G_TS, G_FS = 0.0, 0.0, 0.0
+
+        # State list.
+        states = rxn_equation.tolist()
+
+        # IS energy.
+        G_IS = self._get_state_energy(states[0])
+
+        # FS energy.
+        G_FS = self._get_state_energy(states[-1])
+
+        # TS energy.
+        if len(states) == 2:
+            G_TS = max(G_IS, G_FS)
+
+        if len(states) == 3:
+            G_TS = self._get_state_energy(states[1])
+
+        # Get relative energies.
+        f_barrier = G_TS - G_IS
+        r_barrier = G_TS - G_FS
+        reaction_energy = G_FS - G_IS
+
+        return f_barrier, r_barrier, reaction_energy
+
+    def get_relative_from_absolute(self):
+        """
+        Function to get relative energies from absolute energies.
+
+        Returns:
+        -----------
+        An relative energy dict, including 'Gaf', 'Gar', 'dG'.
+        """
+        rxn_expressions = self._owner.rxn_expressions()
+        relative_energies = {'Gaf': [], 'Gar': [], 'dG': []}
+
+        for rxn_expression in rxn_expressions:
+            Gaf, Gar, dG = self.get_single_relative_energies(rxn_expression)
+            relative_energies['Gaf'].append(Gaf)
+            relative_energies['Gar'].append(Gar)
+            relative_energies['dG'].append(dG)
+
+        return relative_energies
+
     def get_rate_constants(self, relative_energies=None):
         """
         Function to get rate constants for all elementary reactions.
