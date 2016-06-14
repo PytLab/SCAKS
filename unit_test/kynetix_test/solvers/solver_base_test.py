@@ -342,6 +342,11 @@ class SolverBaseTest(unittest.TestCase):
         ret_tof = solver.get_tof(coverages)
 
         self.assertListEqual(ref_tof, ret_tof)
+
+        # Test gas tof.
+        ref_tof = mpf('-3750591092544.0')
+        ret_tof = solver.get_tof(coverages, gas_name="CO_g")
+        self.assertEqual(ref_tof, ret_tof)
         # }}}
 
     # ----------------------------------------------------------------

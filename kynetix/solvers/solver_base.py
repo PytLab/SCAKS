@@ -571,7 +571,7 @@ class SolverBase(KineticCoreComponent):
 
         return reversibilities
 
-    def get_tof(self, cvgs, relative_energies=None):
+    def get_tof(self, cvgs, relative_energies=None, gas_name=None):
         """
         Function to get the turnover frequencies(TOF) wrt all gas species.
 
@@ -582,9 +582,12 @@ class SolverBase(KineticCoreComponent):
         relative_energies: A dict of relative eneriges of elementary reactions.
             NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
 
+        gas_name: The gas whose TOF will be returned.
+
         Returns:
         --------
-        tof_list: List of TOF.
+        If gas name is not specified, a list of TOF for all gas species would be returned.
+        If gas name is specified, the TOF of the gas would be returned.
         """
         # Get net rates wrt the coverages c.
         net_rates = self.get_net_rates(cvgs, relative_energies)
@@ -601,7 +604,17 @@ class SolverBase(KineticCoreComponent):
         # Archive.
         self.archive_data('tofs', tof_list)
 
-        return tof_list
+        # Return.
+        if gas_name is None:
+            return tof_list
+        else:
+            # Check gas name.
+            gas_names = self._owner.gas_names()
+            if gas_name not in gas_names:
+                msg = "'{}' is not a gas species in model".format(gas_name)
+                raise ParameterError(msg)
+            idx = gas_names.index(gas_name)
+            return tof_list[idx]
 
     def __log_tof(self, tof_list, gas_names):
         """
