@@ -1093,7 +1093,33 @@ class SteadyStateSolver(SolverBase):
             DTRC = -kT/r*drdG
             DTRCs.append(DTRC)
 
+        # Log it.
+        self.__log_single_DTRC(DTRCs, gas_name)
+
         return DTRCs
+
+    def __log_single_DTRC(self, DTRCs, gas_name):
+        """
+        Private helper function to log DTRC for a gas species.
+        """
+        head_str = "\n {:<10s}{:<25s}{:<30s}\n".format("index", "intermediate", "DTRC")
+        head_str = "Degree of Rate Control for {}:\n".format(gas_name) + head_str
+        line_str = '-'*60 + '\n'
+
+        all_data = ''
+        all_data += head_str + line_str
+        intermediates = (self._owner.adsorbate_names() +
+                         self._owner.transition_state_names())
+
+        for idx, (intermediate, DTRC) in enumerate(zip(intermediates, DTRCs)):
+            idx = str(idx).zfill(2)
+            data = " {:<10s}{:<25s}{:<30.16e}\n".format(idx, intermediate, float(DTRC))
+            all_data += data
+        all_data += line_str
+
+        self.__logger.info(all_data)
+
+        return all_data
 
     def get_rate_control(self, epsilon=None):
         """
