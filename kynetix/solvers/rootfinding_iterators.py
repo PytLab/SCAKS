@@ -70,7 +70,7 @@ class ConstrainedNewton(RootfindingIterator):
                             'matrix', 'Axb_solver')
         for param in essential_params:
             if not hasattr(self, '_' + param):
-                msg = 'parameter \'%s\' must be supplied.' % param
+                msg = "parameter '{}' must be supplied.".format(param)
                 raise ParameterError(msg)
 
         # set constraint function

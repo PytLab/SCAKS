@@ -38,7 +38,7 @@ class SteadyStateSolver(SolverBase):
         self.__dict__.update(protected_defaults)
         # }}}
 
-    def __constrain_converage(self, cvgs_tuple):
+    def __constrain_coverages(self, cvgs_tuple):
         """
         Private function to constrain coverages of absorbates
         between 0.0 and 1.0 or total number.
@@ -224,7 +224,7 @@ class SteadyStateSolver(SolverBase):
         return dtheta_dt_expressions_tup
         # }}}
 
-    def steady_state_function(self, cvgs_tuple):
+    def steady_state_function(self, cvgs_tuple, relative_energies=None):
         """
         Recieve a coverages tuple containing coverages of adsorbates,
         return a tuple of dtheta_dts of corresponding adsorbates.
@@ -235,7 +235,7 @@ class SteadyStateSolver(SolverBase):
         theta = self._cvg_tuple2dict(cvgs_tuple)
 
         # Rate constants(kf, kr).
-        kf, kr = self.get_rate_constants()
+        kf, kr = self.get_rate_constants(relative_energies)
 
         # Pressure.
         p = self._p
@@ -436,13 +436,16 @@ class SteadyStateSolver(SolverBase):
         return ' '.join(derived_poly_list)
         # }}}
 
-    def analytical_jacobian(self, cvgs_tuple):
+    def analytical_jacobian(self, cvgs_tuple, relative_energies=None):
         """
         Function to get analytical Jacobian matrix of the nonlinear equation system.
 
         Parameters:
         -----------
         cvgs_tuple: A tuple of adsorbate coverages, tuple of float.
+
+        relative_energies: A dict of relative eneriges of elementary reactions.
+            NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
 
         Returns:
         --------
@@ -463,7 +466,7 @@ class SteadyStateSolver(SolverBase):
         theta = self._cvg_tuple2dict(cvgs_tuple)
 
         # Rate constants(kf, kr).
-        kf, kr = self.get_rate_constants()
+        kf, kr = self.get_rate_constants(relative_energies)
 
         # Pressure.
         p = self._p
@@ -669,7 +672,7 @@ class SteadyStateSolver(SolverBase):
     ###### calculate micro kinetic model with Sympy END ######
     ##########################################################
 
-    def get_residual(self, cvgs_tuple):
+    def get_residual(self, cvgs_tuple, relative_energies=None):
         """
         Function to get residual value of equations(the max value of dthe/dt).
 
@@ -677,20 +680,23 @@ class SteadyStateSolver(SolverBase):
         -----------
         cvgs_tuple: A tuple of adsorbate coverages.
 
+        relative_energies: A dict of relative eneriges of elementary reactions.
+            NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
+
         Returns:
         --------
         The max value of dtheta/dt wrt the coverages.
         """
         #constrain cvgs
-        #cvgs_tuple = self.__constrain_converage(cvgs_tuple)
-        dtheta_dts = self.steady_state_function(cvgs_tuple)
+        #cvgs_tuple = self.__constrain_coverages(cvgs_tuple)
+        dtheta_dts = self.steady_state_function(cvgs_tuple, relative_energies)
         residual = max([abs(dtheta_dt) for dtheta_dt in dtheta_dts])
 
         return residual
 
     # -- Use scipy.optimize.fsolve function to solve equations --
 
-    def coarse_steady_state_cvgs(self, c0):
+    def coarse_steady_state_cvgs(self, c0, relative_energies=None):
         '''
         Use scipy.optimize.fsolve to solve non-linear equations
         with fast speed and low-precison.
@@ -699,23 +705,30 @@ class SteadyStateSolver(SolverBase):
         -----------
         c0: initial coverages, a list or tuple of float
 
+        relative_energies: A dict of relative eneriges of elementary reactions.
+            NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
+
         Return:
         -------
         steady_state_coverages: in the order of self._owner.adsorbate_names,
                                 tuple of float
         '''
 
-        def get_jacobian(c0):
+        def get_jacobian(c0, relative_energies=None):
             # Jacobian matrix.
-            jm = self.analytical_jacobian(c0).tolist()
+            jm = self.analytical_jacobian(c0, relative_energies).tolist()
             # Convert to floats.
             jm = [[float(df) for df in dfs] for dfs in jm]
 
             return jm
 
+        #fprime = lambda x: get_jacobian(c0, relative_energies=relative_energies)
+
         # Main hotpot.
         c0 = map(float, c0)  # covert to float
-        converged_cvgs = fsolve(self.steady_state_function, c0, fprime=get_jacobian)
+        converged_cvgs = fsolve(self.steady_state_function, c0,
+                                (relative_energies, ),
+                                fprime=get_jacobian)
 
         return converged_cvgs
 
@@ -724,7 +737,7 @@ class SteadyStateSolver(SolverBase):
         Decorator for **_steady_state_coverages,
         archive data when getting converged converages.
         '''
-        def wrapped_func(*args):
+        def wrapped_func(*args, **kwargs):
             '''
             Use scipy.optimize.fsolve to solve non-linear equations.
 
@@ -737,11 +750,11 @@ class SteadyStateSolver(SolverBase):
             steady_state_coverages: in the order of self._owner.adsorbate_names,
                                     tuple of float
             '''
-            converged_cvgs = func(*args)
+            converged_cvgs = func(*args, **kwargs)
             # Archive data.
             # Get error.
             self = args[0]
-            errors = self.steady_state_function(converged_cvgs)
+            errors = self.steady_state_function(converged_cvgs, kwargs["relative_energies"])
             error = norm(errors)
             self._error = error
 
@@ -762,15 +775,15 @@ class SteadyStateSolver(SolverBase):
         return wrapped_func
 
     @data_archive
-    def fsolve_steady_state_cvgs(self, c0):
+    def fsolve_steady_state_cvgs(self, c0, relative_energies=None):
         """
         Use scipy.optimize.fsolve to get steady state coverages.
         """
-        return self.coarse_steady_state_cvgs(c0)
+        return self.coarse_steady_state_cvgs(c0, relative_energies)
 
     # -- fsolve END --
 
-    def get_steady_state_cvgs(self, c0, single_pt=False):
+    def get_steady_state_cvgs(self, c0, single_pt=False, relative_energies=None):
         """
         Function to get steady state coverages.
 
@@ -784,16 +797,20 @@ class SteadyStateSolver(SolverBase):
 
         single_pt : bool
             if True, no initial guess check will be done.
+
+        relative_energies: Optional, dict of relative eneriges of elementary reactions.
+            NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
+
         """
         # Intial coverage must have physical meaning.
-        c0 = self.__constrain_converage(c0)
+        c0 = self.__constrain_coverages(c0)
         self.__initial_guess = c0
 
         # Start root finding algorithm.
-        f = self.steady_state_function
-        f_resid = self.get_residual
-        constraint = self.__constrain_converage
-        J = lambda x: self.analytical_jacobian(x)
+        f = lambda x: self.steady_state_function(x, relative_energies=relative_energies)
+        f_resid = lambda x: self.get_residual(x, relative_energies=relative_energies)
+        constraint = self.__constrain_coverages
+        J = lambda x: self.analytical_jacobian(x, relative_energies=relative_energies)
 
         ############    Main Loop with changed initial guess   ##############
         self.__logger.info('Entering main loop...')
@@ -812,7 +829,7 @@ class SteadyStateSolver(SolverBase):
                 self.log_sscvg(c0, self._owner.adsorbate_names())
 
                 # Get error.
-                fx = self.steady_state_function(c0)  # dtheta/dts
+                fx = self.steady_state_function(c0, relative_energies)  # dtheta/dts
                 norm = self._norm(fx)
                 resid = self.get_residual(c0)
                 error = min(norm, resid)
@@ -1066,7 +1083,7 @@ class SteadyStateSolver(SolverBase):
         self.__logger.info('modify initial coverage - success')
         self.__logger.debug(str(map(float, c0)))
 
-        #return self.__constrain_converage(new_c0)
+        #return self.__constrain_coverage__constrain_coverages(new_c0)
         return new_c0
 
     def modify_init_guess_new(self, c0, dtheta_dts):
@@ -1136,7 +1153,7 @@ class SteadyStateSolver(SolverBase):
     # solve model by ODE integration
 
     def solve_ode(self, algo='lsoda', time_start=0.0, time_end=100.0,
-                  time_span=0.1, initial_cvgs=None):
+                  time_span=0.1, initial_cvgs=None, relative_energies=None):
         """
         Solve the differetial equations, return points of coverages.
 
@@ -1152,6 +1169,9 @@ class SteadyStateSolver(SolverBase):
         time_end: time when stop integration, float.
 
         initial_cvgs: initial coverages at time_start, tuple of float
+
+        relative_energies: A dict of relative eneriges of elementary reactions.
+            NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
 
         Returns:
         --------
@@ -1180,7 +1200,7 @@ class SteadyStateSolver(SolverBase):
 
         # differential equation, solve over t for initial coverages cvgs_tuple
         def f(t, cvgs_tuple):
-            return list(self.steady_state_function(cvgs_tuple))
+            return list(self.steady_state_function(cvgs_tuple, relative_energies))
 
         # ode solver object
         r = ode(f)

@@ -477,14 +477,16 @@ class SolverBase(KineticCoreComponent):
 
         return f_rate_expressions, r_rate_expressions
 
-    def get_rates(self, cvgs_tuple, archive=False):
+    def get_rates(self, cvgs_tuple, relative_energies=None):
         """
         Function to get forward and reverse rates list.
 
         Parameters:
         -----------
         cvgs_tuple: coverage tuple, tuple of floats.
-        archive: archive data or not, bool.
+
+        relative_energies: A dict of relative eneriges of elementary reactions.
+            NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
 
         Returns:
         --------
@@ -494,7 +496,7 @@ class SolverBase(KineticCoreComponent):
         theta = self._cvg_tuple2dict(cvgs_tuple)
 
         # Rate constants(kf, kr).
-        kf, kr = self.get_rate_constants()
+        kf, kr = self.get_rate_constants(relative_energies)
 
         # Pressure.
         p = self._p
@@ -516,33 +518,33 @@ class SolverBase(KineticCoreComponent):
         rfs, rrs = map(tuple, (rfs, rrs))
 
         # Archive.
-        if archive:
-            self.archive_data('rates', (rfs, rrs))
+        self.archive_data('rates', (rfs, rrs))
 
         return rfs, rrs
 
-    def get_net_rates(self, cvgs_tuple, archive=False):
+    def get_net_rates(self, cvgs_tuple, relative_energies=None):
         """
         Function to get forward and reverse rates list.
 
         Parameters:
         -----------
         cvgs_tuple: coverage tuple, tuple of floats.
-        archive: archive data or not, bool.
+
+        relative_energies: A dict of relative eneriges of elementary reactions.
+            NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
 
         Returns:
         --------
         net_rates: net rates for all elementary reactions, tuple of float.
         """
         # Get forward and reverse rates.
-        rfs, rrs = self.get_rates(cvgs_tuple, archive=False)
+        rfs, rrs = self.get_rates(cvgs_tuple, relative_energies)
 
         # Get net rates.
         net_rates = tuple([rf - rr for rf, rr in zip(rfs, rrs)])
 
         # Archive.
-        if archive:
-            self.archive_data('net_rates', net_rates)
+        self.archive_data('net_rates', net_rates)
 
         return net_rates
 
@@ -569,7 +571,7 @@ class SolverBase(KineticCoreComponent):
 
         return reversibilities
 
-    def get_tof(self, cvgs):
+    def get_tof(self, cvgs, relative_energies=None):
         """
         Function to get the turnover frequencies(TOF) wrt all gas species.
 
@@ -577,12 +579,15 @@ class SolverBase(KineticCoreComponent):
         -----------
         cvgs: coverages of adsorbates on surface, tuple of float.
 
+        relative_energies: A dict of relative eneriges of elementary reactions.
+            NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
+
         Returns:
         --------
         tof_list: List of TOF.
         """
         # Get net rates wrt the coverages c.
-        net_rates = self.get_net_rates(cvgs)
+        net_rates = self.get_net_rates(cvgs, relative_energies)
 
         # Get turnover frequencies.
         _, reapro_matrix = self._owner.parser().get_stoichiometry_matrices()
