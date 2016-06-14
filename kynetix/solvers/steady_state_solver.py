@@ -1054,7 +1054,35 @@ class SteadyStateSolver(SolverBase):
         # Archive
         self.archive_data('DTRC', DTRC_list)
 
+        # Log it.
+        self.__log_DTRC(DTRC_list)
+
         return DTRC
+
+    def __log_DTRC(self, DTRC_matrix):
+        """
+        Private helper function to log DTRC for all gas species.
+        """
+        gas_names = self._owner.gas_names()
+        intermediate_names = (self._owner.adsorbate_names() +
+                              self._owner.transition_state_names())
+
+        head_str = "\n\n{:<15s}{:<30s}{:<30s}\n".format("gas", "intermediate", "DTRC")
+        line_str = "-"*70 + "\n"
+
+        all_data = ""
+        all_data += head_str + line_str
+
+        for gas_name, DTRC_vect in zip(gas_names, DTRC_matrix):
+            for intermediate, DTRC in zip(intermediate_names, DTRC_vect):
+                data = "{:<15s}{:<30s}{:<30.16e}\n".format(gas_name, intermediate, float(DTRC))
+                all_data += data
+
+        all_data += line_str
+
+        self.__logger.info(all_data)
+
+        return all_data
 
     def modify_init_guess(self, *args):
         '''
