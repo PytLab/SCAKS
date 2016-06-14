@@ -378,6 +378,27 @@ class SteadyStateSolverTest(unittest.TestCase):
 
         self.assertListEqual(ref_tof, ret_tof)
 
+    def test_get_Gs_gas_tof(self):
+        " Test private function __get_Gs_tof(). "
+        # Construction.
+        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+
+        # Get steady state converages first.
+        coverages = solver.boltzmann_coverages()
+        solver.get_steady_state_cvgs(coverages)
+
+        # Check gas tof.
+        Gs = solver._SteadyStateSolver__get_intermediates_Gs()
+        ref_tof = mpf('0.00006559739597348504582569068687266497794572561953500086994061078513167987279791908489175605080876748126192')
+        ret_tof = solver._SteadyStateSolver__get_Gs_tof(Gs, gas_name="CO2_g")
+        self.assertEqual(ref_tof, ret_tof)
+
     def test_get_rate_control(self):
         " Test function get_rate_control(). "
         # NEED IMPLIMENTATION.

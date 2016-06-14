@@ -1,6 +1,7 @@
-import re
+import copy
 import logging
 import random
+import re
 import signal
 
 from scipy.integrate import odeint, ode
@@ -958,7 +959,7 @@ class SteadyStateSolver(SolverBase):
 
             return self._coverage
 
-    def __get_Gs_tof(self, Gs):  # Gs -> free energies
+    def __get_Gs_tof(self, Gs, gas_name=None):  # Gs -> free energies
         """
         Private function to get TOF for a given formation energies.
 
@@ -966,9 +967,12 @@ class SteadyStateSolver(SolverBase):
         -----------
         Gs: free energies of all intermediates(adsorbates and transition states).
 
+        gas_name: The gas whose TOF would be returned.
+
         Returns:
         --------
-        tof_list: List of TOF.
+        If gas name is not specified, a list of TOF for all gas species would be returned.
+        If gas name is specified, the TOF of the gas would be returned.
         """
         # Get initial guess
         if hasattr(self, "_coverage"):
@@ -999,7 +1003,17 @@ class SteadyStateSolver(SolverBase):
         # Recover solver's formation energy dict.
         self._G = G_copy
 
-        return tof_list
+        # Return.
+        if gas_name is None:
+            return tof_list
+        else:
+            # Check gas name.
+            gas_names = self._owner.gas_names()
+            if gas_name not in gas_names:
+                msg = "'{}' is not a gas species in model".format(gas_name)
+                raise ParameterError(msg)
+            idx = gas_names.index(gas_name)
+            return tof_list[idx]
 
     def __get_intermediates_Gs(self):
         """
@@ -1032,6 +1046,7 @@ class SteadyStateSolver(SolverBase):
 
         kT = self._owner.kB()*self._owner.temperature()
 
+        # Get perturbation size.
         if epsilon is None:
             epsilon = self._mpf(self._perturbation_size)
 
