@@ -761,7 +761,7 @@ class SteadyStateSolver(SolverBase):
 
             self._coverage = converged_cvgs
             # log steady state coverages.
-            self.log_sscvg(converged_cvgs, self._owner.adsorbate_names())
+            self.__log_sscvg(converged_cvgs, self._owner.adsorbate_names())
             self.__logger.info('error = %e', error)
 
             # Archive converged root and error.
@@ -827,7 +827,7 @@ class SteadyStateSolver(SolverBase):
                 self.__logger.info('Good initial guess: \n%s', str(map(float, c0)))
 
                 # log steady state coverages
-                self.log_sscvg(c0, self._owner.adsorbate_names())
+                self.__log_sscvg(c0, self._owner.adsorbate_names())
 
                 # Get error.
                 fx = self.steady_state_function(c0, relative_energies)  # dtheta/dts
@@ -894,7 +894,7 @@ class SteadyStateSolver(SolverBase):
                             self.__logger.info('%-10s%10d%23.10e%23.10e', 'success',
                                                nt_counter, float(resid), float(error))
                             # log steady state coverages
-                            self.log_sscvg(x, self._owner.adsorbate_names())
+                            self.__log_sscvg(x, self._owner.adsorbate_names())
                             self._coverage = x
                             self._error = error
                             self.__logger.info('error = %e', min(error, resid))
@@ -958,6 +958,28 @@ class SteadyStateSolver(SolverBase):
             self.archive_data('initial_guess', c0)
 
             return self._coverage
+
+    def __log_sscvg(self, cvgs_tuple, ads_names):
+        """
+        Private helper function to log steady state coverage of every species.
+        """
+        head_str = "\n {:<10s}{:<25s}{:<30s}\n".format("index",
+                                                       "intermediate name",
+                                                       "steady state coverage")
+        head_str = "Steady State Coverages:\n" + head_str
+        line_str = '-'*60 + '\n'
+
+        all_data = ''
+        all_data += head_str + line_str
+        for idx, (ads_name, cvg) in enumerate(zip(ads_names, cvgs_tuple)):
+            idx = str(idx).zfill(2)
+            data = " {:<10s}{:<25s}{:<30.16e}\n".format(idx, ads_name, float(cvg))
+            all_data += data
+        all_data += line_str
+
+        self.__logger.info(all_data)
+
+        return all_data
 
     def __get_Gs_tof(self, Gs, gas_name=None):  # Gs -> free energies
         """
@@ -1082,7 +1104,8 @@ class SteadyStateSolver(SolverBase):
         intermediate_names = (self._owner.adsorbate_names() +
                               self._owner.transition_state_names())
 
-        head_str = "\n\n{:<15s}{:<30s}{:<30s}\n".format("gas", "intermediate", "DTRC")
+        head_str = "\n{:<15s}{:<30s}{:<30s}\n".format("gas", "intermediate", "DTRC")
+        head_str = "Degree of Thermodynamic Rate Control:\n" + head_str
         line_str = "-"*70 + "\n"
 
         all_data = ""
@@ -1172,44 +1195,9 @@ class SteadyStateSolver(SolverBase):
 
         return new_c0
 
-    def log_sscvg(self, cvgs_tuple, ads_names):
-        "Log steady state coverage of every species."
-        head_str = "\n\n %-5s     %-20s     %-30s\n" % \
-                   ("index", "intermediate name", "steady state coverage")
-        line_str = '-'*60 + '\n'
-
-        all_data = ''
-        all_data += head_str + line_str
-        for idx, (ads_name, cvg) in enumerate(zip(ads_names, cvgs_tuple)):
-            idx = str(idx).zfill(2)
-            data = " %-5s     %-20s     %-30.16e\n" % (idx, ads_name, float(cvg))
-            all_data += data
-        all_data += line_str
-
-        self.__logger.info(all_data)
-
-        return all_data
-
-    def log_rate_control(self, xtrcs, species_names):
-        "Log and print XTRCs."
-        head_str = "\n %-5s     %-20s     %-30s\n" % \
-                   ("index", "names", "XTRC")
-        line_str = '-'*55 + '\n'
-
-        xtrcs = xtrcs.tolist()[0]
-        all_data = ''
-        all_data += head_str + line_str
-        for idx, (species_name, xtrc) in enumerate(zip(species_names, xtrcs)):
-            idx = str(idx).zfill(2)
-            data = " %-5s     %-20s     %-30.16e\n" % (idx, species_name, float(xtrc))
-            all_data += data
-        all_data += line_str
-
-        self.__logger.info(all_data)
-
-        return all_data
-
-    # solve model by ODE integration
+    ####################################
+    ## solve model by ODE integration ##
+    ####################################
 
     def solve_ode(self, algo='lsoda', time_start=0.0, time_end=100.0,
                   time_span=0.1, initial_cvgs=None, relative_energies=None):

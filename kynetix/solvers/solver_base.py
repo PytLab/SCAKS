@@ -620,7 +620,8 @@ class SolverBase(KineticCoreComponent):
         """
         Private helper function to log TOF of every gas species.
         """
-        head_str = "\n\n {:<10s}{:<25s}{:<30s}\n".format("index", "gas name", "TOF")
+        head_str = "\n {:<10s}{:<25s}{:<30s}\n".format("index", "gas name", "TOF")
+        head_str = "Turnover Frequencies:\n" + head_str
         line_str = '-'*60 + '\n'
 
         all_data = ''
