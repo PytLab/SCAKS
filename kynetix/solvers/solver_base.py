@@ -607,14 +607,14 @@ class SolverBase(KineticCoreComponent):
         """
         Private helper function to log TOF of every gas species.
         """
-        head_str = "\n\n {:<5s}     {:<20s}     {:<30s}\n".format("index", "gas name", "TOF")
+        head_str = "\n\n {:<10s}{:<25s}{:<30s}\n".format("index", "gas name", "TOF")
         line_str = '-'*60 + '\n'
 
         all_data = ''
         all_data += head_str + line_str
         for idx, (gas_name, tof) in enumerate(zip(gas_names, tof_list)):
             idx = str(idx).zfill(2)
-            data = " {:<5s}     {:<20s}     {:<30.16e}\n".format(idx, gas_name, float(tof))
+            data = " {:<10s}{:<25s}{:<30.16e}\n".format(idx, gas_name, float(tof))
             all_data += data
         all_data += line_str
 
