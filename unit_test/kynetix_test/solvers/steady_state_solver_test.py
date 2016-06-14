@@ -399,6 +399,29 @@ class SteadyStateSolverTest(unittest.TestCase):
         ret_tof = solver._SteadyStateSolver__get_Gs_tof(Gs, gas_name="CO2_g")
         self.assertEqual(ref_tof, ret_tof)
 
+    def test_get_single_rate_control(self):
+        " Test function get_single_rate_control(). "
+        # Construction.
+        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver.get_data()
+
+        # Get steady state converages first.
+        coverages = solver.boltzmann_coverages()
+        solver.get_steady_state_cvgs(coverages)
+
+        # Check.
+        gas_name = "CO2_g"
+        ref_DTRC = [mpf('-1.140775679060470231102957551171991999598222982845341552547696346711016232935918656517199962201198992431'),
+                    mpf('-1.140775679060470231102957551171991999598222982868676691801332923261853985696953114085426317346190942534'),
+                    mpf('0.8814652009349500154595525267108292828096395354042118934924700365276854370874119078940529715191362927046')]
+        ret_DTRC = solver.get_single_rate_control(gas_name)
+        self.assertListEqual(ref_DTRC, ret_DTRC)
+
     def test_get_rate_control(self):
         " Test function get_rate_control(). "
         # NEED IMPLIMENTATION.

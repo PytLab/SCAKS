@@ -1049,6 +1049,52 @@ class SteadyStateSolver(SolverBase):
 
         return Gs
 
+    def get_single_rate_control(self, gas_name, epsilon=None):
+        """
+        Function to get DTRC for one gas species.
+
+        Parameters:
+        -----------
+        gas_name: The gas name whose DTRC would be calculated.
+
+        epsilon: The perturbation size for numerical jacobian matrix.
+        """
+        self.__logger.info("Calculating Degree of Thermodynamic Rate Control...")
+        self.__logger.info("-"*55 + "\n")
+
+        # Get intermediates formation energies.
+        Gs = self.__get_intermediates_Gs()
+
+        # Get intermediate names.
+        intermediates = (self._owner.adsorbate_names() +
+                         self._owner.transition_state_names())
+        self.__logger.info("surface species: {}".format(intermediates))
+
+        kT = self._owner.kB()*self._owner.temperature()
+
+        # Get perturbation size.
+        if epsilon is None:
+            epsilon = self._mpf(self._perturbation_size)
+        self.__logger.info("epsilon = {:.2e}\n".format(float(epsilon)))
+
+        # Original tof
+        self.__logger.info("Calculating original TOF...")
+        r = self.__get_Gs_tof(Gs, gas_name=gas_name)
+
+        DTRCs = []
+        # Loop over all intermediates.
+        for i, intermediate in enumerate(intermediates):
+            self.__logger.info("Calculating DTRC for '{}'...".format(intermediate))
+
+            Gs_prime = copy.deepcopy(Gs)
+            Gs_prime[i] += epsilon
+            r_prime = self.__get_Gs_tof(Gs_prime, gas_name=gas_name)
+            drdG = (r_prime - r)/epsilon
+            DTRC = -kT/r*drdG
+            DTRCs.append(DTRC)
+
+        return DTRCs
+
     def get_rate_control(self, epsilon=None):
         """
         Function to get DTRC matrix for all gas species.
