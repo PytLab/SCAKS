@@ -26,12 +26,12 @@ rotation_temperatures = {
     'I2_g' : {'sigma': 2.0, 'theta': (0.0537, )},
     'CO_g' : {'sigma': 1.0, 'theta': (2.7800, )},
     'NO_g' : {'sigma': 1.0, 'theta': (2.4500, )},
-    'HC_gl': {'sigma': 1.0, 'theta': (15.200, )},
-    'HB_gr': {'sigma': 1.0, 'theta': (12.200, )},
+    'HCl_g': {'sigma': 1.0, 'theta': (15.200, )},
+    'HBr_g': {'sigma': 1.0, 'theta': (12.200, )},
     'HI_g' : {'sigma': 1.0, 'theta': (9.4300, )},
-    'CO_g2': {'sigma': 2.0, 'theta': (0.6600, )},
-    'CS_g2': {'sigma': 2.0, 'theta': (0.0643, )},
-    'N2_gO': {'sigma': 1.0, 'theta': (0.6100, )},
+    'CO2_g': {'sigma': 2.0, 'theta': (0.6600, )},
+    'CS2_g': {'sigma': 2.0, 'theta': (0.0643, )},
+    'N2O_g': {'sigma': 1.0, 'theta': (0.6100, )},
 
     # nonlinear molecules
     'H2O_g' : {'sigma': 2.0,  'theta': (40.40, 21.10, 13.5)},

@@ -127,7 +127,7 @@ class ThermodynamicCorrector(CorrectorBase):
             msg = msg_template.format(gas_name, temperature)
             raise ValueError(msg)
 
-        return free_energy, enthalpy, entropy
+        return free_energy
         # }}}
 
     def entropy_correction(self, gas_name, m=None, p=None, T=None):
