@@ -674,16 +674,21 @@ class SolverBase(KineticCoreComponent):
                 J[i, j] = Jj[i]
         return J
 
-    def correct_energies(self):
-        "Correct energies of solver"
-        #corrections for gas
-        if self._owner.gas_thermo_mode() == 'shomate_gas':
-            correction_dict = self._owner.corrector.shomate_gas()
-        for gas_name in correction_dict:
-            self.E[gas_name] += correction_dict[gas_name]
-        setattr(self, 'energy_correction', True)
+    def correct_energies(self, method="shomate"):
+        """
+        Function to correct free energies of solver.
+        """
+        corrector = self._owner.corrector()
 
-        return self.E
+        # Get correction function.
+        if method == "shomate":
+            correct_func = corrector.shomate_correction
+        elif method == "entropy":
+            correct_func = corrector.entropy_correction
+
+        for gas_name in self._owner.gas_names():
+            correction_energy = correct_func(gas_name)
+            self._G[gas_name] += correction_energy
 
     ######################################################
     ######                                          ######

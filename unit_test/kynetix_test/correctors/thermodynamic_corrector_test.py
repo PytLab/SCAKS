@@ -35,13 +35,13 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
         # Check.
         gas = "CO_g"
         ret_delta = corrector.shomate_correction(gas)
-        ref_delta = (-0.84190990132027166, 0.13611317171618073, -0.97802307303645242)
-        self.assertTupleEqual(ret_delta, ref_delta)
+        ref_delta = -0.84190990132027166
+        self.assertEqual(ret_delta, ref_delta)
 
         gas = "O2_g"
         ret_delta = corrector.shomate_correction(gas)
-        ref_delta = (-0.87627116516400394, 0.13787890338175926, -1.0141500685457632)
-        self.assertTupleEqual(ret_delta, ref_delta)
+        ref_delta = -0.87627116516400394
+        self.assertEqual(ret_delta, ref_delta)
 
     def test_entropy_correction(self):
         " Make sure we can get correct entropy correction. "
@@ -60,6 +60,39 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
         ret_delta = corrector.entropy_correction(gas)
         ref_delta = -1.2250150716175705
         self.assertEqual(ref_delta, ret_delta)
+
+    def test_solvers_correction_energy(self):
+        " Test solver's correction energy function. "
+        model = KineticModel(setup_file="input_files/thermodynamic_corrector.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        parser.parse_data(filename="input_files/rel_energy.py")
+        solver = model.solver()
+        solver.get_data()
+
+        ref_e = {'*_s': mpf('0.0'),
+                 'CO-O_2s': mpf('0.9259999999999999342747969421907328069210052490234375'),
+                 'CO2_g': mpf('0.0'),
+                 'CO_g': mpf('0.0'),
+                 'CO_s': mpf('-0.75800000000000000710542735760100185871124267578125'),
+                 'O2_g': mpf('3.50800000000000000710542735760100185871124267578125'),
+                 'O_s': mpf('0.4339999999999999413802242997917346656322479248046875')}
+        ret_e = solver._G
+
+        self.assertDictEqual(ref_e, ret_e)
+
+        # Correction.
+        solver.correct_energies()
+        ref_e = {'*_s': mpf('0.0'),
+                 'CO-O_2s': mpf('0.9259999999999999342747969421907328069210052490234375'),
+                 'CO2_g': mpf('-0.89590348800350272373549387339153327047824859619140625'),
+                 'CO_g': mpf('-0.84190990132027165859796014046878553926944732666015625'),
+                 'CO_s': mpf('-0.75800000000000000710542735760100185871124267578125'),
+                 'O2_g': mpf('2.63172883483599606702085793585865758359432220458984375'),
+                 'O_s': mpf('0.4339999999999999413802242997917346656322479248046875')}
+        ret_e = solver._G
+
+        self.assertDictEqual(ref_e, ret_e)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(ThermodynamicCorrectorTest)
