@@ -25,7 +25,6 @@ class MicroKineticModelTest(unittest.TestCase):
         glob, loc = {}, {}
         execfile("input_files/mkm_model.mkm", glob, loc)
         self.assertEqual(model.tools(), loc["tools"])
-        self.assertEqual(model.solver(), loc["solver"])
         self.assertEqual(model.corrector(), loc["corrector"])
         self.assertEqual(model.plotter(), loc["plotter"])
         self.assertEqual(model.rxn_expressions(), loc["rxn_expressions"])
@@ -59,6 +58,12 @@ class MicroKineticModelTest(unittest.TestCase):
         ret_inputs_dict = model._KineticModel__check_inputs(inputs_dict)
 
         self.assertDictEqual(ret_inputs_dict, ref_inputs_dict)
+
+    def test_run_mkm(self):
+        " Test micro kinetic model can run correctly. "
+        model = KineticModel(setup_file="input_files/mkm_model.mkm",
+                             verbosity=logging.WARNING)
+        model.run_mkm(data_file="input_files/rel_energy.py")
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(KineticModelTest)

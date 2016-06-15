@@ -21,7 +21,7 @@ temperature = 450
 gas_thermo_mode = 'shomate_gas'
 
 # model attributes
-tools = ['parser']
+tools = ['parser', 'solver']
 # specify tools for model to use
 parser = 'RelativeEnergyParser'  # default
 solver = 'SteadyStateSolver'

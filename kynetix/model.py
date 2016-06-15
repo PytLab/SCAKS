@@ -106,7 +106,8 @@ class KineticModel(object):
         return inputs_dict
 
     def run_mkm(self, init_cvgs=None, relative=False, correct_energy=False,
-                solve_ode=False, fsolve=False, coarse_guess=True):
+                solve_ode=False, fsolve=False, coarse_guess=True,
+                data_file="/rel_energy.py"):
         """
         Function to solve Micro-kinetic model using Steady State Approxmiation
         to get steady state coverages and turnover frequencies.
@@ -121,6 +122,8 @@ class KineticModel(object):
 
         coarse_guess: use fsolve to do initial coverages preprocessing or not, bool
 
+        data_file: The name of data file, str.
+
         """
         self.__logger.info('--- Solve Micro-kinetic model ---')
 
@@ -134,7 +137,7 @@ class KineticModel(object):
             self.__logger.info('use relative energy directly...')
         else:
             self.__logger.info('convert relative to absolute energy...')
-        parser.parse_data(relative=relative)
+        parser.parse_data(filename=data_file, relative=relative)
 
         # -- solve steady state coverages --
         self.__logger.info('passing data to solver...')
