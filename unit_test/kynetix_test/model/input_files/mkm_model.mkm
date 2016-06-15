@@ -21,7 +21,7 @@ temperature = 450
 gas_thermo_mode = 'shomate_gas'
 
 # model attributes
-tools = ['parser']
+tools = ['parser', 'solver']
 # specify tools for model to use
 parser = 'RelativeEnergyParser'  # default
 solver = 'SteadyStateSolver'
@@ -31,7 +31,7 @@ plotter = 'EnergyProfilePlotter'
 ref_species = ['CO_g', 'CO2_g', 's']
 
 numerical_representation = 'mpmath'
-archived_variables = ['steady_state_coverage', 'rates', 'initial_guess']
+archived_variables = []
 
 #parameters for solver
 rootfinding = 'ConstrainedNewton'

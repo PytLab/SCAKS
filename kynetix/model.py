@@ -107,7 +107,7 @@ class KineticModel(object):
 
     def run_mkm(self, init_cvgs=None, relative=False, correct_energy=False,
                 solve_ode=False, fsolve=False, coarse_guess=True):
-        '''
+        """
         Function to solve Micro-kinetic model using Steady State Approxmiation
         to get steady state coverages and turnover frequencies.
 
@@ -121,50 +121,53 @@ class KineticModel(object):
 
         coarse_guess: use fsolve to do initial coverages preprocessing or not, bool
 
-        '''
+        """
         self.__logger.info('--- Solve Micro-kinetic model ---')
 
-        # parse data
+        # Get parser and solver.
+        parser = self.__parser
+        solver = self.__solver
+
+        # Parse data.
         self.__logger.info('reading data...')
         if relative:
             self.__logger.info('use relative energy directly...')
         else:
             self.__logger.info('convert relative to absolute energy...')
-        self.parser.parse_data(relative=relative)
+        parser.parse_data(relative=relative)
 
         # -- solve steady state coverages --
         self.__logger.info('passing data to solver...')
-        self.solver.get_data()
-        self.__logger.info('getting rate constants...')
-        self.solver.get_rate_constants()
-        self.__logger.info('getting rate expressions...')
-        self.solver.get_rate_expressions(self.solver.rxns_list)
+        solver.get_data()
 
-        # energy correction
-        if correct_energy:
-            self.__logger.info('free energy correction...')
-            self.solver.correct_energies()
+#        # energy correction
+#        if correct_energy:
+#            self.__logger.info('free energy correction...')
+#            self.solver.correct_energies()
 
         # solve ODE
         # !! do ODE integration AFTER passing data to solver !!
         if solve_ode:
             self.__logger.info("initial coverages = %s", str(init_cvgs))
-            self.solver.solve_ode(initial_cvgs=init_cvgs)
+            solver.solve_ode(initial_cvgs=init_cvgs)
             return
 
         # set initial guess(initial coverage)
         # if there is converged coverage in current path,
         # use it as initial guess
         if init_cvgs:
-            # check init_cvgs validity
+            # Check init_cvgs type.
             if not isinstance(init_cvgs, (tuple, list)):
-                msg = ('init_cvgs must be a list or tuple, but %s supplied.' %
-                       str(type(init_cvgs)))
+                msg = "init_cvgs must be a list or tuple, but {} received."
+                msg = msg.format(type(init_cvgs))
                 raise ParameterError(msg)
-            if len(init_cvgs) != len(self.adsorbate_names):
-                msg = ('init_cvgs must have %d elements, but %d is supplied' %
-                       (len(self.adsorbate_names), len(init_cvgs)))
+
+            # Check coverages length.
+            if len(init_cvgs) != len(self.__adsorbate_names):
+                msg = "init_cvgs must have {} elements, but {} is supplied"
+                msg = msg.format(len(self.__adsorbate_names), len(init_cvgs))
                 raise ParameterError(msg)
+
             self.__logger.info('use user-defined coverages as initial guess...')
 
         elif os.path.exists("./data.pkl"):
@@ -177,26 +180,26 @@ class KineticModel(object):
                 coarse_guess = False
             else:
                 self.__logger.info('use Boltzmann coverages as initial guess...')
-                init_cvgs = self.solver.boltzmann_coverages()
+                init_cvgs = solver.boltzmann_coverages()
 
         else:  # use Boltzmann coverage
             self.__logger.info('use Boltzmann coverages as initial guess...')
-            init_cvgs = self.solver.boltzmann_coverages()
+            init_cvgs = solver.boltzmann_coverages()
 
-        # solve steady state coverages
-        # use scipy.optimize.fsolve or not (fast but low-precision)
+        # Solve steady state coverages.
+        # Use scipy.optimize.fsolve or not (fast but low-precision).
         if fsolve:
             self.__logger.info('using fsolve to get steady state coverages...')
-            ss_cvgs = self.solver.fsolve_steady_state_cvgs(init_cvgs)
+            ss_cvgs = solver.fsolve_steady_state_cvgs(init_cvgs)
         else:
             if coarse_guess:
                 self.__logger.info('getting coarse steady state coverages...')
-                init_cvgs = self.solver.coarse_steady_state_cvgs(init_cvgs)  # coarse root
+                init_cvgs = solver.coarse_steady_state_cvgs(init_cvgs)  # coarse root
             self.__logger.info('getting precise steady state coverages...')
-            ss_cvgs = self.solver.get_steady_state_cvgs(init_cvgs)
+            ss_cvgs = solver.get_steady_state_cvgs(init_cvgs)
 
-        # get TOFs for gases
-        tofs = self.solver.get_cvg_tof(ss_cvgs)
+        # Get TOFs for gases.
+        tofs = solver.get_tof(ss_cvgs)
 
         return
 
