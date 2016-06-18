@@ -453,4 +453,3 @@ class ChemFormula(object):
         Query function for sites type.
         """
         return self.__site
-
