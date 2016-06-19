@@ -5,6 +5,7 @@ from model import models_tests
 from plotters import plotters_tests
 from parsers import parsers_tests
 from solvers import solvers_tests
+from table_makers import table_makers_tests
 from utilities import utilities_tests
 
 
@@ -14,7 +15,8 @@ def suite():
                                 solvers_tests.suite(),
                                 utilities_tests.suite(),
                                 plotters_tests.suite(),
-                                correctors_tests.suite()])
+                                correctors_tests.suite(),
+                                table_makers_tests.suite()])
     return suite
 
 
