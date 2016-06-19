@@ -56,7 +56,9 @@ class CsvMakerTest(unittest.TestCase):
         model = KineticModel(setup_file="input_files/csv_maker.mkm",
                              verbosity=logging.WARNING)
         table_maker = model.table_maker()
-        table_maker.update_table(infile="init_energy_with_formation_energy.csv", remove=False)
+        table_maker.update_table(infile="input_files/init_energy_with_formation_energy.csv",
+                                 outfile="input_files/energy.csv",
+                                 remove=False)
 
         ref_content = """species_type,species_name,DFT_energy,formation_energy,frequencies,information
 gas,CO2_g,-22.975866,0.16489600000000237,[],None
@@ -70,7 +72,7 @@ transition state,H-H_s,-184.35,-0.18092599999999948,[],None
 transition state,HCOO-H_s,-207.27,0.039835999999979776,[],None
 slab,s,-177.41,0.0,[],None
 """
-        with open("energy.csv") as f:
+        with open("input_files/energy.csv") as f:
             ret_content = f.read()
 
         self.assertEqual(ref_content, ret_content)
