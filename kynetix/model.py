@@ -610,3 +610,16 @@ class KineticModel(object):
         """
         return self.__data_file
 
+    def table_maker(self):
+        """
+        Query function for table_maker object.
+        """
+        return self.__table_maker
+
+    @return_deepcopy
+    def ref_energies(self):
+        """
+        Query function for reference energy dict.
+        """
+        return self.__ref_energies
+

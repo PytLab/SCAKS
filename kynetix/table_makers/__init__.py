@@ -1,1 +1,1 @@
-from kynetix.table_maker.csv_maker import CsvMaker
+from kynetix.table_makers.csv_maker import CsvMaker

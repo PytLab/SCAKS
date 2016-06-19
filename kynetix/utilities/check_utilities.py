@@ -60,6 +60,30 @@ def check_species_definitions(species_definitions):
 
     return species_definitions
 
+def check_ref_energies(ref_energies):
+    """
+    Check the ref_energies in setup file.
+
+    Parameters:
+    -----------
+    ref_energies: A dict of reference energies.
+
+    Return:
+    -------
+    ref_energies: The valid reference energies.
+    """
+    # Check type.
+    if not isinstance(ref_energies, dict):
+        raise SetupError("ref_energies is not a dict.")
+
+    for key, value in ref_energies.iteritems():
+        if not isinstance(key, str):
+            raise SetupError("key '{}' is not a string.".format(key))
+        if not isinstance(value, float):
+            raise SetupError("value '{}' is not a float.".format(value))
+
+    return ref_energies
+
 
 def check_string(string, string_range=None, param_name="Tested object"):
     """
@@ -95,6 +119,7 @@ rootfinding_range = ("ConstrainedNewton", "MDNewton")
 
 type_rules = {
     "rxn_expressions": (check_list_tuple, str),
+    "ref_energies": (check_ref_energies, ),
     "species_definitions": (check_species_definitions, ),
     "surface_name": (str, ),
     "temperature": (int, ),
@@ -119,5 +144,6 @@ type_rules = {
     "decimal_precision": (int, ),
     "data_file": (str, ),
     "table_maker": (check_string, table_maker_range),
+    "ref_energies": (dict, ),
 }
 

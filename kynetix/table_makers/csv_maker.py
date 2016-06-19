@@ -1,138 +1,171 @@
-import string
+import csv
 import logging
+import os
+import string
 
-from kynetix.table_makers.table_maker_base import *
 from kynetix.functions import string2symbols
+from kynetix.parsers.rxn_parser import *
+from kynetix.table_makers.table_maker_base import *
 
 
 class CsvMaker(TableMakerBase):
-    def __init__(self, owner):
-        TableMakerBase.__init__(self, owner)
-        self.logger = logging.getLogger('model.table_maker.CsvMaker')
 
-    def create_initial_table(self):
-        #create input file
-        f = open('./energy.csv', 'w')
-        f.write(self.add_lines())
-        f.close()
+    # Class variables.
+    fieldnames = ["species_type", "species_name",
+                  "DFT_energy", "formation_energy",
+                  "frequencies", "information"]
 
-    def add_lines(self):
+    def __init__(self, owner, filename="energy.csv"):
+        super(CsvMaker, self).__init__(owner)
+
+        # Set energy filename.
+        self.__filename = filename
+
+        # Set logger.
+        self.__logger = logging.getLogger('model.table_maker.CsvMaker')
+
+    def init_table(self, filename=None):
         """
-        Add lines to input files
+        Function to initialize energy table.
         """
-        gas_lines = ''
-        liquid_lines = ''
-        adsorbate_lines = ''
-        transition_lines = ''
-        site_lines = ''
+        # Set filename.
+        if filename is None:
+            filename = "init_" + self.__filename
 
-        def update_line(line_tuple):
-            row_list = [''] * 5
-            #change row list
-            for idx in range(5):
-                row_list[idx] = line_tuple[idx]
-            return ','.join(row_list) + '\n'
+        with open(filename, "wb") as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=CsvMaker.fieldnames)
 
-        #header
-        header_str = ','.join(self.header) + '\n'
-        #species part
-        if self.species_definitions:
-            for species in self.species_definitions:
-                if self.species_definitions[species]['type'] == 'site':
-                    surface_name = self.surface_name
-                    site_name = self.species_definitions[species]['site_name']
-                    species_name = 'slab'
-                elif self.species_definitions[species]['type'] == 'gas':
-                    surface_name = 'None'
-                    site_name = 'gas'
-                    species_name = self.species_definitions[species]['name']
-                elif self.species_definitions[species]['type'] == 'liquid':
-                    surface_name = 'None'
-                    site_name = 'liquid'
-                    species_name = self.species_definitions[species]['name']
-                else:  # for adsorbate & transition state
-                    surface_name = self.surface_name
-                    site = self.species_definitions[species]['site']
-                    site_name = self.species_definitions[site]['site_name']
-                    species_name = self.species_definitions[species]['name']
+            # Write header.
+            writer.writeheader()
 
-                DFT_energy = '0.0'
-                information = 'None'
-                line_tuple = (surface_name, site_name, species_name,
-                              DFT_energy, information)
+            # Gas species.
+            for gas in self._owner.gas_names():
+                row = {"species_type": "gas",
+                       "species_name": gas,
+                       "DFT_energy": "0.0",
+                       "formation_energy": "0.0",
+                       "frequencies": [],
+                       "information": "None"}
+                writer.writerow(row)
 
-                if self.species_definitions[species]['type'] == 'adsorbate':
-                    adsorbate_lines += update_line(line_tuple)
-                elif self.species_definitions[species]['type'] == 'transition_state':
-                    transition_lines += update_line(line_tuple)
-                elif self.species_definitions[species]['type'] == 'site':
-                    site_lines += update_line(line_tuple)
-                elif self.species_definitions[species]['type'] == 'gas':
-                    gas_lines += update_line(line_tuple)
-                elif self.species_definitions[species]['type'] == 'liquid':
-                    liquid_lines += update_line(line_tuple)
+            # Liquid names.
+            for liquid in self._owner.liquid_names():
+                row = {"species_type": "liquid",
+                       "species_name": liquid,
+                       "DFT_energy": "0.0",
+                       "formation_energy": "0.0",
+                       "frequencies": [],
+                       "information": "None"}
+                writer.writerow(row)
 
-        return header_str + gas_lines + liquid_lines + site_lines + \
-            adsorbate_lines + transition_lines
+            # Intermediates.
+            for intermediate in self._owner.adsorbate_names():
+                row = {"species_type": "intermediate",
+                       "species_name": intermediate,
+                       "DFT_energy": "0.0",
+                       "formation_energy": "0.0",
+                       "frequencies": [],
+                       "information": "None"}
+                writer.writerow(row)
 
-    def get_new_row(self, row_str, mode):
+            # Transition states.
+            for ts in self._owner.transition_state_names():
+                row = {"species_type": "transition state",
+                       "species_name": ts,
+                       "DFT_energy": "0.0",
+                       "formation_energy": "0.0",
+                       "frequencies": [],
+                       "information": "None"}
+                writer.writerow(row)
+
+            # Slab.
+            for slab in self._owner.site_names():
+                row = {"species_type": "slab",
+                       "species_name": slab,
+                       "DFT_energy": "0.0",
+                       "formation_energy": "0.0",
+                       "frequencies": [],
+                       "information": "None"}
+                writer.writerow(row)
+
+        self.__logger.info("Initialize data table - '{}'".format(filename))
+
+    def __get_formation_energy(self, species_name, raw_energy):
         """
-        Analyse each line of 'energy.csv',
-        return a new line containing 'generalized formation energy'.
+        Private function to get generalized formation energy of a species.
         """
-        striped_str = string.whitespace
-        row_list = row_str.strip(string.whitespace).split(',')
-        site_name, species_name, energy = \
-            row_list[1], row_list[2], float(row_list[3])
-        if species_name == 'slab':
-            element_list = []
-        else:
-            species_name = species_name.replace('-', '')
-            element_list = string2symbols(species_name)
+        ref_energies = self._owner.ref_energies()
+        energy = raw_energy
 
-        if site_name == 'gas' or site_name == 'liquid':
-            for element in element_list:
-                energy -= self.ref_dict[element]
-        else:  # for adsorbates, transition_state, slab
-            for element in element_list + [site_name]:
-                energy -= self.ref_dict[element]
-        #generate a new line
-        if mode == 'add':
-            row_list.insert(4, str(round(energy, 3)))
-        if mode == 'update':
-            row_list[4] = str(round(energy, 3))
-        new_row_str = ','.join(row_list)
-        return new_row_str
+        # Single site.
+        if species_name in self._owner.site_names():
+            energy -= ref_energies[species_name]
+            return energy
 
-    def create_new_table(self, mode):
+        # Get formula object.
+        formula = ChemFormula(species_name)
+        element_dict = formula.get_elements_dict()
+        site_dict = formula.get_sites_dict()
+
+        # Elements.
+        for element, n in element_dict.iteritems():
+            energy -= float(n)*float(ref_energies[element])
+
+        # Sites.
+        for site, n in site_dict.iteritems():
+            # Ignore gas and liquid.
+            if site in ("g", "l"):
+                continue
+
+            energy -= float(n)*float(ref_energies[site])
+
+        return energy
+
+    def update_table(self, infile=None, outfile=None, remove=True):
         """
-        Read initial input file, calculate generalized formation energy.
-        Create a new input file containing
-        a column of generalized formation energy.
+        Function to update initial table.
+
+        Parameters:
+        -----------
+        infile: The name of file read in, str.
+
+        outfile: The name of output file, str.
+
+        remove: Remove the infile or not, bool.
         """
-        #get old table content
-        f = open('./energy.csv', 'rU')
-        lines_list = f.readlines()
-        f.close()
+        # Check infile existance.
+        if infile is None:
+            infile = "init_" + self.__filename
 
-        content_str = ''
+        if not os.path.exists(infile):
+            raise IOError("{} not found in current path.".format(infile))
 
-        #modify header
-        header_str = lines_list[0].strip(string.whitespace)
-        if mode == 'add':
-            header_list = header_str.split(',')
-            header_list.insert(4, 'formation_energy')
-            new_header_str = ','.join(header_list) + '\n'
-            content_str += new_header_str
-        if mode == 'update':
-            content_str += header_str + '\n'
+        # Set outfile.
+        if outfile is None:
+            outfile = self.__filename
 
-        #modify species part
-        for row_str in lines_list[1:]:
-            new_row_str = self.get_new_row(row_str, mode=mode) + '\n'
-            content_str += new_row_str
+        # Reader.
+        csvin = open(infile)
+        reader = csv.DictReader(csvin)
 
-        #create new input file
-        f = open('./energy.csv', 'w')
-        f.write(content_str)
-        f.close()
+        # Writer.
+        csvout = open(outfile, "wb")
+        writer = csv.DictWriter(csvout, fieldnames=CsvMaker.fieldnames)
+
+        fieldnames = reader.fieldnames
+        writer.writeheader()
+
+        for row in reader:
+            species = row["species_name"]
+            raw_energy = float(row["DFT_energy"])
+            row["formation_energy"] = self.__get_formation_energy(species, raw_energy)
+            writer.writerow(row)
+
+        # Close files.
+        csvin.close()
+        csvout.close()
+
+        # Remove initial table.
+        if remove:
+            os.remove(infile)
+
