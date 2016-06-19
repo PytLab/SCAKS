@@ -10,7 +10,7 @@ ref_energies = {}
 ref_energies['H'] = 0.5 * -6.759074
 ref_energies['O'] = -14.22 - 2*ref_energies['H']
 ref_energies['C'] = -29.899836 - 2*ref_energies['H'] - 2*ref_energies['O']
-ref_energies['111'] = -177.41
+ref_energies['s'] = -177.41
 
 # species information
 species_definitions = {}

@@ -1,8 +1,11 @@
 species_type,species_name,DFT_energy,formation_energy,frequencies,information
 gas,CO2_g,0.0,0.0,[],None
-gas,CO_g,0.0,0.0,[],None
-gas,O2_g,0.0,0.0,[],None
-intermediate,CO_s,0.0,0.0,[],None
-intermediate,O_s,0.0,0.0,[],None
-transition state,CO-O_s,0.0,0.0,[],None
+gas,H2_g,0.0,0.0,[],None
+gas,HCOOH_g,0.0,0.0,[],None
+intermediate,COO_s,0.0,0.0,[],None
+intermediate,HCOO_s,0.0,0.0,[],None
+intermediate,H_s,0.0,0.0,[],None
+transition state,H-COO_s,0.0,0.0,[],None
+transition state,H-H_s,0.0,0.0,[],None
+transition state,HCOO-H_s,0.0,0.0,[],None
 slab,s,0.0,0.0,[],None
