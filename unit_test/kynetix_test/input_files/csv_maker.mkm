@@ -1,0 +1,34 @@
+rxn_expressions = [
+    'HCOOH_g + 2*_s <-> HCOO-H_s + *_s -> HCOO_s + H_s',
+    'HCOO_s + *_s <-> H-COO_s + *_s -> COO_s + H_s',
+    'COO_s -> CO2_g + *_s',
+    '2H_s <-> H-H_s + *_s -> H2_g + 2*_s',
+]
+
+#reference dict for generating 'generalized formation energy'
+ref_energies = {}
+ref_energies['H'] = 0.5 * -6.759074
+ref_energies['O'] = -14.22 - 2*ref_energies['H']
+ref_energies['C'] = -29.899836 - 2*ref_energies['H'] - 2*ref_energies['O']
+ref_energies['s'] = -177.41
+
+# species information
+species_definitions = {}
+species_definitions['HCOOH_g'] = {'pressure': 0.06}  # define the gas pressures
+species_definitions['H2_g'] = {'pressure': 0.03}
+species_definitions['CO2_g'] = {'pressure': 0.03}
+
+species_definitions['s'] = {'site_name': '111', 'total': 1.0, 'type': 'site'}
+
+# surface info
+surface_name = 'RuO2'
+
+temperature = 450
+
+gas_thermo_mode = 'shomate_gas'
+
+# model attributes
+tools = ['parser', 'table_maker']
+# specify tools for model to use
+table_maker = 'CsvMaker'
+parser = 'CsvParser'  # default

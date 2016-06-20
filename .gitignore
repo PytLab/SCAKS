@@ -67,3 +67,13 @@ extensions/unittest/*.xml
 *.swp
 *un~
 *swo
+
+# log file
+*.log
+
+# ctags file.
+tags
+
+# data file.
+*.pkl
+init_energy.csv

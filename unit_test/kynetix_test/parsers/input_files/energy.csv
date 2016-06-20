@@ -1,0 +1,9 @@
+species_type,species_name,DFT_energy,formation_energy,frequencies,information
+gas,CO2_g,-32.96253087,2.45,[1333 2349 667 667],None
+gas,O2_g,-496.4113942,5.42,[1580],None
+gas,CO_g,-626.6119705,2.74,[2170],None
+intermediate,O_s,-115225.1065,1.55,[],None
+intermediate,CO_s,-115390.4456,1.55,[],None
+transition state,CO-O_s,-115241.8617,4.2,[],None
+transition state,O-O_s,-114976.7397,5.34,[],None
+slab,s,-114762.2548,0,[],None
