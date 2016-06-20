@@ -12,7 +12,6 @@ except ImportError:
     print "!!!                                                   !!!"
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
-from kynetix import KineticCoreComponent
 from kynetix.errors.error import *
 from kynetix.database.thermo_data import kB_eV
 from kynetix.database.lattice_data import *
