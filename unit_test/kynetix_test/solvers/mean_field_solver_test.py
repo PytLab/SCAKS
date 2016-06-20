@@ -188,10 +188,10 @@ class MeanFieldSolverTest(unittest.TestCase):
         # Check rate constants.
         ref_forward_rate_constants = (mpf('9376477746560.0'),
                                       mpf('9376477746560.0'),
-                                      mpf('0.09389759708665'))
-        ref_reverse_rate_constants = (mpf('30395.72540021'),
-                                      mpf('2.542951527174e-17'),
-                                      mpf('399.2961611934'))
+                                      mpf('0.09389759708756'))
+        ref_reverse_rate_constants = (mpf('30395.7254014'),
+                                      mpf('2.542951526972e-17'),
+                                      mpf('399.296161212'))
         ret_forward_rate_constants, ret_reverse_rate_constants = solver.get_rate_constants()
         self.assertTupleEqual(ref_forward_rate_constants, ret_forward_rate_constants)
         self.assertTupleEqual(ref_reverse_rate_constants, ret_reverse_rate_constants)
@@ -292,14 +292,14 @@ class MeanFieldSolverTest(unittest.TestCase):
         # Check.
         coverages = (0.5, 0.5)
         ret_rates = solver.get_rates(coverages)
-        ref_rates = ((mpf('0.0'), mpf('0.0'), mpf('0.02347439927166')),
-                     (mpf('15197.8627001'), mpf('6.357378817934e-18'), mpf('0.0')))
+        ref_rates = ((mpf('0.0'), mpf('0.0'), mpf('0.02347439927189')),
+                     (mpf('15197.8627007'), mpf('6.357378817428e-18'), mpf('0.0')))
         self.assertTupleEqual(ref_rates, ret_rates)
 
         # Check net rates.
-        ref_net_rates = (mpf('-15197.8627001'),
-                         mpf('-6.357378817934e-18'),
-                         mpf('0.02347439927166'))
+        ref_net_rates = (mpf('-15197.8627007'),
+                         mpf('-6.357378817429e-18'),
+                         mpf('0.02347439927189'))
         ret_net_rates = solver.get_net_rates(coverages)
         self.assertTupleEqual(ref_net_rates, ret_net_rates)
         # }}}
@@ -317,7 +317,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         solver.get_data()
         rfs, rrs = solver.get_rates((0.2, 0.5))
 
-        ref_reversibilities = [2.1611331548106183e-09, 2.260045114947677e-29, 0.0]
+        ref_reversibilities = [2.1611331548919335e-09, 2.260045114764006e-29, 0.0]
         ret_reversibilities = solver.get_reversibilities(rfs, rrs)
 
         self.assertListEqual(ref_reversibilities, ret_reversibilities)

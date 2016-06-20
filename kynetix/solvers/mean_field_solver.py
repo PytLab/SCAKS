@@ -321,7 +321,8 @@ class MeanFieldSolver(SolverBase):
 
     def get_rate_constants(self, relative_energies=None):
         """
-        Function to get rate constants for all elementary reactions.
+        Function to get rate constants for all elementary reactions
+        using Transition State Theory.
 
         Parameters:
         -----------
@@ -346,15 +347,13 @@ class MeanFieldSolver(SolverBase):
             raise ParameterError(msg)
 
         # Calculate rate constants.
-        kB, h, T = [self._mpf(constant) for constant in
-                    [self._owner.kB(), self._owner.h(), self._owner.temperature()]]
-        prefactor = kB*T/h
+        T = self._owner.temperature()
         kfs, krs = [], []
         Gafs, Gars = relative_energies["Gaf"], relative_energies["Gar"]
 
         for Gaf, Gar in zip(Gafs, Gars):
-            kf = prefactor*self._math.exp(-Gaf/(kB*T))
-            kr = prefactor*self._math.exp(-Gar/(kB*T))
+            kf = self._mpf(self.get_kTST(Gaf, T))
+            kr = self._mpf(self.get_kTST(Gar, T))
             kfs.append(kf)
             krs.append(kr)
 
