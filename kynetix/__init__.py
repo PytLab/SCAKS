@@ -31,41 +31,6 @@ class ModelShell(object):
         self._owner = owner
         self._archived_data_dict = {}
 
-    def split_species(self, species_str):
-        '''
-        Split species_str to number(int) and species_name(str)
-
-        Parameters:
-        -----------
-        species_str: species string, e.g. '2CH4_g', str
-        '''
-        regex_dict = self._owner.parser().regex_dict()
-        # for species adsorbated on surface
-        if not '*' in species_str:
-            m = regex_dict['species'][0].search(species_str)
-
-            # check successful match or not
-            if not m:
-                msg = 'Unsuccessful spit for species: %s' % species_str
-                raise SpeciesError(msg)
-
-            if not m.group(1):
-                stoichiometry = 1
-            else:
-                stoichiometry = int(m.group(1))
-            species_name = m.group(2) + '_' + m.group(3) + m.group(4)
-            return stoichiometry, species_name
-
-        # for site
-        else:
-            m = regex_dict['empty_site'][0].search(species_str)
-            if not m.group(1):
-                stoichiometry = 1
-            else:
-                stoichiometry = int(m.group(1))
-            site_name = '*_' + m.group(2)
-            return stoichiometry, site_name
-
     def update_defaults(self, defaults):
         '''
         Update values in defaults dict,
@@ -78,8 +43,7 @@ class ModelShell(object):
 
         for parameter_name in defaults:
             if hasattr(self._owner, parameter_name):
-                defaults[parameter_name] = \
-                    getattr(self._owner, parameter_name)
+                defaults[parameter_name] = getattr(self._owner, parameter_name)
 
         return defaults
 
@@ -100,34 +64,6 @@ class ModelShell(object):
             if self._archived_data_dict:
                 with open(self._owner.data_file(), 'wb') as f:
                     cPickle.dump(self._archived_data_dict, f)
-
-    def elementary_rxn_list2str(self, elementary_rxn_list):
-        '''
-        Convert elementary_rxn_list to rxn_expression.
-        '''
-#        try:
-#            idx = self._owner.elementary_rxns_list.index(elementary_rxn_list)
-#        except ValueError:
-#            raise ReactionEquationError('%s is not in elementary_rxns_list' %
-#                                        str(elementary_rxn_list))
-#        rxn_expression = self._owner.rxn_expressions[idx]
-
-        def state2str(state):
-            return ' + '.join(state)
-
-        state_strs = []
-        for state in elementary_rxn_list:
-            state_str = state2str(state)
-            state_strs.append(state_str)
-
-        if len(state_strs) == 3:
-            IS, TS, FS = state_strs
-            rxn_expression = IS + ' <-> ' + TS + ' -> ' + FS
-        elif len(state_strs) == 2:
-            IS, FS = state_strs
-            rxn_expression = IS + ' -> ' + FS
-
-        return rxn_expression
 
     @staticmethod
     def write2file(filename, line):

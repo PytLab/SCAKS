@@ -230,7 +230,7 @@ class SolverBase(KineticCoreComponent):
             self._has_absolute_energy = True
 
     def _get_state_energy(self, state):
-        """ 
+        """
         Protected helper function to get state energy.
 
         Parameters:
@@ -1324,4 +1324,3 @@ class SolverBase(KineticCoreComponent):
         Query functions for rate expressions for all elementary reactions.
         """
         return self._rate_expressions
-
