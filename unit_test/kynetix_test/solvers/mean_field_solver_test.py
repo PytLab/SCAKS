@@ -10,7 +10,7 @@ from kynetix.parsers.rxn_parser import *
 from kynetix.solvers import *
 
 
-class SolverBaseTest(unittest.TestCase):
+class MeanFieldSolverTest(unittest.TestCase):
 
     def setUp(self):
         # Test case setting.
@@ -26,7 +26,7 @@ class SolverBaseTest(unittest.TestCase):
 
         # Check the parser class and base class type.
         self.assertTrue(isinstance(solver, SteadyStateSolver))
-        self.assertEqual(solver.__class__.__base__.__name__, "SolverBase")
+        self.assertEqual(solver.__class__.__base__.__name__, "MeanFieldSolver")
 
         # Test attributes query.
 
@@ -873,6 +873,6 @@ class SolverBaseTest(unittest.TestCase):
         self.assertTupleEqual(ref_tof, ret_tof)
 
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(SolverBaseTest)
+    suite = unittest.TestLoader().loadTestsFromTestCase(MeanFieldSolverTest)
     unittest.TextTestRunner(verbosity=2).run(suite)
 

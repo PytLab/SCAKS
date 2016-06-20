@@ -26,7 +26,7 @@ class SteadyStateSolverTest(unittest.TestCase):
 
         # Check the parser class and base class type.
         self.assertTrue(isinstance(solver, SteadyStateSolver))
-        self.assertEqual(solver.__class__.__base__.__name__, "SolverBase")
+        self.assertEqual(solver.__class__.__base__.__name__, "MeanFieldSolver")
 
         # Test attributes query.
 

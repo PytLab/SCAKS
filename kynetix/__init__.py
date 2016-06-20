@@ -1,10 +1,8 @@
 import cPickle
 import time
-from math import exp, pi, sqrt
 
 from kynetix.functions import *
 from kynetix.errors.error import *
-from kynetix.database.thermo_data import kB_J, kB_eV, h_eV
 
 
 __version__ = '0.6.5'
@@ -70,65 +68,3 @@ class ModelShell(object):
         f = open(filename, 'a')
         f.write(line)
         f.close()
-
-
-class KineticCoreComponent(ModelShell):
-    '''
-    Base class to be herited by core components of micro kinetic model,
-    e.g. solver, simulator...
-    '''
-
-    def __init__(self, owner):
-        ModelShell.__init__(self, owner)
-
-    @staticmethod
-    def get_kTST(Ga, T):
-        '''
-        Function to get rate constants according to Transition State Theory.
-
-        Parameters:
-        -----------
-        Ga: free energy barrier, float.
-
-        T: thermodynamics constants, floats.
-        '''
-
-        kTST = kB_eV*T/h_eV*exp(-Ga/(kB_eV*T))
-
-        return kTST
-
-    @staticmethod
-    def get_kCT(Ea, Auc, act_ratio, p, m, T, f=1.0):
-        '''
-        Function to get rate constant/collision rate according to Collision Theory.
-
-        Parameters:
-        -----------
-        Ea: energy barrier( NOT free energy barrier), float.
-
-        Auc: area of unitcell (m^-2), float.
-
-        act_ratio: area of active sites/area of unitcell, float(<= 1.0).
-
-        p: partial pressure of gas, float.
-
-        m: absolute mass of molecule (kg), float.
-
-        f: factor accounts for a further reduction in the sticking probability,
-           if particle with certain initial states are not efficiently steered
-           along the MEP, and reflected by a higher barrier, float(<= 1.0).
-
-        T: temperature (K), float.
-        '''
-        # check parameters
-        if act_ratio > 1.0:
-            msg = 'active area ratio must be less than 1.0'
-            raise ParameterError(msg)
-        if f > 1.0:
-            msg = 'factor f must be less than 1.0'
-            raise ParameterError(msg)
-
-        S = f*act_ratio*exp(-Ea/(kB_eV*T))      # sticking coefficient
-        kCT = S*(p*Auc)/(sqrt(2*pi*m*kB_J*T))  # rate
-
-        return kCT
