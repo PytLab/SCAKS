@@ -53,15 +53,19 @@ class SolverBase(ModelShell):
 
         T: temperature (K), float.
         """
-        # check parameters
+        # Check parameters.
         if act_ratio > 1.0:
-            msg = 'active area ratio must be less than 1.0'
-            raise ParameterError(msg)
-        if f > 1.0:
-            msg = 'factor f must be less than 1.0'
+            msg = "active area ratio must be less than 1.0"
             raise ParameterError(msg)
 
-        S = f*act_ratio*exp(-Ea/(kB_eV*T))      # sticking coefficient
-        kCT = S*(p*Auc)/(sqrt(2*pi*m*kB_J*T))  # rate
+        if f > 1.0:
+            msg = "factor f must be less than 1.0"
+            raise ParameterError(msg)
+
+        # Sticking coefficient.
+        S = f*act_ratio*exp(-Ea/(kB_eV*T))
+
+        # Rate constant.
+        kCT = S*(p*Auc)/(sqrt(2*pi*m*kB_J*T))
 
         return kCT
