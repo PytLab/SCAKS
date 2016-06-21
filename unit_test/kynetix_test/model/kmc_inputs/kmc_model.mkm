@@ -8,8 +8,8 @@ rxn_expressions = [
 # Gas pressure.
 species_definitions = {}
 species_definitions['CO_g'] = {'pressure': 0.01}    # define the gas pressures
-species_definitions['O2_g'] = {'pressure': }  # 0.094
-species_definitions['CO2_g'] = {'pressure': 0.00}
+species_definitions['O2_g'] = {'pressure': 0.2}  # 0.094
+species_definitions['CO2_g'] = {'pressure': 0.01}
 
 # Site info.
 species_definitions['b'] = {'site_name': 'bridge', 'type': 'site', 'total': 0.5}
@@ -36,14 +36,13 @@ active_ratio = 1.0        # Ast / Auc
 
 # Supercell.
 repetitions = (6, 6, 1)   # (x, y, z)
-periodic = True           # periodic boundary condition
+periodic = (True, True, False)           # periodic boundary condition
 
 
 # KMC model attributes.
 # specify tools for model to use
-tools = ['parser', 'solver', 'corrector']
-parser = 'KMCParser'  # default
-solver = 'KMCLibSolver'
+tools = ['parser']
+parser = 'RelativeEnergyParser'  # default
 
 # KMC loop control parameters.
 #kmc_continue = True
@@ -54,17 +53,13 @@ random_generator = 'MT'              # type of pseudo random number generator, '
 analysis = []                        # ['CoveragesAnalysis', 'TOFAnalysis']
 analysis_interval = 500
 analysis_dump_interval = 10
-TOF_indices = (0, 1, 2)  # reactions do TOF anlaysis
-TOF_start_step = 0   # step number when start to do TOF analysis
-cvgs_convergency = 1e-3
 
 # Grid plotting control parameters.
-color_dict = dict(Vac='#FFFFFF',
-                  O='#CD5555',
+color_dict = dict(V='#FFFFFF',
+                  O_s='#CD5555',
                   CO='#363636')
 
 circle_attrs = dict(marker='s',
                     alpha=0.5,
-                    antialiased=True,
+                    antialiased=True,)
 #                    edgecolor='#FFFFFF')
-

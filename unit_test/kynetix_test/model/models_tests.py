@@ -1,11 +1,13 @@
 import unittest
 
 from mkm_model_test import MicroKineticModelTest
+from kmc_model_test import KMCModelTest
 
 
 def suite():
     suite = unittest.TestSuite(
-        [unittest.TestLoader().loadTestsFromTestCase(MicroKineticModelTest)]        
+        [unittest.TestLoader().loadTestsFromTestCase(MicroKineticModelTest),        
+         unittest.TestLoader().loadTestsFromTestCase(KMCModelTest)]        
     )
     
     return suite

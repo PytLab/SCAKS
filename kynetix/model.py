@@ -351,13 +351,11 @@ class KineticModel(object):
                     pyfile = key + 's'
                 else:
                     pyfile = key
-                basepath = os.path.dirname(
-                    inspect.getfile(inspect.currentframe()))
+                basepath = os.path.dirname(inspect.getfile(inspect.currentframe()))
                 if basepath not in sys.path:
                     sys.path.append(basepath)
                 sublocs = {}
-                _temp = \
-                    __import__(pyfile, globals(), sublocs, [locs[key]])
+                _temp = __import__(pyfile, globals(), sublocs, [locs[key]])
                 tool_instance = getattr(_temp, locs[key])(owner=self)
                 setattr(self, "_" + self.__class_name + "__" + key, tool_instance)
                 self.__logger.info('{} = {}'.format(key, locs[key]))
@@ -635,4 +633,101 @@ class KineticModel(object):
         Query function for reference energy dict.
         """
         return self.__ref_energies
+
+    # ------------------------------------
+    # KMC Parameters query functions.
+
+    @return_deepcopy
+    def cell_vectors(self):
+        """
+        Query function for cell base vectors.
+        """
+        return self.__cell_vectors
+
+    @return_deepcopy
+    def basis_sites(self):
+        """
+        Query function for basis sites.
+        """
+        return self.__basis_sites
+
+    def unitcell_area(self):
+        """
+        Query function for area of unitcell.
+        """
+        return self.__unitcell_area
+
+    def active_ratio(self):
+        """
+        Query function for active ratio(Ast/Auc).
+        """
+        return self.__active_ratio
+
+    def repetitions(self):
+        """
+        Query function for lattice repetitions.
+        """
+        return self.__repetitions
+
+    def periodic(self):
+        """
+        Query function for lattice periodic.
+        """
+        return self.__periodic
+
+    def nstep(self):
+        """
+        Query function for number of kmc step.
+        """
+        return self.__nstep
+
+    def random_seed(self):
+        """
+        Query function for random seed.
+        """
+        return self.__seed
+
+    def trajectory_dump_interval(self):
+        """
+        Query function for trajectory dump interval.
+        """
+        return self.__trajectory_dump_interval
+
+    def random_generator(self):
+        """
+        Query function for random generator name.
+        """
+        return self.__random_generator
+
+    def analysis(self):
+        """
+        Query function for analysis names.
+        """
+        return self.__analysis
+
+    def analysis_interval(self):
+        """
+        Query function for analysis interval.
+        """
+        return self.__analysis_interval
+
+    def analysis_dump_interval(self):
+        """
+        Query function for analysis dump interval.
+        """
+        return self.__analysis_dump_interval
+
+    @return_deepcopy
+    def color_dict(self):
+        """
+        Query function for color dict for elements on surface.
+        """
+        return self.__color_dict
+
+    @return_deepcopy
+    def circle_attrs(self):
+        """
+        Query function for circle attributes for circle plotting.
+        """
+        return self.__circle_attrs
 

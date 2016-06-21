@@ -145,5 +145,20 @@ type_rules = {
     "data_file": (str, ),
     "table_maker": (check_string, table_maker_range),
     "ref_energies": (dict, ),
+
+    # KMC parameters.
+    "cell_vectors": (check_list_tuple, list),
+    "basis_sites": (check_list_tuple, list),
+    "unitcell_area": (float, ),
+    "active_ratio": (float, ),
+    "repetitions": (check_list_tuple, int),
+    "periodic": (check_list_tuple, bool),
+    "nstep": (int, ),
+    "seed": (int, ),
+    "random_generator": (str, ),
+    "analysis": (check_list_tuple, str),
+    "analysis_interval": (int, ),
+    "color_dict": (dict, ),
+    "circle_attrs": (dict, ),
 }
 
