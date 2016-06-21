@@ -291,7 +291,7 @@ class RelativeEnergyParser(ParserBase):
             self.__has_relative_energy = True
         else:
             raise IOError(("No relative energy was read, " +
-                           "please check the '{}'").format(self.__filename))
+                           "please check the '{}'").format(filename))
 
         # Get relative energies.
         relative_energies = self.__get_relative_from_relative()
