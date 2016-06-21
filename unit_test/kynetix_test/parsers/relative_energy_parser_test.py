@@ -61,8 +61,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
 
             # Set variables in data file as attr of parser
             for key in locs:
-                attribute_name = mangled_name(parser, key)
-                setattr(parser, attribute_name, locs[key])
+                setattr(parser, "_" + key, locs[key])
         else:
             raise IOError("{} is not found.".format(filename))
 
@@ -118,8 +117,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
 
             # Set variables in data file as attr of parser
             for key in locs:
-                attribute_name = mangled_name(parser, key)
-                setattr(parser, attribute_name, locs[key])
+                setattr(parser, "_" + key, locs[key])
         else:
             raise IOError("{} is not found.".format(filename))
 
@@ -166,10 +164,8 @@ class RelativeEnergyParserTest(unittest.TestCase):
                                          'total': 1.0,
                                          'type': 'site'}}
 
-        self.assertTrue(hasattr(parser, "_RelativeEnergyParser__Ga"))
-        self.assertTrue(hasattr(parser, "_RelativeEnergyParser__dG"))
-        self.assertFalse(hasattr(parser, "_RelativeEnergyParser__Ea"))
-        self.assertFalse(hasattr(parser, "_RelativeEnergyParser__dE"))
+        self.assertTrue(hasattr(parser, "_Ga"))
+        self.assertTrue(hasattr(parser, "_dG"))
 
         self.assertDictEqual(ref_species_definitions, model.species_definitions())
         self.assertTrue(model.has_absolute_energy())
