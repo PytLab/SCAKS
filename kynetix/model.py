@@ -5,7 +5,6 @@ import logging.config
 import os
 import sys
 
-
 from kynetix.database.thermo_data import kB_eV, h_eV
 from kynetix.errors.error import *
 from kynetix.functions import *
@@ -304,7 +303,21 @@ class KineticModel(object):
             if key in self.__tools:
                 continue
             setattr(self, "_" + self.__class_name + "__" + key, locs[key])
-            self.__logger.info('{} = {}'.format(key, str(locs[key])))
+
+            # Output info.
+            specials = ("rxn_expressions", "species_definitions")
+            if key not in specials:
+                self.__logger.info('{} = {}'.format(key, str(locs[key])))
+
+            # If it is a iterable, loop to output.
+            else:
+                self.__logger.info("{} =".format(key))
+                if type(locs[key]) is dict:
+                    for k, v in locs[key].iteritems():
+                        self.__logger.info("        {}: {}".format(k, v))
+                else:
+                    for item in locs[key]:
+                        self.__logger.info("        {}".format(item))
 
         # assign parser ahead to provide essential attrs for other tools
         self.__logger.info('instantiate {}'.format(str(locs['parser'])))
