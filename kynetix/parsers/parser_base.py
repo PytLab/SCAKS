@@ -246,9 +246,10 @@ class ParserBase(ModelShell):
         # If check passed, return.
         return total_rxn_equation
 
-    def get_molecular_mass(self, species_name, absolute=False):
-        '''
-        Function to get relative/absolute molecular mass.
+    @staticmethod
+    def get_molecular_mass(species_name, absolute=False):
+        """
+        Static function to get relative/absolute molecular mass.
 
         Parameters:
         -----------
@@ -262,7 +263,7 @@ class ParserBase(ModelShell):
         >>> 16.04246
         >>> m.parser.get_molecular_mass('CH4', absolute=True)
         >>> 2.6639131127638393e-26
-        '''
+        """
         elements = string2symbols(species_name)
 
         # get molecular total relative mass
