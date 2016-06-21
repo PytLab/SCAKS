@@ -86,6 +86,58 @@ class CheckUtilitiesTest(unittest.TestCase):
                                 "No pressure info for gas species CO_g.",
                                 check_species_definitions,
                                 species_definitions)
+
+    def test_check_process_dict(self):
+        " Test process dict can be checked correctly. "
+
+        # Check keys.
+        process = {"reaction": "CO_g + *_t -> CO_t",
+                   "description": "CO adsorption at top site.",
+                   "elements_before": ["V"],
+                   "elements_after": ["C"],
+                   "basis_sites": [0]}
+
+        self.assertRaisesRegexp(SetupError,
+                                r"^key '\w+' is not in process_dict",
+                                check_process_dict,
+                                process)
+
+        # Check reaction string.
+        process = {"reaction": ["CO_g + *_t -> CO_t"],
+                   "description": "CO adsorption at top site.",
+                   "coordinates": [[0.0, 0.0, 0.0]],
+                   "elements_before": ["V"],
+                   "elements_after": ["C"],
+                   "basis_sites": [0]}
+
+        self.assertRaisesRegexp(SetupError,
+                                r"^reaction must be a string.$",
+                                check_process_dict,
+                                process)
+
+        # Check coordinates.
+        process = {"reaction": "CO_g + *_t -> CO_t",
+                   "description": "CO adsorption at top site.",
+                   "coordinates": [[0.0, 0.0]],
+                   "elements_before": ["V"],
+                   "elements_after": ["C"],
+                   "basis_sites": [0]}
+
+        self.assertRaisesRegexp(SetupError,
+                                r"must have 3 entries.$",
+                                check_process_dict,
+                                process)
+
+        # Check elements.
+        process = {"reaction": "CO_g + *_t -> CO_t",
+                   "description": "CO adsorption at top site.",
+                   "coordinates": [[0.0, 0.0, 0.0]],
+                   "elements_before": ["V", "V"],
+                   "elements_after": ["C"],
+                   "basis_sites": [0]}
+
+        self.assertRaisesRegexp(SetupError, r"^Lengths of", check_process_dict, process)
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(CheckUtilitiesTest)
     unittest.TextTestRunner(verbosity=2).run(suite)

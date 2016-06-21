@@ -110,6 +110,54 @@ def check_string(string, string_range=None, param_name="Tested object"):
 
     return string
 
+def check_process_dict(process_dict):
+    """
+    Check if the process dict is correct.
+
+    Return:
+    -------
+    The valid process dict.
+    """
+    # Check keys.
+    essential_keys = ("reaction", "coordinates", "elements_before",
+                      "elements_after", "basis_sites")
+    for key in essential_keys:
+        if key not in process_dict:
+            msg = "key '{}' is not in process_dict {}".format(key, process_dict.keys())
+            raise SetupError(msg)
+
+    # Check reaction.
+    if not isinstance(process_dict["reaction"], str):
+        msg = "reaction must be a string."
+        raise SetupError(msg)
+
+    # Check coordinates.
+    check_list_tuple(process_dict["coordinates"],
+                     entry_type=list,
+                     param_name="coordinates")
+
+    for coord in process_dict["coordinates"]:
+        check_list_tuple(coord, float, coord)
+        if len(coord) != 3:
+            msg = "{} must have 3 entries.".format(coord)
+            raise SetupError(msg)
+
+    # Check elements.
+    for key in ["elements_before", "elements_after"]:
+        check_list_tuple(process_dict[key], str, key)
+
+        # Check length.
+        if len(process_dict[key]) != len(process_dict["coordinates"]):
+            msg = "Lengths of {} and {} are different."
+            msg = msg.format(process_dict[key], process_dict["coordinates"])
+            raise SetupError(msg)
+
+    # Check basis sites.
+    check_list_tuple(process_dict["basis_sites"], int, "basis_site")
+
+    # All tests passed, return.
+    return process_dict
+
 table_maker_range = ("CsvMaker", )
 parsers_range = ("RelativeEnergyParser", "CsvParser", "KMCParser")
 solvers_range = ("KMCSolver", "SteadyStateSolver", "QuasiEquilibriumSolver")
