@@ -22,8 +22,8 @@ class RelativeEnergyParser(ParserBase):
         self.__G_dict = {}
 
         # Flags.
-        self.__has_relative_energy = False
-        self.__has_absolute_energy = False
+        self._has_relative_energ= False
+        self._has_absolute_energy = False
 
     def __chk_data_validity(self):
         """
@@ -288,7 +288,7 @@ class RelativeEnergyParser(ParserBase):
 
         # Get relative energy.
         if '_dG' and '_Ga' in self.__dict__:
-            self.__has_relative_energy = True
+            self._has_relative_energy= True
         else:
             raise IOError(("No relative energy was read, " +
                            "please check the '{}'").format(filename))
