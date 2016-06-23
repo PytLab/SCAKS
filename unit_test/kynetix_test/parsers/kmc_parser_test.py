@@ -203,8 +203,7 @@ class KMCParserTest(unittest.TestCase):
         model = KineticModel(setup_file="kmc_inputs/kmc_parser.mkm",
                              verbosity=logging.WARNING)
         parser = model.parser()
-        lattice = parser.construct_lattice()
-        config = parser.parse_configuration(lattice, filename="kmc_inputs/kmc_configuration.py")
+        config = parser.parse_configuration(filename="kmc_inputs/kmc_configuration.py")
 
         # Check types.
         ref_types = ["V"]*36
@@ -259,11 +258,11 @@ class KMCParserTest(unittest.TestCase):
 
     def test_construct_sitesmap(self):
         " Make sure we can construct sitesmap correctly. "
+        # {{{
         model = KineticModel(setup_file="kmc_inputs/kmc_parser.mkm",
                              verbosity=logging.WARNING)
         parser = model.parser()
-        lattice = parser.construct_lattice()
-        sitesmap = parser.construct_sitesmap(lattice=lattice, filename="kmc_inputs/kmc_sites.py")
+        sitesmap = parser.construct_sitesmap(filename="kmc_inputs/kmc_sites.py")
 
         # Check sites.
         ref_sites=[[0.000000, 0.000000, 0.000000],
@@ -324,6 +323,7 @@ class KMCParserTest(unittest.TestCase):
         ref_types = [1]*36
         ret_types = sitesmap.siteTypesMapping(sitesmap.types())
         self.assertListEqual(ref_types, ret_types)
+        # }}}
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(KMCParserTest)

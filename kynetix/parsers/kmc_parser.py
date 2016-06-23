@@ -32,14 +32,12 @@ class KMCParser(RelativeEnergyParser):
         # Set logger.
         self.__logger = logging.getLogger('model.parsers.KMCParser')
 
-    def construct_sitesmap(self, lattice, filename=None):
+    def construct_sitesmap(self, filename=None):
         """
         Function to read kmc_site file and create KMCLibSitesMap objects.
 
         Parameters:
         -----------
-        lattice: The lattice of the configurartion as a KMCLattice.
-
         filename: The name of configuration file, str.
 
         Returns:
@@ -80,6 +78,9 @@ class KMCParser(RelativeEnergyParser):
                 msg = msg.format(site_type, locs["possible_site_types"])
                 raise SetupError(msg)
 
+        # Construct lattice.
+        lattice = self.construct_lattice()
+
         # Construct sitemap.
         sitesmap = KMCSitesMap(lattice=lattice,
                                types=locs["site_types"],
@@ -106,7 +107,7 @@ class KMCParser(RelativeEnergyParser):
 
         return lattice
 
-    def parse_configuration(self, lattice, filename=None):
+    def parse_configuration(self, filename=None):
         """
         Function to read configuration file and create KMCLibConfiguration objects.
 
@@ -149,10 +150,13 @@ class KMCParser(RelativeEnergyParser):
             nsite = reduce(mul, repetitions)*len(basis_sites)
             types = [locs["empty_type"] for i in xrange(nsite)]
 
+        # Construct lattice.
+        lattice = self.construct_lattice()
+
         # Instantialize KMCLattice object.
         configuration = KMCConfiguration(lattice=lattice,
-                                          types=types,
-                                          possible_types=locs["possible_types"])
+                                         types=types,
+                                         possible_types=locs["possible_types"])
 
         return configuration
         # }}}

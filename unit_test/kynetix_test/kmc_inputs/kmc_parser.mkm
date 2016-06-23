@@ -35,7 +35,7 @@ unitcell_area = 9.0e-20  # m^2
 active_ratio = 4./9        # Ast / Auc
 
 # Supercell.
-repetitions = (6, 6, 1)   # (x, y, z)
+repetitions = (3, 3, 1)   # (x, y, z)
 periodic = (True, True, False)           # periodic boundary condition
 
 
