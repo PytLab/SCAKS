@@ -77,3 +77,4 @@ tags
 # data file.
 *.pkl
 init_energy.csv
+out_energy.csv
