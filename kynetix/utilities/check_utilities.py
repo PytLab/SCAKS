@@ -119,7 +119,7 @@ def check_process_dict(process_dict):
     The valid process dict.
     """
     # Check keys.
-    essential_keys = ("reaction", "coordinates", "elements_before",
+    essential_keys = ("reaction", "coordinates_group", "elements_before",
                       "elements_after", "basis_sites")
     for key in essential_keys:
         if key not in process_dict:
@@ -131,26 +131,33 @@ def check_process_dict(process_dict):
         msg = "reaction must be a string."
         raise SetupError(msg)
 
-    # Check coordinates.
-    check_list_tuple(process_dict["coordinates"],
+    # Check type of group.
+    check_list_tuple(process_dict["coordinates_group"],
                      entry_type=list,
-                     param_name="coordinates")
+                     param_name="coordinates_group")
 
-    for coord in process_dict["coordinates"]:
-        check_list_tuple(coord, float, coord)
-        if len(coord) != 3:
-            msg = "{} must have 3 entries.".format(coord)
-            raise SetupError(msg)
+    # Check each coordinates in group.
+    for coords in process_dict["coordinates_group"]:
+        check_list_tuple(coords,
+                         entry_type=list,
+                         param_name="coordinates")
+        # Check the elements in coordinates.
+        for coord in coords:
+            check_list_tuple(coord, float, coord)
+            if len(coord) != 3:
+                msg = "{} must have 3 entries.".format(coord)
+                raise SetupError(msg)
 
     # Check elements.
     for key in ["elements_before", "elements_after"]:
         check_list_tuple(process_dict[key], str, key)
 
         # Check length.
-        if len(process_dict[key]) != len(process_dict["coordinates"]):
-            msg = "Lengths of {} and {} are different."
-            msg = msg.format(process_dict[key], process_dict["coordinates"])
-            raise SetupError(msg)
+        for coords in process_dict["coordinates_group"]:
+            if len(process_dict[key]) != len(coords):
+                msg = "Lengths of {} and {} are different."
+                msg = msg.format(process_dict[key], coords)
+                raise SetupError(msg)
 
     # Check basis sites.
     check_list_tuple(process_dict["basis_sites"], int, "basis_site")

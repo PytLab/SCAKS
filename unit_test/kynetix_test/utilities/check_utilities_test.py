@@ -105,7 +105,7 @@ class CheckUtilitiesTest(unittest.TestCase):
         # Check reaction string.
         process = {"reaction": ["CO_g + *_t -> CO_t"],
                    "description": "CO adsorption at top site.",
-                   "coordinates": [[0.0, 0.0, 0.0]],
+                   "coordinates_group": [[[0.0, 0.0, 0.0]]],
                    "elements_before": ["V"],
                    "elements_after": ["C"],
                    "basis_sites": [0]}
@@ -118,7 +118,7 @@ class CheckUtilitiesTest(unittest.TestCase):
         # Check coordinates.
         process = {"reaction": "CO_g + *_t -> CO_t",
                    "description": "CO adsorption at top site.",
-                   "coordinates": [[0.0, 0.0]],
+                   "coordinates_group": [[[0.0, 0.0]]],
                    "elements_before": ["V"],
                    "elements_after": ["C"],
                    "basis_sites": [0]}
@@ -131,7 +131,7 @@ class CheckUtilitiesTest(unittest.TestCase):
         # Check elements.
         process = {"reaction": "CO_g + *_t -> CO_t",
                    "description": "CO adsorption at top site.",
-                   "coordinates": [[0.0, 0.0, 0.0]],
+                   "coordinates_group": [[[0.0, 0.0, 0.0]]],
                    "elements_before": ["V", "V"],
                    "elements_after": ["C"],
                    "basis_sites": [0]}
