@@ -71,6 +71,7 @@ class KMCParserTest(unittest.TestCase):
 
     def test_parse_single_process(self):
         " Make sure we can parse a process dict correctly. "
+        # {{{
         # Construction.
         model = KineticModel(setup_file="kmc_inputs/kmc_parser.mkm",
                              verbosity=logging.WARNING)
@@ -115,6 +116,7 @@ class KMCParserTest(unittest.TestCase):
         c = p.localConfigurations()[0]
         ret_coords = c.coordinates().tolist()
         self.assertListEqual(ref_coords, ret_coords)
+        # }}}
 
     def test_parse_processes(self):
         " Make sure we can parse all processes in kmc_processes.py correctly. "
@@ -129,6 +131,7 @@ class KMCParserTest(unittest.TestCase):
 
     def test_construct_lattice(self):
         " Test we can construct lattice object correctly. "
+        # {{{
         model = KineticModel(setup_file="kmc_inputs/kmc_parser.mkm",
                              verbosity=logging.WARNING)
         parser = model.parser()
@@ -192,9 +195,11 @@ class KMCParserTest(unittest.TestCase):
 
         unitcell = lattice.unitCell()
         self.assertTrue(isinstance(unitcell, KMCUnitCell))
+        # }}}
 
     def test_parse_configuration(self):
         " Make sure we can parse the configuration correctly. "
+        # {{{
         model = KineticModel(setup_file="kmc_inputs/kmc_parser.mkm",
                              verbosity=logging.WARNING)
         parser = model.parser()
@@ -250,6 +255,75 @@ class KMCParserTest(unittest.TestCase):
         ref_atom_id_types = tuple(["V"]*36)
         ret_atom_id_types = config.atomIDTypes()
         self.assertTupleEqual(ref_atom_id_types, ret_atom_id_types)
+        # }}}
+
+    def test_construct_sitesmap(self):
+        " Make sure we can construct sitesmap correctly. "
+        model = KineticModel(setup_file="kmc_inputs/kmc_parser.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        lattice = parser.construct_lattice()
+        sitesmap = parser.construct_sitesmap(lattice=lattice, filename="kmc_inputs/kmc_sites.py")
+
+        # Check sites.
+        ref_sites=[[0.000000, 0.000000, 0.000000],
+                   [0.500000, 0.000000, 0.000000],
+                   [0.000000, 0.500000, 0.000000],
+                   [0.500000, 0.500000, 0.000000],
+                   [0.000000, 1.000000, 0.000000],
+                   [0.500000, 1.000000, 0.000000],
+                   [0.000000, 1.500000, 0.000000],
+                   [0.500000, 1.500000, 0.000000],
+                   [0.000000, 2.000000, 0.000000],
+                   [0.500000, 2.000000, 0.000000],
+                   [0.000000, 2.500000, 0.000000],
+                   [0.500000, 2.500000, 0.000000],
+                   [1.000000, 0.000000, 0.000000],
+                   [1.500000, 0.000000, 0.000000],
+                   [1.000000, 0.500000, 0.000000],
+                   [1.500000, 0.500000, 0.000000],
+                   [1.000000, 1.000000, 0.000000],
+                   [1.500000, 1.000000, 0.000000],
+                   [1.000000, 1.500000, 0.000000],
+                   [1.500000, 1.500000, 0.000000],
+                   [1.000000, 2.000000, 0.000000],
+                   [1.500000, 2.000000, 0.000000],
+                   [1.000000, 2.500000, 0.000000],
+                   [1.500000, 2.500000, 0.000000],
+                   [2.000000, 0.000000, 0.000000],
+                   [2.500000, 0.000000, 0.000000],
+                   [2.000000, 0.500000, 0.000000],
+                   [2.500000, 0.500000, 0.000000],
+                   [2.000000, 1.000000, 0.000000],
+                   [2.500000, 1.000000, 0.000000],
+                   [2.000000, 1.500000, 0.000000],
+                   [2.500000, 1.500000, 0.000000],
+                   [2.000000, 2.000000, 0.000000],
+                   [2.500000, 2.000000, 0.000000],
+                   [2.000000, 2.500000, 0.000000],
+                   [2.500000, 2.500000, 0.000000]]
+        ret_sites = sitesmap.sites().tolist()
+        self.assertListEqual(ref_sites, ret_sites)
+
+        # Check repetitions.
+        ref_repetitions = (3, 3, 1)
+        ret_repetitions = sitesmap.cellRepetitions()
+        self.assertTupleEqual(ref_repetitions, ret_repetitions)
+
+        # Check site types.
+        ref_types = ["P"]*36
+        ret_types = sitesmap.types()
+        self.assertListEqual(ref_types, ret_types)
+
+        # Check possible site types.
+        ref_possible_types = {"*": 0, "P": 1}
+        ret_possible_types = sitesmap.possibleTypes()
+        self.assertDictEqual(ref_possible_types, ret_possible_types)
+
+        # Check site type mapping.
+        ref_types = [1]*36
+        ret_types = sitesmap.siteTypesMapping(sitesmap.types())
+        self.assertListEqual(ref_types, ret_types)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(KMCParserTest)

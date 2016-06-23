@@ -32,6 +32,62 @@ class KMCParser(RelativeEnergyParser):
         # Set logger.
         self.__logger = logging.getLogger('model.parsers.KMCParser')
 
+    def construct_sitesmap(self, lattice, filename=None):
+        """
+        Function to read kmc_site file and create KMCLibSitesMap objects.
+
+        Parameters:
+        -----------
+        lattice: The lattice of the configurartion as a KMCLattice.
+
+        filename: The name of configuration file, str.
+
+        Returns:
+        --------
+        A KMCLibSitesMap objects.
+        """
+        # {{{
+        # Load data.
+        if filename is None:
+            filename = "kmc_sites.py"
+
+        globs, locs = {}, {}
+        execfile(filename, globs, locs)
+
+        # Check.
+        if "possible_site_types" not in locs:
+            msg = "Parameter 'possible_site_types' must be set for sitesmap initilization."
+            raise SetupError(msg)
+        check_list_tuple(locs["possible_site_types"], str, "possible_site_type")
+
+        if "site_types" not in locs:
+            msg = "Parameter 'site_types' must be set for sitesmap initilization."
+            raise SetupError(msg)
+        check_list_tuple(locs["site_types"], str, "site_types")
+
+        # Check length of site types.
+        repetitions = self._owner.repetitions()
+        basis_sites = self._owner.basis_sites()
+        nsite = reduce(mul, repetitions)*len(basis_sites)
+        if len(locs["site_types"]) != nsite:
+            msg = "'site_types' must have {} elements.".format(nsite)
+            raise SetupError(msg)
+
+        # Check element type.
+        for site_type in locs["site_types"]:
+            if site_type not in locs["possible_site_types"]:
+                msg = "Element '{}' not in possible_site_types '{}'."
+                msg = msg.format(site_type, locs["possible_site_types"])
+                raise SetupError(msg)
+
+        # Construct sitemap.
+        sitesmap = KMCSitesMap(lattice=lattice,
+                               types=locs["site_types"],
+                               possible_types=locs["possible_site_types"])
+
+        return sitesmap
+        # }}}
+
     def construct_lattice(self):
         """
         Function to construct KMCLattice object.
@@ -62,8 +118,9 @@ class KMCParser(RelativeEnergyParser):
 
         Returns:
         --------
-        A list of KMCLibConfiguration objects.
+        A KMCLibConfiguration objects.
         """
+        # {{{
         # Load data.
         if filename is None:
             filename = "kmc_configuration.py"
@@ -98,6 +155,7 @@ class KMCParser(RelativeEnergyParser):
                                           possible_types=locs["possible_types"])
 
         return configuration
+        # }}}
 
     def parse_processes(self, filename=None):
         """
