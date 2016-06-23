@@ -1,8 +1,11 @@
 import logging
+from operator import mul
+
+import numpy as np
 
 # KMCLibX.
 try:
-    from KMCLib import KMCProcess
+    from KMCLib import *
 except ImportError:
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     print "!!!                                                   !!!"
@@ -16,7 +19,7 @@ from kynetix.database.lattice_data import grid_neighbor_offsets
 from kynetix.parsers.rxn_parser import *
 from kynetix.parsers.relative_energy_parser import RelativeEnergyParser
 from kynetix.solvers.solver_base import SolverBase
-from kynetix.utilities.check_utilities import check_process_dict
+from kynetix.utilities.check_utilities import *
 
 
 class KMCParser(RelativeEnergyParser):
@@ -28,6 +31,73 @@ class KMCParser(RelativeEnergyParser):
 
         # Set logger.
         self.__logger = logging.getLogger('model.parsers.KMCParser')
+
+    def construct_lattice(self):
+        """
+        Function to construct KMCLattice object.
+        """
+        # Construct unitcell.
+        cell_vectors = np.array(self._owner.cell_vectors())
+        basis_sites = np.array(self._owner.basis_sites())
+        unit_cell = KMCUnitCell(cell_vectors=cell_vectors, basis_points=basis_sites)
+
+        # Construct lattice.
+        repetitions = self._owner.repetitions()
+        periodic = self._owner.periodic()
+        lattice = KMCLattice(unit_cell=unit_cell,
+                             repetitions=repetitions,
+                             periodic=periodic)
+
+        return lattice
+
+    def parse_configuration(self, lattice, filename=None):
+        """
+        Function to read configuration file and create KMCLibConfiguration objects.
+
+        Parameters:
+        -----------
+        lattice: The lattice of the configurartion as a KMCLattice.
+
+        filename: The name of configuration file, str.
+
+        Returns:
+        --------
+        A list of KMCLibConfiguration objects.
+        """
+        # Load data.
+        if filename is None:
+            filename = "kmc_configuration.py"
+
+        globs, locs = {}, {}
+        execfile(filename, globs, locs)
+
+        # Check.
+        if "possible_types" not in locs:
+            msg = "Parameter 'possible_types' must be set for configuration initilization."
+            raise SetupError(msg)
+        check_list_tuple(locs["possible_types"], str, "possible_type")
+
+        if "empty_type" not in locs:
+            msg = "Parameter 'empty_type' must be set for configuration initilization."
+            raise SetupError(msg)
+
+        check_string(locs["empty_type"], locs["possible_types"], "empty_type")
+
+        # Get types.
+        if "types" in locs:
+            types = locs["types"]
+        else:
+            repetitions = self._owner.repetitions()
+            basis_sites = self._owner.basis_sites()
+            nsite = reduce(mul, repetitions)*len(basis_sites)
+            types = [locs["empty_type"] for i in xrange(nsite)]
+
+        # Instantialize KMCLattice object.
+        configuration = KMCConfiguration(lattice=lattice,
+                                          types=types,
+                                          possible_types=locs["possible_types"])
+
+        return configuration
 
     def parse_processes(self, filename=None):
         """
@@ -61,6 +131,7 @@ class KMCParser(RelativeEnergyParser):
         """
         Private helper function to convert a process dict to KMCLibProcess object.
         """
+        # {{{
         # Check process dict.
         process_dict = check_process_dict(process_dict)
 
@@ -109,6 +180,7 @@ class KMCParser(RelativeEnergyParser):
         self.__logger.info("\n")
 
         return processes
+        # }}}
 
     def __get_rxn_rates(self, rxn_expression):
         """

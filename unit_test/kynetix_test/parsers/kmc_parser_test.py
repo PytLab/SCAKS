@@ -2,6 +2,8 @@ import logging
 import os
 import unittest
 
+from KMCLib import *
+
 from kynetix.model import KineticModel
 from kynetix.functions import *
 from kynetix.parsers import *
@@ -113,6 +115,141 @@ class KMCParserTest(unittest.TestCase):
         c = p.localConfigurations()[0]
         ret_coords = c.coordinates().tolist()
         self.assertListEqual(ref_coords, ret_coords)
+
+    def test_parse_processes(self):
+        " Make sure we can parse all processes in kmc_processes.py correctly. "
+        # Construction.
+        model = KineticModel(setup_file="kmc_inputs/kmc_parser.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        parser.parse_data(filename="kmc_inputs/rel_energy.py", relative=True)
+        p = parser.parse_processes(filename="kmc_inputs/kmc_processes.py")
+
+        self.assertEqual(30, len(p))
+
+    def test_construct_lattice(self):
+        " Test we can construct lattice object correctly. "
+        model = KineticModel(setup_file="kmc_inputs/kmc_parser.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        lattice = parser.construct_lattice()
+
+        # Check.
+        self.assertTrue(isinstance(lattice, KMCLattice))
+
+        ref_basis = [[0.0, 0.0, 0.0],
+                     [0.5, 0.0, 0.0],
+                     [0.0, 0.5, 0.0],
+                     [0.5, 0.5, 0.0]]
+        ret_basis = lattice.basis().tolist()
+        self.assertListEqual(ref_basis, ret_basis)
+
+        ref_periodic = (True, True, False)
+        ret_periodic = lattice.periodic()
+        self.assertTupleEqual(ref_periodic, ret_periodic)
+
+        ref_repetitions = (3, 3, 1)
+        ret_repetitions = lattice.repetitions()
+        self.assertTupleEqual(ref_repetitions, ret_repetitions)
+        ref_sites=[[0.000000, 0.000000, 0.000000],
+                   [0.500000, 0.000000, 0.000000],
+                   [0.000000, 0.500000, 0.000000],
+                   [0.500000, 0.500000, 0.000000],
+                   [0.000000, 1.000000, 0.000000],
+                   [0.500000, 1.000000, 0.000000],
+                   [0.000000, 1.500000, 0.000000],
+                   [0.500000, 1.500000, 0.000000],
+                   [0.000000, 2.000000, 0.000000],
+                   [0.500000, 2.000000, 0.000000],
+                   [0.000000, 2.500000, 0.000000],
+                   [0.500000, 2.500000, 0.000000],
+                   [1.000000, 0.000000, 0.000000],
+                   [1.500000, 0.000000, 0.000000],
+                   [1.000000, 0.500000, 0.000000],
+                   [1.500000, 0.500000, 0.000000],
+                   [1.000000, 1.000000, 0.000000],
+                   [1.500000, 1.000000, 0.000000],
+                   [1.000000, 1.500000, 0.000000],
+                   [1.500000, 1.500000, 0.000000],
+                   [1.000000, 2.000000, 0.000000],
+                   [1.500000, 2.000000, 0.000000],
+                   [1.000000, 2.500000, 0.000000],
+                   [1.500000, 2.500000, 0.000000],
+                   [2.000000, 0.000000, 0.000000],
+                   [2.500000, 0.000000, 0.000000],
+                   [2.000000, 0.500000, 0.000000],
+                   [2.500000, 0.500000, 0.000000],
+                   [2.000000, 1.000000, 0.000000],
+                   [2.500000, 1.000000, 0.000000],
+                   [2.000000, 1.500000, 0.000000],
+                   [2.500000, 1.500000, 0.000000],
+                   [2.000000, 2.000000, 0.000000],
+                   [2.500000, 2.000000, 0.000000],
+                   [2.000000, 2.500000, 0.000000],
+                   [2.500000, 2.500000, 0.000000]]
+        ret_sites = lattice.sites().tolist()
+        self.assertListEqual(ref_sites, ret_sites)
+
+        unitcell = lattice.unitCell()
+        self.assertTrue(isinstance(unitcell, KMCUnitCell))
+
+    def test_parse_configuration(self):
+        " Make sure we can parse the configuration correctly. "
+        model = KineticModel(setup_file="kmc_inputs/kmc_parser.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        lattice = parser.construct_lattice()
+        config = parser.parse_configuration(lattice, filename="kmc_inputs/kmc_configuration.py")
+
+        # Check types.
+        ref_types = ["V"]*36
+        ret_types = config.types()
+        self.assertListEqual(ref_types, ret_types)
+
+        # Check atom_id_coordinates.
+        ref_atom_id_coords=[[0.000000, 0.000000, 0.000000],
+                            [0.500000, 0.000000, 0.000000],
+                            [0.000000, 0.500000, 0.000000],
+                            [0.500000, 0.500000, 0.000000],
+                            [0.000000, 1.000000, 0.000000],
+                            [0.500000, 1.000000, 0.000000],
+                            [0.000000, 1.500000, 0.000000],
+                            [0.500000, 1.500000, 0.000000],
+                            [0.000000, 2.000000, 0.000000],
+                            [0.500000, 2.000000, 0.000000],
+                            [0.000000, 2.500000, 0.000000],
+                            [0.500000, 2.500000, 0.000000],
+                            [1.000000, 0.000000, 0.000000],
+                            [1.500000, 0.000000, 0.000000],
+                            [1.000000, 0.500000, 0.000000],
+                            [1.500000, 0.500000, 0.000000],
+                            [1.000000, 1.000000, 0.000000],
+                            [1.500000, 1.000000, 0.000000],
+                            [1.000000, 1.500000, 0.000000],
+                            [1.500000, 1.500000, 0.000000],
+                            [1.000000, 2.000000, 0.000000],
+                            [1.500000, 2.000000, 0.000000],
+                            [1.000000, 2.500000, 0.000000],
+                            [1.500000, 2.500000, 0.000000],
+                            [2.000000, 0.000000, 0.000000],
+                            [2.500000, 0.000000, 0.000000],
+                            [2.000000, 0.500000, 0.000000],
+                            [2.500000, 0.500000, 0.000000],
+                            [2.000000, 1.000000, 0.000000],
+                            [2.500000, 1.000000, 0.000000],
+                            [2.000000, 1.500000, 0.000000],
+                            [2.500000, 1.500000, 0.000000],
+                            [2.000000, 2.000000, 0.000000],
+                            [2.500000, 2.000000, 0.000000],
+                            [2.000000, 2.500000, 0.000000],
+                            [2.500000, 2.500000, 0.000000]]
+        ret_atom_id_coords = config.atomIDCoordinates().tolist()
+        self.assertListEqual(ref_atom_id_coords, ret_atom_id_coords)
+
+        # Check atom_id_types, should be the same as types.
+        ref_atom_id_types = tuple(["V"]*36)
+        ret_atom_id_types = config.atomIDTypes()
+        self.assertTupleEqual(ref_atom_id_types, ret_atom_id_types)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(KMCParserTest)

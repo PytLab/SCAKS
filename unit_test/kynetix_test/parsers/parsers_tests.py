@@ -5,6 +5,7 @@ from chem_state_test import ChemStateTest
 from parser_base_test import ParserBaseTest
 from csv_parser_test import CsvParserTest
 from relative_energy_parser_test import RelativeEnergyParserTest
+from kmc_parser_test import KMCParserTest
 
 
 def suite():
@@ -13,7 +14,8 @@ def suite():
          unittest.TestLoader().loadTestsFromTestCase(ChemStateTest),
          unittest.TestLoader().loadTestsFromTestCase(ParserBaseTest),
          unittest.TestLoader().loadTestsFromTestCase(CsvParserTest),
-         unittest.TestLoader().loadTestsFromTestCase(RelativeEnergyParserTest),]
+         unittest.TestLoader().loadTestsFromTestCase(RelativeEnergyParserTest),
+         unittest.TestLoader().loadTestsFromTestCase(KMCParserTest)]
     )
     return suite
 

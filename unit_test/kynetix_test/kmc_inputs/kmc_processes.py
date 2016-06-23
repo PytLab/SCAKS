@@ -1,3 +1,6 @@
+# All possible types.
+possible_types = ["V", "O", "O_s", "CO"]
+
 # KMC processes.
 processes = [
     {
