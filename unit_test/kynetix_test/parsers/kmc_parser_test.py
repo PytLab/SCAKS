@@ -67,6 +67,53 @@ class KMCParserTest(unittest.TestCase):
         ret_r = parser._KMCParser__get_rxn_rates('CO_g + *_t -> CO_t')
         self.assertTupleEqual(ref_r, ret_r)
 
+    def test_parse_single_process(self):
+        " Make sure we can parse a process dict correctly. "
+        # Construction.
+        model = KineticModel(setup_file="kmc_inputs/kmc_parser.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        parser.parse_data(filename="kmc_inputs/rel_energy.py", relative=True)
+
+        process_dict = {"reaction": "CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b",
+                        "description": "CO and O couple and desorption.",
+                        "coordinates_group":[[[0.0, 0.0, 0.0], [0.5, 0.5, 0.0]],
+                                             [[0.0, 0.0, 0.0], [0.5, -0.5, 0.0]],
+                                             [[0.0, 0.0, 0.0], [-0.5, 0.5, 0.0]],
+                                             [[0.0, 0.0, 0.0], [-0.5, -0.5, 0.0]]],
+                        "elements_before": ["V", "V"],
+                        "elements_after": ["O_s", "O_s"],
+                        "basis_sites": [1, 2]}
+
+        processes = parser._KMCParser__parse_single_process(process_dict)
+
+        # Check processes number.
+        self.assertEqual(16, len(processes))
+
+        # Check a the first process object.
+        p = processes[0]
+        self.assertListEqual(p.basisSites(), [1])
+        self.assertListEqual(p.elementsBefore(), ["V", "V"])
+        self.assertListEqual(p.elementsAfter(), ["O_s", "O_s"])
+
+        # Check coordinates.
+        ref_coords = [[0.0, 0.0, 0.0], [0.5, 0.5, 0.0]]
+        c = p.localConfigurations()[0]
+        ret_coords = c.coordinates().tolist()
+        self.assertListEqual(ref_coords, ret_coords)
+
+        # Check a the second process object.
+        p = processes[-1]
+        self.assertListEqual(p.basisSites(), [2])
+        self.assertListEqual(p.elementsBefore(), ["O_s", "O_s"])
+        self.assertListEqual(p.elementsAfter(), ["V", "V"])
+
+        # Check coordinates.
+        ref_coords = [[0.0, 0.0, 0.0], [-0.5, -0.5, 0.0]]
+        c = p.localConfigurations()[0]
+        ret_coords = c.coordinates().tolist()
+        self.assertListEqual(ref_coords, ret_coords)
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(KMCParserTest)
     unittest.TextTestRunner(verbosity=2).run(suite)

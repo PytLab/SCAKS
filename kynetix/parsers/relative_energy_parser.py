@@ -22,7 +22,7 @@ class RelativeEnergyParser(ParserBase):
         self.__G_dict = {}
 
         # Flags.
-        self._has_relative_energ= False
+        self._has_relative_energy= False
         self._has_absolute_energy = False
 
     def __chk_data_validity(self):

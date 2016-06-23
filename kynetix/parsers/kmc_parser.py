@@ -1,5 +1,16 @@
 import logging
 
+# KMCLibX.
+try:
+    from KMCLib import KMCProcess
+except ImportError:
+    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    print "!!!                                                   !!!"
+    print "!!!          WARNING: KMCLib is not installed         !!!"
+    print "!!! Any kMC calculation using KMCLib will be disabled !!!"
+    print "!!!                                                   !!!"
+    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+
 from kynetix.errors.error import *
 from kynetix.database.lattice_data import grid_neighbor_offsets
 from kynetix.parsers.rxn_parser import *
@@ -30,7 +41,21 @@ class KMCParser(RelativeEnergyParser):
         --------
         A list of KMCLibProcess objects.
         """
-        pass
+        if filename is None:
+            filename = "kmc_processes.py"
+
+        globs, locs = {}, {}
+        execfile(filename, globs, locs)
+
+        # Get all possible process objects.
+        all_processes = []
+        for process_dict in locs["processes"]:
+            processes = self.__parse_single_process(process_dict)
+            all_processes.extend(processes)
+
+        self.__logger.info("Total {} processes instantalized.".format(len(all_processes)))
+
+        return all_processes
 
     def __parse_single_process(self, process_dict):
         """
@@ -47,6 +72,43 @@ class KMCParser(RelativeEnergyParser):
             raise SetupError(msg)
 
         # Get rate constants.
+        rf, rr = self.__get_rxn_rates(process_dict["reaction"])
+
+        # Get KMCLibProcess objects.
+        processes = []
+
+        for basis_site in process_dict["basis_sites"]:
+            for coordinates in process_dict["coordinates_group"]:
+                self.__logger.info("Coordinates = {}".format(coordinates))
+                self.__logger.info("Basis site = {}".format(basis_site))
+
+                # Forward process.
+                fprocess = KMCProcess(coordinates=coordinates,
+                                      elements_before=process_dict["elements_before"],
+                                      elements_after=process_dict["elements_after"],
+                                      basis_sites=[basis_site],
+                                      rate_constant=rf)
+                processes.append(fprocess)
+                # Info output.
+                msg = "Forward: {} -> {}".format(process_dict["elements_before"],
+                                                 process_dict["elements_after"])
+                self.__logger.info(msg)
+
+                # Reverse process.
+                rprocess = KMCProcess(coordinates=coordinates,
+                                      elements_before=process_dict["elements_after"],
+                                      elements_after=process_dict["elements_before"],
+                                      basis_sites=[basis_site],
+                                      rate_constant=rr)
+                processes.append(rprocess)
+                # Info output.
+                msg = "Reverse: {} -> {}".format(process_dict["elements_before"],
+                                                 process_dict["elements_after"])
+                self.__logger.info(msg)
+
+        self.__logger.info("\n")
+
+        return processes
 
     def __get_rxn_rates(self, rxn_expression):
         """
@@ -79,7 +141,6 @@ class KMCParser(RelativeEnergyParser):
             raise SetupError(msg)
 
         # Forward rate.
-        self.__logger.info("Calculate forward rate...")
 
         # Gas participating.
         if "gas" in is_types:
@@ -115,7 +176,6 @@ class KMCParser(RelativeEnergyParser):
             self.__logger.info("R(forward) = {} s^-1 (Transition State Theory)".format(rf))
 
         # Reverse rate.
-        self.__logger.info("Calculate reverse rate...")
 
         # Gas participating.
         if "gas" in fs_types:
@@ -148,7 +208,7 @@ class KMCParser(RelativeEnergyParser):
                 self.__logger.info(msg)
 
             rr = SolverBase.get_kTST(Gar, T)
-            self.__logger.info("R(reverse) = {} s^-1 (Transition State Theory)\n".format(rr))
+            self.__logger.info("R(reverse) = {} s^-1 (Transition State Theory)".format(rr))
 
         return rf, rr
         # }}}
