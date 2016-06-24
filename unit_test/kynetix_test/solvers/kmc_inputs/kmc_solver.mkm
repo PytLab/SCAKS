@@ -48,7 +48,7 @@ corrector = "ThermodynamicCorrector"
 
 # KMC loop control parameters.
 #kmc_continue = True
-nstep = 50000                        # number of KMC loop step
+nstep = 50                           # number of KMC loop step
 seed = 13996                         # seed for random number generator
 random_generator = 'MT'              # type of pseudo random number generator, 'MT' | 'MINSTD' | 'RANLUX24' | 'RANLUX48'
 analysis = []                        # ['CoveragesAnalysis', 'TOFAnalysis']

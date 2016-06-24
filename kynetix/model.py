@@ -124,6 +124,7 @@ class KineticModel(object):
         data_file: The name of data file, str.
 
         """
+        # {{{
         self.__logger.info('--- Solve Micro-kinetic model ---')
 
         # Get parser and solver.
@@ -204,11 +205,11 @@ class KineticModel(object):
         tofs = solver.get_tof(ss_cvgs)
 
         return
+        # }}}
 
     def run_kmc(self):
         '''
-        Function to do kinetic Monte Carlo simulation to
-        get steady state coverages and turnover frequencies.
+        Function to do kinetic Monte Carlo simulation.
         '''
         self.solver.run()
 
@@ -742,4 +743,22 @@ class KineticModel(object):
         Query function for circle attributes for circle plotting.
         """
         return self.__circle_attrs
+
+    def processes(self):
+        """
+        Query function for processes list.
+        """
+        return self.__processes
+
+    def configuration(self):
+        """
+        Query function for KMCConfiguration of model.
+        """
+        return self.__configuration
+
+    def sitesmap(self):
+        """
+        Query function for KMCSitesMap of model.
+        """
+        return self.__sitesmap
 

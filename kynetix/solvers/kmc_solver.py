@@ -39,7 +39,6 @@ class KMCSolver(SolverBase):
 
     def run(self,
             scripting=True,
-            trajectory_filename='auto_trajectory.py',
             trajectory_type="lattice"):
         """
         Run the KMC lattice model simulation with specified parameters.
@@ -48,8 +47,9 @@ class KMCSolver(SolverBase):
         -----------
         scripting: generate lattice script or not, True by default, bool.
 
-        trajectory_filename: The filename of the trajectory. If not given
-                            no trajectory will be saved, str.
+        trajectory_type: The type of trajectory to use, the default type is "lattice", str.
+                         "xyz" | "lattice". 
+
         """
         # Get analysis.
         analysis = self._owner.analysis()
@@ -58,6 +58,8 @@ class KMCSolver(SolverBase):
                 _module = __import__('kmc_plugins', globals(), locals())
                 analysis_object = getattr(_module, classname)(self._owner)
                 analysis.append(analysis_object)
+        else:
+            analysis = None
 
         # Get interactions.
         processes = self._owner.processes()
@@ -71,7 +73,7 @@ class KMCSolver(SolverBase):
         sitesmap = self._owner.sitesmap()
 
         # Construct KMCLatticeModel object.
-        model = KMCLatticeModel(configuration=configrations,
+        model = KMCLatticeModel(configuration=configuration,
                                 sitesmap=sitesmap,
                                 interactions=interactions)
 
@@ -81,6 +83,9 @@ class KMCSolver(SolverBase):
 
         # Get KMCControlParameters.
         control_parameters = self.get_control_parameters()
+
+        # Get trajectory file name.
+        trajectory_filename = "auto_{}_trajectory.py".format(trajectory_type)
 
         # Run KMC main loop.
         model.run(control_parameters=control_parameters,
