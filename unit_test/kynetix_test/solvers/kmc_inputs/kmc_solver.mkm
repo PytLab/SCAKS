@@ -52,7 +52,8 @@ nstep = 50000                        # number of KMC loop step
 seed = 13996                         # seed for random number generator
 random_generator = 'MT'              # type of pseudo random number generator, 'MT' | 'MINSTD' | 'RANLUX24' | 'RANLUX48'
 analysis = []                        # ['CoveragesAnalysis', 'TOFAnalysis']
-analysis_interval = 500
+analysis_interval = 5
+trajectory_dump_interval = 10
 
 # Grid plotting control parameters.
 color_dict = dict(V='#FFFFFF',

@@ -213,6 +213,7 @@ type_rules = {
     "random_generator": (str, ),
     "analysis": (check_list_tuple, str),
     "analysis_interval": (int, ),
+    "trajectory_dump_interval": (int, ),
     "color_dict": (dict, ),
     "circle_attrs": (dict, ),
 }

@@ -325,7 +325,7 @@ class KineticModel(object):
 
         # if parser is kmc_parser use kmc_solver correspondingly
         if locs['parser'] == 'KMCParser':
-            locs['solver'] = 'KMCLibSolver'
+            locs['solver'] = 'KMCSolver'
             self.__logger.info('set solver [ KMCSolver ].')
 
         # use parser parse essential attrs for other tools
@@ -685,19 +685,28 @@ class KineticModel(object):
         """
         Query function for random seed.
         """
-        return self.__seed
+        try:
+            return self.__seed
+        except AttributeError:
+            return None
 
     def trajectory_dump_interval(self):
         """
         Query function for trajectory dump interval.
         """
-        return self.__trajectory_dump_interval
+        try:
+            return self.__trajectory_dump_interval
+        except AttributeError:
+            return None
 
     def random_generator(self):
         """
         Query function for random generator name.
         """
-        return self.__random_generator
+        try:
+            return self.__random_generator
+        except AttributeError:
+            return None
 
     def analysis(self):
         """
@@ -709,7 +718,10 @@ class KineticModel(object):
         """
         Query function for analysis interval.
         """
-        return self.__analysis_interval
+        try:
+            return self.__analysis_interval
+        except AttributeError:
+            return None
 
     def analysis_dump_interval(self):
         """
