@@ -52,9 +52,10 @@ class KMCSolver(SolverBase):
 
         """
         # Get analysis.
-        analysis = self._owner.analysis()
-        if analysis:
-            for classname in analysis:
+        analysis_name = self._owner.analysis()
+        if analysis_name:
+            analysis = []
+            for classname in analysis_name:
                 _module = __import__('kmc_plugins', globals(), locals())
                 analysis_object = getattr(_module, classname)(self._owner)
                 analysis.append(analysis_object)
