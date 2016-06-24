@@ -16,7 +16,7 @@ species_definitions['b'] = {'site_name': 'bridge', 'type': 'site', 'total': 0.5}
 species_definitions['t'] = {'site_name': 'top', 'type': 'site', 'total': 0.5}
 
 # Temperature.
-temperature = 450  # K
+temperature = 298  # K
 
 # Lattice information.
 surface_name = 'Au'
@@ -31,28 +31,29 @@ basis_sites = [[0.0, 0.0, 0.0],
                [0.0, 0.5, 0.0],
                [0.5, 0.5, 0.0]]
 
-unitcell_area = 9.64e-20  # m^2
-active_ratio = 1.0        # Ast / Auc
+unitcell_area = 9.0e-20  # m^2
+active_ratio = 4./9        # Ast / Auc
 
 # Supercell.
-repetitions = (6, 6, 1)   # (x, y, z)
+repetitions = (3, 3, 1)   # (x, y, z)
 periodic = (True, True, False)           # periodic boundary condition
 
 
 # KMC model attributes.
 # specify tools for model to use
-tools = ['parser']
-parser = 'RelativeEnergyParser'  # default
+tools = ['parser', 'solver', 'corrector']
+parser = 'KMCParser'  # default
+solver = 'KMCSolver'
+corrector = "ThermodynamicCorrector"
 
 # KMC loop control parameters.
 #kmc_continue = True
-nstep = 50000                        # number of KMC loop step
-trajectory_dump_interval = nstep/50  # number of steps between subsequent trajectory dumps
+nstep = 50                           # number of KMC loop step
 seed = 13996                         # seed for random number generator
 random_generator = 'MT'              # type of pseudo random number generator, 'MT' | 'MINSTD' | 'RANLUX24' | 'RANLUX48'
 analysis = []                        # ['CoveragesAnalysis', 'TOFAnalysis']
-analysis_interval = 500
-analysis_dump_interval = 10
+analysis_interval = 5
+trajectory_dump_interval = 10
 
 # Grid plotting control parameters.
 color_dict = dict(V='#FFFFFF',
