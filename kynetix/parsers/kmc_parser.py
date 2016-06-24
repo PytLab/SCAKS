@@ -52,12 +52,9 @@ class KMCParser(RelativeEnergyParser):
         globs, locs = {}, {}
         execfile(filename, globs, locs)
 
-        # Check.
-        if "possible_site_types" not in locs:
-            msg = "Parameter 'possible_site_types' must be set for sitesmap initilization."
-            raise SetupError(msg)
-        check_list_tuple(locs["possible_site_types"], str, "possible_site_type")
+        possible_site_types = self._owner.possible_site_types()
 
+        # Check.
         if "site_types" not in locs:
             msg = "Parameter 'site_types' must be set for sitesmap initilization."
             raise SetupError(msg)
@@ -73,9 +70,9 @@ class KMCParser(RelativeEnergyParser):
 
         # Check element type.
         for site_type in locs["site_types"]:
-            if site_type not in locs["possible_site_types"]:
+            if site_type not in possible_site_types:
                 msg = "Element '{}' not in possible_site_types '{}'."
-                msg = msg.format(site_type, locs["possible_site_types"])
+                msg = msg.format(site_type, possible_site_types)
                 raise SetupError(msg)
 
         # Construct lattice.
@@ -84,7 +81,7 @@ class KMCParser(RelativeEnergyParser):
         # Construct sitemap.
         sitesmap = KMCSitesMap(lattice=lattice,
                                types=locs["site_types"],
-                               possible_types=locs["possible_site_types"])
+                               possible_types=possible_site_types)
 
         return sitesmap
         # }}}
@@ -129,17 +126,14 @@ class KMCParser(RelativeEnergyParser):
         globs, locs = {}, {}
         execfile(filename, globs, locs)
 
-        # Check.
-        if "possible_types" not in locs:
-            msg = "Parameter 'possible_types' must be set for configuration initilization."
-            raise SetupError(msg)
-        check_list_tuple(locs["possible_types"], str, "possible_type")
+        possible_element_types = self._owner.possible_element_types()
 
+        # Check.
         if "empty_type" not in locs:
             msg = "Parameter 'empty_type' must be set for configuration initilization."
             raise SetupError(msg)
 
-        check_string(locs["empty_type"], locs["possible_types"], "empty_type")
+        check_string(locs["empty_type"], possible_element_types, "empty_type")
 
         # Get types.
         if "types" in locs:
@@ -156,7 +150,7 @@ class KMCParser(RelativeEnergyParser):
         # Instantialize KMCLattice object.
         configuration = KMCConfiguration(lattice=lattice,
                                          types=types,
-                                         possible_types=locs["possible_types"])
+                                         possible_types=possible_element_types)
 
         return configuration
         # }}}
@@ -203,6 +197,15 @@ class KMCParser(RelativeEnergyParser):
         if process_dict["reaction"] not in rxn_expressions:
             msg = "'{}' is not in model's rxn_expressions.".format(process_dict["reaction"])
             raise SetupError(msg)
+
+        # Check if the elements are in possible elements.
+        all_elements = process_dict["elements_before"] + process_dict["elements_after"]
+        possible_elements = self._owner.possible_element_types()
+        for element in all_elements:
+            if element not in possible_elements:
+                msg = "Element '{}' in process not in possible types {}"
+                msg = msg.format(element, possible_elements)
+                raise SetupError(msg)
 
         # Get rate constants.
         rf, rr = self.__get_rxn_rates(process_dict["reaction"])

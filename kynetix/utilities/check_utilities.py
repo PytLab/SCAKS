@@ -216,5 +216,7 @@ type_rules = {
     "trajectory_dump_interval": (int, ),
     "color_dict": (dict, ),
     "circle_attrs": (dict, ),
+    "possible_element_types": (str, ),
+    "possible_site_types": (str, ),
 }
 

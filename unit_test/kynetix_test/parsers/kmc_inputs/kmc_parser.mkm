@@ -37,13 +37,14 @@ active_ratio = 4./9        # Ast / Auc
 # Supercell.
 repetitions = (3, 3, 1)   # (x, y, z)
 periodic = (True, True, False)           # periodic boundary condition
+possible_element_types = ["O", "V", "O_s", "C"]
+possible_site_types = ["P"]
 
 
 # KMC model attributes.
 # specify tools for model to use
-tools = ['parser', 'solver', 'corrector']
+tools = ['parser', 'corrector']
 parser = 'KMCParser'  # default
-solver = 'KMCSolver'
 corrector = "ThermodynamicCorrector"
 
 # KMC loop control parameters.

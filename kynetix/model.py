@@ -798,3 +798,15 @@ class KineticModel(object):
         """
         return self.__sitesmap
 
+    def possible_element_types(self):
+        """
+        Query function for possible element types.
+        """
+        return self.__possible_element_types
+
+    def possible_site_types(self):
+        """
+        Query function for possible site types.
+        """
+        return self.__possible_site_types
+
