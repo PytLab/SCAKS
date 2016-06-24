@@ -71,6 +71,7 @@ class KineticModel(object):
         --------
         inputs_dict: The valid input dict (REFERENCE of input).
         """
+        # {{{
         invalid_parameters = []
         for key, value in inputs_dict.iteritems():
             # Check parameter validity.
@@ -103,9 +104,15 @@ class KineticModel(object):
             del inputs_dict[invalid_param]
 
         return inputs_dict
+        # }}}
 
-    def run_mkm(self, init_cvgs=None, relative=False, correct_energy=False,
-                solve_ode=False, fsolve=False, coarse_guess=True,
+    def run_mkm(self,
+                init_cvgs=None,
+                relative=False,
+                correct_energy=False,
+                solve_ode=False,
+                fsolve=False,
+                coarse_guess=True,
                 data_file="/rel_energy.py"):
         """
         Function to solve Micro-kinetic model using Steady State Approxmiation
@@ -207,11 +214,40 @@ class KineticModel(object):
         return
         # }}}
 
-    def run_kmc(self):
-        '''
+    def run_kmc(self,
+                processes_file=None,
+                configuration_file=None,
+                sitesmap_file=None,
+                scripting=True,
+                trajectory_type="lattice"):
+        """
         Function to do kinetic Monte Carlo simulation.
-        '''
-        self.solver.run()
+
+        Parameters:
+        -----------
+        processes_file: The name of processes definition file, str.
+                        the default name is "kmc_processes.py".
+
+        configuration_file: The name of configuration definition file, str.
+                            the default name is "kmc_processes.py".
+
+        sitesmap_file: The name of sitesmap definition file, str.
+                       the default name is "kmc_processes.py".
+
+        scripting: generate lattice script or not, True by default, bool.
+
+        trajectory_type: The type of trajectory to use, the default type is "lattice", str.
+                         "xyz" | "lattice". 
+        """
+        parser = self.__parser
+
+        # Parse processes, configuration, sitesmap.
+        self.__processes = parser.parse_processes(filename=processes_file)
+        self.__configuration = parser.parse_configuration(filename=configuration_file)
+        self.__sitesmap = parser.construct_sitesmap(filename=sitesmap_file)
+
+        # Run the lattice model.
+        self.__solver.run(scripting, trajectory_type)
 
     def __set_parser(self, parser_name):
         """

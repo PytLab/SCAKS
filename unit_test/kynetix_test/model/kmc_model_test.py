@@ -31,6 +31,22 @@ class KMCModelTest(unittest.TestCase):
         self.assertTrue(hasattr(model, "_KineticModel__color_dict"))
         self.assertTrue(hasattr(model, "_KineticModel__circle_attrs"))
 
+    def test_kmc_model_run(self):
+        " Make sure KMC model can run properly. "
+        # Construction.
+        model = KineticModel(setup_file="kmc_inputs/kmc_model.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        solver = model.solver()
+
+        # Parse data.
+        parser.parse_data(filename="kmc_inputs/rel_energy.py", relative=True)
+
+        # Run the model.
+        model.run_kmc(processes_file="kmc_inputs/kmc_processes.py",
+                      configuration_file="kmc_inputs/kmc_configuration.py",
+                      sitesmap_file="kmc_inputs/kmc_sites.py")
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(KMCModelTest)
     unittest.TextTestRunner(verbosity=2).run(suite)
