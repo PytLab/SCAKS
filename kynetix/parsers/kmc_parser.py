@@ -1,4 +1,5 @@
 import logging
+import os
 from operator import mul
 
 import numpy as np
@@ -119,30 +120,35 @@ class KMCParser(RelativeEnergyParser):
         A KMCLibConfiguration objects.
         """
         # {{{
-        # Load data.
-        if filename is None:
-            filename = "kmc_configuration.py"
-
-        globs, locs = {}, {}
-        execfile(filename, globs, locs)
+        # Inner function to initialize emtpy lattice.
+        def init_empty_types():
+            repetitions = self._owner.repetitions()
+            basis_sites = self._owner.basis_sites()
+            nsite = reduce(mul, repetitions)*len(basis_sites)
+            types = [empty_type for i in xrange(nsite)]
+            return types
 
         possible_element_types = self._owner.possible_element_types()
 
         # Check.
-        if "empty_type" not in locs:
-            msg = "Parameter 'empty_type' must be set for configuration initilization."
-            raise SetupError(msg)
+        empty_type = self._owner.empty_type()
+        check_string(empty_type, possible_element_types, "empty_type")
 
-        check_string(locs["empty_type"], possible_element_types, "empty_type")
+        # Load types data in file.
+        if filename is None:
+            filename = "kmc_configuration.py"
 
-        # Get types.
-        if "types" in locs:
-            types = locs["types"]
+        # Use data in file.
+        if os.path.exists(filename):
+            globs, locs = {}, {}
+            execfile(filename, globs, locs)
+            if "types" in locs:
+                types = locs["types"]
+            else:
+                types = init_empty_types()
+        # Initialize as emtpy lattice.
         else:
-            repetitions = self._owner.repetitions()
-            basis_sites = self._owner.basis_sites()
-            nsite = reduce(mul, repetitions)*len(basis_sites)
-            types = [locs["empty_type"] for i in xrange(nsite)]
+            types = init_empty_types()
 
         # Construct lattice.
         lattice = self.construct_lattice()
