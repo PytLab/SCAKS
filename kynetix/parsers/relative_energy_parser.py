@@ -22,20 +22,20 @@ class RelativeEnergyParser(ParserBase):
         self.__G_dict = {}
 
         # Flags.
-        self.__has_relative_energy = False
-        self.__has_absolute_energy = False
+        self._has_relative_energy= False
+        self._has_absolute_energy = False
 
     def __chk_data_validity(self):
         """
         Private helper function to check relative energy data validity.
         """
 
-        if hasattr(self, "_RelativeEnergyParser__Ga"):
-            if len(self.__Ga) != len(self._owner.rxn_expressions()):
+        if hasattr(self, "_Ga"):
+            if len(self._Ga) != len(self._owner.rxn_expressions()):
                 raise ValueError("Invalid shape of Ga.")
 
-        if hasattr(self, "_RelativeEnergyParser__dG"):
-            if len(self.__dG) != len(self._owner.rxn_expressions()):
+        if hasattr(self, "_dG"):
+            if len(self._dG) != len(self._owner.rxn_expressions()):
                 raise ValueError("Invalid shape of dG.")
 
         return
@@ -88,7 +88,7 @@ class RelativeEnergyParser(ParserBase):
         """
         # Get relative energies for the elementary reaction.
         idx = self._owner.rxn_expressions().index(rxn_expression)
-        Ga, dG = self.__Ga[idx], self.__dG[idx]
+        Ga, dG = self._Ga[idx], self._dG[idx]
 
         # Get ChemState object list.
         rxn_equation = RxnEquation(rxn_expression)
@@ -219,10 +219,10 @@ class RelativeEnergyParser(ParserBase):
         """
         Private helper function to get relative energies dict from relative energy.
         """
-        relative_energies = dict(Gaf=self.__Ga, dG=self.__dG)
+        relative_energies = dict(Gaf=self._Ga, dG=self._dG)
 
         # Get reverse barriers.
-        Gars = [Ga - dG for Ga, dG in zip(self.__Ga, self.__dG)]
+        Gars = [Ga - dG for Ga, dG in zip(self._Ga, self._dG)]
         relative_energies.setdefault("Gar", Gars)
 
         return relative_energies
@@ -251,8 +251,7 @@ class RelativeEnergyParser(ParserBase):
 
             # Set variables in data file as attr of parser
             for key in locs:
-                attribute_name = mangled_name(self, key)
-                setattr(self, attribute_name, locs[key])
+                setattr(self, "_" + key, locs[key])
         else:
             raise IOError("{} is not found.".format(filename))
 
@@ -288,11 +287,11 @@ class RelativeEnergyParser(ParserBase):
             setattr(self._owner, attribute_name, True)
 
         # Get relative energy.
-        if '_RelativeEnergyParser__dG' and '_RelativeEnergyParser__Ga' in self.__dict__:
-            self.__has_relative_energy = True
+        if '_dG' and '_Ga' in self.__dict__:
+            self._has_relative_energy= True
         else:
             raise IOError(("No relative energy was read, " +
-                           "please check the '{}'").format(self.__filename))
+                           "please check the '{}'").format(filename))
 
         # Get relative energies.
         relative_energies = self.__get_relative_from_relative()
@@ -321,14 +320,14 @@ class RelativeEnergyParser(ParserBase):
         """
         Query function for Ga.
         """
-        return self.__Ga
+        return self._Ga
 
     @return_deepcopy
     def dG(self):
         """
         Query function for dG.
         """
-        return self.__dG
+        return self._dG
 
     @return_deepcopy
     def Ea(self):

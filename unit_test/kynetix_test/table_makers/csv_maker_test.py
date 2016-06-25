@@ -1,3 +1,4 @@
+import commands
 import logging
 import os
 import unittest
@@ -72,7 +73,7 @@ transition state,H-H_s,-184.35,-0.18092599999999948,[],None
 transition state,HCOO-H_s,-207.27,0.039835999999979776,[],None
 slab,s,-177.41,0.0,[],None
 """
-        with open("input_files/out_energy.csv") as f:
+        with open("input_files/out_energy.csv", "rU") as f:
             ret_content = f.read()
 
         self.assertEqual(ref_content, ret_content)

@@ -110,6 +110,61 @@ def check_string(string, string_range=None, param_name="Tested object"):
 
     return string
 
+def check_process_dict(process_dict):
+    """
+    Check if the process dict is correct.
+
+    Return:
+    -------
+    The valid process dict.
+    """
+    # Check keys.
+    essential_keys = ("reaction", "coordinates_group", "elements_before",
+                      "elements_after", "basis_sites")
+    for key in essential_keys:
+        if key not in process_dict:
+            msg = "key '{}' is not in process_dict {}".format(key, process_dict.keys())
+            raise SetupError(msg)
+
+    # Check reaction.
+    if not isinstance(process_dict["reaction"], str):
+        msg = "reaction must be a string."
+        raise SetupError(msg)
+
+    # Check type of group.
+    check_list_tuple(process_dict["coordinates_group"],
+                     entry_type=list,
+                     param_name="coordinates_group")
+
+    # Check each coordinates in group.
+    for coords in process_dict["coordinates_group"]:
+        check_list_tuple(coords,
+                         entry_type=list,
+                         param_name="coordinates")
+        # Check the elements in coordinates.
+        for coord in coords:
+            check_list_tuple(coord, float, coord)
+            if len(coord) != 3:
+                msg = "{} must have 3 entries.".format(coord)
+                raise SetupError(msg)
+
+    # Check elements.
+    for key in ["elements_before", "elements_after"]:
+        check_list_tuple(process_dict[key], str, key)
+
+        # Check length.
+        for coords in process_dict["coordinates_group"]:
+            if len(process_dict[key]) != len(coords):
+                msg = "Lengths of {} and {} are different."
+                msg = msg.format(process_dict[key], coords)
+                raise SetupError(msg)
+
+    # Check basis sites.
+    check_list_tuple(process_dict["basis_sites"], int, "basis_site")
+
+    # All tests passed, return.
+    return process_dict
+
 table_maker_range = ("CsvMaker", )
 parsers_range = ("RelativeEnergyParser", "CsvParser", "KMCParser")
 solvers_range = ("KMCSolver", "SteadyStateSolver", "QuasiEquilibriumSolver")
@@ -145,5 +200,24 @@ type_rules = {
     "data_file": (str, ),
     "table_maker": (check_string, table_maker_range),
     "ref_energies": (dict, ),
+
+    # KMC parameters.
+    "cell_vectors": (check_list_tuple, list),
+    "basis_sites": (check_list_tuple, list),
+    "unitcell_area": (float, ),
+    "active_ratio": (float, ),
+    "repetitions": (check_list_tuple, int),
+    "periodic": (check_list_tuple, bool),
+    "nstep": (int, ),
+    "seed": (int, ),
+    "random_generator": (str, ),
+    "analysis": (check_list_tuple, str),
+    "analysis_interval": (int, ),
+    "trajectory_dump_interval": (int, ),
+    "color_dict": (dict, ),
+    "circle_attrs": (dict, ),
+    "possible_element_types": (check_list_tuple, str),
+    "possible_site_types": (check_list_tuple, str),
+    "empty_type": (str, )
 }
 
