@@ -8,15 +8,15 @@ rxn_expressions = [
 # Gas pressure.
 species_definitions = {}
 species_definitions['CO_g'] = {'pressure': 0.01}    # define the gas pressures
-species_definitions['O2_g'] = {'pressure': }  # 0.094
-species_definitions['CO2_g'] = {'pressure': 0.00}
+species_definitions['O2_g'] = {'pressure': 0.2}  # 0.094
+species_definitions['CO2_g'] = {'pressure': 0.01}
 
 # Site info.
 species_definitions['b'] = {'site_name': 'bridge', 'type': 'site', 'total': 0.5}
 species_definitions['t'] = {'site_name': 'top', 'type': 'site', 'total': 0.5}
 
 # Temperature.
-temperature = 450  # K
+temperature = 298  # K
 
 # Lattice information.
 surface_name = 'Au'
@@ -31,40 +31,39 @@ basis_sites = [[0.0, 0.0, 0.0],
                [0.0, 0.5, 0.0],
                [0.5, 0.5, 0.0]]
 
-unitcell_area = 9.64e-20  # m^2
-active_ratio = 1.0        # Ast / Auc
+unitcell_area = 9.0e-20  # m^2
+active_ratio = 4./9        # Ast / Auc
 
 # Supercell.
-repetitions = (6, 6, 1)   # (x, y, z)
-periodic = True           # periodic boundary condition
+repetitions = (3, 3, 1)   # (x, y, z)
+periodic = (True, True, False)           # periodic boundary condition
+possible_element_types = ["O", "V", "O_s", "C"]
+empty_type = "V"
+possible_site_types = ["P"]
 
 
 # KMC model attributes.
 # specify tools for model to use
 tools = ['parser', 'solver', 'corrector']
 parser = 'KMCParser'  # default
-solver = 'KMCLibSolver'
+solver = 'KMCSolver'
+corrector = "ThermodynamicCorrector"
 
 # KMC loop control parameters.
 #kmc_continue = True
-nstep = 50000                        # number of KMC loop step
-trajectory_dump_interval = nstep/50  # number of steps between subsequent trajectory dumps
+nstep = 50                           # number of KMC loop step
 seed = 13996                         # seed for random number generator
 random_generator = 'MT'              # type of pseudo random number generator, 'MT' | 'MINSTD' | 'RANLUX24' | 'RANLUX48'
 analysis = []                        # ['CoveragesAnalysis', 'TOFAnalysis']
-analysis_interval = 500
-analysis_dump_interval = 10
-TOF_indices = (0, 1, 2)  # reactions do TOF anlaysis
-TOF_start_step = 0   # step number when start to do TOF analysis
-cvgs_convergency = 1e-3
+analysis_interval = 5
+trajectory_dump_interval = 10
 
 # Grid plotting control parameters.
-color_dict = dict(Vac='#FFFFFF',
-                  O='#CD5555',
+color_dict = dict(V='#FFFFFF',
+                  O_s='#CD5555',
                   CO='#363636')
 
 circle_attrs = dict(marker='s',
                     alpha=0.5,
-                    antialiased=True,
+                    antialiased=True,)
 #                    edgecolor='#FFFFFF')
-

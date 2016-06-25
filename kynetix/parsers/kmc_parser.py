@@ -1,181 +1,376 @@
 import logging
+import os
+from operator import mul
+
+import numpy as np
+
+# KMCLibX.
+try:
+    from KMCLib import *
+except ImportError:
+    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    print "!!!                                                   !!!"
+    print "!!!          WARNING: KMCLib is not installed         !!!"
+    print "!!! Any kMC calculation using KMCLib will be disabled !!!"
+    print "!!!                                                   !!!"
+    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
 from kynetix.errors.error import *
 from kynetix.database.lattice_data import grid_neighbor_offsets
+from kynetix.parsers.rxn_parser import *
 from kynetix.parsers.relative_energy_parser import RelativeEnergyParser
+from kynetix.solvers.solver_base import SolverBase
+from kynetix.utilities.check_utilities import *
 
 
 class KMCParser(RelativeEnergyParser):
     def __init__(self, owner):
-        '''
-        A class to parse KMC related data.
-        '''
-        RelativeEnergyParser.__init__(self, owner)
-        # set logger object
-        self.logger = logging.getLogger('model.parsers.KMCParser')
+        """
+        Parser class for KMC simulation.
+        """
+        super(KMCParser, self).__init__(owner)
 
-    @staticmethod
-    def check_active_site_number(site_number):
-        '''
-        check whether this code support the site number.
-        '''
-        # I sincerely hope to remove this boring function in this code someday !-_-
-        if site_number > 2:
-            msg = 'Do not support multi-sites processing auto-generation' +\
-                  'in this version.'
-            raise ProcessParsingError(msg)
-        if site_number < 1:
-            msg = 'No lattice site in the rxn list: %s' % str(elementary_rxn_list)
-            raise ProcessParsingError(msg)
+        # Set logger.
+        self.__logger = logging.getLogger('model.parsers.KMCParser')
 
-    def get_elementary_elements_changes(self, elementary_rxn_list):
-        '''
-        Function to get local elements changes list of an elementary_rxn_list on grid.
+    def construct_sitesmap(self, filename=None):
+        """
+        Function to read kmc_site file and create KMCLibSitesMap objects.
 
         Parameters:
         -----------
-        elementary_rxn_list: an elementary reaction list contains lists of states,
-                             list of lists of str.
+        filename: The name of configuration file, str.
 
-        Example:
+        Returns:
         --------
-        >>> l = [['CO_g', '*_s'], ['CO_s']]
-        >>> m.parser.get_elementary_elements_changes(l)
-        >>> [(['Vac', '*', '*', '*', '*'], ['CO', '*', '*', '*', '*'])]
+        A KMCLibSitesMap objects.
+        """
+        # {{{
+        # Load data.
+        if filename is None:
+            filename = "kmc_sites.py"
 
-        '''
-        #------------------------------------------------------------
-        #  !!! ignore multi-site here, site is 's' by default !!!
-        #      may be added in the future
-        #------------------------------------------------------------
-        reactants, products = elementary_rxn_list[0], elementary_rxn_list[-1]
+        globs, locs = {}, {}
+        execfile(filename, globs, locs)
 
-        # get all elements before and after
-        elements_before_list = self.get_local_elements(reactants)
-        elements_after_list = self.get_local_elements(products)
+        possible_site_types = self._owner.possible_site_types()
 
-        return zip(elements_before_list, elements_after_list)
+        # Check.
+        if "site_types" not in locs:
+            msg = "Parameter 'site_types' must be set for sitesmap initilization."
+            raise SetupError(msg)
+        check_list_tuple(locs["site_types"], str, "site_types")
 
-    def get_local_elements(self, reactants):
-        '''
-        Function to get all possible local configure elements.
+        # Check length of site types.
+        repetitions = self._owner.repetitions()
+        basis_sites = self._owner.basis_sites()
+        nsite = reduce(mul, repetitions)*len(basis_sites)
+        if len(locs["site_types"]) != nsite:
+            msg = "'site_types' must have {} elements.".format(nsite)
+            raise SetupError(msg)
+
+        # Check element type.
+        for site_type in locs["site_types"]:
+            if site_type not in possible_site_types:
+                msg = "Element '{}' not in possible_site_types '{}'."
+                msg = msg.format(site_type, possible_site_types)
+                raise SetupError(msg)
+
+        # Construct lattice.
+        lattice = self.construct_lattice()
+
+        # Construct sitemap.
+        sitesmap = KMCSitesMap(lattice=lattice,
+                               types=locs["site_types"],
+                               possible_types=possible_site_types)
+
+        return sitesmap
+        # }}}
+
+    def construct_lattice(self):
+        """
+        Function to construct KMCLattice object.
+        """
+        # Construct unitcell.
+        cell_vectors = np.array(self._owner.cell_vectors())
+        basis_sites = np.array(self._owner.basis_sites())
+        unit_cell = KMCUnitCell(cell_vectors=cell_vectors, basis_points=basis_sites)
+
+        # Construct lattice.
+        repetitions = self._owner.repetitions()
+        periodic = self._owner.periodic()
+        lattice = KMCLattice(unit_cell=unit_cell,
+                             repetitions=repetitions,
+                             periodic=periodic)
+
+        return lattice
+
+    def parse_configuration(self, filename=None):
+        """
+        Function to read configuration file and create KMCLibConfiguration objects.
 
         Parameters:
         -----------
-        reactants: list of species, list of str.
+        lattice: The lattice of the configurartion as a KMCLattice.
 
-        Example:
+        filename: The name of configuration file, str.
+
+        Returns:
         --------
-        >>> m.parser.get_local_elements(['CO_s', '*_s'])
-        >>> [['CO', 'Vac', '*', '*', '*'],
-             ['CO', '*', 'Vac', '*', '*'],
-             ['CO', '*', '*', 'Vac', '*'],
-             ['CO', '*', '*', '*', 'Vac']]
-        '''
-        # get neighbor offsets
-        grid_type = self._owner.grid_type.lower().strip()
-        neighbor_offsets = grid_neighbor_offsets[grid_type]
+        A KMCLibConfiguration objects.
+        """
+        # {{{
+        # Inner function to initialize emtpy lattice.
+        def init_empty_types():
+            repetitions = self._owner.repetitions()
+            basis_sites = self._owner.basis_sites()
+            nsite = reduce(mul, repetitions)*len(basis_sites)
+            types = [empty_type for i in xrange(nsite)]
+            return types
 
-        local_elements_list = []
-        active_elements = self.get_active_elements(reactants)
+        possible_element_types = self._owner.possible_element_types()
 
-        # one element in the center
-        if len(active_elements) == 1:
-            local_elements = active_elements + ['*']*len(neighbor_offsets)
-            local_elements_list.append(local_elements)
+        # Check.
+        empty_type = self._owner.empty_type()
+        check_string(empty_type, possible_element_types, "empty_type")
 
-        # interact with one element in neighborhood
-        elif len(active_elements) == 2:
-            center_element, neighbor_element = active_elements
-            for i in xrange(len(neighbor_offsets)):
-                surrounds = ['*']*len(neighbor_offsets)
-                surrounds[i] = neighbor_element
-                local_elements = [center_element] + surrounds
-                local_elements_list.append(local_elements)
+        # Load types data in file.
+        if filename is None:
+            filename = "kmc_configuration.py"
 
-        return local_elements_list
+        # Use data in file.
+        if os.path.exists(filename):
+            globs, locs = {}, {}
+            execfile(filename, globs, locs)
+            if "types" in locs:
+                types = locs["types"]
+            else:
+                types = init_empty_types()
+        # Initialize as emtpy lattice.
+        else:
+            types = init_empty_types()
 
-    def get_active_elements(self, reactants):
-        '''
-        Function to get active elements list.
+        # Construct lattice.
+        lattice = self.construct_lattice()
+
+        # Instantialize KMCLattice object.
+        configuration = KMCConfiguration(lattice=lattice,
+                                         types=types,
+                                         possible_types=possible_element_types)
+
+        return configuration
+        # }}}
+
+    def parse_processes(self, filename=None):
+        """
+        Function to read processes file and create KMCLibProcess objects.
 
         Parameters:
         -----------
-        reactants: list of species, list of str.
+        filename: The name of processes file, str.
 
-        Example:
+        Returns:
         --------
-        >>> m.parser.get_active_elements(['CO_s', '*_s'])
-        >>> ['CO', 'Vac']
+        A list of KMCLibProcess objects.
+        """
+        if filename is None:
+            filename = "kmc_processes.py"
 
-        '''
-        site_number = self.get_occupied_site_number(reactants)
-        self.check_active_site_number(site_number)
+        globs, locs = {}, {}
+        execfile(filename, globs, locs)
 
-        strip = lambda sp: sp.split('_')[0]
+        # Get all possible process objects.
+        all_processes = []
+        for process_dict in locs["processes"]:
+            processes = self.__parse_single_process(process_dict)
+            all_processes.extend(processes)
 
-        # unimolecular adsorption and desorption
-        if site_number == 1:
-            for sp in reactants:
-                if sp.endswith('_s'):
-                    if '*' in sp:
-                        center_element = 'Vac'
-                    else:
-                        center_element = strip(sp)
-                    break
+        self.__logger.info("Total {} processes instantalized.".format(len(all_processes)))
 
-            return [center_element]
+        return all_processes
 
-        # reaction, assiciative desorption, dessociative adsorption
-        elif site_number == 2:
-            active_elements = []
-            for sp in reactants:
-                if sp.endswith('_s'):
-                    stoich, sp_name = self.split_species(sp)
-                    if stoich == 2:  # for 2 same species
-                        if '*' in sp_name:
-                            active_elements = ['Vac', 'Vac']
-                        else:
-                            active_elements = [strip(sp_name)]*2
-                        break
-                    elif stoich == 1:
-                        if '*' in sp_name:
-                            active_elements.append('Vac')
-                        else:
-                            active_elements.append(strip(sp_name))
+    def __parse_single_process(self, process_dict):
+        """
+        Private helper function to convert a process dict to KMCLibProcess object.
+        """
+        # {{{
+        # Check process dict.
+        process_dict = check_process_dict(process_dict)
 
-            return active_elements
+        # Check if reaction in rxn_expressions.
+        rxn_expressions = self._owner.rxn_expressions()
 
-    def get_occupied_site_number(self, reactants, target_site_type='s'):
-        '''
-        Function to get site number of an elementary reaction occupied.
+        if process_dict["reaction"] not in rxn_expressions:
+            msg = "'{}' is not in model's rxn_expressions.".format(process_dict["reaction"])
+            raise SetupError(msg)
 
-        Parameters:
-        -----------
-        reactants: a list of reactant species in a elementary reaction,
-                   list of str.
+        # Check if the elements are in possible elements.
+        all_elements = process_dict["elements_before"] + process_dict["elements_after"]
+        possible_elements = self._owner.possible_element_types()
+        for element in all_elements:
+            if element not in possible_elements:
+                msg = "Element '{}' in process not in possible types {}"
+                msg = msg.format(element, possible_elements)
+                raise SetupError(msg)
 
-        target_site_type: site type/name, str
+        # Get rate constants.
+        rf, rr = self.__get_rxn_rates(process_dict["reaction"])
 
-        Example:
-        --------
-        >>> m.parser.get_occupied_site_number(['*_s', 'CO_g'], 's')
-        >>> 1
+        # Get KMCLibProcess objects.
+        processes = []
 
-        '''
+        for basis_site in process_dict["basis_sites"]:
+            for coordinates in process_dict["coordinates_group"]:
+                self.__logger.info("Coordinates = {}".format(coordinates))
+                self.__logger.info("Basis site = {}".format(basis_site))
 
-        site_number = 0
-        for species in reactants:
-            if '*' in species:  # site
-                sites_dict = self.parse_site_expression(species)
-                for site_type in sites_dict:
-                    if site_type == target_site_type:
-                        site_number += sites_dict[site_type]['number']
-            else:  # not site
-                species_dict = self.parse_species_expression(species)
-                for species_type in species_dict:
-                    site_type = species_dict[species_type]['site']
-                    if site_type == target_site_type:
-                        site_number += species_dict[species_type]['number']
+                # Forward process.
+                fprocess = KMCProcess(coordinates=coordinates,
+                                      elements_before=process_dict["elements_before"],
+                                      elements_after=process_dict["elements_after"],
+                                      basis_sites=[basis_site],
+                                      rate_constant=rf)
+                processes.append(fprocess)
+                # Info output.
+                msg = "Forward: {} -> {}".format(process_dict["elements_before"],
+                                                 process_dict["elements_after"])
+                self.__logger.info(msg)
 
-        return site_number
+                # Reverse process.
+                rprocess = KMCProcess(coordinates=coordinates,
+                                      elements_before=process_dict["elements_after"],
+                                      elements_after=process_dict["elements_before"],
+                                      basis_sites=[basis_site],
+                                      rate_constant=rr)
+                processes.append(rprocess)
+                # Info output.
+                msg = "Reverse: {} -> {}".format(process_dict["elements_before"],
+                                                 process_dict["elements_after"])
+                self.__logger.info(msg)
+
+        self.__logger.info("\n")
+
+        return processes
+        # }}}
+
+    def __get_rxn_rates(self, rxn_expression):
+        """
+        Private helper function to get rate constants for an elementary reaction.
+        """
+        # {{{
+        # Get raw relative energies.
+        Gaf, Gar, dG = self.__get_relative_energies(rxn_expression)
+        self.__logger.info("{} (Gaf={}, Gar={}, dG={})".format(rxn_expression, Gaf, Gar, dG))
+
+        # Get reactants and product types.
+        rxn_equation = RxnEquation(rxn_expression)
+        formula_list = rxn_equation.to_formula_list()
+        istate, fstate = formula_list[0], formula_list[-1]
+        is_types = [formula.type() for formula in istate]
+        fs_types = [formula.type() for formula in fstate]
+        self.__logger.info("species type: {} -> {}".format(is_types, fs_types))
+
+        # Get rate constant.
+        T = self._owner.temperature()
+        Auc = self._owner.unitcell_area()
+        act_ratio = self._owner.active_ratio()
+
+        # Get model corrector.
+        corrector = self._owner.corrector()
+        # Check.
+        if type(corrector) == str:
+            msg = "No instantialized corrector, try to modify '{}'"
+            msg = msg.format(self._owner.setup_file())
+            raise SetupError(msg)
+
+        # Forward rate.
+
+        # Gas participating.
+        if "gas" in is_types:
+            # Get gas pressure.
+            idx = is_types.index("gas")
+            formula = istate[idx]
+            gas_name = formula.formula()
+            p = self._owner.species_definitions()[gas_name]["pressure"]
+            
+            # Use Collision Theory.
+            Ea = Gaf
+            m = self.get_molecular_mass(formula.species(), absolute=True)
+            rf = SolverBase.get_kCT(Ea, Auc, act_ratio, p, m, T)
+            self.__logger.info("R(forward) = {} s^-1 (Collision Theory)".format(rf))
+        # No gas participating.
+        else:
+            # ThermoEquilibrium and gas species in final state.
+            if "gas" in fs_types and Gar < 1e-10:
+                # Correction energy.
+                idx = fs_types.index("gas")
+                formula = fstate[idx]
+                gas_name = formula.formula()
+                p = self._owner.species_definitions()[gas_name]["pressure"]
+                m = self.get_molecular_mass(formula.species(), absolute=True)
+                correction_energy = corrector.entropy_correction(gas_name, m, p, T)
+                Gaf += correction_energy
+
+                # Info output.
+                msg = "Correct forward barrier: {} -> {}".format(Gaf-correction_energy, Gaf)
+                self.__logger.info(msg)
+
+            rf = SolverBase.get_kTST(Gaf, T)
+            self.__logger.info("R(forward) = {} s^-1 (Transition State Theory)".format(rf))
+
+        # Reverse rate.
+
+        # Gas participating.
+        if "gas" in fs_types:
+            # Get gas pressure.
+            idx = fs_types.index("gas")
+            formula = fstate[idx]
+            gas_name = formula.formula()
+            p = self._owner.species_definitions()[gas_name]["pressure"]
+            
+            # Use Collision Theory.
+            Ea = Gar
+            m = self.get_molecular_mass(formula.species(), absolute=True)
+            rr = SolverBase.get_kCT(Ea, Auc, act_ratio, p, m, T)
+            self.__logger.info("R(reverse) = {} s^-1 (Collision Theory)".format(rr))
+        # No gas participating.
+        else:
+            # ThermoEquilibrium and gas species in initial state.
+            if "gas" in is_types and Gaf < 1e-10:
+                # Correction energy.
+                idx = is_types.index("gas")
+                formula = istate[idx]
+                gas_name = formula.formula()
+                p = self._owner.species_definitions()[gas_name]["pressure"]
+                m = self.get_molecular_mass(formula.species(), absolute=True)
+                correction_energy = corrector.entropy_correction(gas_name, m, p, T)
+                Gar += correction_energy
+
+                # Info output.
+                msg = "Correct reverse barrier: {} -> {}".format(Gar-correction_energy, Gar)
+                self.__logger.info(msg)
+
+            rr = SolverBase.get_kTST(Gar, T)
+            self.__logger.info("R(reverse) = {} s^-1 (Transition State Theory)".format(rr))
+
+        return rf, rr
+        # }}}
+
+    def __get_relative_energies(self, rxn_expression):
+        """
+        Private helper function to get relative energies for an elementary reaction.
+        """
+        # Check if parser has relative energies.
+        if not self._has_relative_energy:
+            msg = "Parser has no relative energies, try parse_data()."
+            raise AttributeError(msg)
+
+        # Get raw relative energies.
+        rxn_expressions = self._owner.rxn_expressions()
+        idx = rxn_expressions.index(rxn_expression)
+
+        Gaf, dG = self._Ga[idx], self._dG[idx]
+        Gar = Gaf - dG
+
+        return Gaf, Gar, dG
+

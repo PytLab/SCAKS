@@ -5,7 +5,6 @@ import logging.config
 import os
 import sys
 
-
 from kynetix.database.thermo_data import kB_eV, h_eV
 from kynetix.errors.error import *
 from kynetix.functions import *
@@ -72,6 +71,7 @@ class KineticModel(object):
         --------
         inputs_dict: The valid input dict (REFERENCE of input).
         """
+        # {{{
         invalid_parameters = []
         for key, value in inputs_dict.iteritems():
             # Check parameter validity.
@@ -104,9 +104,15 @@ class KineticModel(object):
             del inputs_dict[invalid_param]
 
         return inputs_dict
+        # }}}
 
-    def run_mkm(self, init_cvgs=None, relative=False, correct_energy=False,
-                solve_ode=False, fsolve=False, coarse_guess=True,
+    def run_mkm(self,
+                init_cvgs=None,
+                relative=False,
+                correct_energy=False,
+                solve_ode=False,
+                fsolve=False,
+                coarse_guess=True,
                 data_file="/rel_energy.py"):
         """
         Function to solve Micro-kinetic model using Steady State Approxmiation
@@ -125,6 +131,7 @@ class KineticModel(object):
         data_file: The name of data file, str.
 
         """
+        # {{{
         self.__logger.info('--- Solve Micro-kinetic model ---')
 
         # Get parser and solver.
@@ -205,13 +212,42 @@ class KineticModel(object):
         tofs = solver.get_tof(ss_cvgs)
 
         return
+        # }}}
 
-    def run_kmc(self):
-        '''
-        Function to do kinetic Monte Carlo simulation to
-        get steady state coverages and turnover frequencies.
-        '''
-        self.solver.run()
+    def run_kmc(self,
+                processes_file=None,
+                configuration_file=None,
+                sitesmap_file=None,
+                scripting=True,
+                trajectory_type="lattice"):
+        """
+        Function to do kinetic Monte Carlo simulation.
+
+        Parameters:
+        -----------
+        processes_file: The name of processes definition file, str.
+                        the default name is "kmc_processes.py".
+
+        configuration_file: The name of configuration definition file, str.
+                            the default name is "kmc_processes.py".
+
+        sitesmap_file: The name of sitesmap definition file, str.
+                       the default name is "kmc_processes.py".
+
+        scripting: generate lattice script or not, True by default, bool.
+
+        trajectory_type: The type of trajectory to use, the default type is "lattice", str.
+                         "xyz" | "lattice". 
+        """
+        parser = self.__parser
+
+        # Parse processes, configuration, sitesmap.
+        self.__processes = parser.parse_processes(filename=processes_file)
+        self.__configuration = parser.parse_configuration(filename=configuration_file)
+        self.__sitesmap = parser.construct_sitesmap(filename=sitesmap_file)
+
+        # Run the lattice model.
+        self.__solver.run(scripting, trajectory_type)
 
     def __set_parser(self, parser_name):
         """
@@ -304,7 +340,21 @@ class KineticModel(object):
             if key in self.__tools:
                 continue
             setattr(self, "_" + self.__class_name + "__" + key, locs[key])
-            self.__logger.info('{} = {}'.format(key, str(locs[key])))
+
+            # Output info.
+            specials = ("rxn_expressions", "species_definitions")
+            if key not in specials:
+                self.__logger.info('{} = {}'.format(key, str(locs[key])))
+
+            # If it is a iterable, loop to output.
+            else:
+                self.__logger.info("{} =".format(key))
+                if type(locs[key]) is dict:
+                    for k, v in locs[key].iteritems():
+                        self.__logger.info("        {}: {}".format(k, v))
+                else:
+                    for item in locs[key]:
+                        self.__logger.info("        {}".format(item))
 
         # assign parser ahead to provide essential attrs for other tools
         self.__logger.info('instantiate {}'.format(str(locs['parser'])))
@@ -312,7 +362,7 @@ class KineticModel(object):
 
         # if parser is kmc_parser use kmc_solver correspondingly
         if locs['parser'] == 'KMCParser':
-            locs['solver'] = 'KMCLibSolver'
+            locs['solver'] = 'KMCSolver'
             self.__logger.info('set solver [ KMCSolver ].')
 
         # use parser parse essential attrs for other tools
@@ -338,13 +388,11 @@ class KineticModel(object):
                     pyfile = key + 's'
                 else:
                     pyfile = key
-                basepath = os.path.dirname(
-                    inspect.getfile(inspect.currentframe()))
+                basepath = os.path.dirname(inspect.getfile(inspect.currentframe()))
                 if basepath not in sys.path:
                     sys.path.append(basepath)
                 sublocs = {}
-                _temp = \
-                    __import__(pyfile, globals(), sublocs, [locs[key]])
+                _temp = __import__(pyfile, globals(), sublocs, [locs[key]])
                 tool_instance = getattr(_temp, locs[key])(owner=self)
                 setattr(self, "_" + self.__class_name + "__" + key, tool_instance)
                 self.__logger.info('{} = {}'.format(key, locs[key]))
@@ -622,4 +670,149 @@ class KineticModel(object):
         Query function for reference energy dict.
         """
         return self.__ref_energies
+
+    # ------------------------------------
+    # KMC Parameters query functions.
+
+    @return_deepcopy
+    def cell_vectors(self):
+        """
+        Query function for cell base vectors.
+        """
+        return self.__cell_vectors
+
+    @return_deepcopy
+    def basis_sites(self):
+        """
+        Query function for basis sites.
+        """
+        return self.__basis_sites
+
+    def unitcell_area(self):
+        """
+        Query function for area of unitcell.
+        """
+        return self.__unitcell_area
+
+    def active_ratio(self):
+        """
+        Query function for active ratio(Ast/Auc).
+        """
+        return self.__active_ratio
+
+    def repetitions(self):
+        """
+        Query function for lattice repetitions.
+        """
+        return self.__repetitions
+
+    def periodic(self):
+        """
+        Query function for lattice periodic.
+        """
+        return self.__periodic
+
+    def nstep(self):
+        """
+        Query function for number of kmc step.
+        """
+        return self.__nstep
+
+    def random_seed(self):
+        """
+        Query function for random seed.
+        """
+        try:
+            return self.__seed
+        except AttributeError:
+            return None
+
+    def trajectory_dump_interval(self):
+        """
+        Query function for trajectory dump interval.
+        """
+        try:
+            return self.__trajectory_dump_interval
+        except AttributeError:
+            return None
+
+    def random_generator(self):
+        """
+        Query function for random generator name.
+        """
+        try:
+            return self.__random_generator
+        except AttributeError:
+            return None
+
+    def analysis(self):
+        """
+        Query function for analysis names.
+        """
+        return self.__analysis
+
+    def analysis_interval(self):
+        """
+        Query function for analysis interval.
+        """
+        try:
+            return self.__analysis_interval
+        except AttributeError:
+            return None
+
+    def analysis_dump_interval(self):
+        """
+        Query function for analysis dump interval.
+        """
+        return self.__analysis_dump_interval
+
+    @return_deepcopy
+    def color_dict(self):
+        """
+        Query function for color dict for elements on surface.
+        """
+        return self.__color_dict
+
+    @return_deepcopy
+    def circle_attrs(self):
+        """
+        Query function for circle attributes for circle plotting.
+        """
+        return self.__circle_attrs
+
+    def processes(self):
+        """
+        Query function for processes list.
+        """
+        return self.__processes
+
+    def configuration(self):
+        """
+        Query function for KMCConfiguration of model.
+        """
+        return self.__configuration
+
+    def sitesmap(self):
+        """
+        Query function for KMCSitesMap of model.
+        """
+        return self.__sitesmap
+
+    def possible_element_types(self):
+        """
+        Query function for possible element types.
+        """
+        return self.__possible_element_types
+
+    def empty_type(self):
+        """
+        Query function for empty element type.
+        """
+        return self.__empty_type
+
+    def possible_site_types(self):
+        """
+        Query function for possible site types.
+        """
+        return self.__possible_site_types
 
