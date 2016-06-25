@@ -70,6 +70,7 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
                                       self.__coverage_ratios)
 
         # Insert coverage of emtpy site.
+        coverages = list(coverages)
         empty_coverage = 1.0 - sum(coverages)
         coverages.insert(empty_type_idx, empty_coverage)
 
