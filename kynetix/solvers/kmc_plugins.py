@@ -1,3 +1,4 @@
+from copy import deepcopy
 import logging
 
 import numpy as np
@@ -35,6 +36,9 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         -----------
         kmc_model: KMC model object of Kynetix.KineticModel.
         """
+        # LatticeModel object.
+        self.__kmc_model = kmc_model
+
         # The ratio of a basis site occupied.
         self.__coverage_ratios = (1.0, 1./2, 1./2, 1./4)
 
@@ -53,11 +57,22 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         self.__times.append(time)
         self.__steps.append(step)
 
+        # Remove empty type from possible_types.
+        possible_types_copy = deepcopy(self.__possible_types)
+        empty_type = self.__kmc_model.empty_type()
+        empty_type_idx = possible_types_copy.index(empty_type)
+        possible_types_copy.pop(empty_type_idx)
+
         # Collect species coverages.
         types = configuration.types()
         coverages = collect_coverages(types,
-                                      self.__possible_types,
+                                      possible_types_copy,
                                       self.__coverage_ratios)
+
+        # Insert coverage of emtpy site.
+        empty_coverage = 1.0 - sum(coverages)
+        coverages.insert(empty_type_idx, empty_coverage)
+
         self.__coverages.append(coverages)
 
     def registerStep(self, step, time, configuration):

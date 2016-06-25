@@ -24,6 +24,10 @@ def collect_coverages(types, possible_types, coverage_ratios):
     # Loop to collect coverages.
     all_ratios = coverage_ratios*nsite
     for ratio, element in zip(all_ratios, types):
+        # Ignore the empty type.
+        if element not in possible_types:
+            continue
+
         idx = possible_types.index(element)
         ntypes[idx] += ratio
 
