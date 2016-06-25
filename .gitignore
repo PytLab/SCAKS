@@ -56,9 +56,10 @@ Temporary Items
 
 # swig auto-generated files
 *_wrap.c
-pynetics/solvers/plugin_backends/data.py
-pynetics/solvers/plugin_backends/kmc_functions.py
+kynetix/solvers/plugin_backends/data.py
+kynetix/solvers/plugin_backends/kmc_functions.py
 extensions/*.py
+*_wrap.cxx
 
 # unittest files
 extensions/unittest/*.xml
