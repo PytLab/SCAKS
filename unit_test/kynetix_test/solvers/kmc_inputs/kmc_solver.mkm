@@ -38,6 +38,7 @@ active_ratio = 4./9        # Ast / Auc
 repetitions = (3, 3, 1)   # (x, y, z)
 periodic = (True, True, False)           # periodic boundary condition
 possible_element_types = ["O", "V", "O_s", "C"]
+empty_type = "V"
 possible_site_types = ["P"]
 
 

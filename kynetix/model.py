@@ -804,6 +804,12 @@ class KineticModel(object):
         """
         return self.__possible_element_types
 
+    def empty_type(self):
+        """
+        Query function for empty element type.
+        """
+        return self.__empty_type
+
     def possible_site_types(self):
         """
         Query function for possible site types.

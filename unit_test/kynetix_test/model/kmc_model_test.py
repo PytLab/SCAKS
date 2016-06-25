@@ -28,6 +28,9 @@ class KMCModelTest(unittest.TestCase):
         self.assertTrue(hasattr(model, "_KineticModel__random_generator"))
         self.assertTrue(hasattr(model, "_KineticModel__analysis"))
         self.assertTrue(hasattr(model, "_KineticModel__analysis_interval"))
+        self.assertTrue(hasattr(model, "_KineticModel__possible_element_types"))
+        self.assertTrue(hasattr(model, "_KineticModel__possible_site_types"))
+        self.assertTrue(hasattr(model, "_KineticModel__empty_type"))
         self.assertTrue(hasattr(model, "_KineticModel__color_dict"))
         self.assertTrue(hasattr(model, "_KineticModel__circle_attrs"))
 
