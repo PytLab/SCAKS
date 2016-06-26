@@ -12,9 +12,6 @@ std::vector<double> collect_coverages(const std::vector<std::string> & types,
     // Number of different types.
     std::vector<double> ntypes(possible_types.size(), 0.0);
 
-    // Iterator pointing to finding result.
-    std::vector<int>::iterator it;
-
     // Variables for coverage ratio.
     double ratio;
     int ratio_idx;
@@ -30,9 +27,9 @@ std::vector<double> collect_coverages(const std::vector<std::string> & types,
         ratio = coverage_ratios[ratio_idx];
 
         // Find the element in possible types, accumulate coverage.
-        std::vector<double>::iterator ntypes_it = ntypes.begin();
-        std::vector<std::string>::const_iterator possible_types_it = possible_types.begin();
-        const std::vector<std::string>::const_iterator end = possible_types.end();
+        DoubleIterType ntypes_it = ntypes.begin();
+        ConstStrIterType possible_types_it = possible_types.begin();
+        const ConstStrIterType end = possible_types.end();
 
         for (; possible_types_it != end; ++ntypes_it, ++possible_types_it)
         {
