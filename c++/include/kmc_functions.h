@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 
-// STL iterator alias.
+// STL container iterator alias.
 typedef std::vector<double>::iterator DoubleIterType;
 typedef std::vector<std::string>::iterator StrIterType;
 typedef std::vector<std::string>::const_iterator ConstStrIterType;

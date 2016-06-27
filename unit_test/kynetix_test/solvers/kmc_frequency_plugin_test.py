@@ -8,15 +8,15 @@ from kynetix.model import KineticModel
 from kynetix.solvers import *
 
 
-class KMCCoveragesPluginTest(unittest.TestCase):
+class KMCFrequencyPluginTest(unittest.TestCase):
 
     def setUp(self):
         # Test case setting.
         self.maxDiff = None
 
-    def test_run_with_coverages(self):
-        " Make sure the model can run with frequency analysis. "
-        model = KineticModel(setup_file="kmc_inputs/kmc_coverages_plugin.mkm",
+    def test_run_with_frequency(self):
+        " Make sure KMCSolver object can be constructed correctly. "
+        model = KineticModel(setup_file="kmc_inputs/kmc_frequency_plugin.mkm",
                              verbosity=logging.WARNING)
         parser = model.parser()
         parser.parse_data(filename="kmc_inputs/rel_energy.py", relative=True)
@@ -27,6 +27,6 @@ class KMCCoveragesPluginTest(unittest.TestCase):
                       sitesmap_file="kmc_inputs/kmc_sites.py")
 
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(KMCCoveragesPluginTest)
+    suite = unittest.TestLoader().loadTestsFromTestCase(KMCFrequencyPluginTest)
     unittest.TextTestRunner(verbosity=2).run(suite)
 
