@@ -52,7 +52,7 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         # Set logger.
         self.__logger = logging.getLogger("model.solvers.KMCSolver.CoveragesAnalysis")
 
-    def setup(self, step, time, configuration):
+    def setup(self, step, time, configuration, interactions):
         # Append time and step.
         self.__times.append(time)
         self.__steps.append(step)
@@ -76,9 +76,9 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
 
         self.__coverages.append(coverages)
 
-    def registerStep(self, step, time, configuration):
+    def registerStep(self, step, time, configuration, interactions):
         # Do the same thing in setup().
-        self.setup(step, time, configuration)
+        self.setup(step, time, configuration, interactions)
 
     def finalize(self):
         """
@@ -97,6 +97,72 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         with open(filename, "w") as f:
             f.write(content)
         self.__logger.info("coverages informations are written to {}".format(filename))
+
+        return
+
+
+class FrequencyAnalysis(KMCAnalysisPlugin):
+    """
+    KMC plugin to do On-The-Fly process occurence frequency analysis.
+    """
+    def __init__(self, kmc_model):
+        """
+        Constructor of TOFAnalysis object.
+
+        Parameters:
+        -----------
+        kmc_model: KMC model object of Kynetix.KineticModel.
+        """
+        # LatticeModel object.
+        self.__kmc_model = kmc_model
+
+        # Recorder variables.
+        self.__times = []
+        self.__steps = []
+
+        # Process indices.
+        self.__picked_indices = []
+
+        # Process pick statistics list.
+        nprocess = len(kmc_model.processes())
+        self.__process_occurencies = [0]*nprocess
+
+        # Set logger.
+        self.__logger = logging.getLogger("model.solvers.KMCSolver.FrequencyAnalysis")
+
+    def setup(self, step, time, configuration, interactions):
+        # Append time and step.
+        self.__times.append(time)
+        self.__steps.append(step)
+
+    def registerStep(self, step, time, configuration, interactions):
+        # Append time and step.
+        self.__times.append(time)
+        self.__steps.append(step)
+
+        # Append picked index.
+        picked_index = interactions.pickedIndex()
+        self.__picked_indices.append(picked_index)
+
+        # Add to collection list.
+        self.__process_occurencies[picked_index] += 1
+
+    def finalize(self):
+        """
+        Write all data to files.
+        """
+        # Get data strings.
+        picked_indices_str = get_list_string("picked_indices", self.__picked_indices)
+        occurencies_str = get_list_string("process_occurencies", self.__process_occurencies)
+        times_str = get_list_string("times", self.__times)
+        steps_str = get_list_string("steps", self.__steps)
+
+        # Write to file.
+        content = file_header + times_str + steps_str + picked_indices_str + occurencies_str
+        filename = "auto_frequencies.py"
+        with open(filename, "w") as f:
+            f.write(content)
+        self.__logger.info("frequency informations are written to {}".format(filename))
 
         return
 
