@@ -96,7 +96,7 @@ def numerical_jacobian(f, x, matrix, num_repr='gmpy', h=1e-10, direction='right'
     return J
 
 
-def get_list_string(var_name, list_obj):
+def get_list_string(var_name, list_obj, ncols=5):
     '''
     Function to get string format of a list object.
 
@@ -105,6 +105,8 @@ def get_list_string(var_name, list_obj):
     var_name: name of variable, str.
 
     list_obj: object of variable.
+
+    ncols: number of columns. 
 
     Example:
     --------
@@ -126,7 +128,7 @@ def get_list_string(var_name, list_obj):
             data += ('\n' + indent + str(elem) + ',')
             continue
         # 5 items a line by default
-        if idx % 5 == 0:
+        if idx % ncols == 0:
             data += ('\n' + indent)
 
         # add single quotes for string

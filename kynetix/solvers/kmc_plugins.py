@@ -152,8 +152,8 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         Write all data to files.
         """
         # Get data strings.
-        picked_indices_str = get_list_string("picked_indices", self.__picked_indices)
-        occurencies_str = get_list_string("process_occurencies", self.__process_occurencies)
+        picked_indices_str = get_list_string("picked_indices", self.__picked_indices, ncols=40)
+        occurencies_str = get_list_string("process_occurencies", self.__process_occurencies, ncols=40)
         times_str = get_list_string("times", self.__times)
         steps_str = get_list_string("steps", self.__steps)
 
