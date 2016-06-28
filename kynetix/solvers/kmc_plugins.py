@@ -28,7 +28,7 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
     """
     KMC plugin to do On-The-Fly coverage analysis.
     """
-    def __init__(self, kmc_model):
+    def __init__(self, kmc_model, filename="auto_coverages.py"):
         """
         Constructor of CoverageAnalysis object.
 
@@ -51,6 +51,9 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         
         # Set logger.
         self.__logger = logging.getLogger("model.solvers.KMCSolver.CoveragesAnalysis")
+
+        # Set data file name.
+        self.__filename = filename
 
     def setup(self, step, time, configuration, interactions):
         # Append time and step.
@@ -93,10 +96,12 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
 
         # Write to file.
         content = file_header + times_str + steps_str + coverages_str + possible_types_str
-        filename = "auto_coverages.py"
-        with open(filename, "w") as f:
+        with open(self.__filename, "w") as f:
             f.write(content)
-        self.__logger.info("coverages informations are written to {}".format(filename))
+
+        # Info output.
+        msg = "coverages informations are written to {}".format(self.__filename)
+        self.__logger.info(msg)
 
         return
 
@@ -105,13 +110,20 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
     """
     KMC plugin to do On-The-Fly process occurence frequency analysis.
     """
-    def __init__(self, kmc_model):
+    def __init__(self,
+                 kmc_model,
+                 filename="auto_frequency.py",
+                 buffer_size=500):
         """
         Constructor of TOFAnalysis object.
 
         Parameters:
         -----------
         kmc_model: KMC model object of Kynetix.KineticModel.
+
+        filename: The name of data file, str.
+
+        buffer_size: The max length of recorder variables.
         """
         # LatticeModel object.
         self.__kmc_model = kmc_model
@@ -130,10 +142,26 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         # Set logger.
         self.__logger = logging.getLogger("model.solvers.KMCSolver.FrequencyAnalysis")
 
+        # Max length of recorder variables.
+        self.__buffer_size = buffer_size
+
+        # Name of data file.
+        self.__filename = filename
+
     def setup(self, step, time, configuration, interactions):
         # Append time and step.
         self.__times.append(time)
         self.__steps.append(step)
+
+        # Flush counter.
+        self.__flush_counter = 0
+
+        # Create statistic data file.
+        variables_str = ("times = []\nsteps = []\npicked_indices = []\n" +
+                         "process_occurencies = []\n")
+        with open(self.__filename, "w") as f:
+            content = file_header + variables_str
+            f.write(content)
 
     def registerStep(self, step, time, configuration, interactions):
         # Append time and step.
@@ -147,22 +175,62 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         # Add to collection list.
         self.__process_occurencies[picked_index] += 1
 
+        # Check and flush.
+        if len(self.__picked_indices) > self.__buffer_size:
+            self.__flush()
+
     def finalize(self):
         """
         Write all data to files.
         """
-        # Get data strings.
-        picked_indices_str = get_list_string("picked_indices", self.__picked_indices, ncols=40)
-        occurencies_str = get_list_string("process_occurencies", self.__process_occurencies, ncols=40)
-        times_str = get_list_string("times", self.__times)
-        steps_str = get_list_string("steps", self.__steps)
+        # Flush data left to file.
+        self.__flush()
 
-        # Write to file.
-        content = file_header + times_str + steps_str + picked_indices_str + occurencies_str
-        filename = "auto_frequencies.py"
-        with open(filename, "w") as f:
+        # Write process occurencies to file.
+        occurencies_str = get_list_string("process_occurencies",
+                                          self.__process_occurencies)
+        with open(self.__filename, "a") as f:
+            f.write(occurencies_str)
+
+        # Info output.
+        msg = "All frequency informations are written to {}".format(self.__filename)
+        self.__logger.info(msg)
+
+    def __flush(self):
+        """
+        Private function to flush data in buffer.
+        """
+        # Get picked index extension strings.
+        var_name = "picked_indices_{}".format(self.__flush_counter)
+        list_str = get_list_string(var_name, self.__picked_indices, ncols=40)
+        extend_str = "picked_indices.extend({})\n\n".format(var_name)
+        picked_indices_str = list_str + extend_str
+
+        # Get times extension strings.
+        var_name = "times_{}".format(self.__flush_counter)
+        list_str = get_list_string(var_name, self.__times)
+        extend_str = "times.extend({})\n\n".format(var_name)
+        times_str = list_str + extend_str
+
+        # Get steps extension strings.
+        var_name = "steps_{}".format(self.__flush_counter)
+        list_str = get_list_string(var_name, self.__steps, ncols=10)
+        extend_str = "steps.extend({})\n\n".format(var_name)
+        steps_str = list_str + extend_str
+
+        # Get all content to be flushed.
+        comment = ("\n# -------------------- flush {} " +
+                   "---------------------\n").format(self.__flush_counter)
+        content = comment + times_str + steps_str + picked_indices_str
+
+        # Flush to file.
+        with open(self.__filename, "a") as f:
             f.write(content)
-        self.__logger.info("frequency informations are written to {}".format(filename))
 
-        return
+        # Free buffers.
+        self.__picked_indices = []
+        self.__steps = []
+        self.__times = []
+
+        self.__flush_counter += 1
 
