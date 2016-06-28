@@ -85,6 +85,24 @@ def check_ref_energies(ref_energies):
     return ref_energies
 
 
+def check_analysis_interval(analysis_interval):
+    """
+    Check the analysis_interval in setup file.
+
+    Return:
+    -------
+    analysis_interval: The valid analysis interval.
+    """
+    if type(analysis_interval) not in (int, list, tuple):
+        raise SetupError("Invalid analysis_interval: int or list is expected.")
+
+    if type(analysis_interval) in (list, tuple):
+        check_list_tuple(analysis_interval, int, "analysis_interval")
+
+    # If all test passed, return.
+    return analysis_interval
+
+
 def check_string(string, string_range=None, param_name="Tested object"):
     """
     Check the string type and if it is in the given sequence.
@@ -212,7 +230,7 @@ type_rules = {
     "seed": (int, ),
     "random_generator": (str, ),
     "analysis": (check_list_tuple, str),
-    "analysis_interval": (int, ),
+    "analysis_interval": (check_analysis_interval, ),
     "trajectory_dump_interval": (int, ),
     "color_dict": (dict, ),
     "circle_attrs": (dict, ),
