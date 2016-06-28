@@ -325,6 +325,48 @@ class KMCParserTest(unittest.TestCase):
         self.assertListEqual(ref_types, ret_types)
         # }}}
 
+    def test_process_reactions_mapping(self):
+        " Test process mapping query function. "
+        model = KineticModel(setup_file="kmc_inputs/kmc_parser.mkm",
+                             verbosity=logging.WARNING)
+        parser = model.parser()
+        parser.parse_data(filename="kmc_inputs/rel_energy.py", relative=True)
+        p = parser.parse_processes(filename="kmc_inputs/kmc_processes.py")
+
+        ref_mapping = ['CO_g + *_t -> CO_t(->)',
+                       'CO_g + *_t -> CO_t(<-)',
+                       'CO_g + *_b -> CO_b(->)',
+                       'CO_g + *_b -> CO_b(<-)',
+                       'CO_g + *_b -> CO_b(->)',
+                       'CO_g + *_b -> CO_b(<-)',
+                       'O2_g + 2*_b -> 2O_b(->)',
+                       'O2_g + 2*_b -> 2O_b(<-)',
+                       'O2_g + 2*_b -> 2O_b(->)',
+                       'O2_g + 2*_b -> 2O_b(<-)',
+                       'O2_g + 2*_b -> 2O_b(->)',
+                       'O2_g + 2*_b -> 2O_b(<-)',
+                       'O2_g + 2*_b -> 2O_b(->)',
+                       'O2_g + 2*_b -> 2O_b(<-)',
+                       'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(->)',
+                       'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(<-)',
+                       'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(->)',
+                       'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(<-)',
+                       'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(->)',
+                       'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(<-)',
+                       'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(->)',
+                       'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(<-)',
+                       'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(->)',
+                       'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(<-)',
+                       'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(->)',
+                       'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(<-)',
+                       'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(->)',
+                       'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(<-)',
+                       'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(->)',
+                       'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(<-)']
+        ret_mapping = parser.process_mapping()
+
+        self.assertListEqual(ref_mapping, ret_mapping)
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(KMCParserTest)
     unittest.TextTestRunner(verbosity=2).run(suite)
