@@ -51,8 +51,8 @@ processes = [
                              [[0.0, 0.0, 0.0], [0.5, -0.5, 0.0]],
                              [[0.0, 0.0, 0.0], [-0.5, 0.5, 0.0]],
                              [[0.0, 0.0, 0.0], [-0.5, -0.5, 0.0]]],
-        "elements_before": ["V", "V"],
-        "elements_after": ["O_s", "O_s"],
+        "elements_before": ["C", "O_s"],
+        "elements_after": ["V", "V"],
         "basis_sites": [1, 2],
     }
 ]
