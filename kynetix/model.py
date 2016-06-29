@@ -246,6 +246,9 @@ class KineticModel(object):
         self.__configuration = parser.parse_configuration(filename=configuration_file)
         self.__sitesmap = parser.construct_sitesmap(filename=sitesmap_file)
 
+        # Set process reaction mapping.
+        self.__process_mapping = parser.process_mapping()
+
         # Run the lattice model.
         self.__solver.run(scripting, trajectory_type)
 
@@ -815,4 +818,10 @@ class KineticModel(object):
         Query function for possible site types.
         """
         return self.__possible_site_types
+
+    def process_mapping(self):
+        """
+        Query function for process reaction type mapping.
+        """
+        return self.__process_mapping
 
