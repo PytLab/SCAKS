@@ -33,6 +33,9 @@ class KMCParser(RelativeEnergyParser):
         # Set logger.
         self.__logger = logging.getLogger('model.parsers.KMCParser')
 
+        # Set process reaction mapping.
+        self.__process_mapping = []
+
     def construct_sitesmap(self, filename=None):
         """
         Function to read kmc_site file and create KMCLibSitesMap objects.
@@ -180,6 +183,7 @@ class KMCParser(RelativeEnergyParser):
         execfile(filename, globs, locs)
 
         # Get all possible process objects.
+        self.__process_mapping = []
         all_processes = []
         for process_dict in locs["processes"]:
             processes = self.__parse_single_process(process_dict)
@@ -231,6 +235,10 @@ class KMCParser(RelativeEnergyParser):
                                       basis_sites=[basis_site],
                                       rate_constant=rf)
                 processes.append(fprocess)
+
+                # Add process reaction mapping.
+                self.__process_mapping.append("{}(->)".format(process_dict["reaction"]))
+
                 # Info output.
                 msg = "Forward: {} -> {}".format(process_dict["elements_before"],
                                                  process_dict["elements_after"])
@@ -243,6 +251,10 @@ class KMCParser(RelativeEnergyParser):
                                       basis_sites=[basis_site],
                                       rate_constant=rr)
                 processes.append(rprocess)
+
+                # Add process reaction mapping.
+                self.__process_mapping.append("{}(<-)".format(process_dict["reaction"]))
+
                 # Info output.
                 msg = "Reverse: {} -> {}".format(process_dict["elements_before"],
                                                  process_dict["elements_after"])
@@ -373,4 +385,10 @@ class KMCParser(RelativeEnergyParser):
         Gar = Gaf - dG
 
         return Gaf, Gar, dG
+
+    def process_mapping(self):
+        """
+        Query function for process reaction type mapping.
+        """
+        return self.__process_mapping
 

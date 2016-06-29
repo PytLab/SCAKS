@@ -21,7 +21,7 @@ except ImportError:
     from kynetix.solvers.kmc_functions import *
 
 from kynetix import file_header
-from kynetix.functions import get_list_string
+from kynetix.functions import get_list_string, get_dict_string
 
 
 class CoveragesAnalysis(KMCAnalysisPlugin):
@@ -176,7 +176,7 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         self.__process_occurencies[picked_index] += 1
 
         # Check and flush.
-        if len(self.__picked_indices) > self.__buffer_size:
+        if len(self.__picked_indices) >= self.__buffer_size:
             self.__flush()
 
     def finalize(self):
@@ -189,11 +189,27 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         # Write process occurencies to file.
         occurencies_str = get_list_string("process_occurencies",
                                           self.__process_occurencies)
+
+        # Calculate reaction occurencies.
+        process_mapping = self.__kmc_model.process_mapping()
+
+        # Construct reaction occurencies dict.
+        reaction_occurencies = {}
+        for reaction in set(process_mapping):
+            reaction_occurencies.setdefault(reaction, 0)
+
+        # Fill the dict.
+        for occurency, reaction in zip(self.__process_occurencies, process_mapping):
+            reaction_occurencies[reaction] += occurency
+
+        reaction_occurencies_str = get_dict_string("reaction_occurencies",
+                                                   reaction_occurencies)
+
         with open(self.__filename, "a") as f:
-            f.write(occurencies_str)
+            f.write(occurencies_str + reaction_occurencies_str)
 
         # Info output.
-        msg = "All frequency informations are written to {}".format(self.__filename)
+        msg = "frequency informations are written to {}".format(self.__filename)
         self.__logger.info(msg)
 
     def __flush(self):

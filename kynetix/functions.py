@@ -142,6 +142,27 @@ def get_list_string(var_name, list_obj, ncols=5):
 
     return content
 
+def get_dict_string(var_name, dict_obj):
+    """
+    Function to get string format of a list object.
+
+    Parameters:
+    -----------
+    var_name: name of variable, str.
+
+    dict_obj: the dict object whose string would be returned.
+    """
+    begin = var_name + " = {\n"
+    data = ""
+    for key in sorted(dict_obj):
+        value = dict_obj[key]
+        data += "    '{}': {},\n".format(key, value)
+    end = "}\n\n"
+
+    content = begin + data + end
+
+    return content
+
 
 def convert_time(sec):
     '''
