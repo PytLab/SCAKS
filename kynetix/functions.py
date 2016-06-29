@@ -5,7 +5,9 @@ from kynetix.errors.error import *
 
 
 def string2symbols(s):  # HACKED# copy-pasted from ase\atoms.py
-    """Convert string to list of chemical symbols."""
+    """
+    Convert string to list of chemical symbols.
+    """
     n = len(s)
 
     if n == 0:
@@ -165,14 +167,15 @@ def get_dict_string(var_name, dict_obj):
 
 
 def convert_time(sec):
-    '''
+    """
     Convert format of time from seconds to *h *min *sec.
-    '''
+    """
     hours = int(sec/(3600.0))
     minutes = int((sec - hours*3600)/60.0)
     seconds = sec - hours*3600 - minutes*60
 
-    return hours, minutes, seconds  # int, int, float
+    # int, int, float
+    return hours, minutes, seconds
 
 
 def return_deepcopy(func):
