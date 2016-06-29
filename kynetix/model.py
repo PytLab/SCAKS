@@ -281,16 +281,19 @@ class KineticModel(object):
                 logger.setLevel(self.__verbosity)
             else:
                 logger.setLevel(logging.INFO)
-            # create handlers
+
+            # Create handlers.
             std_hdlr = logging.FileHandler('out.log')
             std_hdlr.setLevel(logging.DEBUG)
             console_hdlr = logging.StreamHandler()
             console_hdlr.setLevel(logging.INFO)
-            # create formatter and add it to the handlers
+
+            # Create formatter and add it to the handlers.
             formatter = logging.Formatter('%(name)s   %(levelname)-8s %(message)s')
             std_hdlr.setFormatter(formatter)
             console_hdlr.setFormatter(formatter)
-            # add the handlers to logger
+
+            # Add the handlers to logger.
             logger.addHandler(std_hdlr)
             logger.addHandler(console_hdlr)
 
