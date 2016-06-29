@@ -89,6 +89,9 @@ class KMCSolver(SolverBase):
         trajectory_filename = "auto_{}_trajectory.py".format(trajectory_type)
 
         # Run KMC main loop.
+        self.__logger.info("")
+        self.__logger.info("Entering KMCLibX main kMC loop...")
+
         model.run(control_parameters=control_parameters,
                   trajectory_filename=trajectory_filename,
                   trajectory_type=trajectory_type,
