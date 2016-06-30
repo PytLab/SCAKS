@@ -21,17 +21,15 @@ typedef std::vector<std::string>::const_iterator ConstStrIterType;
   * Input:
         @types: The site types at the lattice points
         @possible_types: All possible species type
-        @coverage_ratios: Site ratio each basis site occupied on lattice.
 
   * Return:
         @coverages: The coverages for each species in possible_types.
 
   * Author: shaozhengjiang<shaozhengjiang@gmail.com>
   * Date  : 2015.12.29
-  * Update: 2016.06.25
+  * Update: 2016.06.30
 ******************************************************************************/
 
 std::vector<double> collect_coverages(const std::vector<std::string> & types,
-                                      const std::vector<std::string> & possible_types,
-                                      const std::vector<double> & coverage_ratios);
+                                      const std::vector<std::string> & possible_types);
 
