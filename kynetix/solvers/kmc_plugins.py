@@ -39,9 +39,6 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         # LatticeModel object.
         self.__kmc_model = kmc_model
 
-        # The ratio of a basis site occupied.
-        self.__coverage_ratios = (1.0, 1./2, 1./2, 1./4)
-
         # Recorder variables.
         self.__times = []
         self.__steps = []
@@ -60,22 +57,9 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         self.__times.append(time)
         self.__steps.append(step)
 
-        # Remove empty type from possible_types.
-        possible_types_copy = deepcopy(self.__possible_types)
-        empty_type = self.__kmc_model.empty_type()
-        empty_type_idx = possible_types_copy.index(empty_type)
-        possible_types_copy.pop(empty_type_idx)
-
         # Collect species coverages.
         types = configuration.types()
-        coverages = collect_coverages(types,
-                                      possible_types_copy,
-                                      self.__coverage_ratios)
-
-        # Insert coverage of emtpy site.
-        coverages = list(coverages)
-        empty_coverage = 1.0 - sum(coverages)
-        coverages.insert(empty_type_idx, empty_coverage)
+        coverages = collect_coverages(types, self.__possible_types)
 
         self.__coverages.append(coverages)
 
@@ -129,11 +113,11 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         self.__kmc_model = kmc_model
 
         # Recorder variables.
-        self.__times = []
-        self.__steps = []
-
-        # Process indices.
-        self.__picked_indices = []
+#        self.__times = []
+#        self.__steps = []
+#
+#        # Process indices.
+#        self.__picked_indices = []
 
         # Process pick statistics list.
         nprocess = len(kmc_model.processes())
@@ -150,41 +134,42 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
 
     def setup(self, step, time, configuration, interactions):
         # Append time and step.
-        self.__times.append(time)
-        self.__steps.append(step)
-
-        # Flush counter.
-        self.__flush_counter = 0
-
-        # Create statistic data file.
-        variables_str = ("times = []\nsteps = []\npicked_indices = []\n" +
-                         "process_occurencies = []\n")
-        with open(self.__filename, "w") as f:
-            content = file_header + variables_str
-            f.write(content)
+#        self.__times.append(time)
+#        self.__steps.append(step)
+#
+#        # Flush counter.
+#        self.__flush_counter = 0
+#
+#        # Create statistic data file.
+#        variables_str = ("times = []\nsteps = []\npicked_indices = []\n" +
+#                         "process_occurencies = []\n")
+#        with open(self.__filename, "w") as f:
+#            content = file_header + variables_str
+#            f.write(content)
+        pass
 
     def registerStep(self, step, time, configuration, interactions):
         # Append time and step.
-        self.__times.append(time)
-        self.__steps.append(step)
-
-        # Append picked index.
+#        self.__times.append(time)
+#        self.__steps.append(step)
+#
+#        # Append picked index.
         picked_index = interactions.pickedIndex()
-        self.__picked_indices.append(picked_index)
-
+#        self.__picked_indices.append(picked_index)
+#
         # Add to collection list.
         self.__process_occurencies[picked_index] += 1
-
-        # Check and flush.
-        if len(self.__picked_indices) >= self.__buffer_size:
-            self.__flush()
+#
+#        # Check and flush.
+#        if len(self.__picked_indices) >= self.__buffer_size:
+#            self.__flush()
 
     def finalize(self):
         """
         Write all data to files.
         """
         # Flush data left to file.
-        self.__flush()
+#        self.__flush()
 
         # Write process occurencies to file.
         occurencies_str = get_list_string("process_occurencies",

@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def collect_coverages(types, possible_types, coverage_ratios):
+def collect_coverages(types, possible_types):
     '''
     Function to get current coverages of possible types.
 
@@ -16,20 +16,15 @@ def collect_coverages(types, possible_types, coverage_ratios):
     cvgs: coverages of possible types, numpy.array int
     '''
     # total number of sites
-    nsite = len(types)/len(coverage_ratios)
+    nsite = len(types)
 
     # numbers of different types
     ntypes = [0]*len(possible_types)
 
     # Loop to collect coverages.
-    all_ratios = coverage_ratios*nsite
-    for ratio, element in zip(all_ratios, types):
-        # Ignore the empty type.
-        if element not in possible_types:
-            continue
-
+    for element in types:
         idx = possible_types.index(element)
-        ntypes[idx] += ratio
+        ntypes[idx] += 1
 
     cvgs = [float(ntype)/nsite for ntype in ntypes]
 
