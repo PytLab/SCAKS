@@ -7,7 +7,7 @@ from kynetix.utilities.format_utilities import convert_time
 if "__main__" == __name__:
 
     # Set logger.
-    logger = logging.getLogger("ModelRun")
+    logger = logging.getLogger("model.KMCModelRun")
 
     # Construct KMC model.
     model = KineticModel(setup_file="pt-100.mkm")
