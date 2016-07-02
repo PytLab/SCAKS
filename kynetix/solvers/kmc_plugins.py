@@ -21,7 +21,7 @@ except ImportError:
     from kynetix.solvers.kmc_functions import *
 
 from kynetix import file_header
-from kynetix.functions import get_list_string, get_dict_string
+from kynetix.utilities.format_utilities import get_list_string, get_dict_string
 
 
 class CoveragesAnalysis(KMCAnalysisPlugin):
