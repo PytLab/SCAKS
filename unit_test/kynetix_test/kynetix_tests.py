@@ -1,3 +1,4 @@
+import commands
 import unittest
 
 from correctors import correctors_tests
@@ -22,4 +23,9 @@ def suite():
 
 if __name__ == '__main__':
     unittest.TextTestRunner(verbosity=2).run(suite())
+
+    # Remove auto-generated files.
+    commands.getstatusoutput("for i in `find ./ -name 'auto_*'`; do rm -rf $i; done")
+    commands.getstatusoutput("for i in `find ./ -name 'out.log'`; do rm -rf $i; done")
+    commands.getstatusoutput("for i in `find ./ -name '*.pkl'`; do rm -rf $i; done")
 
