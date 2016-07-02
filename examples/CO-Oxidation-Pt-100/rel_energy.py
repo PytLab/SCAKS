@@ -18,6 +18,10 @@ dG.append(-2.09)
 Ga.append(0.0)
 dG.append(-2.33)
 
+# O2_2t <-> O-O_2t -> 2O_t
+#Ga.append(1.08)
+#dG.append(-1.07)
+
 # O2_2t + CO_b <-> OCO-O_2t + *_b -> O_b + CO2_g + 2*_t
 Ga.append(0.76)
 dG.append(-1.67)
@@ -35,8 +39,8 @@ Ga.append(0.56)
 dG.append(0.002)
 
 # CO_b + *_t <-> CO_t + *_b -> CO_b + *_t
-Ga.append(0.17)
-dG.append(0.0)
+#Ga.append(0.17)
+#dG.append(0.0)
 
 # O_b + *_t <-> O_t + *_b -> O_b + *_t
 Ga.append(1.15)
