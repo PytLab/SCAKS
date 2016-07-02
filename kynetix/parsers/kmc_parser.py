@@ -240,9 +240,9 @@ class KMCParser(RelativeEnergyParser):
                 self.__process_mapping.append("{}(->)".format(process_dict["reaction"]))
 
                 # Info output.
-                msg = "Forward: {} -> {}".format(process_dict["elements_before"],
-                                                 process_dict["elements_after"])
-                self.__logger.info(msg)
+                self.__logger.info("Forward elements changes:")
+                self.__logger.info("    /{}".format(process_dict["elements_before"]))
+                self.__logger.info("    \{}".format(process_dict["elements_after"]))
 
                 # Reverse process.
                 rprocess = KMCProcess(coordinates=coordinates,
@@ -256,9 +256,9 @@ class KMCParser(RelativeEnergyParser):
                 self.__process_mapping.append("{}(<-)".format(process_dict["reaction"]))
 
                 # Info output.
-                msg = "Reverse: {} -> {}".format(process_dict["elements_before"],
-                                                 process_dict["elements_after"])
-                self.__logger.info(msg)
+                self.__logger.info("Reverse elements changes:")
+                self.__logger.info("    /{}".format(process_dict["elements_after"]))
+                self.__logger.info("    \{}".format(process_dict["elements_before"]))
 
         self.__logger.info("\n")
 
