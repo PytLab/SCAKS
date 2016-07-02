@@ -82,3 +82,8 @@ out_energy.csv
 
 # kmc auto-generatied files.
 auto_*
+
+# auto-generated files in examples.
+examples/*/trajplots/
+examples/*/run.py
+examples/*/plot_*
