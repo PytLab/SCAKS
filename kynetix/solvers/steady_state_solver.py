@@ -10,7 +10,7 @@ from scipy.optimize import fsolve
 
 from kynetix import file_header
 from kynetix.errors.error import *
-from kynetix.functions import get_list_string
+from kynetix.utilities.format_utilities import get_list_string
 from kynetix.parsers.rxn_parser import *
 from kynetix.solvers.rootfinding_iterators import *
 from kynetix.solvers.mean_field_solver import *
