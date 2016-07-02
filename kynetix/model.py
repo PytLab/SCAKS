@@ -239,24 +239,18 @@ class KineticModel(object):
         trajectory_type: The type of trajectory to use, the default type is "lattice", str.
                          "xyz" | "lattice". 
         """
-        try:
-            parser = self.__parser
+        parser = self.__parser
 
-            # Parse processes, configuration, sitesmap.
-            self.__processes = parser.parse_processes(filename=processes_file)
-            self.__configuration = parser.parse_configuration(filename=configuration_file)
-            self.__sitesmap = parser.construct_sitesmap(filename=sitesmap_file)
+        # Parse processes, configuration, sitesmap.
+        self.__processes = parser.parse_processes(filename=processes_file)
+        self.__configuration = parser.parse_configuration(filename=configuration_file)
+        self.__sitesmap = parser.construct_sitesmap(filename=sitesmap_file)
 
-            # Set process reaction mapping.
-            self.__process_mapping = parser.process_mapping()
+        # Set process reaction mapping.
+        self.__process_mapping = parser.process_mapping()
 
-            # Run the lattice model.
-            self.__solver.run(scripting, trajectory_type)
-        except Exception as e:
-            # Log exception info.
-            msg = "{} exception is catched.".format(type(e).__name__)
-            self.__logger.exception(msg)
-            raise e
+        # Run the lattice model.
+        self.__solver.run(scripting, trajectory_type)
 
     def __set_parser(self, parser_name):
         """
