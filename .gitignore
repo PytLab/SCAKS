@@ -85,5 +85,4 @@ auto_*
 
 # auto-generated files in examples.
 examples/*/trajplots/
-examples/*/run.py
 examples/*/plot_*
