@@ -24,7 +24,7 @@ from kynetix import file_header
 from kynetix.utilities.format_utilities import get_list_string, get_dict_string
 
 
-class CoveragesTOFAnalysis(KMCAnalysisPlugin):
+class CoveragesAnalysis(KMCAnalysisPlugin):
     """
     KMC plugin to do On-The-Fly coverage analysis.
     """
@@ -47,15 +47,8 @@ class CoveragesTOFAnalysis(KMCAnalysisPlugin):
 
         self.__possible_types = kmc_model.possible_element_types()
 
-        # Process indices.
-        self.__picked_indices = []
-
-        # Process pick statistics list.
-        nprocess = len(kmc_model.processes())
-        self.__process_occurencies = [0]*nprocess
-        
         # Set logger.
-        self.__logger = logging.getLogger("model.solvers.KMCSolver.CoveragesTOFAnalysis")
+        self.__logger = logging.getLogger("model.solvers.KMCSolver.CoveragesAnalysis")
 
         # Set data file name.
         self.__filename = filename
@@ -69,58 +62,28 @@ class CoveragesTOFAnalysis(KMCAnalysisPlugin):
         types = configuration.types()
         coverages = collect_coverages(types, self.__possible_types)
 
-        self.__coverages.append(coverages)
-
     def registerStep(self, step, time, configuration, interactions):
-        self.__times.append(time)
-        self.__steps.append(step)
-
-        # Collect species coverages.
-        types = configuration.types()
-        coverages = collect_coverages(types, self.__possible_types)
-        self.__coverages.append(coverages)
-
-        # Collect process occurencies.
-        picked_index = interactions.pickedIndex()
-        self.__process_occurencies[picked_index] += 1
+        # Do the same thing in setup().
+        self.setup(step, time, configuration, interactions)
 
     def finalize(self):
         """
         Write all data to files.
         """
         # Get data strings.
-        times_str = get_list_string("times", self.__times)
-        steps_str = get_list_string("steps", self.__steps)
-
-        # Get coverages strings.
         coverages = zip(*self.__coverages)
         coverages_str = get_list_string("coverages", coverages)
+        times_str = get_list_string("times", self.__times)
+        steps_str = get_list_string("steps", self.__steps)
         possible_types_str = get_list_string("possible_types", self.__possible_types)
 
-        # Get frequency strings.
-        occurencies_str = get_list_string("process_occurencies", self.__process_occurencies)
-
-        # Get reaction occurencies string.
-        process_mapping = self.__kmc_model.process_mapping()
-
-        reaction_occurencies = {}
-        for reaction in set(process_mapping):
-            reaction_occurencies.setdefault(reaction, 0)
-
-        for occurency, reaction in zip(self.__process_occurencies, process_mapping):
-            reaction_occurencies[reaction] += occurency
-
-        reaction_occurencies_str = get_dict_string("reaction_occurencies", reaction_occurencies)
-
-        # Write to files.
+        # Write to file.
+        content = file_header + times_str + steps_str + coverages_str + possible_types_str
         with open(self.__filename, "w") as f:
-            all_content = (times_str + steps_str + coverages_str +
-                           possible_types_str + occurencies_str +
-                           reaction_occurencies_str)
-            f.write(all_content)
+            f.write(content)
 
         # Info output.
-        msg = "coverages and frequency informations are written to {}".format(self.__filename)
+        msg = "coverages informations are written to {}".format(self.__filename)
         self.__logger.info(msg)
 
         return
