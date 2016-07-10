@@ -56,12 +56,10 @@ solver = 'KMCSolver'
 corrector = "ThermodynamicCorrector"
 
 # KMC loop control parameters.
-nstep = 5000000                           # number of KMC loop step
+nstep = 50000                           # number of KMC loop step
 seed = 13996                         # seed for random number generator
 random_generator = 'MT'              # type of pseudo random number generator, 'MT' | 'MINSTD' | 'RANLUX24' | 'RANLUX48'
-analysis = ["FrequencyAnalysis"]     # ['CoveragesAnalysis', 'TOFAnalysis']
-analysis_interval = [1]
-trajectory_dump_interval = 1000000
+analysis = ["CoveragesAnalysis", "FrequencyAnalysis"]     # ['CoveragesAnalysis', 'TOFAnalysis']
+analysis_interval = [200, 1]
+trajectory_dump_interval = 1000
 
-# Grid plotting control parameters.
-markers = ['o', '^', '^', 's']
