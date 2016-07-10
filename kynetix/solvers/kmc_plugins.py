@@ -28,7 +28,8 @@ class CoveragesTOFAnalysis(KMCAnalysisPlugin):
     """
     KMC plugin to do On-The-Fly coverage analysis.
     """
-    def __init__(self, kmc_model, filename="auto_coverages.py"):
+    # {{{
+    def __init__(self, kmc_model, filename="auto_coverages_tof.py"):
         """
         Constructor of CoverageAnalysis object.
 
@@ -123,12 +124,14 @@ class CoveragesTOFAnalysis(KMCAnalysisPlugin):
         self.__logger.info(msg)
 
         return
+        # }}}
 
 
 class FrequencyAnalysis(KMCAnalysisPlugin):
     """
     KMC plugin to do On-The-Fly process occurence frequency analysis.
     """
+    # {{{
     def __init__(self,
                  kmc_model,
                  filename="auto_frequency.py",
@@ -269,6 +272,8 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         self.__times = []
 
         self.__flush_counter += 1
+
+    # }}}
 
 
 #class TOFAnalysis(KMCAnalysisPlugin):
