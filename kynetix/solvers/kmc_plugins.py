@@ -29,7 +29,7 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
     KMC plugin to do On-The-Fly coverage analysis.
     """
     # {{{
-    def __init__(self, kmc_model, filename="auto_coverages_tof.py"):
+    def __init__(self, kmc_model, filename="auto_coverages.py"):
         """
         Constructor of CoverageAnalysis object.
 
@@ -61,6 +61,8 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         # Collect species coverages.
         types = configuration.types()
         coverages = collect_coverages(types, self.__possible_types)
+
+        self.__coverages.append(coverages)
 
     def registerStep(self, step, time, configuration, interactions):
         # Do the same thing in setup().
@@ -98,7 +100,8 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
     def __init__(self,
                  kmc_model,
                  filename="auto_frequency.py",
-                 buffer_size=500):
+                 buffer_size=500,
+                 tof_start=0):
         """
         Constructor of TOFAnalysis object.
 
@@ -123,12 +126,18 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         # Process pick statistics list.
         nprocess = len(kmc_model.processes())
         self.__process_occurencies = [0]*nprocess
+        self.__steady_process_occurencies = [0]*nprocess
 
         # Set logger.
         self.__logger = logging.getLogger("model.solvers.KMCSolver.FrequencyAnalysis")
 
         # Max length of recorder variables.
         self.__buffer_size = buffer_size
+
+        # TOF start step.
+        self.__tof_start_step = tof_start
+        self.__tof_start_time = 0.0
+        self.__tof_end_time = 0.0
 
         # Name of data file.
         self.__filename = filename
@@ -160,6 +169,15 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         # Add to collection list.
         self.__process_occurencies[picked_index] += 1
 
+        # Collect steady frequency info.
+        if step >= self.__tof_start_time:
+            self.__steady_process_occurencies[picked_index] += 1
+
+            if not self.__tof_start_time:
+                self.__tof_start_time = time
+
+        self.__tof_end_time = time
+
 #        # Check and flush.
 #        if len(self.__picked_indices) >= self.__buffer_size:
 #            self.__flush()
@@ -180,18 +198,36 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
 
         # Construct reaction occurencies dict.
         reaction_occurencies = {}
+        steady_reaction_occurencies = {}
+
         for reaction in set(process_mapping):
             reaction_occurencies.setdefault(reaction, 0)
+            steady_reaction_occurencies.setdefault(reaction, 0)
 
         # Fill the dict.
         for occurency, reaction in zip(self.__process_occurencies, process_mapping):
             reaction_occurencies[reaction] += occurency
 
+        for occurency, reaction in zip(self.__steady_process_occurencies, process_mapping):
+            steady_reaction_occurencies[reaction] += occurency
+
         reaction_occurencies_str = get_dict_string("reaction_occurencies",
                                                    reaction_occurencies)
+        steady_reaction_occurencies_str = get_dict_string("steady_reaction_occurencies",
+                                                          steady_reaction_occurencies)
+
+        # Calculate rates.
+        delta_t = self.__tof_end_time - self.__tof_start_time
+        reaction_rates = {}
+        for reaction, occurency in steady_reaction_occurencies.iteritems():
+            rate = occurency/delta_t
+            reaction_rates.setdefault(reaction, rate)
+        reaction_rates_str = get_dict_string("reaction_rates", reaction_rates)
 
         with open(self.__filename, "a") as f:
-            f.write(occurencies_str + reaction_occurencies_str)
+            all_content = (occurencies_str + reaction_occurencies_str +
+                           steady_reaction_occurencies_str + reaction_rates_str)
+            f.write(all_content)
 
         # Info output.
         msg = "frequency informations are written to {}".format(self.__filename)
