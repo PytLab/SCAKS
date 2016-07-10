@@ -48,7 +48,7 @@ class KMCSolver(SolverBase):
         scripting: generate lattice script or not, True by default, bool.
 
         trajectory_type: The type of trajectory to use, the default type is "lattice", str.
-                         "xyz" | "lattice". 
+                         "xyz" | "lattice".
 
         """
         # Get analysis.

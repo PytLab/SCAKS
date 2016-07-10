@@ -28,7 +28,8 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
     """
     KMC plugin to do On-The-Fly coverage analysis.
     """
-    def __init__(self, kmc_model, filename="auto_coverages.py"):
+    # {{{
+    def __init__(self, kmc_model, filename="auto_coverages_tof.py"):
         """
         Constructor of CoverageAnalysis object.
 
@@ -45,7 +46,7 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         self.__coverages = []
 
         self.__possible_types = kmc_model.possible_element_types()
-        
+
         # Set logger.
         self.__logger = logging.getLogger("model.solvers.KMCSolver.CoveragesAnalysis")
 
@@ -60,8 +61,6 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         # Collect species coverages.
         types = configuration.types()
         coverages = collect_coverages(types, self.__possible_types)
-
-        self.__coverages.append(coverages)
 
     def registerStep(self, step, time, configuration, interactions):
         # Do the same thing in setup().
@@ -88,12 +87,14 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         self.__logger.info(msg)
 
         return
+        # }}}
 
 
 class FrequencyAnalysis(KMCAnalysisPlugin):
     """
     KMC plugin to do On-The-Fly process occurence frequency analysis.
     """
+    # {{{
     def __init__(self,
                  kmc_model,
                  filename="auto_frequency.py",
@@ -113,11 +114,11 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         self.__kmc_model = kmc_model
 
         # Recorder variables.
-#        self.__times = []
-#        self.__steps = []
-#
-#        # Process indices.
-#        self.__picked_indices = []
+        self.__times = []
+        self.__steps = []
+
+        # Process indices.
+        self.__picked_indices = []
 
         # Process pick statistics list.
         nprocess = len(kmc_model.processes())
@@ -134,42 +135,42 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
 
     def setup(self, step, time, configuration, interactions):
         # Append time and step.
-#        self.__times.append(time)
-#        self.__steps.append(step)
-#
-#        # Flush counter.
-#        self.__flush_counter = 0
-#
-#        # Create statistic data file.
-#        variables_str = ("times = []\nsteps = []\npicked_indices = []\n" +
-#                         "process_occurencies = []\n")
-#        with open(self.__filename, "w") as f:
-#            content = file_header + variables_str
-#            f.write(content)
+        self.__times.append(time)
+        self.__steps.append(step)
+
+        # Flush counter.
+        self.__flush_counter = 0
+
+        # Create statistic data file.
+        variables_str = ("times = []\nsteps = []\npicked_indices = []\n" +
+                         "process_occurencies = []\n")
+        with open(self.__filename, "w") as f:
+            content = file_header + variables_str
+            f.write(content)
         pass
 
     def registerStep(self, step, time, configuration, interactions):
         # Append time and step.
-#        self.__times.append(time)
-#        self.__steps.append(step)
-#
-#        # Append picked index.
+        self.__times.append(time)
+        self.__steps.append(step)
+
+        # Append picked index.
         picked_index = interactions.pickedIndex()
-#        self.__picked_indices.append(picked_index)
-#
+        self.__picked_indices.append(picked_index)
+
         # Add to collection list.
         self.__process_occurencies[picked_index] += 1
-#
-#        # Check and flush.
-#        if len(self.__picked_indices) >= self.__buffer_size:
-#            self.__flush()
+
+        # Check and flush.
+        if len(self.__picked_indices) >= self.__buffer_size:
+            self.__flush()
 
     def finalize(self):
         """
         Write all data to files.
         """
         # Flush data left to file.
-#        self.__flush()
+        self.__flush()
 
         # Write process occurencies to file.
         occurencies_str = get_list_string("process_occurencies",
@@ -234,4 +235,68 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         self.__times = []
 
         self.__flush_counter += 1
+
+    # }}}
+
+
+#class TOFAnalysis(KMCAnalysisPlugin):
+#    """
+#    KMC plugin to do On-The-Fly turnover frequency analysis.
+#    """
+#    def __init__(self,
+#                 kmc_model,
+#                 filename="auto_tof.py"):
+#        """
+#        Constructor of TOFAnalysis object.
+#
+#        Parameters:
+#        -----------
+#        kmc_model: KMC model object of Kynetix.KineticModel.
+#
+#        filename: The name of data file, str.
+#
+#        buffer_size: The max length of recorder variables.
+#        """
+#        # LatticeModel object.
+#        self.__kmc_model = kmc_model
+#
+#        # Recorder variables.
+#        self.__times = []
+#        self.__steps = []
+#
+#        # Process total available site.
+#        self.__process_available_sites = []
+#
+#        # Set logger.
+#        self.__logger = logging.getLogger("model.solvers.KMCSolver.TOFAnalysis")
+#
+#        # Name of data file.
+#        self.__filename = filename
+#
+#    def setup(self, step, time, configuration, interactions):
+#        # Append time and step.
+#        self.__times.append(time)
+#        self.__steps.append(step)
+#
+#        available_sites = interactions.processAvailableSites()
+#        self.__process_available_sites.append(available_sites)
+#
+#    def registerStep(self, step, time, configuration, interactions):
+#        self.setup(step, time, configuration, interactions)
+#
+#    def finalize(self):
+#        times_str = get_list_string("times", self.__times)
+#        steps_str = get_list_string("steps", self.__steps)
+#        available_sites_str = get_list_string("process_available_sites",
+#                                              self.__process_available_sites, 1)
+#        
+#        content = file_header + times_str + steps_str + available_sites_str
+#        with open(self.__filename, "w") as f:
+#            f.write(content)
+#
+#        # Info output.
+#        msg = "TOF informations are written to {}".format(self.__filename)
+#        self.__logger.info(msg)
+#
+#        return
 
