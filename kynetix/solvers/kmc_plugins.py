@@ -24,7 +24,7 @@ from kynetix import file_header
 from kynetix.utilities.format_utilities import get_list_string, get_dict_string
 
 
-class CoveragesAnalysis(KMCAnalysisPlugin):
+class CoveragesTOFAnalysis(KMCAnalysisPlugin):
     """
     KMC plugin to do On-The-Fly coverage analysis.
     """
@@ -45,9 +45,16 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         self.__coverages = []
 
         self.__possible_types = kmc_model.possible_element_types()
+
+        # Process indices.
+        self.__picked_indices = []
+
+        # Process pick statistics list.
+        nprocess = len(kmc_model.processes())
+        self.__process_occurencies = [0]*nprocess
         
         # Set logger.
-        self.__logger = logging.getLogger("model.solvers.KMCSolver.CoveragesAnalysis")
+        self.__logger = logging.getLogger("model.solvers.KMCSolver.CoveragesTOFAnalysis")
 
         # Set data file name.
         self.__filename = filename
@@ -64,27 +71,55 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         self.__coverages.append(coverages)
 
     def registerStep(self, step, time, configuration, interactions):
-        # Do the same thing in setup().
-        self.setup(step, time, configuration, interactions)
+        self.__times.append(time)
+        self.__steps.append(step)
+
+        # Collect species coverages.
+        types = configuration.types()
+        coverages = collect_coverages(types, self.__possible_types)
+        self.__coverages.append(coverages)
+
+        # Collect process occurencies.
+        picked_index = interactions.pickedIndex()
+        self.__process_occurencies[picked_index] += 1
 
     def finalize(self):
         """
         Write all data to files.
         """
         # Get data strings.
-        coverages = zip(*self.__coverages)
-        coverages_str = get_list_string("coverages", coverages)
         times_str = get_list_string("times", self.__times)
         steps_str = get_list_string("steps", self.__steps)
+
+        # Get coverages strings.
+        coverages = zip(*self.__coverages)
+        coverages_str = get_list_string("coverages", coverages)
         possible_types_str = get_list_string("possible_types", self.__possible_types)
 
-        # Write to file.
-        content = file_header + times_str + steps_str + coverages_str + possible_types_str
+        # Get frequency strings.
+        occurencies_str = get_list_string("process_occurencies", self.__process_occurencies)
+
+        # Get reaction occurencies string.
+        process_mapping = self.__kmc_model.process_mapping()
+
+        reaction_occurencies = {}
+        for reaction in set(process_mapping):
+            reaction_occurencies.setdefault(reaction, 0)
+
+        for occurency, reaction in zip(self.__process_occurencies, process_mapping):
+            reaction_occurencies[reaction] += occurency
+
+        reaction_occurencies_str = get_dict_string("reaction_occurencies", reaction_occurencies)
+
+        # Write to files.
         with open(self.__filename, "w") as f:
-            f.write(content)
+            all_content = (times_str + steps_str + coverages_str +
+                           possible_types_str + occurencies_str +
+                           reaction_occurencies_str)
+            f.write(all_content)
 
         # Info output.
-        msg = "coverages informations are written to {}".format(self.__filename)
+        msg = "coverages and frequency informations are written to {}".format(self.__filename)
         self.__logger.info(msg)
 
         return
@@ -113,11 +148,11 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         self.__kmc_model = kmc_model
 
         # Recorder variables.
-#        self.__times = []
-#        self.__steps = []
-#
-#        # Process indices.
-#        self.__picked_indices = []
+        self.__times = []
+        self.__steps = []
+
+        # Process indices.
+        self.__picked_indices = []
 
         # Process pick statistics list.
         nprocess = len(kmc_model.processes())
@@ -134,42 +169,42 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
 
     def setup(self, step, time, configuration, interactions):
         # Append time and step.
-#        self.__times.append(time)
-#        self.__steps.append(step)
-#
-#        # Flush counter.
-#        self.__flush_counter = 0
-#
-#        # Create statistic data file.
-#        variables_str = ("times = []\nsteps = []\npicked_indices = []\n" +
-#                         "process_occurencies = []\n")
-#        with open(self.__filename, "w") as f:
-#            content = file_header + variables_str
-#            f.write(content)
+        self.__times.append(time)
+        self.__steps.append(step)
+
+        # Flush counter.
+        self.__flush_counter = 0
+
+        # Create statistic data file.
+        variables_str = ("times = []\nsteps = []\npicked_indices = []\n" +
+                         "process_occurencies = []\n")
+        with open(self.__filename, "w") as f:
+            content = file_header + variables_str
+            f.write(content)
         pass
 
     def registerStep(self, step, time, configuration, interactions):
         # Append time and step.
-#        self.__times.append(time)
-#        self.__steps.append(step)
-#
-#        # Append picked index.
+        self.__times.append(time)
+        self.__steps.append(step)
+
+        # Append picked index.
         picked_index = interactions.pickedIndex()
-#        self.__picked_indices.append(picked_index)
-#
+        self.__picked_indices.append(picked_index)
+
         # Add to collection list.
         self.__process_occurencies[picked_index] += 1
-#
-#        # Check and flush.
-#        if len(self.__picked_indices) >= self.__buffer_size:
-#            self.__flush()
+
+        # Check and flush.
+        if len(self.__picked_indices) >= self.__buffer_size:
+            self.__flush()
 
     def finalize(self):
         """
         Write all data to files.
         """
         # Flush data left to file.
-#        self.__flush()
+        self.__flush()
 
         # Write process occurencies to file.
         occurencies_str = get_list_string("process_occurencies",
@@ -234,4 +269,66 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         self.__times = []
 
         self.__flush_counter += 1
+
+
+#class TOFAnalysis(KMCAnalysisPlugin):
+#    """
+#    KMC plugin to do On-The-Fly turnover frequency analysis.
+#    """
+#    def __init__(self,
+#                 kmc_model,
+#                 filename="auto_tof.py"):
+#        """
+#        Constructor of TOFAnalysis object.
+#
+#        Parameters:
+#        -----------
+#        kmc_model: KMC model object of Kynetix.KineticModel.
+#
+#        filename: The name of data file, str.
+#
+#        buffer_size: The max length of recorder variables.
+#        """
+#        # LatticeModel object.
+#        self.__kmc_model = kmc_model
+#
+#        # Recorder variables.
+#        self.__times = []
+#        self.__steps = []
+#
+#        # Process total available site.
+#        self.__process_available_sites = []
+#
+#        # Set logger.
+#        self.__logger = logging.getLogger("model.solvers.KMCSolver.TOFAnalysis")
+#
+#        # Name of data file.
+#        self.__filename = filename
+#
+#    def setup(self, step, time, configuration, interactions):
+#        # Append time and step.
+#        self.__times.append(time)
+#        self.__steps.append(step)
+#
+#        available_sites = interactions.processAvailableSites()
+#        self.__process_available_sites.append(available_sites)
+#
+#    def registerStep(self, step, time, configuration, interactions):
+#        self.setup(step, time, configuration, interactions)
+#
+#    def finalize(self):
+#        times_str = get_list_string("times", self.__times)
+#        steps_str = get_list_string("steps", self.__steps)
+#        available_sites_str = get_list_string("process_available_sites",
+#                                              self.__process_available_sites, 1)
+#        
+#        content = file_header + times_str + steps_str + available_sites_str
+#        with open(self.__filename, "w") as f:
+#            f.write(content)
+#
+#        # Info output.
+#        msg = "TOF informations are written to {}".format(self.__filename)
+#        self.__logger.info(msg)
+#
+#        return
 

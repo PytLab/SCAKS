@@ -8,7 +8,7 @@ from kynetix.model import KineticModel
 from kynetix.solvers import *
 
 
-class KMCCoveragesPluginTest(unittest.TestCase):
+class KMCCoveragesTOFPluginTest(unittest.TestCase):
 
     def setUp(self):
         # Test case setting.
@@ -16,7 +16,7 @@ class KMCCoveragesPluginTest(unittest.TestCase):
 
     def test_run_with_coverages(self):
         " Make sure the model can run with frequency analysis. "
-        model = KineticModel(setup_file="kmc_inputs/kmc_coverages_plugin.mkm",
+        model = KineticModel(setup_file="kmc_inputs/kmc_coverages_tof_plugin.mkm",
                              verbosity=logging.WARNING)
         parser = model.parser()
         parser.parse_data(filename="kmc_inputs/rel_energy.py", relative=True)
