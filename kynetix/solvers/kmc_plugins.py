@@ -53,11 +53,7 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
             self.__logger = logging.getLogger("model.solvers.KMCSolver.CoveragesAnalysis")
 
         # Set data file name.
-        if mpi_installed and mpi_size > 1:
-            name, suffix = filename.split(".")
-            self.__filename = "{}_rank_{}.{}".format(name, mpi_rank, suffix)
-        else:
-            self.__filename = filename
+        self.__filename = filename
 
     def setup(self, step, time, configuration, interactions):
         # Append time and step.
@@ -85,17 +81,15 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         steps_str = get_list_string("steps", self.__steps)
         possible_types_str = get_list_string("possible_types", self.__possible_types)
 
-        # Write to file.
-        content = file_header + times_str + steps_str + coverages_str + possible_types_str
-        with open(self.__filename, "w") as f:
-            f.write(content)
-
-        # Info output.
         if mpi_master:
+            # Write to file.
+            content = file_header + times_str + steps_str + coverages_str + possible_types_str
+            with open(self.__filename, "w") as f:
+                f.write(content)
+
+            # Info output.
             msg = "coverages informations are written to {}".format(self.__filename)
             self.__logger.info(msg)
-
-        return
         # }}}
 
 
@@ -147,11 +141,7 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         self.__tof_end_time = 0.0
 
         # Name of data file.
-        if mpi_installed and mpi_size > 1:
-            name, suffix = filename.split(".")
-            self.__filename = "{}_rank_{}.{}".format(name, mpi_rank, suffix)
-        else:
-            self.__filename = filename
+        self.__filename = filename
 
     def setup(self, step, time, configuration, interactions):
         # Append time and step.
@@ -237,13 +227,13 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
             reaction_rates.setdefault(reaction, rate)
         reaction_rates_str = get_dict_string("reaction_rates", reaction_rates)
 
-        with open(self.__filename, "a") as f:
-            all_content = (occurencies_str + reaction_occurencies_str +
-                           steady_reaction_occurencies_str + reaction_rates_str)
-            f.write(all_content)
-
-        # Info output.
         if mpi_master:
+            with open(self.__filename, "a") as f:
+                all_content = (occurencies_str + reaction_occurencies_str +
+                               steady_reaction_occurencies_str + reaction_rates_str)
+                f.write(all_content)
+
+            # Info output.
             msg = "frequency informations are written to {}".format(self.__filename)
             self.__logger.info(msg)
 

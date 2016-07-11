@@ -12,7 +12,6 @@ from kynetix.functions import *
 from kynetix.utilities.check_utilities import *
 
 
-
 class KineticModel(object):
     """
     Main class for kinetic models.
