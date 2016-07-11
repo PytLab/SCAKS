@@ -236,6 +236,7 @@ type_rules = {
     "circle_attrs": (dict, ),
     "possible_element_types": (check_list_tuple, str),
     "possible_site_types": (check_list_tuple, str),
-    "empty_type": (str, )
+    "empty_type": (str, ),
+    "tof_start": (int, )
 }
 

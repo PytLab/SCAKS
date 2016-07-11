@@ -5,7 +5,7 @@
 import matplotlib.pyplot as plt
 
 globs, locs = {}, {}
-execfile('auto_coverages_tof.py', globs, locs)
+execfile('auto_coverages.py', globs, locs)
 
 times, steps, coverages = locs['times'], locs['steps'], locs['coverages']
 possible_types = locs['possible_types']

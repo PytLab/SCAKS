@@ -828,3 +828,12 @@ class KineticModel(object):
         """
         return self.__process_mapping
 
+    def tof_start(self):
+        """
+        Query function for TOF collection starting step.
+        """
+        try:
+            return self.__tof_start
+        except AttributeError:
+            return 0
+
