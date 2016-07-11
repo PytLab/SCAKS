@@ -1,8 +1,19 @@
 import cPickle
 import time
 
+try:
+    import mpi4py.MPI as MPI
+    mpi_comm = MPI.COMM_WORLD
+    mpi_rank = mpi_comm.Get_rank()
+except ImportError:
+    mpi_rank = 0
+
 from kynetix.functions import *
 from kynetix.errors.error import *
+
+
+# Condition for info output or not.
+mpi_master = (mpi_rank == 0)
 
 
 __version__ = '1.0.0'

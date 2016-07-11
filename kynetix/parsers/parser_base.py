@@ -5,6 +5,7 @@ import logging
 import numpy as np
 
 from kynetix import ModelShell
+from kynetix import mpi_master
 from kynetix.functions import *
 from kynetix.errors.error import *
 from kynetix.database.elements_data import *
@@ -66,7 +67,8 @@ class ParserBase(ModelShell):
 
         for equation_str in self._owner.rxn_expressions():
             # debug info
-            self.__logger.debug('parsing [ %s ]', equation_str)
+            if mpi_master:
+                self.__logger.debug('parsing [ %s ]', equation_str)
 
             # Get RxnEquation object.
             equation = RxnEquation(equation_str)

@@ -15,6 +15,7 @@ except ImportError:
     print "!!!                                                   !!!"
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
+from kynetix import mpi_master
 from kynetix.errors.error import *
 from kynetix.database.lattice_data import grid_neighbor_offsets
 from kynetix.parsers.rxn_parser import *
@@ -189,7 +190,8 @@ class KMCParser(RelativeEnergyParser):
             processes = self.__parse_single_process(process_dict)
             all_processes.extend(processes)
 
-        self.__logger.info("Total {} processes instantalized.".format(len(all_processes)))
+        if mpi_master:
+            self.__logger.info("Total {} processes instantalized.".format(len(all_processes)))
 
         return all_processes
 
@@ -225,8 +227,9 @@ class KMCParser(RelativeEnergyParser):
 
         for basis_site in process_dict["basis_sites"]:
             for coordinates in process_dict["coordinates_group"]:
-                self.__logger.info("Coordinates = {}".format(coordinates))
-                self.__logger.info("Basis site = {}".format(basis_site))
+                if mpi_master:
+                    self.__logger.info("Coordinates = {}".format(coordinates))
+                    self.__logger.info("Basis site = {}".format(basis_site))
 
                 # Forward process.
                 fprocess = KMCProcess(coordinates=coordinates,
@@ -240,9 +243,10 @@ class KMCParser(RelativeEnergyParser):
                 self.__process_mapping.append("{}(->)".format(process_dict["reaction"]))
 
                 # Info output.
-                self.__logger.info("Forward elements changes:")
-                self.__logger.info("    /{}".format(process_dict["elements_before"]))
-                self.__logger.info("    \{}".format(process_dict["elements_after"]))
+                if mpi_master:
+                    self.__logger.info("Forward elements changes:")
+                    self.__logger.info("    /{}".format(process_dict["elements_before"]))
+                    self.__logger.info("    \{}".format(process_dict["elements_after"]))
 
                 # Reverse process.
                 rprocess = KMCProcess(coordinates=coordinates,
@@ -256,11 +260,13 @@ class KMCParser(RelativeEnergyParser):
                 self.__process_mapping.append("{}(<-)".format(process_dict["reaction"]))
 
                 # Info output.
-                self.__logger.info("Reverse elements changes:")
-                self.__logger.info("    /{}".format(process_dict["elements_after"]))
-                self.__logger.info("    \{}".format(process_dict["elements_before"]))
+                if mpi_master:
+                    self.__logger.info("Reverse elements changes:")
+                    self.__logger.info("    /{}".format(process_dict["elements_after"]))
+                    self.__logger.info("    \{}".format(process_dict["elements_before"]))
 
-        self.__logger.info("\n")
+        if mpi_master:
+            self.__logger.info("\n")
 
         return processes
         # }}}
@@ -272,7 +278,8 @@ class KMCParser(RelativeEnergyParser):
         # {{{
         # Get raw relative energies.
         Gaf, Gar, dG = self.__get_relative_energies(rxn_expression)
-        self.__logger.info("{} (Gaf={}, Gar={}, dG={})".format(rxn_expression, Gaf, Gar, dG))
+        if mpi_master:
+            self.__logger.info("{} (Gaf={}, Gar={}, dG={})".format(rxn_expression, Gaf, Gar, dG))
 
         # Get reactants and product types.
         rxn_equation = RxnEquation(rxn_expression)
@@ -280,7 +287,8 @@ class KMCParser(RelativeEnergyParser):
         istate, fstate = formula_list[0], formula_list[-1]
         is_types = [formula.type() for formula in istate]
         fs_types = [formula.type() for formula in fstate]
-        self.__logger.info("species type: {} -> {}".format(is_types, fs_types))
+        if mpi_master:
+            self.__logger.info("species type: {} -> {}".format(is_types, fs_types))
 
         # Get rate constant.
         T = self._owner.temperature()
@@ -309,7 +317,8 @@ class KMCParser(RelativeEnergyParser):
             Ea = Gaf
             m = self.get_molecular_mass(formula.species(), absolute=True)
             rf = SolverBase.get_kCT(Ea, Auc, act_ratio, p, m, T)
-            self.__logger.info("R(forward) = {} s^-1 (Collision Theory)".format(rf))
+            if mpi_master:
+                self.__logger.info("R(forward) = {} s^-1 (Collision Theory)".format(rf))
         # No gas participating.
         else:
             # ThermoEquilibrium and gas species in final state.
@@ -325,10 +334,12 @@ class KMCParser(RelativeEnergyParser):
 
                 # Info output.
                 msg = "Correct forward barrier: {} -> {}".format(Gaf-correction_energy, Gaf)
-                self.__logger.info(msg)
+                if mpi_master:
+                    self.__logger.info(msg)
 
             rf = SolverBase.get_kTST(Gaf, T)
-            self.__logger.info("R(forward) = {} s^-1 (Transition State Theory)".format(rf))
+            if mpi_master:
+                self.__logger.info("R(forward) = {} s^-1 (Transition State Theory)".format(rf))
 
         # Reverse rate.
 
@@ -344,7 +355,8 @@ class KMCParser(RelativeEnergyParser):
             Ea = Gar
             m = self.get_molecular_mass(formula.species(), absolute=True)
             rr = SolverBase.get_kCT(Ea, Auc, act_ratio, p, m, T)
-            self.__logger.info("R(reverse) = {} s^-1 (Collision Theory)".format(rr))
+            if mpi_master:
+                self.__logger.info("R(reverse) = {} s^-1 (Collision Theory)".format(rr))
         # No gas participating.
         else:
             # ThermoEquilibrium and gas species in initial state.
@@ -360,10 +372,12 @@ class KMCParser(RelativeEnergyParser):
 
                 # Info output.
                 msg = "Correct reverse barrier: {} -> {}".format(Gar-correction_energy, Gar)
-                self.__logger.info(msg)
+                if mpi_master:
+                    self.__logger.info(msg)
 
             rr = SolverBase.get_kTST(Gar, T)
-            self.__logger.info("R(reverse) = {} s^-1 (Transition State Theory)".format(rr))
+            if mpi_master:
+                self.__logger.info("R(reverse) = {} s^-1 (Transition State Theory)".format(rr))
 
         return rf, rr
         # }}}

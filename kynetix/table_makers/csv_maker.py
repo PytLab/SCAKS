@@ -3,6 +3,7 @@ import logging
 import os
 import string
 
+from kynetix import mpi_master
 from kynetix.functions import string2symbols
 from kynetix.parsers.rxn_parser import *
 from kynetix.table_makers.table_maker_base import *
@@ -88,7 +89,8 @@ class CsvMaker(TableMakerBase):
                        "information": "None"}
                 writer.writerow(row)
 
-        self.__logger.info("Initialize data table - '{}'".format(filename))
+        if mpi_master:
+            self.__logger.info("Initialize data table - '{}'".format(filename))
 
     def __get_formation_energy(self, species_name, raw_energy):
         """

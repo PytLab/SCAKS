@@ -13,6 +13,7 @@ except ImportError:
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
 from kynetix import __version__
+from kynetix import mpi_master
 from kynetix.errors.error import *
 from kynetix.database.thermo_data import kB_eV
 from kynetix.database.lattice_data import *
@@ -80,7 +81,8 @@ class KMCSolver(SolverBase):
 
         if scripting:
             self.script_lattice_model(model, script_name='kmc_model.py')
-            self.__logger.info('script auto_kmc_model.py created.')
+            if mpi_master:
+                self.__logger.info('script auto_kmc_model.py created.')
 
         # Get KMCControlParameters.
         control_parameters = self.get_control_parameters()
@@ -89,8 +91,9 @@ class KMCSolver(SolverBase):
         trajectory_filename = "auto_{}_trajectory.py".format(trajectory_type)
 
         # Run KMC main loop.
-        self.__logger.info("")
-        self.__logger.info("Entering KMCLibX main kMC loop...")
+        if mpi_master:
+            self.__logger.info("")
+            self.__logger.info("Entering KMCLibX main kMC loop...")
 
         model.run(control_parameters=control_parameters,
                   trajectory_filename=trajectory_filename,
@@ -135,7 +138,8 @@ class KMCSolver(SolverBase):
                 script_name = 'auto_' + script_name
                 with open(script_name, 'w') as f:
                     f.write(content)
-                self.__logger.info('interactions script written to %s', script_name)
+                if mpi_master:
+                    self.__logger.info('interactions script written to %s', script_name)
 
             return content
 

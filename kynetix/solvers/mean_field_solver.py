@@ -16,6 +16,7 @@ except ImportError:
     print "!!!                                                   !!!"
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
+from kynetix import mpi_master
 from kynetix.functions import *
 from kynetix.parsers.rxn_parser import *
 from kynetix.solvers.solver_base import *
@@ -631,7 +632,8 @@ class MeanFieldSolver(SolverBase):
             all_data += data
         all_data += line_str
 
-        self.__logger.info(all_data)
+        if mpi_master:
+            self.__logger.info(all_data)
 
         return all_data
 

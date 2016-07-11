@@ -3,6 +3,7 @@ import logging
 
 from scipy.linalg import solve
 
+from kynetix import mpi_master
 from kynetix.parsers.parser_base import *
 from kynetix.functions import *
 
@@ -61,8 +62,9 @@ class RelativeEnergyParser(ParserBase):
         unknown_species = all_species
 
         # Debug info output
-        self.__logger.debug('unknown species = {}'.format(unknown_species))
-        self.__logger.debug('{} unknown species.'.format(len(unknown_species)))
+        if mpi_master:
+            self.__logger.debug('unknown species = {}'.format(unknown_species))
+            self.__logger.debug('{} unknown species.'.format(len(unknown_species)))
 
         return unknown_species
         # }}}
@@ -143,14 +145,17 @@ class RelativeEnergyParser(ParserBase):
         coeff_vects.append(coeff_vect)
 
         # Debug info output
-        self.__logger.debug('elementary rxn: {}'.format(rxn_expression))
-        self.__logger.debug('unknown species coeffs: {}'.format(coeff_vects))
+        if mpi_master:
+            self.__logger.debug('elementary rxn: {}'.format(rxn_expression))
+            self.__logger.debug('unknown species coeffs: {}'.format(coeff_vects))
 
         if Ga:
-            self.__logger.debug('Ga, dG: {}'.format([Ga, dG]))
+            if mpi_master:
+                self.__logger.debug('Ga, dG: {}'.format([Ga, dG]))
             return coeff_vects, [Ga, dG]
         else:
-            self.__logger.debug('dG: {}'.format(dG))
+            if mpi_master:
+                self.__logger.debug('dG: {}'.format(dG))
             return coeff_vects, [dG]
         # }}}
 
@@ -171,23 +176,27 @@ class RelativeEnergyParser(ParserBase):
 
         A, b = np.matrix(A), np.matrix(b).reshape(-1, 1)
         # Output debug info
-        self.__logger.debug('A = \n{}'.format(str(A)))
-        self.__logger.debug('A.shape = {}'.format(str(A.shape)))
+        if mpi_master:
+            self.__logger.debug('A = \n{}'.format(str(A)))
+            self.__logger.debug('A.shape = {}'.format(str(A.shape)))
         row, col = A.shape
         if row != col:
-            self.__logger.warning('!!! %d equations for %d variables !!!' +
+            if mpi_master:
+                self.__logger.warning('!!! %d equations for %d variables !!!' +
                                   'please check your [ ref_species ] in [ %s ]',
                                   row, col, self._owner.setup_file())
-        self.__logger.debug('b = \n{}'.format(str(b)))
-        self.__logger.debug('b.shape = {}'.format(str(b.shape)))
+        if mpi_master:
+            self.__logger.debug('b = \n{}'.format(str(b)))
+            self.__logger.debug('b.shape = {}'.format(str(b.shape)))
 
         # Solve the equations.
         #x = A.I*b
         x = solve(A, b)
 
         # Output debug info
-        self.__logger.debug('x = \n{}'.format(str(x)))
-        self.__logger.debug('x.shape = {}'.format(str(x.shape)))
+        if mpi_master:
+            self.__logger.debug('x = \n{}'.format(str(x)))
+            self.__logger.debug('x.shape = {}'.format(str(x.shape)))
 
         # Convert column vector to list
         x = x.reshape(1, -1).tolist()[0]
