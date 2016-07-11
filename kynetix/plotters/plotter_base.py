@@ -8,3 +8,4 @@ class PlotterBase(ModelShell):
         plotter classes, it is not functional on its own.
         """
         ModelShell.__init__(self, owner)
+

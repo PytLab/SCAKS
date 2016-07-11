@@ -20,6 +20,7 @@ except ImportError:
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     from kynetix.solvers.kmc_functions import *
 
+from kynetix import mpi_master
 from kynetix import file_header
 from kynetix.utilities.format_utilities import get_list_string, get_dict_string
 
@@ -48,7 +49,8 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         self.__possible_types = kmc_model.possible_element_types()
 
         # Set logger.
-        self.__logger = logging.getLogger("model.solvers.KMCSolver.CoveragesAnalysis")
+        if mpi_master:
+            self.__logger = logging.getLogger("model.solvers.KMCSolver.CoveragesAnalysis")
 
         # Set data file name.
         self.__filename = filename
@@ -85,8 +87,9 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
             f.write(content)
 
         # Info output.
-        msg = "coverages informations are written to {}".format(self.__filename)
-        self.__logger.info(msg)
+        if mpi_master:
+            msg = "coverages informations are written to {}".format(self.__filename)
+            self.__logger.info(msg)
 
         return
         # }}}
@@ -129,7 +132,8 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         self.__steady_process_occurencies = [0]*nprocess
 
         # Set logger.
-        self.__logger = logging.getLogger("model.solvers.KMCSolver.FrequencyAnalysis")
+        if mpi_master:
+            self.__logger = logging.getLogger("model.solvers.KMCSolver.FrequencyAnalysis")
 
         # Max length of recorder variables.
         self.__buffer_size = buffer_size
@@ -174,7 +178,8 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
 
             if not self.__tof_start_time:
                 self.__tof_start_time = time
-                self.__logger.info("TOF analysis start at time = {:f}".format(time))
+                if mpi_master:
+                    self.__logger.info("TOF analysis start at time = {:f}".format(time))
 
         self.__tof_end_time = time
 
@@ -230,8 +235,9 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
             f.write(all_content)
 
         # Info output.
-        msg = "frequency informations are written to {}".format(self.__filename)
-        self.__logger.info(msg)
+        if mpi_master:
+            msg = "frequency informations are written to {}".format(self.__filename)
+            self.__logger.info(msg)
 
     def __flush(self):
         """
