@@ -135,7 +135,6 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         self.__buffer_size = buffer_size
 
         # TOF start step.
-        self.__tof_start_step = tof_start
         self.__tof_start_time = 0.0
         self.__tof_end_time = 0.0
 
@@ -170,11 +169,12 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         self.__process_occurencies[picked_index] += 1
 
         # Collect steady frequency info.
-        if step >= self.__tof_start_time:
+        if step >= self.__kmc_model.tof_start():
             self.__steady_process_occurencies[picked_index] += 1
 
             if not self.__tof_start_time:
                 self.__tof_start_time = time
+                self.__logger.info("TOF analysis start at time = {:f}".format(time))
 
         self.__tof_end_time = time
 
