@@ -20,8 +20,8 @@ except ImportError:
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     from kynetix.solvers.kmc_functions import *
 
-from kynetix import mpi_master
 from kynetix import file_header
+from kynetix import mpi_master, mpi_rank, mpi_installed, mpi_size
 from kynetix.utilities.format_utilities import get_list_string, get_dict_string
 
 
@@ -53,7 +53,11 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
             self.__logger = logging.getLogger("model.solvers.KMCSolver.CoveragesAnalysis")
 
         # Set data file name.
-        self.__filename = filename
+        if mpi_installed and mpi_size > 1:
+            name, suffix = filename.split(".")
+            self.__filename = "{}_rank_{}.{}".format(name, mpi_rank, suffix)
+        else:
+            self.__filename = filename
 
     def setup(self, step, time, configuration, interactions):
         # Append time and step.
@@ -143,7 +147,11 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         self.__tof_end_time = 0.0
 
         # Name of data file.
-        self.__filename = filename
+        if mpi_installed and mpi_size > 1:
+            name, suffix = filename.split(".")
+            self.__filename = "{}_rank_{}.{}".format(name, mpi_rank, suffix)
+        else:
+            self.__filename = filename
 
     def setup(self, step, time, configuration, interactions):
         # Append time and step.

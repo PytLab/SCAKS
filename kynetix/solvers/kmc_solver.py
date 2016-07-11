@@ -80,8 +80,8 @@ class KMCSolver(SolverBase):
                                 interactions=interactions)
 
         if scripting:
-            self.script_lattice_model(model, script_name='kmc_model.py')
             if mpi_master:
+                self.script_lattice_model(model, script_name='kmc_model.py')
                 self.__logger.info('script auto_kmc_model.py created.')
 
         # Get KMCControlParameters.
