@@ -20,8 +20,8 @@ except ImportError:
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     from kynetix.solvers.kmc_functions import *
 
-from kynetix import mpi_master
 from kynetix import file_header
+from kynetix import mpi_master, mpi_rank, mpi_installed, mpi_size
 from kynetix.utilities.format_utilities import get_list_string, get_dict_string
 
 
@@ -81,17 +81,15 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         steps_str = get_list_string("steps", self.__steps)
         possible_types_str = get_list_string("possible_types", self.__possible_types)
 
-        # Write to file.
-        content = file_header + times_str + steps_str + coverages_str + possible_types_str
-        with open(self.__filename, "w") as f:
-            f.write(content)
-
-        # Info output.
         if mpi_master:
+            # Write to file.
+            content = file_header + times_str + steps_str + coverages_str + possible_types_str
+            with open(self.__filename, "w") as f:
+                f.write(content)
+
+            # Info output.
             msg = "coverages informations are written to {}".format(self.__filename)
             self.__logger.info(msg)
-
-        return
         # }}}
 
 
@@ -229,13 +227,13 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
             reaction_rates.setdefault(reaction, rate)
         reaction_rates_str = get_dict_string("reaction_rates", reaction_rates)
 
-        with open(self.__filename, "a") as f:
-            all_content = (occurencies_str + reaction_occurencies_str +
-                           steady_reaction_occurencies_str + reaction_rates_str)
-            f.write(all_content)
-
-        # Info output.
         if mpi_master:
+            with open(self.__filename, "a") as f:
+                all_content = (occurencies_str + reaction_occurencies_str +
+                               steady_reaction_occurencies_str + reaction_rates_str)
+                f.write(all_content)
+
+            # Info output.
             msg = "frequency informations are written to {}".format(self.__filename)
             self.__logger.info(msg)
 

@@ -1,12 +1,18 @@
 import cPickle
+import logging
 import time
 
 try:
     import mpi4py.MPI as MPI
     mpi_comm = MPI.COMM_WORLD
     mpi_rank = mpi_comm.Get_rank()
+    mpi_size = mpi_comm.Get_size()
+    mpi_installed = True
+
 except ImportError:
     mpi_rank = 0
+    mpi_size = 1
+    mpi_installed = False
 
 from kynetix.functions import *
 from kynetix.errors.error import *

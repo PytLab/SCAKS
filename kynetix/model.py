@@ -5,12 +5,11 @@ import logging.config
 import os
 import sys
 
-from kynetix import mpi_master
+from kynetix import mpi_master, mpi_size, mpi_installed
 from kynetix.database.thermo_data import kB_eV, h_eV
 from kynetix.errors.error import *
 from kynetix.functions import *
 from kynetix.utilities.check_utilities import *
-
 
 
 class KineticModel(object):
@@ -45,6 +44,14 @@ class KineticModel(object):
 
         # Set logger.
         self.__set_logger()
+
+        # Output MPI info.
+        if mpi_installed and mpi_master:
+            self.__logger.info("------------------------------------")
+            self.__logger.info(" Model is runing in MPI Environment ")
+            self.__logger.info(" Number of process: {}".format(mpi_size))
+            self.__logger.info("------------------------------------")
+            self.__logger.info(" ")
 
         # Energy flags.
         self.__has_absolute_energy = False
