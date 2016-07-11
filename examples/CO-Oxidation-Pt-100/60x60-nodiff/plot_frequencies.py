@@ -25,7 +25,7 @@ fig = plt.figure()
 ax = fig.add_subplot(111)
 
 rects1 = ax.barh(ind, f_occurencies, width, color='#CD8C95', linewidth=0)
-rects2 = ax.barh(ind, r_occurencies, width, color='#7D9EC0', linewidth=0)
+rects2 = ax.barh(ind + width, r_occurencies, width, color='#7D9EC0', linewidth=0)
 
 ax.set_ylim(-0.5, N + width + 0.5)
 plt.xlabel(r'$\bf{Frequency}$', fontsize=16)
