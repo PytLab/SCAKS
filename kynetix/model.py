@@ -125,7 +125,7 @@ class KineticModel(object):
                 solve_ode=False,
                 fsolve=False,
                 coarse_guess=True,
-                data_file="/rel_energy.py"):
+                data_file="./rel_energy.py"):
         """
         Function to solve Micro-kinetic model using Steady State Approxmiation
         to get steady state coverages and turnover frequencies.
@@ -244,7 +244,8 @@ class KineticModel(object):
                 configuration_file=None,
                 sitesmap_file=None,
                 scripting=True,
-                trajectory_type="lattice"):
+                trajectory_type="lattice",
+                start_time=None):
         """
         Function to do kinetic Monte Carlo simulation.
 
@@ -263,6 +264,8 @@ class KineticModel(object):
 
         trajectory_type: The type of trajectory to use, the default type is "lattice", str.
                          "xyz" | "lattice". 
+
+        start_time: The start time of KMC loop, default value is 0.0, float.
         """
         parser = self.__parser
 
@@ -275,7 +278,9 @@ class KineticModel(object):
         self.__process_mapping = parser.process_mapping()
 
         # Run the lattice model.
-        self.__solver.run(scripting, trajectory_type)
+        self.__solver.run(scripting=scripting,
+                          trajectory_type=trajectory_type,
+                          start_time=start_time)
 
     def __set_parser(self, parser_name):
         """
