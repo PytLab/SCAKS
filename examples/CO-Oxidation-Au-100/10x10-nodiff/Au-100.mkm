@@ -1,8 +1,14 @@
 rxn_expressions = [
-    'CO_g + *_t -> CO_t',                       # CO adsorption at top site.
-    'CO_g + *_b -> CO_b',                       # CO adsorption at bridge site.
-    'O2_g + 2*_b -> O2_2b',                     # O2 adsorption lying at bri site.
-    'O2_g + 2*_t -> O2_2t',                     # O2 adsorption lying at top site.
+    'CO_g + *_t -> CO_t',                        # CO adsorption at top site.
+    'CO_g + *_b -> CO_b',                        # CO adsorption at bridge site.
+    'O2_g + 2*_b -> O2_2b',                      # O2 adsorption lying at bri site.
+    'O2_g + 2*_t -> O2_2t',                      # O2 adsorption lying at top site.
+    'O2_2b <-> O-O_2b -> 2O_b',                  # O2 dissociate directly at bri site.
+    'O2_2b + CO_b <-> O-OCO_3b -> O_b + CO2_g + 2*_b',  # O2 dissociate with CO.
+    'O_b + CO_t -> CO2_g + *_b + *_t',  # O and CO couple.
+    'CO_b + O_b -> CO2_g + 2*_b',  # CO O couple.
+    'CO_b + O_b <-> O-CO_2b -> CO2_g + 2*_b',  # CO O couple.
+    'CO_t + O_b <-> OC-O_b + *_t -> CO2_g + *_t + *_b',
 ]
 
 # Gas pressure.
