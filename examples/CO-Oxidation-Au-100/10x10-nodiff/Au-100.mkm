@@ -9,6 +9,8 @@ rxn_expressions = [
     'CO_b + O_b -> CO2_g + 2*_b',  # CO O couple.
     'CO_b + O_b <-> O-CO_2b -> CO2_g + 2*_b',  # CO O couple.
     'CO_t + O_b <-> OC-O_b + *_t -> CO2_g + *_t + *_b',
+#    'CO_b + *_t <-> CO_t + *_b -> CO_b + *_t',  # CO diffusion.
+    'O_b + *_t <-> O_t + *_b -> O_b + *_t',     # O diffusion
 ]
 
 # Gas pressure.
@@ -25,7 +27,7 @@ species_definitions['t'] = {'site_name': 'top', 'type': 'site', 'total': 0.5}
 temperature = 298  # K
 
 # Lattice information.
-surface_name = 'Pt-100'
+surface_name = 'Au-100'
 
 # Unitcell.
 cell_vectors = [[3.0, 0.0, 0.0],
@@ -45,7 +47,7 @@ repetitions = (10, 10, 1)   # (x, y, z)
 periodic = (True, True, False)           # periodic boundary condition
 possible_element_types = ["O_u", "O_d", "O_l", "O_r", "V", "O_s", "C"]
 empty_type = "V"
-possible_site_types = ["P"]
+possible_site_types = ["Au"]
 
 
 # KMC model attributes.
@@ -56,12 +58,9 @@ solver = 'KMCSolver'
 corrector = "ThermodynamicCorrector"
 
 # KMC loop control parameters.
-nstep = 1000                           # number of KMC loop step
+nstep = 50000                          # number of KMC loop step
 seed = 13996                         # seed for random number generator
 random_generator = 'MT'              # type of pseudo random number generator, 'MT' | 'MINSTD' | 'RANLUX24' | 'RANLUX48'
-analysis = ["CoveragesAnalysis"]     # ['CoveragesAnalysis', 'TOFAnalysis']
-analysis_interval = [10]
-trajectory_dump_interval = 20
-
-# Grid plotting control parameters.
-markers = ['o', '^', '^', 's']
+analysis = ["CoveragesAnalysis", "FrequencyAnalysis"]     # ['CoveragesAnalysis', 'TOFAnalysis']
+analysis_interval = [100, 1]
+trajectory_dump_interval = 1000

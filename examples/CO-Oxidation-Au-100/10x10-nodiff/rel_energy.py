@@ -45,3 +45,11 @@ dG.append(-3.01)
 # CO_t + O_b <-> OC-O_b + *_t -> CO2_g + *_t + *_b
 Ga.append(0.77)
 dG.append(-2.05)
+
+# CO_b + *_t <-> CO_t + *_b -> CO_b + *_t
+#Ga.append(0.11)
+#dG.append(0.0)
+
+# O_b + *_t <-> O_t + *_b -> O_b + *_t
+Ga.append(0.91)
+dG.append(0.0)
