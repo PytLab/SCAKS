@@ -40,7 +40,8 @@ class KMCSolver(SolverBase):
 
     def run(self,
             scripting=True,
-            trajectory_type="lattice"):
+            trajectory_type="lattice",
+            start_time=None):
         """
         Run the KMC lattice model simulation with specified parameters.
 
@@ -50,6 +51,8 @@ class KMCSolver(SolverBase):
 
         trajectory_type: The type of trajectory to use, the default type is "lattice", str.
                          "xyz" | "lattice".
+
+        start_time: The start time of KMC loop, default value is 0.0.
 
         """
         # Get analysis.
@@ -98,7 +101,8 @@ class KMCSolver(SolverBase):
         model.run(control_parameters=control_parameters,
                   trajectory_filename=trajectory_filename,
                   trajectory_type=trajectory_type,
-                  analysis=analysis)
+                  analysis=analysis,
+                  start_time=start_time)
 
     def get_control_parameters(self):
         """

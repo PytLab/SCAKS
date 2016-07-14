@@ -83,7 +83,9 @@ out_energy.csv
 # kmc auto-generatied files.
 auto_*
 *.gif
+*.png
 
 # auto-generated files in examples.
 examples/*/trajplots/
 examples/*/plot_*
+examples/*/traj/

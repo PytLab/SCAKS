@@ -17,7 +17,7 @@ except ImportError:
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     PIL_installed = False
 
-from kynetix.functions import convert_time
+from kynetix.utilities.format_utilities import convert_time
 from kynetix.plotters import images2gif
 
 
@@ -112,14 +112,17 @@ if __name__ == '__main__':
 
     shape = (10, 10)
 
-    possible_types = ('V', 'O', 'O_s', 'C')
+    possible_types = ("O_u", "O_d", "O_l", "O_r", "V", "O_s", "C")
 
-    markers = ('s', 'o', 'o', 'x')
+    markers = ('o', '^', '^', 's')
 
     color_dict = dict(
         V='#FFFFFF',
         O_s='#FF6347',
-        O='#EE0000',
+        O_u='#EE0000',
+        O_d='#EE0000',
+        O_l='#EE0000',
+        O_r='#EE0000',
         C='#607B8B',
         )
     circle_attrs = dict(

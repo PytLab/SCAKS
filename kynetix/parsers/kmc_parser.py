@@ -1,4 +1,5 @@
 import logging
+from math import exp
 import os
 from operator import mul
 
@@ -16,6 +17,7 @@ except ImportError:
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
 from kynetix import mpi_master
+from kynetix.database.thermo_data import kB_eV
 from kynetix.errors.error import *
 from kynetix.database.lattice_data import grid_neighbor_offsets
 from kynetix.parsers.rxn_parser import *
@@ -359,7 +361,7 @@ class KMCParser(RelativeEnergyParser):
                 self.__logger.info("R(reverse) = {} s^-1 (Collision Theory)".format(rr))
         # No gas participating.
         else:
-            # ThermoEquilibrium and gas species in initial state.
+            # Check if it is an adsorption process.
             if "gas" in is_types and Gaf < 1e-10:
                 # Correction energy.
                 idx = is_types.index("gas")
@@ -368,16 +370,23 @@ class KMCParser(RelativeEnergyParser):
                 p = self._owner.species_definitions()[gas_name]["pressure"]
                 m = self.get_molecular_mass(formula.species(), absolute=True)
                 correction_energy = corrector.entropy_correction(gas_name, m, p, T)
-                Gar += correction_energy
+                dG -= correction_energy
 
                 # Info output.
-                msg = "Correct reverse barrier: {} -> {}".format(Gar-correction_energy, Gar)
                 if mpi_master:
+                    msg = "Correct dG: {} -> {}".format(dG+correction_energy, dG)
                     self.__logger.info(msg)
 
-            rr = SolverBase.get_kTST(Gar, T)
-            if mpi_master:
-                self.__logger.info("R(reverse) = {} s^-1 (Transition State Theory)".format(rr))
+                # Use Equilibrium condition to get reverse rate.
+                K = exp(-dG/(kB_eV*T))
+                rr = rf/K
+                if mpi_master:
+                    self.__logger.info("R(reverse) = {} s^-1 (Equilibrium Condition)".format(rr))
+            else:
+                # Use Transition State Theory.
+                rr = SolverBase.get_kTST(Gar, T)
+                if mpi_master:
+                    self.__logger.info("R(reverse) = {} s^-1 (Transition State Theory)".format(rr))
 
         return rf, rr
         # }}}

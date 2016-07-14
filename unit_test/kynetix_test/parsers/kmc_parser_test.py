@@ -61,11 +61,11 @@ class KMCParserTest(unittest.TestCase):
         ret_r = parser._KMCParser__get_rxn_rates('CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b')
         self.assertTupleEqual(ref_r, ret_r)
 
-        ref_r = (215.85343473385328, 4.908397747862737e-34)
+        ref_r = (215.85343473385328, 1.7062993852898129e-44)
         ret_r = parser._KMCParser__get_rxn_rates('O2_g + 2*_b -> 2O_b')
         self.assertTupleEqual(ref_r, ret_r)
 
-        ref_r = (11.535554738754854, 7.067696649263955e-07)
+        ref_r = (11.535554738754854, 1.3130247359797898e-18)
         ret_r = parser._KMCParser__get_rxn_rates('CO_g + *_t -> CO_t')
         self.assertTupleEqual(ref_r, ret_r)
 

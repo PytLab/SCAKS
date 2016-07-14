@@ -17,7 +17,7 @@ except ImportError:
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     PIL_installed = False
 
-from kynetix.functions import convert_time
+from kynetix.utilities.format_utilities import convert_time
 from kynetix.plotters import images2gif
 
 
@@ -113,20 +113,21 @@ if __name__ == '__main__':
 
     shape = (60, 60)
 
-    possible_types = ('V', 'O', 'O_s', 'C')
-
-    markers = ('s', 'o', 'o', 'x')
+    possible_types = ("O_u", "O_d", "O_l", "O_r", "V", "O_s", "C")
 
     color_dict = dict(
         V='#FFFFFF',
-        O='#FF6347',
         O_s='#EE0000',
-        C='#607B8B',
+        O_u='#FF6347',
+        O_d='#FF6347',
+        O_l='#FF6347',
+        O_r='#FF6347',
+        C='#363636',  # '#607B8B'
         )
     circle_attrs = dict(
-        area=8,
+        area=2.08,
         alpha=0.7,
-        antialiased=True,
+        #antialiased=True,
         )
 
     # Locate trajectory file.
@@ -167,4 +168,3 @@ if __name__ == '__main__':
         logging.info('creating %s ...', gif_name)
         images2gif.writeGif(gif_name, images, duration=0.3)
         logging.info('Ok.')
-
