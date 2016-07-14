@@ -177,7 +177,7 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
             if not self.__tof_start_time:
                 self.__tof_start_time = time
                 if mpi_master:
-                    self.__logger.info("TOF analysis start at time = {:f}".format(time))
+                    self.__logger.info("TOF analysis start at time = {:e}".format(time))
 
         self.__tof_end_time = time
 
