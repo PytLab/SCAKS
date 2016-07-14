@@ -89,7 +89,7 @@ class CheckUtilitiesTest(unittest.TestCase):
 
     def test_check_process_dict(self):
         " Test process dict can be checked correctly. "
-
+        # {{{
         # Check keys.
         process = {"reaction": "CO_g + *_t -> CO_t",
                    "description": "CO adsorption at top site.",
@@ -137,6 +137,34 @@ class CheckUtilitiesTest(unittest.TestCase):
                    "basis_sites": [0]}
 
         self.assertRaisesRegexp(SetupError, r"^Lengths of", check_process_dict, process)
+        # }}}
+
+    def test_check_process_coord(self):
+        " Test process coordinates can be checked correctly. "
+
+        c = [[0.0, 0.0, 0.0],
+             [0.0, 0.5, 0.0],
+             [0.5, 0.5, 0.0],
+             [0.5, 0.0, 0.0],
+             [0.5, -0.5, 0.0],
+             [0.0, -0.5, 0.0],
+             [-0.5, -0.5, 0.0],
+             [-0.5, 0.0, 0.0],
+             [-0.5, 0.5, 0.0]]
+
+        check_process_coordinates(c)
+
+        c = [[0.0, 0.0, 0.0],
+             [0.0, 0.5, 0.0],
+             [0.5, 0.5, 0.0],
+             [0.5, 0.0, 0.0],
+             [0.5, -0.5, 0.0],
+             [0.0, -0.5, 0.0],
+             [-0.5, -0.5, 0.0],
+             [-0.5, 0.0, 0.0],
+             [0.0, 0.0, 0.0]]
+
+        self.assertRaisesRegexp(SetupError, "^Found", check_process_coordinates, c)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(CheckUtilitiesTest)

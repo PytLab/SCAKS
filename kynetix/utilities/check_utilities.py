@@ -2,6 +2,7 @@
 Module for holding common checking utility functions.
 """
 
+from itertools import combinations
 import logging
 
 from kynetix.errors.error import *
@@ -166,6 +167,9 @@ def check_process_dict(process_dict):
                 msg = "{} must have 3 entries.".format(coord)
                 raise SetupError(msg)
 
+        # Check if coordinates are all different.
+        check_process_coordinates(coords)
+
     # Check elements.
     for key in ["elements_before", "elements_after"]:
         check_list_tuple(process_dict[key], str, key)
@@ -239,4 +243,27 @@ type_rules = {
     "empty_type": (str, ),
     "tof_start": (int, )
 }
+
+
+def check_process_coordinates(coordinates):
+    """
+    Function to check all coordinates in a process are different.
+
+    Parameters:
+    -----------
+    coordinates: A list of coordinates, 2D list or array of float.
+
+    Return:
+    -------
+    A valid coordinates.
+    """
+    coord_pairs = combinations(coordinates, 2)
+
+    # Check coordinates pairs.
+    for c1, c2 in coord_pairs:
+        if c1 == c2:
+            msg = "Found equivalent coordinates: {} == {}".format(c1, c2)
+            raise SetupError(msg)
+
+    return coordinates
 
