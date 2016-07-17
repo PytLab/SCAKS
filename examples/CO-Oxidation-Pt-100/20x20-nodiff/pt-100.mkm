@@ -7,7 +7,7 @@ rxn_expressions = [
     'O2_g + 2*_b -> 2O_b',                      # O2 dissociative adsorption at two bridge sites.
     'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b',   # CO2_g associative desorption
     'CO_b + O_b <-> OC-O_2b -> CO2_g + 2*_b',   # CO2_g associative desorption
-    'CO_b + *_t <-> CO_t + *_b -> CO_b + *_t',  # CO diffusion.
+#    'CO_b + *_t <-> CO_t + *_b -> CO_b + *_t',  # CO diffusion.
     'O_b + *_t <-> O_t + *_b -> O_b + *_t',     # O diffusion
 ]
 
@@ -41,7 +41,7 @@ unitcell_area = 9.0e-20  # m^2
 active_ratio = 4./9        # Ast / Auc
 
 # Supercell.
-repetitions = (60, 60, 1)   # (x, y, z)
+repetitions = (20, 20, 1)   # (x, y, z)
 periodic = (True, True, False)           # periodic boundary condition
 possible_element_types = ["O_u", "O_d", "O_l", "O_r", "V", "O_s", "C"]
 empty_type = "V"
@@ -56,11 +56,10 @@ solver = 'KMCSolver'
 corrector = "ThermodynamicCorrector"
 
 # KMC loop control parameters.
-nstep = 50000                           # number of KMC loop step
+nstep = 50                           # number of KMC loop step
 seed = 13996                         # seed for random number generator
 random_generator = 'MT'              # type of pseudo random number generator, 'MT' | 'MINSTD' | 'RANLUX24' | 'RANLUX48'
-analysis = ["CoveragesAnalysis", "FrequencyAnalysis"]     # ['CoveragesAnalysis', 'TOFAnalysis']
-analysis_interval = [200, 1]
-tof_start = 40000
-trajectory_dump_interval = 1000
+analysis = ["CoveragesAnalysis"]     # ['CoveragesAnalysis', 'TOFAnalysis']
+analysis_interval = [10]
+trajectory_dump_interval = 1
 
