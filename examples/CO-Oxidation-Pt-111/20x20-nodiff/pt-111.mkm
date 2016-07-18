@@ -1,0 +1,61 @@
+rxn_expressions = [
+    'CO_g + *_t -> CO_t',                       # CO adsorption at top site.
+    'CO_g + *_b -> CO_b',                       # CO adsorption at bridge site.
+]
+
+# Gas pressure.
+species_definitions = {}
+species_definitions['CO_g'] = {'pressure': 0.01}    # define the gas pressures
+species_definitions['O2_g'] = {'pressure': 0.2}  # 0.094
+species_definitions['CO2_g'] = {'pressure': 0.01}
+
+# Site info.
+species_definitions['f'] = {'site_name': 'f', 'type': 'site'}
+species_definitions['h'] = {'site_name': 'hcp', 'type': 'site'}
+species_definitions['b'] = {'site_name': 'bridge', 'type': 'site'}
+species_definitions['t'] = {'site_name': 'top', 'type': 'site'}
+
+# Temperature.
+temperature = 298  # K
+
+# Lattice information.
+surface_name = 'Pt-111'
+
+# Unitcell.
+cell_vectors = [[1.0, 0.0, 0.0],
+                [0.5, 0.87, 0.0],
+                [0.0, 0.0, 1.0]]
+
+basis_sites = [[0.0, 0.0, 0.0],
+               [0.0, 0.5, 0.0],
+               [0.5, 0.0, 0.0],
+               [0.5, 0.5, 0.0],
+               [1.0/3.0, 1.0/3.0, 0.0],
+               [2.0/3.0, 2.0/3.0, 0.0]]
+
+unitcell_area = 7.15e-20  # m^2
+active_ratio = 1./3        # Ast / Auc
+
+# Supercell.
+repetitions = (20, 20, 1)   # (x, y, z)
+periodic = (True, True, False)           # periodic boundary condition
+possible_element_types = ["O_u", "O_d", "O_l", "O_r", "V", "O_s", "C"]
+empty_type = "V"
+possible_site_types = ["P"]
+
+
+# KMC model attributes.
+# specify tools for model to use
+tools = ['parser', 'solver', 'corrector']
+parser = 'KMCParser'  # default
+solver = 'KMCSolver'
+corrector = "ThermodynamicCorrector"
+
+# KMC loop control parameters.
+nstep = 50000                           # number of KMC loop step
+seed = 13996                         # seed for random number generator
+random_generator = 'MT'              # type of pseudo random number generator, 'MT' | 'MINSTD' | 'RANLUX24' | 'RANLUX48'
+analysis = ["CoveragesAnalysis"]     # ['CoveragesAnalysis', 'TOFAnalysis']
+analysis_interval = [10]
+trajectory_dump_interval = nstep/25
+
