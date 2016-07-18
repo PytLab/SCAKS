@@ -71,11 +71,10 @@ def plot_scatters(types,
     for t in possible_types:
         scatter_dict.setdefault(t, [])
 
-    for idx, (t, coord) in enumerate(zip(types, coordinates)):  # t, pt <-> type, scatter_pt
+    for t, coord in zip(types, coordinates):  # t, pt <-> type, scatter_pt
         x, y = coord[: 2]
         color = color_dict[t]
-        marker_idx = idx % len(markers)
-        marker = markers[marker_idx]
+        marker = markers[t]
         edgecolor = color
         ax.scatter(x, y, s=area, c=color, alpha=alpha, edgecolor=edgecolor, marker=marker)
 
@@ -110,26 +109,29 @@ if __name__ == '__main__':
                         action="store_true")
     args = parser.parse_args()
 
-    shape = (10, 10)
+    shape = (20, 20)
 
     possible_types = ("O_u", "O_d", "O_l", "O_r", "V", "O_s", "C")
 
-    markers = ('o', '^', '^', 's')
+    markers = dict(V='o',
+                   O_s='o',
+                   O_u='^',
+                   O_d='v',
+                   O_l='<',
+                   O_r='>',
+                   C='o')
 
-    color_dict = dict(
-        V='#FFFFFF',
-        O_s='#FF6347',
-        O_u='#EE0000',
-        O_d='#EE0000',
-        O_l='#EE0000',
-        O_r='#EE0000',
-        C='#607B8B',
-        )
-    circle_attrs = dict(
-        alpha=0.7,
-        antialiased=True,
-        edgecolor='#FFFFFF',
-        )
+    color_dict = dict(V='#FFFFFF',
+                      O_s='#FF6347',
+                      O_u='#EE0000',
+                      O_d='#EE0000',
+                      O_l='#EE0000',
+                      O_r='#EE0000',
+                      C='#607B8B')
+
+    circle_attrs = dict(alpha=0.7,
+                        antialiased=True,
+                        edgecolor='#FFFFFF')
 
     # Locate trajectory file.
     filename = 'auto_lattice_trajectory.py'
