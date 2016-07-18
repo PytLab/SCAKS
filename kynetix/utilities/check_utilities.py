@@ -259,9 +259,16 @@ def check_process_coordinates(coordinates):
     """
     coord_pairs = combinations(coordinates, 2)
 
+    # Nested function to compare two coordinates.
+    def equal(coord1, coord2):
+        for e1, e2 in zip(coord1, coord2):
+            if abs(e1 - e2) > 1e-6:
+                return False
+        return True
+
     # Check coordinates pairs.
     for c1, c2 in coord_pairs:
-        if c1 == c2:
+        if equal(c1, c2):
             msg = "Found equivalent coordinates: {} == {}".format(c1, c2)
             raise SetupError(msg)
 
