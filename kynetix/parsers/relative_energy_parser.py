@@ -228,10 +228,25 @@ class RelativeEnergyParser(ParserBase):
         """
         Private helper function to get relative energies dict from relative energy.
         """
-        relative_energies = dict(Gaf=self._Ga, dG=self._dG)
+
+        # Correct forward barrier.
+        Gafs, dGs = [], []
+        for Gaf, dG in zip(self._Ga, self._dG):
+            # -------------------------------------------------------
+            # NOTE: if the reaction has no barrier and is exothermic,
+            #       the forward barrier should be positive and
+            #       reaction heat should be the same with forward
+            #       barrier.
+            # -------------------------------------------------------
+            if abs(Gaf - 0.0) < 1e-10 and dG > 0.0:
+                Gaf = dG
+            Gafs.append(Gaf)
+            dGs.append(dG)
+
+        relative_energies = dict(Gaf=Gafs, dG=dGs)
 
         # Get reverse barriers.
-        Gars = [Ga - dG for Ga, dG in zip(self._Ga, self._dG)]
+        Gars = [Ga - dG for Ga, dG in zip(Gafs, dGs)]
         relative_energies.setdefault("Gar", Gars)
 
         return relative_energies
