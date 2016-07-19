@@ -54,8 +54,9 @@ class ModelShell(object):
         """
 
         for parameter_name in defaults:
-            if hasattr(self._owner, parameter_name):
-                defaults[parameter_name] = getattr(self._owner, parameter_name)
+            attribute_name = mangled_name(self._owner, parameter_name)
+            if hasattr(self._owner, attribute_name):
+                defaults[parameter_name] = getattr(self._owner, attribute_name)
 
         return defaults
 

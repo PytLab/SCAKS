@@ -24,6 +24,7 @@ from kynetix.plotters import images2gif
 def plot_scatters(types,
                   shape,
                   coordinates,
+                  markers,
                   possible_types,
                   color_dict,
                   time, step,
@@ -37,6 +38,8 @@ def plot_scatters(types,
            list of strings.
 
     possible_types: A list of possible types, list of strings.
+
+    markers: A list of marker parameter for corresponding basis_site.
 
     color_dict: circle color for different types.
                 e.g. {type: color_code}, dict.
@@ -61,31 +64,25 @@ def plot_scatters(types,
     if "area" not in circle_attrs:
         area = 60.0**2/len(types)*20
     else:
-        area = circle_attrs['area']
+        area = circle_attrs["area"]
 
     # Classify points.
     scatter_dict = {}  # {adsorbate string: list of points}
     for t in possible_types:
         scatter_dict.setdefault(t, [])
 
-    for t, coord in zip(types, coordinates):
-        scatter_dict[t].append(coord[: 2])
-
-    for t, pts in scatter_dict.iteritems():
-        if not pts:
-            continue
-        x, y = zip(*pts)
+    for t, coord in zip(types, coordinates):  # t, pt <-> type, scatter_pt
+        x, y = coord[: 2]
         color = color_dict[t]
-        alpha = circle_attrs['alpha'] if 'alpha' in circle_attrs else 0.7
-        edgecolor = circle_attrs['edgecolor'] if 'edgecolor' in circle_attrs else color
-        marker = circle_attrs['marker'] if 'marker' in circle_attrs else 's'
+        marker = markers[t]
+        edgecolor = color
         ax.scatter(x, y, s=area, c=color, alpha=alpha, edgecolor=edgecolor, marker=marker)
 
     # Set axes attrs.
-    ax.set_xlim(-0.5, shape[0])
+    ax.set_xlim(-0.5, 3./2*shape[0])
     ax.set_ylim(-0.5, shape[-1])
-    ax.set_xticks([])
-    ax.set_yticks([])
+    ax.set_xticks(range(shape[0]))
+    ax.set_yticks(range(shape[0]))
 
     # Attrs of axis.
     for spine in ax.spines.values():
@@ -111,24 +108,30 @@ if __name__ == '__main__':
                         action="store_true")
     args = parser.parse_args()
 
-    shape = (60, 60)
+    shape = (20, 20)
 
     possible_types = ("O_u", "O_d", "O_l", "O_r", "V", "O_s", "C")
 
-    color_dict = dict(
-        V='#FFFFFF',
-        O_s='#EE0000',
-        O_u='#FF6347',
-        O_d='#FF6347',
-        O_l='#FF6347',
-        O_r='#FF6347',
-        C='#363636',  # '#607B8B'
-        )
-    circle_attrs = dict(
-        area=2.08,
-        alpha=0.7,
-        #antialiased=True,
-        )
+    markers = dict(V='o',
+                   O_s='o',
+                   O_u='^',
+                   O_d='v',
+                   O_l='<',
+                   O_r='>',
+                   C='o')
+
+    color_dict = dict(V='#FFFFFF',
+                      O_s='#FF6347',
+                      O_u='#EE0000',
+                      O_d='#EE0000',
+                      O_l='#EE0000',
+                      O_r='#EE0000',
+                      C='#607B8B')
+
+    circle_attrs = dict(alpha=0.7,
+                        antialiased=True,
+                        area=10,
+                        edgecolor='#FFFFFF')
 
     # Locate trajectory file.
     filename = 'auto_lattice_trajectory.py'
@@ -147,8 +150,15 @@ if __name__ == '__main__':
     images = []
     path = "./trajplots/"
 
+    # Get cartisian coordinates.
+    cell_vectors = np.matrix([[1.0, 0.0, 0.0],
+                              [0.5, 0.87, 0.0],
+                              [0.0, 0.0, 1.0]])
+    sites = np.matrix(sites)
+    sites = (sites*cell_vectors).tolist()
+
     for tp, step, simu_time in zip(types, steps, times):
-        fig = plot_scatters(tp, shape, sites, possible_types, color_dict,
+        fig = plot_scatters(tp, shape, sites, markers, possible_types, color_dict,
                             time=simu_time, step=step, circle_attrs=circle_attrs)
         if not os.path.exists(path):
                 os.mkdir(path)
