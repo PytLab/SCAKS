@@ -14,3 +14,6 @@ dG.append(-1.58)
 Ga.append(0.0)
 dG.append(-1.68)
 
+# O2_g + 2*_t -> O2_2t
+Ga.append(0.0)
+dG.append(0.56)
