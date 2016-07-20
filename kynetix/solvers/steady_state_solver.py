@@ -31,7 +31,8 @@ class SteadyStateSolver(MeanFieldSolver):
                         max_rootfinding_iterations=100,
                         residual_threshold=1.0,
                         initial_guess_scale_factor=100,
-                        stable_criterion=1e-10)
+                        stable_criterion=1e-10,
+                        ode_buffer_size=500)
         defaults = self.update_defaults(defaults)
 
         # Set varibles in defaults protected attributes of solver.
@@ -1363,27 +1364,73 @@ class SteadyStateSolver(MeanFieldSolver):
             self.__logger.info('-'*(20*nads + 30))
 
         try:
+            # Write file header.
+            with open("auto_ode_coverages.py", "w") as f:
+                time_str = "times = []\n\n"
+                coverages_str = "coverages = []\n\n"
+                f.write(file_header + time_str + coverages_str)
+
+            # Counters.
+            nstep = 0
+            flush_counter = 0
+
             while r.t < t_end:
+                nstep += 1
+
+                # Integrate.
                 if mpi_master:
                     self.__logger.info('%10.2f%%%20f' + '%20.8e'*nads, r.t/t_end*100,
                                        r.t, *r.integrate(r.t + t_step))
                 ts.append(r.t)
                 ys.append(r.y.tolist())
+
+                # Flush time coverages to file.
+                if nstep % self._ode_buffer_size == 0:
+                    ts, ys = self.__ode_flush(flush_counter, ts, ys)
+                    flush_counter += 1
+
             if mpi_master:
-                self.__logger.info('%10s\n', 'stop')
+                self.__logger.info('%10s\n', 'finish')
 
         finally:
             # write to archive file
-            with open('auto_ode_coverages.py', 'w') as f:
-                time_str = get_list_string('times', ts)
-                cvgs_str = get_list_string('coverages', ys)
-                content = file_header + time_str + cvgs_str
-                f.write(content)
-                if mpi_master:
-                    self.__logger.info('ODE integration trajectory is written' +
+            ts, ys = self.__ode_flush(flush_counter, ts, ys)
+            if mpi_master:
+                self.__logger.info('ODE integration trajectory is written' +
                                    ' to auto_ode_coverages.py.')
 
         return ts, ys
+
+    def __ode_flush(self, flush_counter, times, coverages):
+        """
+        Private helper function to flush ode intergration data to file.
+        """
+        # Get times extension strings.
+        var_name = "times_{}".format(flush_counter)
+        list_str = get_list_string(var_name, times)
+        extend_str = "times.extend({})\n\n".format(var_name)
+        times_str = list_str + extend_str
+
+        # Get coverages extesnion strings.
+        var_name = "coverages_{}".format(flush_counter)
+        list_str = get_list_string(var_name, coverages)
+        extend_str = "coverages.extend({})\n\n".format(var_name)
+        coverages_str = list_str + extend_str
+
+        # Get all content to be flushed.
+        comment = ("\n# -------------------- flush {} " +
+                   "---------------------\n").format(flush_counter)
+        content = comment + times_str + coverages_str
+
+        # Flush to file.
+        with open("auto_ode_coverages.py", "a") as f:
+            f.write(content)
+
+        # Free buffer.
+        times = []
+        coverages = []
+
+        return times, coverages
 
     def error(self):
         """
