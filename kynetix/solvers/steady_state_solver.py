@@ -926,27 +926,28 @@ class SteadyStateSolver(MeanFieldSolver):
                         error = f_resid(x)  # use residual as error and continue
 
                 # if convergence is slow when the norm is larger than 0.1
-                elif (nt_counter > self._max_rootfinding_iterations or
-                      abs(error - old_error) < 1e-4) and error > 1e-10:
-                    if mpi_master:
-                        self.__logger.info('%-10s%10d%23.10e%23.10e', 'break',
-                                         nt_counter, float(resid), float(error))
-                        self.__logger.warning('slow convergence rate!')
-                        self.__logger.warning('root finding break for this initial guess...\n')
-                    # Jump out of loop for this c0
-                    cancel = False
-                    break
+#                elif nt_counter > self._max_rootfinding_iterations:
+#                      #abs(error - old_error) < 1e-4) and error > 1e-1:
+#                    if mpi_master:
+#                        self.__logger.info('%-10s%10d%23.10e%23.10e', 'break',
+#                                         nt_counter, float(resid), float(error))
+#                        #self.__logger.warning('slow convergence rate!')
+#                        self.__logger.warning('Max rootfinding iteration number reached!')
+#                        self.__logger.warning('root finding break for this initial guess...\n')
+#                    # Jump out of loop for this c0
+#                    cancel = False
+#                    break
 
                 # residual is almost stagnated
-                elif abs(error - old_error) < self._stable_criterion:
-                    if mpi_master:
-                        self.__logger.info('%-10s%10d%23.10e%23.10e', 'stable',
-                                           nt_counter, float(resid), float(error))
-                        self.__logger.warning('stable root: %s', str(map(float, x)))
-                        self.__logger.debug(' difference: %-24.16e', abs(error - old_error))
-                    # Jump out of loop for this c0.
-                    cancel = False
-                    break
+#                elif abs(error - old_error) < self._stable_criterion:
+#                    if mpi_master:
+#                        self.__logger.info('%-10s%10d%23.10e%23.10e', 'stable',
+#                                           nt_counter, float(resid), float(error))
+#                        self.__logger.warning('stable root: %s', str(map(float, x)))
+#                        self.__logger.debug(' difference: %-24.16e', abs(error - old_error))
+#                    # Jump out of loop for this c0.
+#                    cancel = False
+#                    break
 
                 old_error = error  # set old error to be compared in next loop
                 #self._coverage = x
