@@ -111,7 +111,7 @@ class CoordsGroup(object):
         ori_coords = np.array(self.__coords)
         new_coords = (ori_coords + move_vector).tolist()
 
-        return CoordsGroup(new_coords, self.__elements)
+        return CoordsGroup(new_coords, copy.copy(self.__elements))
 
     @staticmethod
     def __compare_coords(coord1, coord2):
