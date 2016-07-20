@@ -32,7 +32,8 @@ class SteadyStateSolver(MeanFieldSolver):
                         residual_threshold=1.0,
                         initial_guess_scale_factor=100,
                         stable_criterion=1e-10,
-                        ode_buffer_size=500)
+                        ode_buffer_size=500,
+                        ode_output_interval=200)
         defaults = self.update_defaults(defaults)
 
         # Set varibles in defaults protected attributes of solver.
@@ -1378,14 +1379,21 @@ class SteadyStateSolver(MeanFieldSolver):
                 nstep += 1
 
                 # Integrate.
-                if mpi_master:
-                    self.__logger.info('%10.2f%%%20f' + '%20.8e'*nads, r.t/t_end*100,
-                                       r.t, *r.integrate(r.t + t_step))
+                r.integrate(r.t + t_step)
                 ts.append(r.t)
                 ys.append(r.y.tolist())
 
+                # Info output.
+                if mpi_master and (nstep % self._ode_output_interval == 0):
+                    msg = "{:10.2f}%{:20f}" + "{:20.8e}"*nads
+                    msg = msg.format(r.t/t_end*100, r.t, *r.y)
+                    self.__logger.info(msg)
+
                 # Flush time coverages to file.
                 if nstep % self._ode_buffer_size == 0:
+                    if ts and ys:
+                        last_time = ts[-1]
+                        last_coverages = ys[-1]
                     ts, ys = self.__ode_flush(flush_counter, ts, ys)
                     flush_counter += 1
 
@@ -1393,13 +1401,15 @@ class SteadyStateSolver(MeanFieldSolver):
                 self.__logger.info('%10s\n', 'finish')
 
         finally:
-            # write to archive file
-            ts, ys = self.__ode_flush(flush_counter, ts, ys)
+            if ts and ys:
+                last_time = ts[-1]
+                last_coverages = ys[-1]
+            self.__ode_flush(flush_counter, ts, ys)
             if mpi_master:
                 self.__logger.info('ODE integration trajectory is written' +
                                    ' to auto_ode_coverages.py.')
 
-        return ts, ys
+        return last_time, last_coverages
 
     def __ode_flush(self, flush_counter, times, coverages):
         """
