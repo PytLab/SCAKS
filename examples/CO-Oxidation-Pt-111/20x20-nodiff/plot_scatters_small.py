@@ -110,7 +110,7 @@ if __name__ == '__main__':
 
     shape = (20, 20)
 
-    possible_types = ("O_u", "O_d", "O_l", "O_r", "V", "O_s", "C")
+    possible_types = ("O_u", "O_d", "O_l", "O_r", "O_ur", "O_dr", "O_dl", "O_ul", "V", "O_s", "C")
 
     markers = dict(V='o',
                    O_s='o',
@@ -118,6 +118,10 @@ if __name__ == '__main__':
                    O_d='v',
                    O_l='<',
                    O_r='>',
+                   O_ur='x',
+                   O_dr='x',
+                   O_ul='x',
+                   O_dl='x',
                    C='o')
 
     color_dict = dict(V='#FFFFFF',
@@ -126,6 +130,10 @@ if __name__ == '__main__':
                       O_d='#EE0000',
                       O_l='#EE0000',
                       O_r='#EE0000',
+                      O_ur='#EE0000',
+                      O_dr='#EE0000',
+                      O_ul='#EE0000',
+                      O_dl='#EE0000',
                       C='#607B8B')
 
     circle_attrs = dict(alpha=0.7,

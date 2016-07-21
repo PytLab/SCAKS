@@ -6,6 +6,7 @@ rxn_expressions = [
     'O2_g + 2*_t -> O2_2t',                     # O2 adsorption lying at top sites.
     'O2_2t + 2*_f <-> 2*_f + O-O_2t -> 2O_f + 2*_t',  # O2 dissociate directly.
     'CO_t + O2_2t + *_f <-> OCO-O_3t + *_f -> CO2_g + O_f + 3*_t',  # O2 dissociate with CO
+    'CO_g + O2_2t + *_t -> CO_t + O2_2t',       # CO adsorbed besides O2
 ]
 
 # Gas pressure.
@@ -44,7 +45,7 @@ active_ratio = 1./3        # Ast / Auc
 # Supercell.
 repetitions = (20, 20, 1)   # (x, y, z)
 periodic = (True, True, False)           # periodic boundary condition
-possible_element_types = ["O_u", "O_d", "O_l", "O_r", "V", "O_s", "C"]
+possible_element_types = ["O_u", "O_d", "O_l", "O_r", "O_ur", "O_dr", "O_dl", "O_ul", "V", "O_s", "C"]
 empty_type = "V"
 possible_site_types = ["P"]
 
@@ -57,7 +58,7 @@ solver = 'KMCSolver'
 corrector = "ThermodynamicCorrector"
 
 # KMC loop control parameters.
-nstep = 50000                           # number of KMC loop step
+nstep = 5000                           # number of KMC loop step
 seed = 13996                         # seed for random number generator
 random_generator = 'MT'              # type of pseudo random number generator, 'MT' | 'MINSTD' | 'RANLUX24' | 'RANLUX48'
 analysis = ["CoveragesAnalysis"]     # ['CoveragesAnalysis', 'TOFAnalysis']
