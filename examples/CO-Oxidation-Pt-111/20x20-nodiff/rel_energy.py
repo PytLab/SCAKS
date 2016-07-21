@@ -30,3 +30,7 @@ dG.append(0.56)
 Ga.append(0.98)
 dG.append(-1.42)
 
+# CO_t + O2_2t + *_f <-> OCO-O_3t + *_f -> CO2_g + O_f + 3*_t
+Ga.append(0.45)
+dG.append(-2.25)
+

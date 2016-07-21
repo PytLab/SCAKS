@@ -5,7 +5,7 @@ rxn_expressions = [
     'CO_g + *_f -> CO_f',                       # CO adsorption at fcc site.
     'O2_g + 2*_t -> O2_2t',                     # O2 adsorption lying at top sites.
     'O2_2t + 2*_f <-> 2*_f + O-O_2t -> 2O_f + 2*_t',  # O2 dissociate directly.
-    'CO_t + O2_2t + *_f <-> OCO-O_3t + *_f -> CO2_g + O_f + 3*_t,  # O2 dissociate with CO
+    'CO_t + O2_2t + *_f <-> OCO-O_3t + *_f -> CO2_g + O_f + 3*_t',  # O2 dissociate with CO
 ]
 
 # Gas pressure.
