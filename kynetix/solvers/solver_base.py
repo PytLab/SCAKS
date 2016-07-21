@@ -69,3 +69,4 @@ class SolverBase(ModelShell):
         kCT = S*(p*Auc)/(sqrt(2*pi*m*kB_J*T))
 
         return kCT
+
