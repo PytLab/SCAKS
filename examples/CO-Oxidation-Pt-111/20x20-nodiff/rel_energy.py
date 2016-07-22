@@ -38,3 +38,7 @@ dG.append(-2.25)
 Ga.append(0.0)
 dG.append(-1.60)
 
+# CO_t + O2_g + 2*_t -> CO_t + O2_2t
+Ga.append(0.0)
+dG.append(-0.59)
+

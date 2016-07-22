@@ -7,6 +7,7 @@ rxn_expressions = [
     'O2_2t + 2*_f <-> 2*_f + O-O_2t -> 2O_f + 2*_t',  # O2 dissociate directly.
     'CO_t + O2_2t + *_f <-> OCO-O_3t + *_f -> CO2_g + O_f + 3*_t',  # O2 dissociate with CO
     'CO_g + O2_2t + *_t -> CO_t + O2_2t',       # CO adsorbed besides O2
+    'CO_t + O2_g + 2*_t -> CO_t + O2_2t',       # O2 adsorbed besides CO
 ]
 
 # Gas pressure.
