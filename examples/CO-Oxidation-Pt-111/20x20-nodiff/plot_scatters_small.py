@@ -71,18 +71,20 @@ def plot_scatters(types,
     for t in possible_types:
         scatter_dict.setdefault(t, [])
 
-    for t, coord in zip(types, coordinates):  # t, pt <-> type, scatter_pt
+    site_markers = ['o', 'v', 'v', 'v', 's', 's']
+    for idx, (t, coord) in enumerate(zip(types, coordinates)):  # t, pt <-> type, scatter_pt
         x, y = coord[: 2]
         color = color_dict[t]
-        marker = markers[t]
+        #marker = markers[t]
+        marker = site_markers[idx % 6]
         edgecolor = color
         ax.scatter(x, y, s=area, c=color, alpha=alpha, edgecolor=edgecolor, marker=marker)
 
     # Set axes attrs.
     ax.set_xlim(-0.5, 3./2*shape[0])
     ax.set_ylim(-0.5, shape[-1])
-    ax.set_xticks(range(shape[0]))
-    ax.set_yticks(range(shape[0]))
+    ax.set_xticks([])
+    ax.set_yticks([])
 
     # Attrs of axis.
     for spine in ax.spines.values():
@@ -108,7 +110,7 @@ if __name__ == '__main__':
                         action="store_true")
     args = parser.parse_args()
 
-    shape = (20, 20)
+    shape = (10, 10)
 
     possible_types = ("O_u", "O_d", "O_l", "O_r", "O_ur", "O_dr", "O_dl", "O_ul", "V", "O_s", "C")
 
@@ -138,7 +140,7 @@ if __name__ == '__main__':
 
     circle_attrs = dict(alpha=0.7,
                         antialiased=True,
-                        area=10,
+                        area=20,
                         edgecolor='#FFFFFF')
 
     # Locate trajectory file.
@@ -165,7 +167,7 @@ if __name__ == '__main__':
     sites = np.matrix(sites)
     sites = (sites*cell_vectors).tolist()
 
-    for tp, step, simu_time in zip(types, steps, times):
+    for tp, step, simu_time in zip(types[260: 260+25], steps[260: 260+25], times[260: 260+25]):
         fig = plot_scatters(tp, shape, sites, markers, possible_types, color_dict,
                             time=simu_time, step=step, circle_attrs=circle_attrs)
         if not os.path.exists(path):

@@ -11,7 +11,8 @@ rxn_expressions = [
     'CO_t + O2_2t + *_f <-> OCO-O_2t + *_t + *_f -> CO2_g + O_f + 3*_t',  # O2 dissociate with CO
     'O2_2t + CO_g + *_t -> CO_t + O2_2t',       # CO adsorbed besides O2
     'O2_g + CO_t + 2*_t -> CO_t + O2_2t',       # O2 adsorbed besides CO
-    'O_h + CO_f <-> O-CO_f + *_t -> CO2_g + *_t + *_f',  # O and CO couple
+    'O_h + CO_f <-> O-CO_f + *_h -> CO2_g + *_h + *_f',  # O and CO couple
+    'O_f + CO_h <-> O-CO_h + *_f -> CO2_g + *_h + *_f',  # O and CO couple
     'O_f + CO_t <-> O-CO_t + *_f -> *_t + *_f + CO2_g',  # O and CO couple
     'O_h + CO_t <-> O-CO_t + *_h -> *_t + *_h + CO2_g',  # O and CO couple
 ]
@@ -50,7 +51,7 @@ unitcell_area = 7.15e-20  # m^2
 active_ratio = 1./3        # Ast / Auc
 
 # Supercell.
-repetitions = (20, 20, 1)   # (x, y, z)
+repetitions = (10, 10, 1)   # (x, y, z)
 periodic = (True, True, False)           # periodic boundary condition
 possible_element_types = ["O_u", "O_d", "O_l", "O_r", "O_ur", "O_dr", "O_dl", "O_ul", "V", "O_s", "C"]
 empty_type = "V"
@@ -65,10 +66,10 @@ solver = 'KMCSolver'
 corrector = "ThermodynamicCorrector"
 
 # KMC loop control parameters.
-nstep = 5000                           # number of KMC loop step
+nstep = 500                           # number of KMC loop step
 seed = 13996                         # seed for random number generator
 random_generator = 'MT'              # type of pseudo random number generator, 'MT' | 'MINSTD' | 'RANLUX24' | 'RANLUX48'
-analysis = ["CoveragesAnalysis"]     # ['CoveragesAnalysis', 'TOFAnalysis']
-analysis_interval = [10]
-trajectory_dump_interval = nstep/25
+analysis = ["CoveragesAnalysis", "FrequencyAnalysis"]     # ['CoveragesAnalysis', 'FrequencyAnalysis']
+analysis_interval = [10, 1]
+trajectory_dump_interval = 1
 
