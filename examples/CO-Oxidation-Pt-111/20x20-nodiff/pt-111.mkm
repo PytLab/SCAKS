@@ -66,10 +66,11 @@ solver = 'KMCSolver'
 corrector = "ThermodynamicCorrector"
 
 # KMC loop control parameters.
-nstep = 500                           # number of KMC loop step
+nstep = 50000                           # number of KMC loop step
 seed = 13996                         # seed for random number generator
 random_generator = 'MT'              # type of pseudo random number generator, 'MT' | 'MINSTD' | 'RANLUX24' | 'RANLUX48'
 analysis = ["CoveragesAnalysis", "FrequencyAnalysis"]     # ['CoveragesAnalysis', 'FrequencyAnalysis']
 analysis_interval = [10, 1]
-trajectory_dump_interval = 1
+tof_start = 400
+trajectory_dump_interval = nstep/50
 

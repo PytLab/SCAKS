@@ -167,7 +167,7 @@ if __name__ == '__main__':
     sites = np.matrix(sites)
     sites = (sites*cell_vectors).tolist()
 
-    for tp, step, simu_time in zip(types[260: 260+25], steps[260: 260+25], times[260: 260+25]):
+    for tp, step, simu_time in zip(types, steps, times):
         fig = plot_scatters(tp, shape, sites, markers, possible_types, color_dict,
                             time=simu_time, step=step, circle_attrs=circle_attrs)
         if not os.path.exists(path):
