@@ -91,18 +91,21 @@ class CoordsGroup(object):
         for coordinate, element in zip(coordinates, elements):
             self.append(coordinate, element)
 
-    def move(self, move_vector):
+    def move(self, move_vector=None):
         """
         Function to move all coordinates.
 
         Parameters:
         -----------
-        move_vector: Move vector, list of 3 floats.
+        move_vector: Move vector, list of 3 floats, default value is [0, 0, 0]
 
         Returns:
         --------
         A new moved CoordsGroup object.
         """
+        if move_vector is None:
+            move_vector = [0.0, 0.0, 0.0]
+
         # Check the parameter.
         if type(move_vector) is not list and len(move_vector) != 3:
             raise ValueError("move_vector must be a list of three float numbers.")
