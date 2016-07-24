@@ -15,6 +15,7 @@ rxn_expressions = [
     'O_f + CO_h <-> O-CO_h + *_f -> CO2_g + *_h + *_f',  # O and CO couple
     'O_f + CO_t <-> O-CO_t + *_f -> *_t + *_f + CO2_g',  # O and CO couple
     'O_h + CO_t <-> O-CO_t + *_h -> *_t + *_h + CO2_g',  # O and CO couple
+    'O2_g + *_h + *_f -> O_h + O_f',  # O2 dissociative adsorption
 ]
 
 # Gas pressure.
@@ -66,7 +67,7 @@ solver = 'KMCSolver'
 corrector = "ThermodynamicCorrector"
 
 # KMC loop control parameters.
-nstep = 50000                           # number of KMC loop step
+nstep = 650                           # number of KMC loop step
 seed = 13996                         # seed for random number generator
 random_generator = 'MT'              # type of pseudo random number generator, 'MT' | 'MINSTD' | 'RANLUX24' | 'RANLUX48'
 analysis = ["CoveragesAnalysis", "FrequencyAnalysis"]     # ['CoveragesAnalysis', 'FrequencyAnalysis']
