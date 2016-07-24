@@ -24,7 +24,6 @@ from kynetix.plotters import images2gif
 def plot_scatters(types,
                   shape,
                   coordinates,
-                  markers,
                   possible_types,
                   color_dict,
                   time, step,
@@ -38,8 +37,6 @@ def plot_scatters(types,
            list of strings.
 
     possible_types: A list of possible types, list of strings.
-
-    markers: A list of marker parameter for corresponding basis_site.
 
     color_dict: circle color for different types.
                 e.g. {type: color_code}, dict.
@@ -64,24 +61,28 @@ def plot_scatters(types,
     if "area" not in circle_attrs:
         area = 60.0**2/len(types)*20
     else:
-        area = circle_attrs["area"]
+        area = circle_attrs['area']
 
     # Classify points.
     scatter_dict = {}  # {adsorbate string: list of points}
     for t in possible_types:
         scatter_dict.setdefault(t, [])
 
-    site_markers = ['o', 'v', 'v', 'v', 's', 's']
-    for idx, (t, coord) in enumerate(zip(types, coordinates)):  # t, pt <-> type, scatter_pt
-        x, y = coord[: 2]
+    for t, coord in zip(types, coordinates):
+        scatter_dict[t].append(coord[: 2])
+
+    for t, pts in scatter_dict.iteritems():
+        if not pts:
+            continue
+        x, y = zip(*pts)
         color = color_dict[t]
-        #marker = markers[t]
-        marker = site_markers[idx % 6]
-        edgecolor = color
+        alpha = circle_attrs['alpha'] if 'alpha' in circle_attrs else 0.7
+        edgecolor = circle_attrs['edgecolor'] if 'edgecolor' in circle_attrs else color
+        marker = circle_attrs['marker'] if 'marker' in circle_attrs else 's'
         ax.scatter(x, y, s=area, c=color, alpha=alpha, edgecolor=edgecolor, marker=marker)
 
     # Set axes attrs.
-    ax.set_xlim(-0.5, 3./2*shape[0])
+    ax.set_xlim(-0.5, shape[0]*1.5)
     ax.set_ylim(-0.5, shape[-1])
     ax.set_xticks([])
     ax.set_yticks([])
@@ -110,21 +111,9 @@ if __name__ == '__main__':
                         action="store_true")
     args = parser.parse_args()
 
-    shape = (10, 10)
+    shape = (30, 30)
 
     possible_types = ("O_u", "O_d", "O_l", "O_r", "O_ur", "O_dr", "O_dl", "O_ul", "V", "O_s", "C")
-
-    markers = dict(V='o',
-                   O_s='o',
-                   O_u='^',
-                   O_d='v',
-                   O_l='<',
-                   O_r='>',
-                   O_ur='x',
-                   O_dr='x',
-                   O_ul='x',
-                   O_dl='x',
-                   C='o')
 
     color_dict = dict(V='#FFFFFF',
                       O_s='#FF6347',
@@ -138,10 +127,10 @@ if __name__ == '__main__':
                       O_dl='#EE0000',
                       C='#607B8B')
 
-    circle_attrs = dict(alpha=0.7,
-                        antialiased=True,
-                        area=20,
-                        edgecolor='#FFFFFF')
+    circle_attrs = dict(area=2.08,
+                        alpha=0.7,
+                        #antialiased=True,
+                        )
 
     # Locate trajectory file.
     filename = 'auto_lattice_trajectory.py'
@@ -168,7 +157,7 @@ if __name__ == '__main__':
     sites = (sites*cell_vectors).tolist()
 
     for tp, step, simu_time in zip(types, steps, times):
-        fig = plot_scatters(tp, shape, sites, markers, possible_types, color_dict,
+        fig = plot_scatters(tp, shape, sites, possible_types, color_dict,
                             time=simu_time, step=step, circle_attrs=circle_attrs)
         if not os.path.exists(path):
                 os.mkdir(path)
@@ -188,3 +177,4 @@ if __name__ == '__main__':
         logging.info('creating %s ...', gif_name)
         images2gif.writeGif(gif_name, images, duration=0.3)
         logging.info('Ok.')
+

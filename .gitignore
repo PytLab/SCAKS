@@ -89,3 +89,9 @@ auto_*
 examples/*/trajplots/
 examples/*/plot_*
 examples/*/traj/
+
+# kmc_plot scripts
+plot_coverages.py
+plot_frequencies.py
+plot_scatters*
+!scripts/kmc_plot/plot_*
