@@ -70,3 +70,7 @@ dG.append(-0.65)
 Ga.append(0.43)
 dG.append(-1.05)
 
+# O2_g + *_h + *_f -> O_h + O_f
+Ga.append(0.0)
+dG.append(-1.05)
+
