@@ -41,7 +41,7 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         # LatticeModel object.
         self.__kmc_model = kmc_model
 
-        self.__coverage_ratios = [1.0, 0.5, 0.5, 1.0]
+        self.__coverage_ratios = kmc_model.coverage_ratios()
 
         # Recorder variables.
         self.__times = []

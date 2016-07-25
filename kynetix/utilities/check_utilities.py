@@ -243,6 +243,7 @@ type_rules = {
     "empty_type": (str, ),
     "tof_start": (int, ),
     "time_limit": (float, ),
+    "coverage_ratios": (check_list_tuple, float),
 }
 
 
