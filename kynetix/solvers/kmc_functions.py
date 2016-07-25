@@ -11,6 +11,8 @@ def collect_coverages(types, possible_types, coverage_ratios):
 
     possible_types: possible species type in grid.
 
+    coverage_ratios: The coverages ratios for all basis sites.
+
     Returns:
     --------
     cvgs: coverages of possible types, numpy.array int
