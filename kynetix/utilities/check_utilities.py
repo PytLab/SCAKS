@@ -241,7 +241,8 @@ type_rules = {
     "possible_element_types": (check_list_tuple, str),
     "possible_site_types": (check_list_tuple, str),
     "empty_type": (str, ),
-    "tof_start": (int, )
+    "tof_start": (int, ),
+    "time_limit": (float, ),
 }
 
 
