@@ -897,7 +897,7 @@ class KineticModel(object):
         Query function for KMC loop time upper bound.
         """
         try:
-            return self.__time_limt
+            return self.__time_limit
         except AttributeError:
             return float("inf")
 
