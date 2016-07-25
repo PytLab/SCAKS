@@ -41,6 +41,8 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         # LatticeModel object.
         self.__kmc_model = kmc_model
 
+        self.__coverage_ratios = [1.0, 0.5, 0.5, 1.0]
+
         # Recorder variables.
         self.__times = []
         self.__steps = []
@@ -60,9 +62,22 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         self.__times.append(time)
         self.__steps.append(step)
 
+        # Remove empty type from possible_types.
+        possible_types_copy = deepcopy(self.__possible_types)
+        empty_type = self.__kmc_model.empty_type()
+        empty_type_idx = possible_types_copy.index(empty_type)
+        possible_types_copy.pop(empty_type_idx)
+
         # Collect species coverages.
         types = configuration.types()
-        coverages = collect_coverages(types, self.__possible_types)
+        coverages = collect_coverages(types,
+                                      possible_types_copy,
+                                      self.__coverage_ratios)
+
+        # Insert coverage of emtpy site.
+        coverages = list(coverages)
+        empty_coverage = 1.0 - sum(coverages)
+        coverages.insert(empty_type_idx, empty_coverage)
 
         self.__coverages.append(coverages)
 
