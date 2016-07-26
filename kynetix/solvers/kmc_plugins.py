@@ -91,19 +91,38 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
 
         self.__coverages.append(coverages)
 
-        # Create data file.
-        times_str = "times = []\n"
-        steps_str = "steps = []\n"
-        coverages_str = "coverages = {}\n".format([[]]*len(self.__possible_types))
-
         if mpi_master:
+            # Create data file.
+            times_str = "times = []\n"
+            steps_str = "steps = []\n"
+            coverages_str = "coverages = {}\n".format([[]]*len(self.__possible_types))
             with open(self.__filename, "w") as f:
                 content = file_header + times_str + steps_str + coverages_str
                 f.write(content)
 
     def registerStep(self, step, time, configuration, interactions):
-        # Do the same thing in setup().
-        self.setup(step, time, configuration, interactions)
+        # Append time and step.
+        self.__times.append(time)
+        self.__steps.append(step)
+
+        # Remove empty type from possible_types.
+        possible_types_copy = deepcopy(self.__possible_types)
+        empty_type = self.__kmc_model.empty_type()
+        empty_type_idx = possible_types_copy.index(empty_type)
+        possible_types_copy.pop(empty_type_idx)
+
+        # Collect species coverages.
+        types = configuration.types()
+        coverages = collect_coverages(types,
+                                      possible_types_copy,
+                                      self.__coverage_ratios)
+
+        # Insert coverage of emtpy site.
+        coverages = list(coverages)
+        empty_coverage = 1.0 - sum(coverages)
+        coverages.insert(empty_type_idx, empty_coverage)
+
+        self.__coverages.append(coverages)
 
         buffer_full = len(self.__coverages) >= self.__buffer_size
         if mpi_master and buffer_full:
