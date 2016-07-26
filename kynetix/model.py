@@ -892,3 +892,21 @@ class KineticModel(object):
         except AttributeError:
             return 0
 
+    def time_limit(self):
+        """
+        Query function for KMC loop time upper bound.
+        """
+        try:
+            return self.__time_limit
+        except AttributeError:
+            return float("inf")
+
+    def coverage_ratios(self):
+        """
+        Query function for coverage ratios for all basis sites.
+        """
+        try:
+            return self.__coverage_ratios
+        except AttributeError:
+            return [1.0]*len(self.__basis_sites)
+

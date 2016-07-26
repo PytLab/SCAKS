@@ -109,6 +109,7 @@ class KMCSolver(SolverBase):
         Function to get KMCLib KMCControlParameters instance.
         """
         # Get parameters in model.
+        time_limit = self._owner.time_limit()
         nstep = self._owner.nstep()
         dump_interval = self._owner.trajectory_dump_interval()
         seed = self._owner.random_seed()
@@ -116,7 +117,8 @@ class KMCSolver(SolverBase):
         analysis_interval = self._owner.analysis_interval()
 
         # KMCLib control parameter instantiation
-        control_parameters = KMCControlParameters(number_of_steps=nstep,
+        control_parameters = KMCControlParameters(time_limit=time_limit,
+                                                  number_of_steps=nstep,
                                                   dump_interval=dump_interval,
                                                   analysis_interval=analysis_interval,
                                                   seed=seed,
