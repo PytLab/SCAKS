@@ -221,3 +221,4 @@ class MDNewton(RootfindingIterator):
                 x1 = x0 + l*s
 
             yield (tuple(x0), fxnorm, fx)
+
