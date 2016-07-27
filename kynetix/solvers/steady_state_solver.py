@@ -1239,64 +1239,6 @@ class SteadyStateSolver(MeanFieldSolver):
 
         return tuple(random_cvgs)
 
-    def modify_init_guess_old(self, c0, dtheta_dts):
-        "Return a new initial guess according to dthe_dts."
-#        max_dtheta_dt = np.max(np.abs(dtheta_dts))
-        base_coefficient = self._initial_guess_scale_factor
-        coefficients = []
-        for dtheta_dt in np.abs(dtheta_dts):
-            if abs(dtheta_dt) >= self._tolerance:
-                #coefficients.append(dtheta_dt/max_dtheta_dt*base_coefficient)
-                coefficients.append(base_coefficient)
-            else:
-                coefficients.append(1.0)
-        if mpi_master:
-            self.__logger.debug('coeff: %s', str(coefficients))
-        #if coeffs are all 1.0, break!
-        #add later...
-
-        #create a diagnol matrix
-        c0_diag = np.matrix(np.diag(c0))
-        #convert coeffients to column vector
-        coefficients = np.matrix(coefficients).reshape(-1, 1)
-        new_c0 = (c0_diag*coefficients).reshape(1, -1)
-        new_c0 = tuple(new_c0.tolist()[0])
-        #add to log
-        if mpi_master:
-            self.__logger.info('modify initial coverage - success')
-            self.__logger.debug(str(map(float, c0)))
-
-        #return self.__constrain_coverage__constrain_coverages(new_c0)
-        return new_c0
-
-    def modify_init_guess_new(self, c0, dtheta_dts):
-        "Return a new initial guess according to dthe_dts."
-        max_dtheta_dt = np.max(np.abs(dtheta_dts))
-        base_coefficient = self._initial_guess_scale_factor
-        coefficients = []
-        for idx, dtheta_dt in enumerate(np.abs(dtheta_dts)):
-            if abs(dtheta_dt) >= self._tolerance:
-                if dtheta_dt < 0:
-                    coefficients.append(dtheta_dt/max_dtheta_dt*base_coefficient)
-                elif dtheta_dt > 0:
-                    coefficients.append(dtheta_dt/max_dtheta_dt/base_coefficient)
-                #coefficients.append(base_coefficient)
-            else:
-                coefficients.append(1.0)
-        print coefficients
-        #create a diagnol matrix
-        c0_diag = np.matrix(np.diag(c0))
-        #convert coeffients to column vector
-        coefficients = np.matrix(coefficients).reshape(-1, 1)
-        new_c0 = (c0_diag*coefficients).reshape(1, -1)
-        new_c0 = tuple(new_c0.tolist()[0])
-        #add to log
-        if mpi_master:
-            self.__logger.info('modify initial coverage - success')
-            self.__logger.debug(str(map(float, c0)))
-
-        return new_c0
-
     ####################################
     ## solve model by ODE integration ##
     ####################################
