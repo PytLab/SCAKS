@@ -399,8 +399,8 @@ class SteadyStateSolverTest(unittest.TestCase):
         ret_tof = solver._SteadyStateSolver__get_Gs_tof(Gs, gas_name="CO2_g")
         self.assertEqual(ref_tof, ret_tof)
 
-    def test_get_single_rate_control(self):
-        " Test function get_single_rate_control(). "
+    def test_get_single_XTRC(self):
+        " Test function get_single_XTRC(). "
         # Construction.
         model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
                              verbosity=logging.WARNING)
@@ -416,14 +416,14 @@ class SteadyStateSolverTest(unittest.TestCase):
 
         # Check.
         gas_name = "CO2_g"
-        ref_DTRC = [mpf('-1.140775679060479546680777929992790525034725825880253939251504297700926329015933617537522978478527774183'),
+        ref_XTRC = [mpf('-1.140775679060479546680777929992790525034725825880253939251504297700926329015933617537522978478527774183'),
                     mpf('-1.140775679060479546680777929992790525034725825880253939251504297700926329015933617537522978478527774183'),
                     mpf('0.881465200934955213215196217181568318297209213874500010342977516784412704475283998243820141954241091872')]
-        ret_DTRC = solver.get_single_rate_control(gas_name)
-        self.assertListEqual(ref_DTRC, ret_DTRC)
+        ret_XTRC = solver.get_single_XTRC(gas_name)
+        self.assertListEqual(ref_XTRC, ret_XTRC)
 
-    def test_get_rate_control(self):
-        " Test function get_rate_control(). "
+    def test_get_XTRC(self):
+        " Test function get_XTRC(). "
         # NEED IMPLIMENTATION.
 
     def test_get_elementary_dtheta_dt_sym(self):

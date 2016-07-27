@@ -1069,13 +1069,13 @@ class SteadyStateSolver(MeanFieldSolver):
 
         return Gs
 
-    def get_single_rate_control(self, gas_name, epsilon=None):
+    def get_single_XTRC(self, gas_name, epsilon=None):
         """
-        Function to get DTRC for one gas species.
+        Function to get XTRC for one gas species.
 
         Parameters:
         -----------
-        gas_name: The gas name whose DTRC would be calculated.
+        gas_name: The gas name whose XTRC would be calculated.
 
         epsilon: The perturbation size for numerical jacobian matrix.
         """
@@ -1104,29 +1104,29 @@ class SteadyStateSolver(MeanFieldSolver):
             self.__logger.info("Calculating original TOF...")
         r = self.__get_Gs_tof(Gs, gas_name=gas_name)
 
-        DTRCs = []
+        XTRCs = []
         # Loop over all intermediates.
         for i, intermediate in enumerate(intermediates):
             if mpi_master:
-                self.__logger.info("Calculating DTRC for '{}'...".format(intermediate))
+                self.__logger.info("Calculating XTRC for '{}'...".format(intermediate))
 
             Gs_prime = copy.deepcopy(Gs)
             Gs_prime[i] += epsilon
             r_prime = self.__get_Gs_tof(Gs_prime, gas_name=gas_name)
             drdG = (r_prime - r)/epsilon
-            DTRC = -kT/r*drdG
-            DTRCs.append(DTRC)
+            XTRC = -kT/r*drdG
+            XTRCs.append(XTRC)
 
         # Log it.
-        self.__log_single_DTRC(DTRCs, gas_name)
+        self.__log_single_XTRC(XTRCs, gas_name)
 
-        return DTRCs
+        return XTRCs
 
-    def __log_single_DTRC(self, DTRCs, gas_name):
+    def __log_single_XTRC(self, XTRCs, gas_name):
         """
-        Private helper function to log DTRC for a gas species.
+        Private helper function to log XTRC for a gas species.
         """
-        head_str = "\n {:<10s}{:<25s}{:<30s}\n".format("index", "intermediate", "DTRC")
+        head_str = "\n {:<10s}{:<25s}{:<30s}\n".format("index", "intermediate", "XTRC")
         head_str = "Degree of Rate Control for {}:\n".format(gas_name) + head_str
         line_str = '-'*60 + '\n'
 
@@ -1135,9 +1135,9 @@ class SteadyStateSolver(MeanFieldSolver):
         intermediates = (self._owner.adsorbate_names() +
                          self._owner.transition_state_names())
 
-        for idx, (intermediate, DTRC) in enumerate(zip(intermediates, DTRCs)):
+        for idx, (intermediate, XTRC) in enumerate(zip(intermediates, XTRCs)):
             idx = str(idx).zfill(2)
-            data = " {:<10s}{:<25s}{:<30.16e}\n".format(idx, intermediate, float(DTRC))
+            data = " {:<10s}{:<25s}{:<30.16e}\n".format(idx, intermediate, float(XTRC))
             all_data += data
         all_data += line_str
 
@@ -1146,9 +1146,9 @@ class SteadyStateSolver(MeanFieldSolver):
 
         return all_data
 
-    def get_rate_control(self, epsilon=None):
+    def get_XTRC(self, epsilon=None):
         """
-        Function to get DTRC matrix for all gas species.
+        Function to get XTRC matrix for all gas species.
 
         Parameters:
         -----------
@@ -1156,7 +1156,7 @@ class SteadyStateSolver(MeanFieldSolver):
 
         Returns:
         --------
-        An DTRC mpmath.matrix for all gas species.
+        An XTRC mpmath.matrix for all gas species.
             - rows for gas species.
             - columns for intermediates and transition states.
         """
@@ -1180,37 +1180,37 @@ class SteadyStateSolver(MeanFieldSolver):
 
         # multiply 1/r to drdG matrix.
         diag_matrix = self._linalg.diag([-kT/tof for tof in r])
-        DTRC = diag_matrix*drdG
+        XTRC = diag_matrix*drdG
 
         # Covert it to list.
-        DTRC_list = DTRC.tolist()
+        XTRC_list = XTRC.tolist()
 
         # Archive
-        self.archive_data('DTRC', DTRC_list)
+        self.archive_data('XTRC', XTRC_list)
 
         # Log it.
-        self.__log_DTRC(DTRC_list)
+        self.__log_XTRC(XTRC_list)
 
-        return DTRC
+        return XTRC
 
-    def __log_DTRC(self, DTRC_matrix):
+    def __log_XTRC(self, XTRC_matrix):
         """
-        Private helper function to log DTRC for all gas species.
+        Private helper function to log XTRC for all gas species.
         """
         gas_names = self._owner.gas_names()
         intermediate_names = (self._owner.adsorbate_names() +
                               self._owner.transition_state_names())
 
-        head_str = "\n{:<15s}{:<30s}{:<30s}\n".format("gas", "intermediate", "DTRC")
+        head_str = "\n{:<15s}{:<30s}{:<30s}\n".format("gas", "intermediate", "XTRC")
         head_str = "Degree of Thermodynamic Rate Control:\n" + head_str
         line_str = "-"*70 + "\n"
 
         all_data = ""
         all_data += head_str + line_str
 
-        for gas_name, DTRC_vect in zip(gas_names, DTRC_matrix):
-            for intermediate, DTRC in zip(intermediate_names, DTRC_vect):
-                data = "{:<15s}{:<30s}{:<30.16e}\n".format(gas_name, intermediate, float(DTRC))
+        for gas_name, XTRC_vect in zip(gas_names, XTRC_matrix):
+            for intermediate, XTRC in zip(intermediate_names, XTRC_vect):
+                data = "{:<15s}{:<30s}{:<30.16e}\n".format(gas_name, intermediate, float(XTRC))
                 all_data += data
 
         all_data += line_str
