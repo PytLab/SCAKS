@@ -96,8 +96,10 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
             times_str = "times = []\n"
             steps_str = "steps = []\n"
             coverages_str = "coverages = {}\n".format([[]]*len(self.__possible_types))
+            possible_types_str = get_list_string("possible_types", self.__possible_types)
             with open(self.__filename, "w") as f:
-                content = file_header + times_str + steps_str + coverages_str
+                content = (file_header + times_str + steps_str +
+                           coverages_str + "\n" + possible_types_str)
                 f.write(content)
 
     def registerStep(self, step, time, configuration, interactions):
@@ -135,11 +137,6 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         if mpi_master:
             # Write to file.
             self.__flush()
-
-            with open(self.__filename, "a") as f:
-                possible_types_str = get_list_string("possible_types", self.__possible_types)
-                content = "\n" + possible_types_str
-                f.write(content)
 
             # Info output.
             msg = "coverages informations are written to {}".format(self.__filename)
