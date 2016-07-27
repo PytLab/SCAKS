@@ -1080,7 +1080,7 @@ class SteadyStateSolver(MeanFieldSolver):
         epsilon: The perturbation size for numerical jacobian matrix.
         """
         if mpi_master:
-            self.__logger.info("Calculating Degree of Thermodynamic Rate Control...")
+            self.__logger.info("Calculating Degree of Thermodynamic Rate Control(XTRC)...")
             self.__logger.info("-"*55 + "\n")
 
         # Get intermediates formation energies.
@@ -1213,6 +1213,92 @@ class SteadyStateSolver(MeanFieldSolver):
                 data = "{:<15s}{:<30s}{:<30.16e}\n".format(gas_name, intermediate, float(XTRC))
                 all_data += data
 
+        all_data += line_str
+
+        if mpi_master:
+            self.__logger.info(all_data)
+
+        return all_data
+
+    def get_single_XRC(self, gas_name, epsilon=None):
+        """
+        Function to get XRC for one gas species.
+
+        Parameters:
+        -----------
+        gas_name: The gas name whose XTRC would be calculated.
+
+        epsilon: The perturbation size for numerical jacobian matrix.
+        """
+        if mpi_master:
+            self.__logger.info("Calculating Degree of Rate Control(XRC)...")
+            self.__logger.info("-"*55 + "\n")
+
+        # Get original TOF for the gas speices.
+        if hasattr(self, "_coverage"):
+            init_guess = self._coverage
+        else:
+            msg = ("Converged coverages are needed to calculate XRC, " +
+                   "so try to get steady state coverages first.")
+            raise AttributeError(msg)
+        r = self.get_tof(cvgs=init_guess, gas_name=gas_name)
+
+        # Original rate constants.
+        kfs, _ = self.get_rate_constants()
+
+        # Get perturbation size.
+        if epsilon is None:
+            epsilon = self._mpf(self._perturbation_size)
+        if mpi_master:
+            self.__logger.info("epsilon = {:.2e}\n".format(float(epsilon)))
+
+        XRCs = []
+        # Loop over all elementary reactions.
+        n_rxns = len(self._owner.rxn_expressions())
+        for i in xrange(n_rxns):
+            # Add epsilon to relative energies.
+            relative_energies = copy.deepcopy(self._relative_energies)
+            relative_energies["Gaf"][i] += epsilon
+            relative_energies["Gar"][i] += epsilon
+
+            # Rate constants change.
+            k = kfs[i]
+            ks_prime, _ = self.get_rate_constants(relative_energies=relative_energies)
+            k_prime = ks_prime[i]
+            dk = k_prime - k
+
+            # Get steady state coverages.
+            steady_cvgs = self.get_steady_state_cvgs(c0=init_guess,
+                                                     relative_energies=relative_energies)
+            r_prime = self.get_tof(cvgs=steady_cvgs,
+                                   relative_energies=relative_energies,
+                                   gas_name=gas_name)
+            dr = r_prime - r
+
+            XRC = k/r*(dr/dk)
+            XRCs.append(XRC)
+
+        # Log info output.
+        self.__log_single_XRC(XRCs=XRCs, gas_name=gas_name)
+
+        return XRCs
+
+    def __log_single_XRC(self, XRCs, gas_name):
+        """
+        Private helper function to log XRC for a gas species.
+        """
+        head_str = "\n {:<10s}{:<70s}{:<30s}\n".format("index", "elementary reaction", "XRC")
+        head_str = "Degree of Rate Control for {}:\n".format(gas_name) + head_str
+        line_str = '-'*100 + '\n'
+
+        all_data = ''
+        all_data += head_str + line_str
+        rxn_expressions = self._owner.rxn_expressions()
+
+        for idx, (rxn_expression, XRC) in enumerate(zip(rxn_expressions, XRCs)):
+            idx = str(idx).zfill(2)
+            data = " {:<10s}{:<70s}{:<30.16e}\n".format(idx, rxn_expression, float(XRC))
+            all_data += data
         all_data += line_str
 
         if mpi_master:
