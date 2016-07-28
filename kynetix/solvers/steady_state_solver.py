@@ -773,7 +773,7 @@ class SteadyStateSolver(MeanFieldSolver):
             # Archive converged root and error.
             self.archive_data('steady_state_coverage', converged_cvgs)
             self.archive_data('steady_state_error', error)
-            self.good_guess = args[1]
+            self._good_guess = args[1]
             # Archive initial guess.
             self.archive_data('initial_guess', args[1])
 
@@ -925,18 +925,16 @@ class SteadyStateSolver(MeanFieldSolver):
                     else:
                         error = f_resid(x)  # use residual as error and continue
 
-                # if convergence is slow when the norm is larger than 0.1
-#                elif nt_counter > self._max_rootfinding_iterations:
-#                      #abs(error - old_error) < 1e-4) and error > 1e-1:
-#                    if mpi_master:
-#                        self.__logger.info('%-10s%10d%23.10e%23.10e', 'break',
-#                                         nt_counter, float(resid), float(error))
-#                        #self.__logger.warning('slow convergence rate!')
-#                        self.__logger.warning('Max rootfinding iteration number reached!')
-#                        self.__logger.warning('root finding break for this initial guess...\n')
-#                    # Jump out of loop for this c0
-#                    cancel = False
-#                    break
+                # Reach the max iteration limit.
+                elif nt_counter > self._max_rootfinding_iterations:
+                    if mpi_master:
+                        self.__logger.info('%-10s%10d%23.10e%23.10e', 'break',
+                                           nt_counter, float(resid), float(error))
+                        self.__logger.warning('Max rootfinding iteration number reached!')
+                        self.__logger.warning('root finding break for this initial guess...\n')
+                    # Jump out of loop for this c0
+                    cancel = False
+                    break
 
                 # residual is almost stagnated
 #                elif abs(error - old_error) < self._stable_criterion:
@@ -971,7 +969,7 @@ class SteadyStateSolver(MeanFieldSolver):
             # Archive converged root and error.
             self.archive_data('steady_state_coverage', self._coverage)
             self.archive_data('steady_state_error', self._error)
-            self.good_guess = c0
+            self._good_guess = c0
 
             # Archive initial guess.
             self.archive_data('initial_guess', c0)
@@ -982,6 +980,7 @@ class SteadyStateSolver(MeanFieldSolver):
         """
         Private helper function to log steady state coverage of every species.
         """
+        # {{{
         head_str = "\n {:<10s}{:<25s}{:<30s}\n".format("index",
                                                        "intermediate name",
                                                        "steady state coverage")
@@ -1000,6 +999,7 @@ class SteadyStateSolver(MeanFieldSolver):
             self.__logger.info(all_data)
 
         return all_data
+        # }}}
 
     def __get_Gs_tof(self, Gs, gas_name=None):  # Gs -> free energies
         """
@@ -1016,6 +1016,7 @@ class SteadyStateSolver(MeanFieldSolver):
         If gas name is not specified, a list of TOF for all gas species would be returned.
         If gas name is specified, the TOF of the gas would be returned.
         """
+        # {{{
         # Get initial guess
         if hasattr(self, "_coverage"):
             init_guess = self._coverage
@@ -1056,6 +1057,7 @@ class SteadyStateSolver(MeanFieldSolver):
                 raise ParameterError(msg)
             idx = gas_names.index(gas_name)
             return tof_list[idx]
+        # }}}
 
     def __get_intermediates_Gs(self):
         """
@@ -1079,6 +1081,7 @@ class SteadyStateSolver(MeanFieldSolver):
 
         epsilon: The perturbation size for numerical jacobian matrix.
         """
+        # {{{
         if mpi_master:
             self.__logger.info("Calculating Degree of Thermodynamic Rate Control(XTRC)...")
             self.__logger.info("-"*55 + "\n")
@@ -1121,11 +1124,13 @@ class SteadyStateSolver(MeanFieldSolver):
         self.__log_single_XTRC(XTRCs, gas_name)
 
         return XTRCs
+        # }}}
 
     def __log_single_XTRC(self, XTRCs, gas_name):
         """
         Private helper function to log XTRC for a gas species.
         """
+        # {{{
         head_str = "\n {:<10s}{:<25s}{:<30s}\n".format("index", "intermediate", "XTRC")
         head_str = "Degree of Rate Control for {}:\n".format(gas_name) + head_str
         line_str = '-'*60 + '\n'
@@ -1145,6 +1150,7 @@ class SteadyStateSolver(MeanFieldSolver):
             self.__logger.info(all_data)
 
         return all_data
+        # }}}
 
     def get_XTRC(self, epsilon=None):
         """
@@ -1160,6 +1166,7 @@ class SteadyStateSolver(MeanFieldSolver):
             - rows for gas species.
             - columns for intermediates and transition states.
         """
+        # {{{
         # Get intermediates formation energies.
         Gs = self.__get_intermediates_Gs()
 
@@ -1192,11 +1199,13 @@ class SteadyStateSolver(MeanFieldSolver):
         self.__log_XTRC(XTRC_list)
 
         return XTRC
+        # }}}
 
     def __log_XTRC(self, XTRC_matrix):
         """
         Private helper function to log XTRC for all gas species.
         """
+        # {{{
         gas_names = self._owner.gas_names()
         intermediate_names = (self._owner.adsorbate_names() +
                               self._owner.transition_state_names())
@@ -1219,6 +1228,7 @@ class SteadyStateSolver(MeanFieldSolver):
             self.__logger.info(all_data)
 
         return all_data
+        # }}}
 
     def get_single_XRC(self, gas_name, epsilon=None):
         """
@@ -1230,6 +1240,7 @@ class SteadyStateSolver(MeanFieldSolver):
 
         epsilon: The perturbation size for numerical jacobian matrix.
         """
+        # {{{
         if mpi_master:
             self.__logger.info("Calculating Degree of Rate Control(XRC)...")
             self.__logger.info("-"*55 + "\n")
@@ -1290,11 +1301,13 @@ class SteadyStateSolver(MeanFieldSolver):
         self.__log_single_XRC(XRCs=XRCs, gas_name=gas_name)
 
         return XRCs
+        # }}}
 
     def __log_single_XRC(self, XRCs, gas_name):
         """
         Private helper function to log XRC for a gas species.
         """
+        # {{{
         head_str = "\n {:<10s}{:<70s}{:<30s}\n".format("index", "elementary reaction", "XRC")
         head_str = "Degree of Rate Control for {}:\n".format(gas_name) + head_str
         line_str = '-'*100 + '\n'
@@ -1313,25 +1326,23 @@ class SteadyStateSolver(MeanFieldSolver):
             self.__logger.info(all_data)
 
         return all_data
+        # }}}
 
     def modify_init_guess(self, *args):
-        '''
-        return a list of random coverages.
-        '''
-        n_adsorbates = len(self._owner.adsorbate_names())
-        random_cvgs = []
+        """
+        Use ODE integration to get new initial coverages guess.
+        """
+        if mpi_master:
+            self.__logger.info("Use ODE integration to get new initial coverages...")
+        end_time = random.randint(0, 10**5)
 
-        sum_cvgs = 0.0
-        for i in xrange(n_adsorbates):
-            cvg = random.random()*(1.0 - sum_cvgs)
-            random_cvgs.append(cvg)
-            sum_cvgs += cvg
-        #add to log
+        new_cvgs = self.solve_ode(end_time=end_time)[-1]
+
         if mpi_master:
             self.__logger.info('modify initial coverage - success')
             self.__logger.debug(str(random_cvgs))
 
-        return tuple(random_cvgs)
+        return new_cvgs
 
     ####################################
     ## solve model by ODE integration ##
