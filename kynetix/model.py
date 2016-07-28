@@ -167,11 +167,6 @@ class KineticModel(object):
             self.__logger.info('passing data to solver...')
         solver.get_data()
 
-#        # energy correction
-#        if correct_energy:
-#            self.__logger.info('free energy correction...')
-#            self.solver.correct_energies()
-
         # solve ODE
         # !! do ODE integration AFTER passing data to solver !!
         if solve_ode:
@@ -235,6 +230,10 @@ class KineticModel(object):
 
         # Get TOFs for gases.
         tofs = solver.get_tof(ss_cvgs)
+
+        # Get reversibilities.
+        rf, rr = solver.get_rates(ss_cvgs)
+        reversibilities = solver.get_reversibilities(rf, rr)
 
         return
         # }}}

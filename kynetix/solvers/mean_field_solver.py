@@ -566,10 +566,39 @@ class MeanFieldSolver(SolverBase):
 
         reversibilities = [float(rr/rf) for rf, rr in zip(rfs, rrs)]
 
+        # Ouput log info.
+        self.__log_reversibilities(reversibilities)
+
         # Archive.
         self.archive_data('reversibilities', reversibilities)
 
         return reversibilities
+
+    def __log_reversibilities(self, reversibilities):
+        """
+        Private helper function to log reversibilities info.
+        """
+        head_str = "\n {:<10s}{:<70s}{:<30s}\n".format("index",
+                                                       "elementary reaction",
+                                                       "reversibilities")
+        head_str = "Reversibilities:\n" + head_str
+        line_str = '-'*100 + '\n'
+
+        all_data = ''
+        all_data += head_str + line_str
+
+        rxn_expressions = self._owner.rxn_expressions()
+
+        for idx, (rxn, rev) in enumerate(zip(rxn_expressions, reversibilities)):
+            idx = str(idx).zfill(2)
+            data = " {:<10s}{:<70s}{:<30.16e}\n".format(idx, rxn, float(rev))
+            all_data += data
+        all_data += line_str
+
+        if mpi_master:
+            self.__logger.info(all_data)
+
+        return all_data
 
     def get_tof(self, cvgs, relative_energies=None, gas_name=None):
         """
