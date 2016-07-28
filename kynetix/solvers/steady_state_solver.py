@@ -1379,6 +1379,7 @@ class SteadyStateSolver(MeanFieldSolver):
         >>> m.solver.solve_ode(initial_cvgs=(0.0, 0.0))
 
         """
+        # {{{
         # set timr variables
         t_start = time_start
         t_end = time_end
@@ -1407,7 +1408,8 @@ class SteadyStateSolver(MeanFieldSolver):
 
         # integration loop
         if mpi_master:
-            self.__logger.info('entering %s ODE integration loop...\n', algo)
+            self.__logger.info('entering {} ODE integration loop...\n'format(algo))
+            self.__logger.info("start = {:.2f}  end = {:.2f}  step = {:.2f}".format(t_start, t_end, t_step))
             self.__logger.info('%10s%20s' + '%20s'*nads, 'process',
                                'time(s)', *adsorbate_names)
             self.__logger.info('-'*(20*nads + 30))
@@ -1458,11 +1460,13 @@ class SteadyStateSolver(MeanFieldSolver):
                                    ' to auto_ode_coverages.py.')
 
         return last_time, last_coverages
+        # }}}
 
     def __ode_flush(self, flush_counter, times, coverages):
         """
         Private helper function to flush ode intergration data to file.
         """
+        # {{{
         # Get times extension strings.
         var_name = "times_{}".format(flush_counter)
         list_str = get_list_string(var_name, times)
@@ -1489,6 +1493,7 @@ class SteadyStateSolver(MeanFieldSolver):
         coverages = []
 
         return times, coverages
+        # }}}
 
     def error(self):
         """
