@@ -827,140 +827,151 @@ class SteadyStateSolver(MeanFieldSolver):
 
         converged = False  # Flag for convergence.
         while not cancel:  # outer loop
-            # Good initial coverages.
-            if f_resid(c0) <= self._tolerance and not single_pt:
-                converged = True
-                self._coverage = c0
-                if mpi_master:
-                    self.__logger.info('Good initial guess: \n%s', str(map(float, c0)))
-
-                # log steady state coverages
-                self.__log_sscvg(c0, self._owner.adsorbate_names())
-
-                # Get error.
-                fx = self.steady_state_function(c0, relative_energies)  # dtheta/dts
-                norm = self._norm(fx)
-                resid = self.get_residual(c0)
-                error = min(norm, resid)
-                self._error = error
-                if mpi_master:
-                    self.__logger.info('error = %e', error)
-                break
-
-            # Instantiate rootfinding iterator
-            # ConstrainedNewton iterator
-            if self._rootfinding == 'ConstrainedNewton':
-                iterator_parameters = dict(J=J,
-                                           constraint=constraint,
-                                           norm=self._norm,
-                                           mpfloat=self._mpf,
-                                           matrix=self._matrix,
-                                           Axb_solver=self._Axb_solver)
-                newton_iterator = ConstrainedNewton(f, c0, **iterator_parameters)
-            # MDNewton iterator
-            elif self._rootfinding == 'MDNewton':
-                iterator_parameters = dict(J=J, verbose=False)
-                newton_iterator = MDNewton(f, c0, **iterator_parameters)
-            else:
-                msg='Unrecognized rootfinding iterator name [{}]'.format(self._rootfinding)
-                raise ParameterError(msg)
-
-            if mpi_master:
-                self.__logger.info('{} Iterator instantiation - success!'.format(self._rootfinding))
-
-            x = c0
-            old_error = 1e99
-            if c0:
-                # log initial guess
-                if mpi_master:
-                    self.__logger.info('initial guess coverage - success')
-                    self.__logger.debug(str(map(float, c0)))
-
-            #####    Sub LOOP for a c0    #####
-
-            nt_counter = 0    # newton loop counter, inner
-            if mpi_master:
-                self.__logger.info('entering Newton Iteration( %d )...', icvg_counter)
-                # log title
-                self.__logger.info('  %-10s   %5s  %18s  %18s',
-                               'status', 'N', 'residual', 'norm')
-                self.__logger.info('-'*60)
-
-            for x, error, fx in newton_iterator:  # inner loop
-                nt_counter += 1
-                resid = f_resid(x)
-                if mpi_master:
-                    self.__logger.info('%-10s%10d%23.10e%23.10e', 'in_process',
-                                   nt_counter, float(resid), float(error))
-                # Less than tolerance
-                if error < self._tolerance:
-                    if resid < self._tolerance:
-                        # Check whether there is minus value in x
-                        for cvg in x:
-                            if cvg < 0.0:
-                                lt_zero = True  # less than 0
-                                break
-                            else:
-                                lt_zero = False
-                        # check END #
-                        if not lt_zero:
-                            if mpi_master:
-                                self.__logger.info('%-10s%10d%23.10e%23.10e', 'success',
-                                                   nt_counter, float(resid), float(error))
-                            # log steady state coverages
-                            self.__log_sscvg(x, self._owner.adsorbate_names())
-                            self._coverage = x
-                            self._error = error
-                            if mpi_master:
-                                self.__logger.info('error = %e', min(error, resid))
-
-                            # Update flags.
-                            cancel = True
-                            converged = True
-                            break
-                        else:  # bad root, iteration continue...
-                            if mpi_master:
-                                self.__logger.warning('bad root: %s', str(map(float, x)))
-                                self.__logger.warning('root finding continue...\n')
-                    else:
-                        error = f_resid(x)  # use residual as error and continue
-
-                # Reach the max iteration limit.
-                elif nt_counter > self._max_rootfinding_iterations:
+            try:
+            # {{{
+                # Good initial coverages.
+                if f_resid(c0) <= self._tolerance and not single_pt:
+                    converged = True
+                    self._coverage = c0
                     if mpi_master:
-                        self.__logger.info('%-10s%10d%23.10e%23.10e', 'break',
-                                           nt_counter, float(resid), float(error))
-                        self.__logger.warning('Max rootfinding iteration number reached!')
-                        self.__logger.warning('root finding break for this initial guess...\n')
-                    # Jump out of loop for this c0
-                    cancel = False
+                        self.__logger.info('Good initial guess: \n%s', str(map(float, c0)))
+
+                    # log steady state coverages
+                    self.__log_sscvg(c0, self._owner.adsorbate_names())
+
+                    # Get error.
+                    fx = self.steady_state_function(c0, relative_energies)  # dtheta/dts
+                    norm = self._norm(fx)
+                    resid = self.get_residual(c0)
+                    error = min(norm, resid)
+                    self._error = error
+                    if mpi_master:
+                        self.__logger.info('error = %e', error)
                     break
 
-                # residual is almost stagnated
-#                elif abs(error - old_error) < self._stable_criterion:
-#                    if mpi_master:
-#                        self.__logger.info('%-10s%10d%23.10e%23.10e', 'stable',
-#                                           nt_counter, float(resid), float(error))
-#                        self.__logger.warning('stable root: %s', str(map(float, x)))
-#                        self.__logger.debug(' difference: %-24.16e', abs(error - old_error))
-#                    # Jump out of loop for this c0.
-#                    cancel = False
-#                    break
+                # Instantiate rootfinding iterator
+                # ConstrainedNewton iterator
+                if self._rootfinding == 'ConstrainedNewton':
+                    iterator_parameters = dict(J=J,
+                                               constraint=constraint,
+                                               norm=self._norm,
+                                               mpfloat=self._mpf,
+                                               matrix=self._matrix,
+                                               Axb_solver=self._Axb_solver)
+                    newton_iterator = ConstrainedNewton(f, c0, **iterator_parameters)
+                # MDNewton iterator
+                elif self._rootfinding == 'MDNewton':
+                    iterator_parameters = dict(J=J, verbose=False)
+                    newton_iterator = MDNewton(f, c0, **iterator_parameters)
+                else:
+                    msg='Unrecognized rootfinding iterator name [{}]'.format(self._rootfinding)
+                    raise ParameterError(msg)
 
-                old_error = error  # set old error to be compared in next loop
-                #self._coverage = x
-                #self._error = error
+                if mpi_master:
+                    self.__logger.info('{} Iterator instantiation - success!'.format(self._rootfinding))
 
-                # archive data every 100 steps
-                if nt_counter % 100 == 0:
-                    self.archive_data('iter_coverage', x)
-                    self.archive_data('iter_error', error)
-            #####    Sub loop for a c0 END    #####
+                x = c0
+                old_error = 1e99
+                if c0:
+                    # log initial guess
+                    if mpi_master:
+                        self.__logger.info('initial guess coverage - success')
+                        self.__logger.debug(str(map(float, c0)))
 
-            # Change the initial guess(c0).
-            if not cancel:
-                # get a new initial guess coverage
-                c0 = self.modify_init_guess(x, fx)
+                #####    Sub LOOP for a c0    #####
+
+                nt_counter = 0    # newton loop counter, inner
+                if mpi_master:
+                    self.__logger.info('entering Newton Iteration( %d )...', icvg_counter)
+                    # log title
+                    self.__logger.info('  %-10s   %5s  %18s  %18s',
+                                       'status', 'N', 'residual', 'norm')
+                    self.__logger.info('-'*60)
+
+                for x, error, fx in newton_iterator:  # inner loop
+                    nt_counter += 1
+                    resid = f_resid(x)
+                    if mpi_master:
+                        self.__logger.info('%-10s%10d%23.10e%23.10e', 'in_process',
+                                           nt_counter, float(resid), float(error))
+
+                    # Reach the max iteraction time or not.
+                    reach_max_iter = nt_counter > self._max_rootfinding_iterations
+
+                    # Less than tolerance
+                    if ((not reach_max_iter) and (error < self._tolerance)):
+                        if resid < self._tolerance:
+                            # Check whether there is minus value in x
+                            for cvg in x:
+                                if cvg < 0.0:
+                                    lt_zero = True  # less than 0
+                                    break
+                                else:
+                                    lt_zero = False
+                            # check END #
+                            if not lt_zero:
+                                if mpi_master:
+                                    self.__logger.info('%-10s%10d%23.10e%23.10e', 'success',
+                                                       nt_counter, float(resid), float(error))
+                                # log steady state coverages
+                                self.__log_sscvg(x, self._owner.adsorbate_names())
+                                self._coverage = x
+                                self._error = error
+                                if mpi_master:
+                                    self.__logger.info('error = %e', min(error, resid))
+
+                                # Update flags.
+                                cancel = True
+                                converged = True
+                                break
+                            else:  # bad root, iteration continue...
+                                if mpi_master:
+                                    self.__logger.warning('bad root: %s', str(map(float, x)))
+                                    self.__logger.warning('root finding continue...\n')
+                        else:
+                            error = f_resid(x)  # use residual as error and continue
+
+                    # Reach the max iteration limit.
+                    elif reach_max_iter:
+                        if mpi_master:
+                            self.__logger.info('%-10s%10d%23.10e%23.10e', 'break',
+                                               nt_counter, float(resid), float(error))
+                            self.__logger.warning('Max rootfinding iteration number reached!')
+                            self.__logger.warning('root finding break for this initial guess...\n')
+                        # Jump out of loop for this c0
+                        cancel = False
+                        break
+
+                    # residual is almost stagnated
+#                     elif abs(error - old_error) < self._stable_criterion:
+#                         if mpi_master:
+#                             self.__logger.info('%-10s%10d%23.10e%23.10e', 'stable',
+#                                                nt_counter, float(resid), float(error))
+#                             self.__logger.warning('stable root: %s', str(map(float, x)))
+#                             self.__logger.debug(' difference: %-24.16e', abs(error - old_error))
+#                         # Jump out of loop for this c0.
+#                         cancel = False
+#                         break
+
+                    old_error = error  # set old error to be compared in next loop
+                    #self._coverage = x
+                    #self._error = error
+
+                    # archive data every 100 steps
+                    if nt_counter % 100 == 0:
+                        self.archive_data('iter_coverage', x)
+                        self.archive_data('iter_error', error)
+                #####    Sub loop for a c0 END    #####
+
+                # Change the initial guess(c0).
+                if not cancel:
+                    # get a new initial guess coverage
+                    c0 = self.modify_init_guess()
+                    icvg_counter += 1
+            # }}}
+            except ZeroDivisionError:
+                self.__logger.warning("ZeroDivisionError is catched !")
+                c0 = self.modify_init_guess()
                 icvg_counter += 1
 
         ##############    main loop end   #################
@@ -1408,7 +1419,7 @@ class SteadyStateSolver(MeanFieldSolver):
 
         # integration loop
         if mpi_master:
-            self.__logger.info('entering {} ODE integration loop...\n'format(algo))
+            self.__logger.info('entering {} ODE integration loop...\n'.format(algo))
             self.__logger.info("start = {:.2f}  end = {:.2f}  step = {:.2f}".format(t_start, t_end, t_step))
             self.__logger.info('%10s%20s' + '%20s'*nads, 'process',
                                'time(s)', *adsorbate_names)
