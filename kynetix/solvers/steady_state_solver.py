@@ -1502,3 +1502,9 @@ class SteadyStateSolver(MeanFieldSolver):
         """
         return self._coverages
 
+    def good_guess(self):
+        """
+        Query function for good initial coverages.
+        """
+        self._good_guess
+
