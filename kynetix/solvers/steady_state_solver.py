@@ -1254,8 +1254,12 @@ class SteadyStateSolver(MeanFieldSolver):
 
         XRCs = []
         # Loop over all elementary reactions.
-        n_rxns = len(self._owner.rxn_expressions())
+        rxn_expressions = self._owner.rxn_expressions()
+        n_rxns = len(rxn_expressions)
         for i in xrange(n_rxns):
+            if mpi_master:
+                self.__logger.info("Calculating XRC for {} ...".format(rxn_expressions[i]))
+
             # Add epsilon to relative energies.
             relative_energies = copy.deepcopy(self._relative_energies)
             relative_energies["Gaf"][i] += epsilon
@@ -1278,7 +1282,11 @@ class SteadyStateSolver(MeanFieldSolver):
             XRC = k/r*(dr/dk)
             XRCs.append(XRC)
 
-        # Log info output.
+            # Ouput log info.
+            if mpi_master:
+                self.__logger.info("XRC({}) = {:.2e}\n".format(rxn_expressions[i], float(XRC)))
+
+        # Ouput log info.
         self.__log_single_XRC(XRCs=XRCs, gas_name=gas_name)
 
         return XRCs
