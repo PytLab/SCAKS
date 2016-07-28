@@ -16,7 +16,7 @@ if "__main__" == __name__:
     commands.getstatusoutput("rm -rf out.log data.pkl auto_*")
 
     # Set script logger.
-    logger = logging.getLogger("model.MkmRun")
+    logger = logging.getLogger("model.MkmRunScript")
 
     # Get setup file.
     status, output= commands.getstatusoutput("ls *.mkm | tail -1")
@@ -29,7 +29,7 @@ if "__main__" == __name__:
     start = time.time()
     try:
         # Build micor-kinetic model.
-        model = KineticModel(setup_file=setup_file)
+        model = KineticModel(setup_file=output)
 
         # Read data.
         parser = model.parser()
@@ -38,11 +38,11 @@ if "__main__" == __name__:
         solver.get_data()
 
         # Initial coverages guess.
-        ss = solver.solve_ode(time_end=OdeEnd)
-        c = ss[-1]
+        trajectory = solver.solve_ode(time_end=OdeEnd)
+        init_guess = trajectory[-1]
 
         # Run.
-        model.run_mkm(init_cvgs=cvgs, coarse_guess=False, relative=True)
+        model.run_mkm(init_cvgs=init_guess, coarse_guess=False, relative=True)
     except Exception as e:
         if mpi_master:
             msg = "{} exception is catched.".format(type(e).__name__)
