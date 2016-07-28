@@ -1336,11 +1336,11 @@ class SteadyStateSolver(MeanFieldSolver):
             self.__logger.info("Use ODE integration to get new initial coverages...")
         end_time = random.randint(0, 10**5)
 
-        new_cvgs = self.solve_ode(end_time=end_time)[-1]
+        new_cvgs = self.solve_ode(time_end=end_time)[-1]
 
         if mpi_master:
             self.__logger.info('modify initial coverage - success')
-            self.__logger.debug(str(random_cvgs))
+            self.__logger.debug(str(new_cvgs))
 
         return new_cvgs
 
