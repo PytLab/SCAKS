@@ -125,6 +125,8 @@ class KineticModel(object):
                 solve_ode=False,
                 fsolve=False,
                 coarse_guess=True,
+                XRC=False,
+                product_name=None,
                 data_file="./rel_energy.py"):
         """
         Function to solve Micro-kinetic model using Steady State Approxmiation
@@ -139,6 +141,8 @@ class KineticModel(object):
         fsolve: use scipy.optimize.fsolve to get low-precision root or not, bool
 
         coarse_guess: use fsolve to do initial coverages preprocessing or not, bool
+
+        XRC: calculate degree of rate control or nor, bool.
 
         data_file: The name of data file, str.
 
@@ -234,6 +238,12 @@ class KineticModel(object):
         # Get reversibilities.
         rf, rr = solver.get_rates(ss_cvgs)
         reversibilities = solver.get_reversibilities(rf, rr)
+
+        # Calculate XRC.
+        if XRC:
+            if product_name is None:
+                raise ParameterError("production name must be provided to get XRC.")
+            solver.get_single_XRC(product_name, epsilon=1e-5)
 
         return
         # }}}

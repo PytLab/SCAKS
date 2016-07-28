@@ -8,8 +8,10 @@ from kynetix.model import KineticModel
 from kynetix.utilities.format_utilities import convert_time
 
 # Custom parameters.
-UseRelativeEnergy = True
-OdeEnd = 10000
+UseRelativeEnergy = True    # Use only relative energies.
+OdeEnd = 10000              # ODE integration time limit.
+CalcXRC = False             # Calculate Degree of Rate Control(XRC) or not.
+ProductionName = "CH3OH_g"  # Production name of your model.
 
 if "__main__" == __name__:
     # Clean up current dir.
