@@ -1419,8 +1419,8 @@ class SteadyStateSolver(MeanFieldSolver):
 
         # integration loop
         if mpi_master:
-            self.__logger.info('entering {} ODE integration loop...\n'.format(algo))
-            self.__logger.info("start = {:.2f}  end = {:.2f}  step = {:.2f}".format(t_start, t_end, t_step))
+            self.__logger.info('entering {} ODE integration loop...'.format(algo))
+            self.__logger.info("start = {:.2f}  end = {:.2f}  step = {:.2f}\n".format(t_start, t_end, t_step))
             self.__logger.info('%10s%20s' + '%20s'*nads, 'process',
                                'time(s)', *adsorbate_names)
             self.__logger.info('-'*(20*nads + 30))
