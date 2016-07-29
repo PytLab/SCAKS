@@ -118,16 +118,7 @@ class KineticModel(object):
         return inputs_dict
         # }}}
 
-    def run_mkm(self,
-                init_cvgs=None,
-                relative=False,
-                correct_energy=False,
-                solve_ode=False,
-                fsolve=False,
-                coarse_guess=True,
-                XRC=False,
-                product_name=None,
-                data_file="./rel_energy.py"):
+    def run_mkm(self, **kwargs):
         """
         Function to solve Micro-kinetic model using Steady State Approxmiation
         to get steady state coverages and turnover frequencies.
@@ -144,10 +135,23 @@ class KineticModel(object):
 
         XRC: calculate degree of rate control or nor, bool.
 
+        product_name: Production name of the model, str. e.g. "CH3OH_g"
+
         data_file: The name of data file, str.
 
         """
         # {{{
+        # Setup default parameters.
+        init_cvgs = init_cvgs if "init_cvgs" in kwargs else None
+        relative = relative if "relative" in kwargs else False
+        correct_energy = correct_energy if "correct_energy" in kwargs else False
+        solve_ode = solve_ode if "solve_ode" in kwargs else False
+        fsolve = fsolve if "fsolve" in kwargs else False
+        coarse_guess = coarse_guess if "coarse_guess" in kwargs else True
+        XRC = XRC if "XRC" in kwargs else False
+        product_name = product_name if "product_name" in kwargs else None
+        data_file = data_file if "data_file" in kwargs else "./rel_energy.py"
+
         if mpi_master:
             self.__logger.info('--- Solve Micro-kinetic model ---')
 
