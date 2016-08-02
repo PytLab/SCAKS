@@ -1,0 +1,4 @@
+#!/bin/sh
+cd kynetix_test
+python kynetix_tests.py
+

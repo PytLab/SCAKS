@@ -118,20 +118,15 @@ class KineticModel(object):
         return inputs_dict
         # }}}
 
-    def run_mkm(self,
-                init_cvgs=None,
-                relative=False,
-                correct_energy=False,
-                solve_ode=False,
-                fsolve=False,
-                coarse_guess=True,
-                data_file="./rel_energy.py"):
+    def run_mkm(self, **kwargs):
         """
         Function to solve Micro-kinetic model using Steady State Approxmiation
         to get steady state coverages and turnover frequencies.
 
         Parameters:
         -----------
+        init_cvgs: Initial guess for coverages, tuple of floats.
+
         correct_energy: add free energy corrections to energy data or not, bool
 
         solve_ode: solve ODE only or not, bool
@@ -140,10 +135,25 @@ class KineticModel(object):
 
         coarse_guess: use fsolve to do initial coverages preprocessing or not, bool
 
+        XRC: calculate degree of rate control or nor, bool.
+
+        product_name: Production name of the model, str. e.g. "CH3OH_g"
+
         data_file: The name of data file, str.
 
         """
         # {{{
+        # Setup default parameters.
+        init_cvgs = setdefault_args("init_cvgs", kwargs, None)
+        relative = setdefault_args("relative", kwargs, False)
+        correct_energy = setdefault_args("correct_energy", kwargs, False)
+        solve_ode = setdefault_args("solve_ode", kwargs, False)
+        fsolve = setdefault_args("fsolve", kwargs, False)
+        coarse_guess = setdefault_args("coarse_guess", kwargs, True)
+        XRC = setdefault_args("XRC", kwargs, False)
+        product_name = setdefault_args("product_name", kwargs, None)
+        data_file = setdefault_args("data_file", kwargs, "./rel_energy.py")
+
         if mpi_master:
             self.__logger.info('--- Solve Micro-kinetic model ---')
 
@@ -166,11 +176,6 @@ class KineticModel(object):
         if mpi_master:
             self.__logger.info('passing data to solver...')
         solver.get_data()
-
-#        # energy correction
-#        if correct_energy:
-#            self.__logger.info('free energy correction...')
-#            self.solver.correct_energies()
 
         # solve ODE
         # !! do ODE integration AFTER passing data to solver !!
@@ -235,6 +240,16 @@ class KineticModel(object):
 
         # Get TOFs for gases.
         tofs = solver.get_tof(ss_cvgs)
+
+        # Get reversibilities.
+        rf, rr = solver.get_rates(ss_cvgs)
+        reversibilities = solver.get_reversibilities(rf, rr)
+
+        # Calculate XRC.
+        if XRC:
+            if product_name is None:
+                raise ParameterError("production name must be provided to get XRC.")
+            solver.get_single_XRC(product_name, epsilon=1e-5)
 
         return
         # }}}

@@ -773,7 +773,7 @@ class SteadyStateSolver(MeanFieldSolver):
             # Archive converged root and error.
             self.archive_data('steady_state_coverage', converged_cvgs)
             self.archive_data('steady_state_error', error)
-            self.good_guess = args[1]
+            self._good_guess = args[1]
             # Archive initial guess.
             self.archive_data('initial_guess', args[1])
 
@@ -827,142 +827,151 @@ class SteadyStateSolver(MeanFieldSolver):
 
         converged = False  # Flag for convergence.
         while not cancel:  # outer loop
-            # Good initial coverages.
-            if f_resid(c0) <= self._tolerance and not single_pt:
-                converged = True
-                self._coverage = c0
+            try:
+            # {{{
+                # Good initial coverages.
+                if f_resid(c0) <= self._tolerance and not single_pt:
+                    converged = True
+                    self._coverage = c0
+                    if mpi_master:
+                        self.__logger.info('Good initial guess: \n%s', str(map(float, c0)))
+
+                    # log steady state coverages
+                    self.__log_sscvg(c0, self._owner.adsorbate_names())
+
+                    # Get error.
+                    fx = self.steady_state_function(c0, relative_energies)  # dtheta/dts
+                    norm = self._norm(fx)
+                    resid = self.get_residual(c0)
+                    error = min(norm, resid)
+                    self._error = error
+                    if mpi_master:
+                        self.__logger.info('error = %e', error)
+                    break
+
+                # Instantiate rootfinding iterator
+                # ConstrainedNewton iterator
+                if self._rootfinding == 'ConstrainedNewton':
+                    iterator_parameters = dict(J=J,
+                                               constraint=constraint,
+                                               norm=self._norm,
+                                               mpfloat=self._mpf,
+                                               matrix=self._matrix,
+                                               Axb_solver=self._Axb_solver)
+                    newton_iterator = ConstrainedNewton(f, c0, **iterator_parameters)
+                # MDNewton iterator
+                elif self._rootfinding == 'MDNewton':
+                    iterator_parameters = dict(J=J, verbose=False)
+                    newton_iterator = MDNewton(f, c0, **iterator_parameters)
+                else:
+                    msg='Unrecognized rootfinding iterator name [{}]'.format(self._rootfinding)
+                    raise ParameterError(msg)
+
                 if mpi_master:
-                    self.__logger.info('Good initial guess: \n%s', str(map(float, c0)))
+                    self.__logger.info('{} Iterator instantiation - success!'.format(self._rootfinding))
 
-                # log steady state coverages
-                self.__log_sscvg(c0, self._owner.adsorbate_names())
+                x = c0
+                old_error = 1e99
+                if c0:
+                    # log initial guess
+                    if mpi_master:
+                        self.__logger.info('initial guess coverage - success')
+                        self.__logger.debug(str(map(float, c0)))
 
-                # Get error.
-                fx = self.steady_state_function(c0, relative_energies)  # dtheta/dts
-                norm = self._norm(fx)
-                resid = self.get_residual(c0)
-                error = min(norm, resid)
-                self._error = error
+                #####    Sub LOOP for a c0    #####
+
+                nt_counter = 0    # newton loop counter, inner
                 if mpi_master:
-                    self.__logger.info('error = %e', error)
-                break
+                    self.__logger.info('entering Newton Iteration( %d )...', icvg_counter)
+                    # log title
+                    self.__logger.info('  %-10s   %5s  %18s  %18s',
+                                       'status', 'N', 'residual', 'norm')
+                    self.__logger.info('-'*60)
 
-            # Instantiate rootfinding iterator
-            # ConstrainedNewton iterator
-            if self._rootfinding == 'ConstrainedNewton':
-                iterator_parameters = dict(J=J,
-                                           constraint=constraint,
-                                           norm=self._norm,
-                                           mpfloat=self._mpf,
-                                           matrix=self._matrix,
-                                           Axb_solver=self._Axb_solver)
-                newton_iterator = ConstrainedNewton(f, c0, **iterator_parameters)
-            # MDNewton iterator
-            elif self._rootfinding == 'MDNewton':
-                iterator_parameters = dict(J=J, verbose=False)
-                newton_iterator = MDNewton(f, c0, **iterator_parameters)
-            else:
-                msg='Unrecognized rootfinding iterator name [{}]'.format(self._rootfinding)
-                raise ParameterError(msg)
+                for x, error, fx in newton_iterator:  # inner loop
+                    nt_counter += 1
+                    resid = f_resid(x)
+                    if mpi_master:
+                        self.__logger.info('%-10s%10d%23.10e%23.10e', 'in_process',
+                                           nt_counter, float(resid), float(error))
 
-            if mpi_master:
-                self.__logger.info('{} Iterator instantiation - success!'.format(self._rootfinding))
+                    # Reach the max iteraction time or not.
+                    reach_max_iter = nt_counter > self._max_rootfinding_iterations
 
-            x = c0
-            old_error = 1e99
-            if c0:
-                # log initial guess
-                if mpi_master:
-                    self.__logger.info('initial guess coverage - success')
-                    self.__logger.debug(str(map(float, c0)))
+                    # Less than tolerance
+                    if ((not reach_max_iter) and (error < self._tolerance)):
+                        if resid < self._tolerance:
+                            # Check whether there is minus value in x
+                            for cvg in x:
+                                if cvg < 0.0:
+                                    lt_zero = True  # less than 0
+                                    break
+                                else:
+                                    lt_zero = False
+                            # check END #
+                            if not lt_zero:
+                                if mpi_master:
+                                    self.__logger.info('%-10s%10d%23.10e%23.10e', 'success',
+                                                       nt_counter, float(resid), float(error))
+                                # log steady state coverages
+                                self.__log_sscvg(x, self._owner.adsorbate_names())
+                                self._coverage = x
+                                self._error = error
+                                if mpi_master:
+                                    self.__logger.info('error = %e', min(error, resid))
 
-            #####    Sub LOOP for a c0    #####
-
-            nt_counter = 0    # newton loop counter, inner
-            if mpi_master:
-                self.__logger.info('entering Newton Iteration( %d )...', icvg_counter)
-                # log title
-                self.__logger.info('  %-10s   %5s  %18s  %18s',
-                               'status', 'N', 'residual', 'norm')
-                self.__logger.info('-'*60)
-
-            for x, error, fx in newton_iterator:  # inner loop
-                nt_counter += 1
-                resid = f_resid(x)
-                if mpi_master:
-                    self.__logger.info('%-10s%10d%23.10e%23.10e', 'in_process',
-                                   nt_counter, float(resid), float(error))
-                # Less than tolerance
-                if error < self._tolerance:
-                    if resid < self._tolerance:
-                        # Check whether there is minus value in x
-                        for cvg in x:
-                            if cvg < 0.0:
-                                lt_zero = True  # less than 0
+                                # Update flags.
+                                cancel = True
+                                converged = True
                                 break
-                            else:
-                                lt_zero = False
-                        # check END #
-                        if not lt_zero:
-                            if mpi_master:
-                                self.__logger.info('%-10s%10d%23.10e%23.10e', 'success',
-                                                   nt_counter, float(resid), float(error))
-                            # log steady state coverages
-                            self.__log_sscvg(x, self._owner.adsorbate_names())
-                            self._coverage = x
-                            self._error = error
-                            if mpi_master:
-                                self.__logger.info('error = %e', min(error, resid))
+                            else:  # bad root, iteration continue...
+                                if mpi_master:
+                                    self.__logger.warning('bad root: %s', str(map(float, x)))
+                                    self.__logger.warning('root finding continue...\n')
+                        else:
+                            error = f_resid(x)  # use residual as error and continue
 
-                            # Update flags.
-                            cancel = True
-                            converged = True
-                            break
-                        else:  # bad root, iteration continue...
-                            if mpi_master:
-                                self.__logger.warning('bad root: %s', str(map(float, x)))
-                                self.__logger.warning('root finding continue...\n')
-                    else:
-                        error = f_resid(x)  # use residual as error and continue
+                    # Reach the max iteration limit.
+                    elif reach_max_iter:
+                        if mpi_master:
+                            self.__logger.info('%-10s%10d%23.10e%23.10e', 'break',
+                                               nt_counter, float(resid), float(error))
+                            self.__logger.warning('Max rootfinding iteration number reached!')
+                            self.__logger.warning('root finding break for this initial guess...\n')
+                        # Jump out of loop for this c0
+                        cancel = False
+                        break
 
-                # if convergence is slow when the norm is larger than 0.1
-#                elif nt_counter > self._max_rootfinding_iterations:
-#                      #abs(error - old_error) < 1e-4) and error > 1e-1:
-#                    if mpi_master:
-#                        self.__logger.info('%-10s%10d%23.10e%23.10e', 'break',
-#                                         nt_counter, float(resid), float(error))
-#                        #self.__logger.warning('slow convergence rate!')
-#                        self.__logger.warning('Max rootfinding iteration number reached!')
-#                        self.__logger.warning('root finding break for this initial guess...\n')
-#                    # Jump out of loop for this c0
-#                    cancel = False
-#                    break
+                    # residual is almost stagnated
+#                     elif abs(error - old_error) < self._stable_criterion:
+#                         if mpi_master:
+#                             self.__logger.info('%-10s%10d%23.10e%23.10e', 'stable',
+#                                                nt_counter, float(resid), float(error))
+#                             self.__logger.warning('stable root: %s', str(map(float, x)))
+#                             self.__logger.debug(' difference: %-24.16e', abs(error - old_error))
+#                         # Jump out of loop for this c0.
+#                         cancel = False
+#                         break
 
-                # residual is almost stagnated
-#                elif abs(error - old_error) < self._stable_criterion:
-#                    if mpi_master:
-#                        self.__logger.info('%-10s%10d%23.10e%23.10e', 'stable',
-#                                           nt_counter, float(resid), float(error))
-#                        self.__logger.warning('stable root: %s', str(map(float, x)))
-#                        self.__logger.debug(' difference: %-24.16e', abs(error - old_error))
-#                    # Jump out of loop for this c0.
-#                    cancel = False
-#                    break
+                    old_error = error  # set old error to be compared in next loop
+                    #self._coverage = x
+                    #self._error = error
 
-                old_error = error  # set old error to be compared in next loop
-                #self._coverage = x
-                #self._error = error
+                    # archive data every 100 steps
+                    if nt_counter % 100 == 0:
+                        self.archive_data('iter_coverage', x)
+                        self.archive_data('iter_error', error)
+                #####    Sub loop for a c0 END    #####
 
-                # archive data every 100 steps
-                if nt_counter % 100 == 0:
-                    self.archive_data('iter_coverage', x)
-                    self.archive_data('iter_error', error)
-            #####    Sub loop for a c0 END    #####
-
-            # Change the initial guess(c0).
-            if not cancel:
-                # get a new initial guess coverage
-                c0 = self.modify_init_guess(x, fx)
+                # Change the initial guess(c0).
+                if not cancel:
+                    # get a new initial guess coverage
+                    c0 = self.modify_init_guess()
+                    icvg_counter += 1
+            # }}}
+            except ZeroDivisionError:
+                self.__logger.warning("ZeroDivisionError is catched !")
+                c0 = self.modify_init_guess()
                 icvg_counter += 1
 
         ##############    main loop end   #################
@@ -971,7 +980,7 @@ class SteadyStateSolver(MeanFieldSolver):
             # Archive converged root and error.
             self.archive_data('steady_state_coverage', self._coverage)
             self.archive_data('steady_state_error', self._error)
-            self.good_guess = c0
+            self._good_guess = c0
 
             # Archive initial guess.
             self.archive_data('initial_guess', c0)
@@ -982,6 +991,7 @@ class SteadyStateSolver(MeanFieldSolver):
         """
         Private helper function to log steady state coverage of every species.
         """
+        # {{{
         head_str = "\n {:<10s}{:<25s}{:<30s}\n".format("index",
                                                        "intermediate name",
                                                        "steady state coverage")
@@ -1000,6 +1010,7 @@ class SteadyStateSolver(MeanFieldSolver):
             self.__logger.info(all_data)
 
         return all_data
+        # }}}
 
     def __get_Gs_tof(self, Gs, gas_name=None):  # Gs -> free energies
         """
@@ -1016,6 +1027,7 @@ class SteadyStateSolver(MeanFieldSolver):
         If gas name is not specified, a list of TOF for all gas species would be returned.
         If gas name is specified, the TOF of the gas would be returned.
         """
+        # {{{
         # Get initial guess
         if hasattr(self, "_coverage"):
             init_guess = self._coverage
@@ -1056,6 +1068,7 @@ class SteadyStateSolver(MeanFieldSolver):
                 raise ParameterError(msg)
             idx = gas_names.index(gas_name)
             return tof_list[idx]
+        # }}}
 
     def __get_intermediates_Gs(self):
         """
@@ -1069,18 +1082,19 @@ class SteadyStateSolver(MeanFieldSolver):
 
         return Gs
 
-    def get_single_rate_control(self, gas_name, epsilon=None):
+    def get_single_XTRC(self, gas_name, epsilon=None):
         """
-        Function to get DTRC for one gas species.
+        Function to get XTRC for one gas species.
 
         Parameters:
         -----------
-        gas_name: The gas name whose DTRC would be calculated.
+        gas_name: The gas name whose XTRC would be calculated.
 
         epsilon: The perturbation size for numerical jacobian matrix.
         """
+        # {{{
         if mpi_master:
-            self.__logger.info("Calculating Degree of Thermodynamic Rate Control...")
+            self.__logger.info("Calculating Degree of Thermodynamic Rate Control(XTRC)...")
             self.__logger.info("-"*55 + "\n")
 
         # Get intermediates formation energies.
@@ -1104,29 +1118,31 @@ class SteadyStateSolver(MeanFieldSolver):
             self.__logger.info("Calculating original TOF...")
         r = self.__get_Gs_tof(Gs, gas_name=gas_name)
 
-        DTRCs = []
+        XTRCs = []
         # Loop over all intermediates.
         for i, intermediate in enumerate(intermediates):
             if mpi_master:
-                self.__logger.info("Calculating DTRC for '{}'...".format(intermediate))
+                self.__logger.info("Calculating XTRC for '{}'...".format(intermediate))
 
             Gs_prime = copy.deepcopy(Gs)
             Gs_prime[i] += epsilon
             r_prime = self.__get_Gs_tof(Gs_prime, gas_name=gas_name)
             drdG = (r_prime - r)/epsilon
-            DTRC = -kT/r*drdG
-            DTRCs.append(DTRC)
+            XTRC = -kT/r*drdG
+            XTRCs.append(XTRC)
 
         # Log it.
-        self.__log_single_DTRC(DTRCs, gas_name)
+        self.__log_single_XTRC(XTRCs, gas_name)
 
-        return DTRCs
+        return XTRCs
+        # }}}
 
-    def __log_single_DTRC(self, DTRCs, gas_name):
+    def __log_single_XTRC(self, XTRCs, gas_name):
         """
-        Private helper function to log DTRC for a gas species.
+        Private helper function to log XTRC for a gas species.
         """
-        head_str = "\n {:<10s}{:<25s}{:<30s}\n".format("index", "intermediate", "DTRC")
+        # {{{
+        head_str = "\n {:<10s}{:<25s}{:<30s}\n".format("index", "intermediate", "XTRC")
         head_str = "Degree of Rate Control for {}:\n".format(gas_name) + head_str
         line_str = '-'*60 + '\n'
 
@@ -1135,9 +1151,9 @@ class SteadyStateSolver(MeanFieldSolver):
         intermediates = (self._owner.adsorbate_names() +
                          self._owner.transition_state_names())
 
-        for idx, (intermediate, DTRC) in enumerate(zip(intermediates, DTRCs)):
+        for idx, (intermediate, XTRC) in enumerate(zip(intermediates, XTRCs)):
             idx = str(idx).zfill(2)
-            data = " {:<10s}{:<25s}{:<30.16e}\n".format(idx, intermediate, float(DTRC))
+            data = " {:<10s}{:<25s}{:<30.16e}\n".format(idx, intermediate, float(XTRC))
             all_data += data
         all_data += line_str
 
@@ -1145,10 +1161,11 @@ class SteadyStateSolver(MeanFieldSolver):
             self.__logger.info(all_data)
 
         return all_data
+        # }}}
 
-    def get_rate_control(self, epsilon=None):
+    def get_XTRC(self, epsilon=None):
         """
-        Function to get DTRC matrix for all gas species.
+        Function to get XTRC matrix for all gas species.
 
         Parameters:
         -----------
@@ -1156,10 +1173,11 @@ class SteadyStateSolver(MeanFieldSolver):
 
         Returns:
         --------
-        An DTRC mpmath.matrix for all gas species.
+        An XTRC mpmath.matrix for all gas species.
             - rows for gas species.
             - columns for intermediates and transition states.
         """
+        # {{{
         # Get intermediates formation energies.
         Gs = self.__get_intermediates_Gs()
 
@@ -1180,37 +1198,39 @@ class SteadyStateSolver(MeanFieldSolver):
 
         # multiply 1/r to drdG matrix.
         diag_matrix = self._linalg.diag([-kT/tof for tof in r])
-        DTRC = diag_matrix*drdG
+        XTRC = diag_matrix*drdG
 
         # Covert it to list.
-        DTRC_list = DTRC.tolist()
+        XTRC_list = XTRC.tolist()
 
         # Archive
-        self.archive_data('DTRC', DTRC_list)
+        self.archive_data('XTRC', XTRC_list)
 
         # Log it.
-        self.__log_DTRC(DTRC_list)
+        self.__log_XTRC(XTRC_list)
 
-        return DTRC
+        return XTRC
+        # }}}
 
-    def __log_DTRC(self, DTRC_matrix):
+    def __log_XTRC(self, XTRC_matrix):
         """
-        Private helper function to log DTRC for all gas species.
+        Private helper function to log XTRC for all gas species.
         """
+        # {{{
         gas_names = self._owner.gas_names()
         intermediate_names = (self._owner.adsorbate_names() +
                               self._owner.transition_state_names())
 
-        head_str = "\n{:<15s}{:<30s}{:<30s}\n".format("gas", "intermediate", "DTRC")
+        head_str = "\n{:<15s}{:<30s}{:<30s}\n".format("gas", "intermediate", "XTRC")
         head_str = "Degree of Thermodynamic Rate Control:\n" + head_str
         line_str = "-"*70 + "\n"
 
         all_data = ""
         all_data += head_str + line_str
 
-        for gas_name, DTRC_vect in zip(gas_names, DTRC_matrix):
-            for intermediate, DTRC in zip(intermediate_names, DTRC_vect):
-                data = "{:<15s}{:<30s}{:<30.16e}\n".format(gas_name, intermediate, float(DTRC))
+        for gas_name, XTRC_vect in zip(gas_names, XTRC_matrix):
+            for intermediate, XTRC in zip(intermediate_names, XTRC_vect):
+                data = "{:<15s}{:<30s}{:<30.16e}\n".format(gas_name, intermediate, float(XTRC))
                 all_data += data
 
         all_data += line_str
@@ -1219,83 +1239,121 @@ class SteadyStateSolver(MeanFieldSolver):
             self.__logger.info(all_data)
 
         return all_data
+        # }}}
+
+    def get_single_XRC(self, gas_name, epsilon=None):
+        """
+        Function to get XRC for one gas species.
+
+        Parameters:
+        -----------
+        gas_name: The gas name whose XTRC would be calculated.
+
+        epsilon: The perturbation size for numerical jacobian matrix.
+        """
+        # {{{
+        if mpi_master:
+            self.__logger.info("Calculating Degree of Rate Control(XRC)...")
+            self.__logger.info("-"*55 + "\n")
+
+        # Get original TOF for the gas speices.
+        if hasattr(self, "_coverage"):
+            init_guess = self._coverage
+        else:
+            msg = ("Converged coverages are needed to calculate XRC, " +
+                   "so try to get steady state coverages first.")
+            raise AttributeError(msg)
+        r = self.get_tof(cvgs=init_guess, gas_name=gas_name)
+
+        # Original rate constants.
+        kfs, _ = self.get_rate_constants()
+
+        # Get perturbation size.
+        if epsilon is None:
+            epsilon = self._mpf(self._perturbation_size)
+        if mpi_master:
+            self.__logger.info("epsilon = {:.2e}\n".format(float(epsilon)))
+
+        XRCs = []
+        # Loop over all elementary reactions.
+        rxn_expressions = self._owner.rxn_expressions()
+        n_rxns = len(rxn_expressions)
+        for i in xrange(n_rxns):
+            if mpi_master:
+                self.__logger.info("Calculating XRC for {} ...".format(rxn_expressions[i]))
+
+            # Add epsilon to relative energies.
+            relative_energies = copy.deepcopy(self._relative_energies)
+            relative_energies["Gaf"][i] += epsilon
+            relative_energies["Gar"][i] += epsilon
+
+            # Rate constants change.
+            k = kfs[i]
+            ks_prime, _ = self.get_rate_constants(relative_energies=relative_energies)
+            k_prime = ks_prime[i]
+            dk = k_prime - k
+
+            # Get steady state coverages.
+            steady_cvgs = self.get_steady_state_cvgs(c0=init_guess,
+                                                     relative_energies=relative_energies)
+            r_prime = self.get_tof(cvgs=steady_cvgs,
+                                   relative_energies=relative_energies,
+                                   gas_name=gas_name)
+            dr = r_prime - r
+
+            XRC = k/r*(dr/dk)
+            XRCs.append(XRC)
+
+            # Ouput log info.
+            if mpi_master:
+                self.__logger.info("XRC({}) = {:.2e}\n".format(rxn_expressions[i], float(XRC)))
+
+        # Ouput log info.
+        self.__log_single_XRC(XRCs=XRCs, gas_name=gas_name)
+
+        return XRCs
+        # }}}
+
+    def __log_single_XRC(self, XRCs, gas_name):
+        """
+        Private helper function to log XRC for a gas species.
+        """
+        # {{{
+        head_str = "\n {:<10s}{:<70s}{:<30s}\n".format("index", "elementary reaction", "XRC")
+        head_str = "Degree of Rate Control for {}:\n".format(gas_name) + head_str
+        line_str = '-'*100 + '\n'
+
+        all_data = ''
+        all_data += head_str + line_str
+        rxn_expressions = self._owner.rxn_expressions()
+
+        for idx, (rxn_expression, XRC) in enumerate(zip(rxn_expressions, XRCs)):
+            idx = str(idx).zfill(2)
+            data = " {:<10s}{:<70s}{:<30.16e}\n".format(idx, rxn_expression, float(XRC))
+            all_data += data
+        all_data += line_str
+
+        if mpi_master:
+            self.__logger.info(all_data)
+
+        return all_data
+        # }}}
 
     def modify_init_guess(self, *args):
-        '''
-        return a list of random coverages.
-        '''
-        n_adsorbates = len(self._owner.adsorbate_names())
-        random_cvgs = []
+        """
+        Use ODE integration to get new initial coverages guess.
+        """
+        if mpi_master:
+            self.__logger.info("Use ODE integration to get new initial coverages...")
+        end_time = random.randint(0, 10**5)
 
-        sum_cvgs = 0.0
-        for i in xrange(n_adsorbates):
-            cvg = random.random()*(1.0 - sum_cvgs)
-            random_cvgs.append(cvg)
-            sum_cvgs += cvg
-        #add to log
+        new_cvgs = self.solve_ode(time_end=end_time)[-1]
+
         if mpi_master:
             self.__logger.info('modify initial coverage - success')
-            self.__logger.debug(str(random_cvgs))
+            self.__logger.debug(str(new_cvgs))
 
-        return tuple(random_cvgs)
-
-    def modify_init_guess_old(self, c0, dtheta_dts):
-        "Return a new initial guess according to dthe_dts."
-#        max_dtheta_dt = np.max(np.abs(dtheta_dts))
-        base_coefficient = self._initial_guess_scale_factor
-        coefficients = []
-        for dtheta_dt in np.abs(dtheta_dts):
-            if abs(dtheta_dt) >= self._tolerance:
-                #coefficients.append(dtheta_dt/max_dtheta_dt*base_coefficient)
-                coefficients.append(base_coefficient)
-            else:
-                coefficients.append(1.0)
-        if mpi_master:
-            self.__logger.debug('coeff: %s', str(coefficients))
-        #if coeffs are all 1.0, break!
-        #add later...
-
-        #create a diagnol matrix
-        c0_diag = np.matrix(np.diag(c0))
-        #convert coeffients to column vector
-        coefficients = np.matrix(coefficients).reshape(-1, 1)
-        new_c0 = (c0_diag*coefficients).reshape(1, -1)
-        new_c0 = tuple(new_c0.tolist()[0])
-        #add to log
-        if mpi_master:
-            self.__logger.info('modify initial coverage - success')
-            self.__logger.debug(str(map(float, c0)))
-
-        #return self.__constrain_coverage__constrain_coverages(new_c0)
-        return new_c0
-
-    def modify_init_guess_new(self, c0, dtheta_dts):
-        "Return a new initial guess according to dthe_dts."
-        max_dtheta_dt = np.max(np.abs(dtheta_dts))
-        base_coefficient = self._initial_guess_scale_factor
-        coefficients = []
-        for idx, dtheta_dt in enumerate(np.abs(dtheta_dts)):
-            if abs(dtheta_dt) >= self._tolerance:
-                if dtheta_dt < 0:
-                    coefficients.append(dtheta_dt/max_dtheta_dt*base_coefficient)
-                elif dtheta_dt > 0:
-                    coefficients.append(dtheta_dt/max_dtheta_dt/base_coefficient)
-                #coefficients.append(base_coefficient)
-            else:
-                coefficients.append(1.0)
-        print coefficients
-        #create a diagnol matrix
-        c0_diag = np.matrix(np.diag(c0))
-        #convert coeffients to column vector
-        coefficients = np.matrix(coefficients).reshape(-1, 1)
-        new_c0 = (c0_diag*coefficients).reshape(1, -1)
-        new_c0 = tuple(new_c0.tolist()[0])
-        #add to log
-        if mpi_master:
-            self.__logger.info('modify initial coverage - success')
-            self.__logger.debug(str(map(float, c0)))
-
-        return new_c0
+        return new_cvgs
 
     ####################################
     ## solve model by ODE integration ##
@@ -1332,6 +1390,7 @@ class SteadyStateSolver(MeanFieldSolver):
         >>> m.solver.solve_ode(initial_cvgs=(0.0, 0.0))
 
         """
+        # {{{
         # set timr variables
         t_start = time_start
         t_end = time_end
@@ -1360,7 +1419,8 @@ class SteadyStateSolver(MeanFieldSolver):
 
         # integration loop
         if mpi_master:
-            self.__logger.info('entering %s ODE integration loop...\n', algo)
+            self.__logger.info('entering {} ODE integration loop...'.format(algo))
+            self.__logger.info("start = {:.2f}  end = {:.2f}  step = {:.2f}\n".format(t_start, t_end, t_step))
             self.__logger.info('%10s%20s' + '%20s'*nads, 'process',
                                'time(s)', *adsorbate_names)
             self.__logger.info('-'*(20*nads + 30))
@@ -1411,11 +1471,13 @@ class SteadyStateSolver(MeanFieldSolver):
                                    ' to auto_ode_coverages.py.')
 
         return last_time, last_coverages
+        # }}}
 
     def __ode_flush(self, flush_counter, times, coverages):
         """
         Private helper function to flush ode intergration data to file.
         """
+        # {{{
         # Get times extension strings.
         var_name = "times_{}".format(flush_counter)
         list_str = get_list_string(var_name, times)
@@ -1442,6 +1504,7 @@ class SteadyStateSolver(MeanFieldSolver):
         coverages = []
 
         return times, coverages
+        # }}}
 
     def error(self):
         """
@@ -1454,4 +1517,10 @@ class SteadyStateSolver(MeanFieldSolver):
         Query function for converaged coverages.
         """
         return self._coverages
+
+    def good_guess(self):
+        """
+        Query function for good initial coverages.
+        """
+        self._good_guess
 
