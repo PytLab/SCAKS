@@ -125,6 +125,8 @@ class KineticModel(object):
 
         Parameters:
         -----------
+        init_cvgs: Initial guess for coverages, tuple of floats.
+
         correct_energy: add free energy corrections to energy data or not, bool
 
         solve_ode: solve ODE only or not, bool
