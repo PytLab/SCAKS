@@ -12,6 +12,7 @@ UseRelativeEnergy = True    # Use only relative energies.
 OdeEnd = 10000              # ODE integration time limit.
 CalcXRC = False             # Calculate Degree of Rate Control(XRC) or not.
 ProductionName = "CH3OH_g"  # Production name of your model.
+OdeOnly = False             # Do ODE integration only.
 
 if "__main__" == __name__:
     # Clean up current dir.
@@ -44,13 +45,19 @@ if "__main__" == __name__:
         init_guess = trajectory[-1]
 
         # Run.
-        model.run_mkm(init_cvgs=init_guess, coarse_guess=False, relative=True)
+        model.run_mkm(init_cvgs=init_guess,
+                      solve_ode=OdeOnly,
+                      coarse_guess=False,
+                      relative=True,
+                      XRC=CalcXRC,
+                      product_name=ProductionName)
     except Exception as e:
         if mpi_master:
             msg = "{} exception is catched.".format(type(e).__name__)
             logger.exception(msg)
         raise e
 
+    # Time used.
     end = time.time()
     t = end - start
     h, m, s = convert_time(t)
