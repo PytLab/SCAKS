@@ -1,3 +1,7 @@
+"""
+Script for running Micro-kinetic Model simulation.
+"""
+
 import commands
 import logging
 import sys
