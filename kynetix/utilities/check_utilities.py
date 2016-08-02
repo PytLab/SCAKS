@@ -276,3 +276,9 @@ def check_process_coordinates(coordinates):
 
     return coordinates
 
+def setdefault_args(argname, kwargs, default_value):
+    """
+    Utility function for default args setting.
+    """
+    return kwargs[argname] if argname in kwargs else default_value
+

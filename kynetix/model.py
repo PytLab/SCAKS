@@ -142,15 +142,15 @@ class KineticModel(object):
         """
         # {{{
         # Setup default parameters.
-        init_cvgs = init_cvgs if "init_cvgs" in kwargs else None
-        relative = relative if "relative" in kwargs else False
-        correct_energy = correct_energy if "correct_energy" in kwargs else False
-        solve_ode = solve_ode if "solve_ode" in kwargs else False
-        fsolve = fsolve if "fsolve" in kwargs else False
-        coarse_guess = coarse_guess if "coarse_guess" in kwargs else True
-        XRC = XRC if "XRC" in kwargs else False
-        product_name = product_name if "product_name" in kwargs else None
-        data_file = data_file if "data_file" in kwargs else "./rel_energy.py"
+        init_cvgs = setdefault_args("init_cvgs", kwargs, None)
+        relative = setdefault_args("relative", kwargs, False)
+        correct_energy = setdefault_args("correct_energy", kwargs, False)
+        solve_ode = setdefault_args("solve_ode", kwargs, False)
+        fsolve = setdefault_args("fsolve", kwargs, False)
+        coarse_guess = setdefault_args("coarse_guess", kwargs, True)
+        XRC = setdefault_args("XRC", kwargs, False)
+        product_name = setdefault_args("product_name", kwargs, None)
+        data_file = setdefault_args("data_file", kwargs, "./rel_energy.py")
 
         if mpi_master:
             self.__logger.info('--- Solve Micro-kinetic model ---')
