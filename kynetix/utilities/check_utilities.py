@@ -244,6 +244,8 @@ type_rules = {
     "tof_start": (int, ),
     "time_limit": (float, ),
     "coverage_ratios": (check_list_tuple, float),
+    "ode_output_interval": (int, ),
+    "ode_buffer_size": (int, ),
 }
 
 
