@@ -29,8 +29,6 @@ class SteadyStateSolver(MeanFieldSolver):
         defaults = dict(rootfinding='MDNewton',
                         tolerance=1e-8,
                         max_rootfinding_iterations=100,
-                        residual_threshold=1.0,
-                        initial_guess_scale_factor=100,
                         stable_criterion=1e-10,
                         ode_buffer_size=500,
                         ode_output_interval=200)
