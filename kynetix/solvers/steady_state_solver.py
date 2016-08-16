@@ -1358,7 +1358,8 @@ class SteadyStateSolver(MeanFieldSolver):
     ####################################
 
     def solve_ode(self, algo='lsoda', time_start=0.0, time_end=100.0,
-                  time_span=0.1, initial_cvgs=None, relative_energies=None):
+                  time_span=0.1, initial_cvgs=None,
+                  relative_energies=None, traj_output=False):
         """
         Solve the differetial equations, return points of coverages.
 
@@ -1378,10 +1379,13 @@ class SteadyStateSolver(MeanFieldSolver):
         relative_energies: A dict of relative eneriges of elementary reactions.
             NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
 
+        traj_output: output ODE integration trajectory or not,
+                     default value is False.
+
         Returns:
         --------
-        ts: time points, list of float.
-        ys: integrated function values, list of list of float.
+        t: the integrated time, float.
+        y: integrated function values, list of float.
 
         Examples:
         ---------
@@ -1418,29 +1422,31 @@ class SteadyStateSolver(MeanFieldSolver):
         # integration loop
         if mpi_master:
             self.__logger.info('entering {} ODE integration loop...'.format(algo))
-            self.__logger.info("start = {:.2f}  end = {:.2f}  step = {:.2f}\n".format(t_start, t_end, t_step))
+            msg = "start = {:.2f}  end = {:.2f}  step = {:.2f}\n".format(t_start, t_end, t_step)
+            self.__logger.info(msg)
             self.__logger.info('%10s%20s' + '%20s'*nads, 'process',
                                'time(s)', *adsorbate_names)
             self.__logger.info('-'*(20*nads + 30))
 
         try:
             # Write file header.
-            with open("auto_ode_coverages.py", "w") as f:
-                time_str = "times = []\n\n"
-                coverages_str = "coverages = []\n\n"
-                f.write(file_header + time_str + coverages_str)
+            if traj_output:
+                flush_counter = 0
+                with open("auto_ode_coverages.py", "w") as f:
+                    time_str = "times = []\n\n"
+                    coverages_str = "coverages = []\n\n"
+                    f.write(file_header + time_str + coverages_str)
 
-            # Counters.
             nstep = 0
-            flush_counter = 0
 
             while r.t < t_end:
                 nstep += 1
 
                 # Integrate.
                 r.integrate(r.t + t_step)
-                ts.append(r.t)
-                ys.append(r.y.tolist())
+                if traj_output:
+                    ts.append(r.t)
+                    ys.append(r.y.tolist())
 
                 # Info output.
                 if mpi_master and (nstep % self._ode_output_interval == 0):
@@ -1449,7 +1455,7 @@ class SteadyStateSolver(MeanFieldSolver):
                     self.__logger.info(msg)
 
                 # Flush time coverages to file.
-                if nstep % self._ode_buffer_size == 0:
+                if traj_output and (nstep % self._ode_buffer_size == 0):
                     if ts and ys:
                         last_time = ts[-1]
                         last_coverages = ys[-1]
@@ -1462,7 +1468,11 @@ class SteadyStateSolver(MeanFieldSolver):
         finally:
             last_time = r.t
             last_coverages = r.y.tolist()
-            self.__ode_flush(flush_counter, ts, ys)
+
+            # Flush all data left.
+            if traj_output:
+                self.__ode_flush(flush_counter, ts, ys)
+
             if mpi_master:
                 self.__logger.info('ODE integration trajectory is written' +
                                    ' to auto_ode_coverages.py.')
