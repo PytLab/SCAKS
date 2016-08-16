@@ -1460,9 +1460,8 @@ class SteadyStateSolver(MeanFieldSolver):
                 self.__logger.info('%10s\n', 'finish')
 
         finally:
-            if ts and ys:
-                last_time = ts[-1]
-                last_coverages = ys[-1]
+            last_time = r.t
+            last_coverages = r.y.tolist()
             self.__ode_flush(flush_counter, ts, ys)
             if mpi_master:
                 self.__logger.info('ODE integration trajectory is written' +
