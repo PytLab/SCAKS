@@ -13,6 +13,7 @@ from kynetix.utilities.format_utilities import convert_time
 
 # Custom parameters.
 UseRelativeEnergy = True    # Use only relative energies.
+OdeInterval = 0.1           # ODE integration time interval.
 OdeEnd = 10000              # ODE integration time limit.
 CalcXRC = False             # Calculate Degree of Rate Control(XRC) or not.
 ProductionName = "CH3OH_g"  # Production name of your model.
@@ -45,7 +46,8 @@ if "__main__" == __name__:
         solver.get_data()
 
         # Initial coverages guess.
-        trajectory = solver.solve_ode(time_end=OdeEnd)
+        trajectory = solver.solve_ode(time_span=OdeInterval,
+                                      time_end=OdeEnd)
         init_guess = trajectory[-1]
 
         # Run.
