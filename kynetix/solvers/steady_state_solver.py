@@ -3,6 +3,7 @@ import logging
 import random
 import re
 import signal
+from multiprocessing.dummy import Pool as ThreadPool
 
 from scipy.integrate import odeint, ode
 from scipy.linalg import norm
@@ -1239,7 +1240,7 @@ class SteadyStateSolver(MeanFieldSolver):
         return all_data
         # }}}
 
-    def get_single_XRC(self, gas_name, epsilon=None):
+    def get_single_XRC(self, gas_name, epsilon=None, parallel=False):
         """
         Function to get XRC for one gas species.
 
@@ -1248,6 +1249,8 @@ class SteadyStateSolver(MeanFieldSolver):
         gas_name: The gas name whose XTRC would be calculated.
 
         epsilon: The perturbation size for numerical jacobian matrix.
+
+        parallel: use multi-threads or not, default value is False.
         """
         # {{{
         if mpi_master:
@@ -1272,7 +1275,6 @@ class SteadyStateSolver(MeanFieldSolver):
         if mpi_master:
             self.__logger.info("epsilon = {:.2e}\n".format(float(epsilon)))
 
-        XRCs = []
         # Loop over all elementary reactions.
         rxn_expressions = self._owner.rxn_expressions()
         n_rxns = len(rxn_expressions)
@@ -1304,17 +1306,33 @@ class SteadyStateSolver(MeanFieldSolver):
 
             return XRCi
 
-        for i in xrange(n_rxns):
-            if mpi_master:
-                self.__logger.info("Calculating XRC for {} ...".format(rxn_expressions[i]))
+        if not parallel:
+            XRCs = [None]*n_rxns
+            for i in xrange(n_rxns):
+                if mpi_master:
+                    self.__logger.info("Calculating XRC for {} ...".format(rxn_expressions[i]))
 
-            # Get XRC for that elementary reaction.
-            XRC = get_XRCi(i)
-            XRCs.append(XRC)
+                # Get XRC for that elementary reaction.
+                XRC = get_XRCi(i)
+                XRCs[i] = XRC
 
-            # Ouput log info.
-            if mpi_master:
-                self.__logger.info("XRC({}) = {:.2e}\n".format(rxn_expressions[i], float(XRC)))
+                # Ouput log info.
+                if mpi_master:
+                    self.__logger.info("XRC({}) = {:.2e}\n".format(rxn_expressions[i], float(XRC)))
+        else:
+            self.__logger.info("Calculating XRCs in multi-threads...")
+            # Reset logging level.
+            stream_level = self._owner.set_logger_level("StreamHandler", logging.WARNING)
+            file_level = self._owner.set_logger_level("FileHandler", logging.WARNING)
+
+            pool = ThreadPool()
+            XRCs = pool.map(get_XRCi, range(n_rxns))
+            pool.close()
+            pool.join()
+
+            # Recover logging level.
+            self._owner.set_logger_level("StreamHandler", stream_level)
+            self._owner.set_logger_level("FileHandler", file_level)
 
         # Ouput log info.
         self.__log_single_XRC(XRCs=XRCs, gas_name=gas_name)
