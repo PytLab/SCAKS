@@ -1276,19 +1276,20 @@ class SteadyStateSolver(MeanFieldSolver):
         # Loop over all elementary reactions.
         rxn_expressions = self._owner.rxn_expressions()
         n_rxns = len(rxn_expressions)
-        for i in xrange(n_rxns):
-            if mpi_master:
-                self.__logger.info("Calculating XRC for {} ...".format(rxn_expressions[i]))
 
+        def get_XRCi(idx):
+            """
+            Nested function to calculate XRC for a single elementary reaction.
+            """
             # Add epsilon to relative energies.
             relative_energies = copy.deepcopy(self._relative_energies)
-            relative_energies["Gaf"][i] += epsilon
-            relative_energies["Gar"][i] += epsilon
+            relative_energies["Gaf"][idx] += epsilon
+            relative_energies["Gar"][idx] += epsilon
 
             # Rate constants change.
-            k = kfs[i]
+            k = kfs[idx]
             ks_prime, _ = self.get_rate_constants(relative_energies=relative_energies)
-            k_prime = ks_prime[i]
+            k_prime = ks_prime[idx]
             dk = k_prime - k
 
             # Get steady state coverages.
@@ -1299,7 +1300,16 @@ class SteadyStateSolver(MeanFieldSolver):
                                    gas_name=gas_name)
             dr = r_prime - r
 
-            XRC = k/r*(dr/dk)
+            XRCi = k/r*(dr/dk)
+
+            return XRCi
+
+        for i in xrange(n_rxns):
+            if mpi_master:
+                self.__logger.info("Calculating XRC for {} ...".format(rxn_expressions[i]))
+
+            # Get XRC for that elementary reaction.
+            XRC = get_XRCi(i)
             XRCs.append(XRC)
 
             # Ouput log info.
