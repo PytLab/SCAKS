@@ -3,6 +3,7 @@ import logging
 import random
 import re
 import signal
+from multiprocessing.dummy import Pool as ThreadPool
 
 from scipy.integrate import odeint, ode
 from scipy.linalg import norm
@@ -1239,7 +1240,7 @@ class SteadyStateSolver(MeanFieldSolver):
         return all_data
         # }}}
 
-    def get_single_XRC(self, gas_name, epsilon=None):
+    def get_single_XRC(self, gas_name, epsilon=None, parallel=False):
         """
         Function to get XRC for one gas species.
 
@@ -1248,6 +1249,8 @@ class SteadyStateSolver(MeanFieldSolver):
         gas_name: The gas name whose XTRC would be calculated.
 
         epsilon: The perturbation size for numerical jacobian matrix.
+
+        parallel: use multi-threads or not, default value is False.
         """
         # {{{
         if mpi_master:
@@ -1272,23 +1275,23 @@ class SteadyStateSolver(MeanFieldSolver):
         if mpi_master:
             self.__logger.info("epsilon = {:.2e}\n".format(float(epsilon)))
 
-        XRCs = []
         # Loop over all elementary reactions.
         rxn_expressions = self._owner.rxn_expressions()
         n_rxns = len(rxn_expressions)
-        for i in xrange(n_rxns):
-            if mpi_master:
-                self.__logger.info("Calculating XRC for {} ...".format(rxn_expressions[i]))
 
+        def get_XRCi(idx):
+            """
+            Nested function to calculate XRC for a single elementary reaction.
+            """
             # Add epsilon to relative energies.
             relative_energies = copy.deepcopy(self._relative_energies)
-            relative_energies["Gaf"][i] += epsilon
-            relative_energies["Gar"][i] += epsilon
+            relative_energies["Gaf"][idx] += epsilon
+            relative_energies["Gar"][idx] += epsilon
 
             # Rate constants change.
-            k = kfs[i]
+            k = kfs[idx]
             ks_prime, _ = self.get_rate_constants(relative_energies=relative_energies)
-            k_prime = ks_prime[i]
+            k_prime = ks_prime[idx]
             dk = k_prime - k
 
             # Get steady state coverages.
@@ -1299,12 +1302,37 @@ class SteadyStateSolver(MeanFieldSolver):
                                    gas_name=gas_name)
             dr = r_prime - r
 
-            XRC = k/r*(dr/dk)
-            XRCs.append(XRC)
+            XRCi = k/r*(dr/dk)
 
-            # Ouput log info.
-            if mpi_master:
-                self.__logger.info("XRC({}) = {:.2e}\n".format(rxn_expressions[i], float(XRC)))
+            return XRCi
+
+        if not parallel:
+            XRCs = [None]*n_rxns
+            for i in xrange(n_rxns):
+                if mpi_master:
+                    self.__logger.info("Calculating XRC for {} ...".format(rxn_expressions[i]))
+
+                # Get XRC for that elementary reaction.
+                XRC = get_XRCi(i)
+                XRCs[i] = XRC
+
+                # Ouput log info.
+                if mpi_master:
+                    self.__logger.info("XRC({}) = {:.2e}\n".format(rxn_expressions[i], float(XRC)))
+        else:
+            self.__logger.info("Calculating XRCs in multi-threads...")
+            # Reset logging level.
+            stream_level = self._owner.set_logger_level("StreamHandler", logging.WARNING)
+            file_level = self._owner.set_logger_level("FileHandler", logging.WARNING)
+
+            pool = ThreadPool()
+            XRCs = pool.map(get_XRCi, range(n_rxns))
+            pool.close()
+            pool.join()
+
+            # Recover logging level.
+            self._owner.set_logger_level("StreamHandler", stream_level)
+            self._owner.set_logger_level("FileHandler", file_level)
 
         # Ouput log info.
         self.__log_single_XRC(XRCs=XRCs, gas_name=gas_name)
@@ -1358,7 +1386,8 @@ class SteadyStateSolver(MeanFieldSolver):
     ####################################
 
     def solve_ode(self, algo='lsoda', time_start=0.0, time_end=100.0,
-                  time_span=0.1, initial_cvgs=None, relative_energies=None):
+                  time_span=0.1, initial_cvgs=None,
+                  relative_energies=None, traj_output=False):
         """
         Solve the differetial equations, return points of coverages.
 
@@ -1378,10 +1407,13 @@ class SteadyStateSolver(MeanFieldSolver):
         relative_energies: A dict of relative eneriges of elementary reactions.
             NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
 
+        traj_output: output ODE integration trajectory or not,
+                     default value is False.
+
         Returns:
         --------
-        ts: time points, list of float.
-        ys: integrated function values, list of list of float.
+        t: the integrated time, float.
+        y: integrated function values, list of float.
 
         Examples:
         ---------
@@ -1418,29 +1450,31 @@ class SteadyStateSolver(MeanFieldSolver):
         # integration loop
         if mpi_master:
             self.__logger.info('entering {} ODE integration loop...'.format(algo))
-            self.__logger.info("start = {:.2f}  end = {:.2f}  step = {:.2f}\n".format(t_start, t_end, t_step))
+            msg = "start = {:.2f}  end = {:.2f}  step = {:.2f}\n".format(t_start, t_end, t_step)
+            self.__logger.info(msg)
             self.__logger.info('%10s%20s' + '%20s'*nads, 'process',
                                'time(s)', *adsorbate_names)
             self.__logger.info('-'*(20*nads + 30))
 
         try:
             # Write file header.
-            with open("auto_ode_coverages.py", "w") as f:
-                time_str = "times = []\n\n"
-                coverages_str = "coverages = []\n\n"
-                f.write(file_header + time_str + coverages_str)
+            if traj_output:
+                flush_counter = 0
+                with open("auto_ode_coverages.py", "w") as f:
+                    time_str = "times = []\n\n"
+                    coverages_str = "coverages = []\n\n"
+                    f.write(file_header + time_str + coverages_str)
 
-            # Counters.
             nstep = 0
-            flush_counter = 0
 
             while r.t < t_end:
                 nstep += 1
 
                 # Integrate.
                 r.integrate(r.t + t_step)
-                ts.append(r.t)
-                ys.append(r.y.tolist())
+                if traj_output:
+                    ts.append(r.t)
+                    ys.append(r.y.tolist())
 
                 # Info output.
                 if mpi_master and (nstep % self._ode_output_interval == 0):
@@ -1449,7 +1483,7 @@ class SteadyStateSolver(MeanFieldSolver):
                     self.__logger.info(msg)
 
                 # Flush time coverages to file.
-                if nstep % self._ode_buffer_size == 0:
+                if traj_output and (nstep % self._ode_buffer_size == 0):
                     if ts and ys:
                         last_time = ts[-1]
                         last_coverages = ys[-1]
@@ -1460,10 +1494,13 @@ class SteadyStateSolver(MeanFieldSolver):
                 self.__logger.info('%10s\n', 'finish')
 
         finally:
-            if ts and ys:
-                last_time = ts[-1]
-                last_coverages = ys[-1]
-            self.__ode_flush(flush_counter, ts, ys)
+            last_time = r.t
+            last_coverages = r.y.tolist()
+
+            # Flush all data left.
+            if traj_output:
+                self.__ode_flush(flush_counter, ts, ys)
+
             if mpi_master:
                 self.__logger.info('ODE integration trajectory is written' +
                                    ' to auto_ode_coverages.py.')

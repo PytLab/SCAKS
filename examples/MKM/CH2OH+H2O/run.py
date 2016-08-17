@@ -13,8 +13,8 @@ from kynetix.utilities.format_utilities import convert_time
 
 # Custom parameters.
 UseRelativeEnergy = True    # Use only relative energies.
-OdeInterval = 0.1           # ODE integration time interval.
-OdeEnd = 10000              # ODE integration time limit.
+OdeInterval = 1000          # ODE integration time interval.
+OdeEnd = 100000000          # ODE integration time limit.
 OdeOutput = False           # Output ODE integration data or not.
 CalcXRC = False             # Calculate Degree of Rate Control(XRC) or not.
 ProductionName = "CH3OH_g"  # Production name of your model.
