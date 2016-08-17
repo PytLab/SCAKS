@@ -345,6 +345,36 @@ class KineticModel(object):
 
         self.__logger = logger
 
+    def set_logger_level(self, handler_type, level):
+        """
+        Set the logging level of logger handler.
+
+        Parameters:
+        -----------
+        handler_type: logger handler name, str.
+
+        level: logging level, int.
+
+        Returns
+        -------
+        Old logging level of the handler, int.
+        """
+        # Locate handler.
+        handler = None
+        for h in self.__logger.handlers:
+            if h.__class__.__name__ == handler_type:
+                handler = h
+                break
+
+        if handler is None:
+            raise ValueError("Unknown handler type '{}'".format(handler_type))
+
+        # Reset logging level.
+        old_level = handler.level
+        handler.setLevel(level)
+
+        return old_level
+
     def __load(self, setup_file):
         """
         Load 'setup_file' into kinetic model by exec setup file
