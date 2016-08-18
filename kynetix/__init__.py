@@ -1,5 +1,8 @@
-import cPickle
 import time
+try:
+    import cPickle as pickle
+except ImportError:
+    import picke
 
 try:
     import mpi4py.MPI as MPI
