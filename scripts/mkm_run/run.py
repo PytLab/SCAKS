@@ -22,7 +22,7 @@ OdeOnly = False             # Do ODE integration only.
 
 if "__main__" == __name__:
     # Clean up current dir.
-    commands.getstatusoutput("rm -rf out.log data.pkl auto_*")
+    commands.getstatusoutput("rm -rf out.log auto_*")
 
     # Set script logger.
     logger = logging.getLogger("model.MkmRunScript")

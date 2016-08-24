@@ -1,8 +1,11 @@
-import cPickle
 import time
+try:
+    import cPickle as pickle
+except ImportError:
+    import picke
 
 try:
-    import mpi4py.MPI as MPI
+    from mpi4py import MPI
     mpi_installed = True
     mpi_comm = MPI.COMM_WORLD
     mpi_rank = mpi_comm.Get_rank()
