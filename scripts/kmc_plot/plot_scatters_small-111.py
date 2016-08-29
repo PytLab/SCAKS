@@ -178,6 +178,8 @@ if __name__ == '__main__':
 
         logging.info("creating {} ...".format(fname))
         fig.savefig(fname)
+
+        # Clear figure object after saving.
         plt.close(fig)
         logging.info("Ok.")
 
