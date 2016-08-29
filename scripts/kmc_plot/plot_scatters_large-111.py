@@ -4,6 +4,8 @@ logging.basicConfig(level=logging.INFO)
 import argparse
 
 import numpy as np
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 try:
     from PIL import Image
@@ -165,6 +167,9 @@ if __name__ == '__main__':
 
         logging.info("creating {} ...".format(fname))
         fig.savefig(fname)
+
+        # Clear figure object after saving.
+        plt.close(fig)
         logging.info("Ok.")
 
         if PIL_installed:
