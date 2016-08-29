@@ -178,6 +178,7 @@ if __name__ == '__main__':
 
         logging.info("creating {} ...".format(fname))
         fig.savefig(fname)
+        plt.close(fig)
         logging.info("Ok.")
 
         if PIL_installed:
