@@ -1,6 +1,7 @@
 '''
     Module to plot auto_converages.py
 '''
+import sys
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -49,5 +50,8 @@ autolabel(rects2)
 
 plt.grid(True)
 
-plt.show()
+if "-s" in sys.argv:
+    plt.savefig("frequencies.png")
+else:
+    plt.show()
 

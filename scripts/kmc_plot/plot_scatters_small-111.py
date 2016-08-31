@@ -193,3 +193,4 @@ if __name__ == '__main__':
         logging.info('creating %s ...', gif_name)
         images2gif.writeGif(gif_name, images, duration=0.3)
         logging.info('Ok.')
+
