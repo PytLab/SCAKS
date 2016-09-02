@@ -281,6 +281,7 @@ class KineticModel(object):
                          "xyz" | "lattice". 
 
         start_time: The start time of KMC loop, default value is 0.0, float.
+
         """
         parser = self.__parser
 
