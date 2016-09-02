@@ -48,7 +48,7 @@ class ModelShell(object):
 
     def update_parameters(self, defaults):
         """
-        Update attributes of components according to parameters in owner.
+        Update attributes of components according to parameters in setup file.
 
         Parameters:
         -----------
