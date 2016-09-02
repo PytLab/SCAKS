@@ -33,17 +33,12 @@ class MeanFieldSolver(SolverBase):
         # Set logger.
         self.__logger = logging.getLogger("model.solvers.SolverBase")
 
-        # Update default parameter dict
+        # Update parameter.
         defaults = dict(perturbation_size=0.01,
                         perturbation_direction='right',
                         numerical_representation='mpmath',
                         archived_variables=['steady_state_coverage', 'rates'])
-        defaults = self.update_defaults(defaults)
-
-        # Set varibles in defaults protected attributes of solver.
-        protected_defaults = {"_{}".format(key): value
-                              for key, value in defaults.iteritems()}
-        self.__dict__.update(protected_defaults)
+        self.update_parameters(defaults)
 
         # Set numerical representation.
         self.__set_numerical_representation()
