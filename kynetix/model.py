@@ -259,8 +259,7 @@ class KineticModel(object):
                 configuration_file=None,
                 sitesmap_file=None,
                 scripting=True,
-                trajectory_type="lattice",
-                start_time=None):
+                trajectory_type="lattice"):
         """
         Function to do kinetic Monte Carlo simulation.
 
@@ -280,7 +279,6 @@ class KineticModel(object):
         trajectory_type: The type of trajectory to use, the default type is "lattice", str.
                          "xyz" | "lattice". 
 
-        start_time: The start time of KMC loop, default value is 0.0, float.
         """
         parser = self.__parser
 
@@ -294,8 +292,7 @@ class KineticModel(object):
 
         # Run the lattice model.
         self.__solver.run(scripting=scripting,
-                          trajectory_type=trajectory_type,
-                          start_time=start_time)
+                          trajectory_type=trajectory_type)
 
     def __set_parser(self, parser_name):
         """
