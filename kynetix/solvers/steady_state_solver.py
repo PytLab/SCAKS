@@ -26,19 +26,14 @@ class SteadyStateSolver(MeanFieldSolver):
         # set logger
         self.__logger = logging.getLogger('model.solvers.SteadyStateSolver')
 
-        # Set default parameter dict
+        # Set parameter.
         defaults = dict(rootfinding='MDNewton',
                         tolerance=1e-8,
                         max_rootfinding_iterations=100,
                         stable_criterion=1e-10,
                         ode_buffer_size=500,
                         ode_output_interval=200)
-        defaults = self.update_defaults(defaults)
-
-        # Set varibles in defaults protected attributes of solver.
-        protected_defaults = {"_{}".format(key): value
-                              for key, value in defaults.iteritems()}
-        self.__dict__.update(protected_defaults)
+        self.update_parameters(defaults)
         # }}}
 
     def __constrain_coverages(self, cvgs_tuple):

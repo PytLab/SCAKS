@@ -46,22 +46,23 @@ class ModelShell(object):
         self._owner = owner
         self._archived_data_dict = {}
 
-    def update_defaults(self, defaults):
+    def update_parameters(self, defaults):
         """
-        Update values in defaults dict,
-        if there are custom parameters in setup file.
+        Update attributes of components according to parameters in setup file.
 
         Parameters:
         -----------
         default: default attributes dict, dict.
         """
-
         for parameter_name in defaults:
             attribute_name = mangled_name(self._owner, parameter_name)
             if hasattr(self._owner, attribute_name):
                 defaults[parameter_name] = getattr(self._owner, attribute_name)
 
-        return defaults
+        # Set varibles in defaults protected attributes of solver.
+        protected_defaults = {"_{}".format(key): value
+                              for key, value in defaults.iteritems()}
+        self.__dict__.update(protected_defaults)
 
     def archive_data(self, data_name, data):
         """

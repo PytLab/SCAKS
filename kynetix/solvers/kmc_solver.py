@@ -30,15 +30,10 @@ class KMCSolver(SolverBase):
         # set logger
         self.__logger = logging.getLogger('model.solvers.KMCSolver')
 
-        # Update default parameter dict.
+        # Update parameters.
         defaults = dict(extra_traj=None,
                         start_time=None)
-        defaults = self.update_defaults(defaults)
-
-        # Set varibles in defaults protected attributes of solver.
-        protected_defaults = {"_{}".format(key): value
-                              for key, value in defaults.iteritems()}
-        self.__dict__.update(protected_defaults)
+        self.update_parameters(defaults)
 
         # scripting header
         self.__script_header = (
