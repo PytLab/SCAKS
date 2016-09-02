@@ -79,7 +79,7 @@ class ModelShell(object):
             # Dump data dict to data file
             if self._archived_data_dict:
                 with open(self._owner.data_file(), 'wb') as f:
-                    cPickle.dump(self._archived_data_dict, f)
+                    pickle.dump(self._archived_data_dict, f)
 
     @staticmethod
     def write2file(filename, line):
