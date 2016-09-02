@@ -31,7 +31,8 @@ class KMCSolver(SolverBase):
         self.__logger = logging.getLogger('model.solvers.KMCSolver')
 
         # Update default parameter dict.
-        defaults = dict(extra_traj=None)
+        defaults = dict(extra_traj=None,
+                        start_time=None)
         defaults = self.update_defaults(defaults)
 
         # Set varibles in defaults protected attributes of solver.
@@ -49,8 +50,7 @@ class KMCSolver(SolverBase):
 
     def run(self,
             scripting=True,
-            trajectory_type="lattice",
-            start_time=None):
+            trajectory_type="lattice"):
         """
         Run the KMC lattice model simulation with specified parameters.
 
@@ -60,8 +60,6 @@ class KMCSolver(SolverBase):
 
         trajectory_type: The type of trajectory to use, the default type is "lattice", str.
                          "xyz" | "lattice".
-
-        start_time: The start time of KMC loop, default value is 0.0.
 
         """
         # Get analysis.
@@ -111,7 +109,7 @@ class KMCSolver(SolverBase):
                   trajectory_filename=trajectory_filename,
                   trajectory_type=trajectory_type,
                   analysis=analysis,
-                  start_time=start_time,
+                  start_time=self._start_time,
                   extra_traj=self._extra_traj)
 
     def get_control_parameters(self):
