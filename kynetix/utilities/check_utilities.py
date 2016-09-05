@@ -246,7 +246,7 @@ type_rules = {
     "coverage_ratios": (check_list_tuple, float),
     "ode_output_interval": (int, ),
     "ode_buffer_size": (int, ),
-    "extra_traj": (check_list_tuple, int),
+    "extra_trajectories": (check_list_tuple, int),
     "start_time": (float, ),
 }
 

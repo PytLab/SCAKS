@@ -22,16 +22,16 @@ from kynetix.solvers.solver_base import SolverBase
 
 class KMCSolver(SolverBase):
     def __init__(self, owner):
-        '''
-        Class for kinetic Monte Carlo simulation process.
-        '''
+        """
+        Class for kinetic Monte Carlo simulation.
+        """
         super(KMCSolver, self).__init__(owner)
 
         # set logger
         self.__logger = logging.getLogger('model.solvers.KMCSolver')
 
         # Update parameters.
-        defaults = dict(extra_traj=None,
+        defaults = dict(extra_trajectories=None,
                         start_time=None)
         self.update_parameters(defaults)
 
@@ -105,7 +105,7 @@ class KMCSolver(SolverBase):
                   trajectory_type=trajectory_type,
                   analysis=analysis,
                   start_time=self._start_time,
-                  extra_traj=self._extra_traj)
+                  extra_traj=self._extra_trajectories)
 
     def get_control_parameters(self):
         """
