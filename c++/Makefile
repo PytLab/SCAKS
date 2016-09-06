@@ -10,7 +10,7 @@ CPPFLAGS = -O3 -fPIC -std=c++11 -c -Wall -Werror
 INC = # -I /usr/local/lib/python2.7/site-packages/numpy/core/include 
 LDFLAGS = -shared
 EXTNAME = kmc_functions
-EXTDIR = ../kynetix/solvers/plugin_backends
+EXTDIR = ../kynetix/solvers/kmc_plugins/plugin_backends
 
 _kmc_functions.so: build/kmc_functions.o build/kmc_functions_wrap.o
 	$(CXX) $(LDFLAGS) $^ -o $@

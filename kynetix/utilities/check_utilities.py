@@ -98,7 +98,26 @@ def check_analysis_interval(analysis_interval):
         raise SetupError("Invalid analysis_interval: int or list is expected.")
 
     if type(analysis_interval) in (list, tuple):
-        check_list_tuple(analysis_interval, int, "analysis_interval")
+        for interval in analysis_interval:
+            # Check type.
+            if type(interval) not in (int, list, tuple):
+                raise SetupError("Invalid analysis interval: {}".format(interval))
+
+            # Check custom interval.
+            elif type(interval) in (list, tuple):
+                if len(interval) != 3:
+                    raise SetupError("Length of interval {} not equal to 3".format(interval))
+                else:
+                    # Check type.
+                    if not all([type(i) == int for i in interval]):
+                        raise SetupError("Type of element in {} are all not int".format(interval))
+                    # Check data validity.
+                    else:
+                        start, end, step = interval
+                        if end < start:
+                            raise SetupError("Start larger than end: {}".format(interval))
+                        elif step > end - start:
+                            raise SetupError("Step larger than span: {}".format(interval))
 
     # If all test passed, return.
     return analysis_interval
