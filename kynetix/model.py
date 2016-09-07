@@ -87,7 +87,7 @@ class KineticModel(object):
         invalid_parameters = []
         for key, value in inputs_dict.iteritems():
             # Check parameter validity.
-            if key not in type_rules:
+            if key not in type_rules and mpi_master:
                 msg = (("Parameter [{}] is not a valid setup parameter, " +
                         "it will be ignored.")).format(key)
                 self.__logger.warning(msg)
