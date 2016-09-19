@@ -56,27 +56,40 @@ class KMCParser(RelativeEnergyParser):
         if filename is None:
             filename = "kmc_sites.py"
 
-        globs, locs = {}, {}
-        execfile(filename, globs, locs)
-
         possible_site_types = self._owner.possible_site_types()
 
-        # Check.
-        if "site_types" not in locs:
-            msg = "Parameter 'site_types' must be set for sitesmap initilization."
-            raise SetupError(msg)
-        check_list_tuple(locs["site_types"], str, "site_types")
-
-        # Check length of site types.
+        # Get site number.
         repetitions = self._owner.repetitions()
         basis_sites = self._owner.basis_sites()
         nsite = reduce(mul, repetitions)*len(basis_sites)
-        if len(locs["site_types"]) != nsite:
+
+        def init_default_types():
+            """
+            Nested function to get default site types according to
+            lattice repetitions and basis sites.
+            """
+            default_type = possible_site_types[0]
+            return [default_type]*nsite
+
+        # Get site types.
+        if not os.path.exists(filename):
+            site_types = init_default_types()
+        else:
+            globs, locs = {}, {}
+            execfile(filename, globs, locs)
+
+            if "site_types" not in locs:
+                site_types = init_default_types()
+            else:
+                site_types = locs["site_types"]
+
+        # Check length of site types.
+        if len(site_types) != nsite:
             msg = "'site_types' must have {} elements.".format(nsite)
             raise SetupError(msg)
 
         # Check element type.
-        for site_type in locs["site_types"]:
+        for site_type in site_types:
             if site_type not in possible_site_types:
                 msg = "Element '{}' not in possible_site_types '{}'."
                 msg = msg.format(site_type, possible_site_types)
@@ -87,7 +100,7 @@ class KMCParser(RelativeEnergyParser):
 
         # Construct sitemap.
         sitesmap = KMCSitesMap(lattice=lattice,
-                               types=locs["site_types"],
+                               types=site_types,
                                possible_types=possible_site_types)
 
         return sitesmap

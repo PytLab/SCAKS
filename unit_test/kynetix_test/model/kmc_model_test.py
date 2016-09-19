@@ -50,6 +50,17 @@ class KMCModelTest(unittest.TestCase):
                       configuration_file="kmc_inputs/kmc_configuration.py",
                       sitesmap_file="kmc_inputs/kmc_sites.py")
 
+        # Run the model with default sites types.
+        model.run_kmc(processes_file="kmc_inputs/kmc_processes.py",
+                      configuration_file="kmc_inputs/kmc_configuration.py")
+
+        # Run with default configuration.
+        model.run_kmc(processes_file="kmc_inputs/kmc_processes.py",
+                      sitesmap_file="kmc_inputs/kmc_sites.py")
+
+        # Run with default configuration and sitemap.
+        model.run_kmc(processes_file="kmc_inputs/kmc_processes.py")
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(KMCModelTest)
     unittest.TextTestRunner(verbosity=2).run(suite)
