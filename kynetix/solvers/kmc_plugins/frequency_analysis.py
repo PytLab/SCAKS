@@ -74,14 +74,7 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         self.__filename = filename
 
     def setup(self, step, time, configuration, interactions):
-        # Append time and step.
-#        self.__times.append(time)
-#        self.__steps.append(step)
-#
-#        # Flush counter.
-#        self.__flush_counter = 0
-#
-#        # Create statistic data file.
+        # Create statistic data file.
         variables_str = ("times = []\nsteps = []\npicked_indices = []\n" +
                          "process_occurencies = []\n")
         with open(self.__filename, "w") as f:
@@ -89,10 +82,13 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
             f.write(content)
 
     def registerStep(self, step, time, configuration, interactions):
-        # Append time and step.
-#        self.__times.append(time)
-#        self.__steps.append(step)
+        # Collect processes occurencies.
+        self.__collect_occurencies(step, time, interactions)
 
+    def __collect_occurencies(self, step, time, interactions):
+        """
+        Private function to collect process occurencies.
+        """
         # Append picked index.
         picked_index = interactions.pickedIndex()
         self.__picked_indices.append(picked_index)
@@ -111,17 +107,10 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
 
         self.__tof_end_time = time
 
-#        # Check and flush.
-#        if len(self.__picked_indices) >= self.__buffer_size:
-#            self.__flush()
-
     def finalize(self):
         """
         Write all data to files.
         """
-        # Flush data left to file.
-#        self.__flush()
-
         # Write process occurencies to file.
         occurencies_str = get_list_string("process_occurencies",
                                           self.__process_occurencies)
@@ -206,5 +195,4 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         self.__flush_counter += 1
 
     # }}}
-
 
