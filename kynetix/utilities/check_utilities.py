@@ -267,6 +267,7 @@ type_rules = {
     "ode_buffer_size": (int, ),
     "extra_trajectories": (check_list_tuple, int),
     "start_time": (float, ),
+    "tof_interval": (float, ),
 }
 
 
