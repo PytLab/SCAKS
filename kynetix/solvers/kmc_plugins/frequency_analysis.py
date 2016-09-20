@@ -10,14 +10,6 @@ except ImportError:
     print "!!!                                                    !!!"
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
-try:
-    from kynetix.solvers.kmc_plugins.plugin_backends.kmc_functions import *
-except ImportError:
-    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-    print "!!!   WARNING: plugin backends extension not found.   !!!"
-    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-    from kynetix.solvers.kmc_plugins.kmc_functions import *
-
 from kynetix import file_header
 from kynetix import mpi_master
 from kynetix.utilities.format_utilities import get_list_string, get_dict_string
@@ -31,7 +23,6 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
     def __init__(self,
                  kmc_model,
                  filename="auto_frequency.py",
-                 buffer_size=500,
                  tof_start=0):
         """
         Constructor of TOFAnalysis object.
@@ -42,7 +33,6 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
 
         filename: The name of data file, str.
 
-        buffer_size: The max length of recorder variables.
         """
         # LatticeModel object.
         self.__kmc_model = kmc_model
@@ -62,9 +52,6 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         # Set logger.
         if mpi_master:
             self.__logger = logging.getLogger("model.solvers.KMCSolver.FrequencyAnalysis")
-
-        # Max length of recorder variables.
-        self.__buffer_size = buffer_size
 
         # TOF start step.
         self.__tof_start_time = 0.0
