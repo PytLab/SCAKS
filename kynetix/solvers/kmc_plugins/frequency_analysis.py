@@ -25,7 +25,7 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
                  filename="auto_frequency.py",
                  tof_start=0):
         """
-        Constructor of TOFAnalysis object.
+        Constructor of FrequencyAnalysis object.
 
         Parameters:
         -----------
@@ -40,9 +40,6 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         # Recorder variables.
         self.__times = []
         self.__steps = []
-
-        # Process indices.
-        self.__picked_indices = []
 
         # Process pick statistics list.
         nprocess = len(kmc_model.processes())
@@ -71,7 +68,6 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
     def registerStep(self, step, time, configuration, interactions):
         # Append picked index.
         picked_index = interactions.pickedIndex()
-        self.__picked_indices.append(picked_index)
 
         # Add to collection list.
         self.__process_occurencies[picked_index] += 1
