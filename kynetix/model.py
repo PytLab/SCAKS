@@ -952,3 +952,9 @@ class KineticModel(object):
         except AttributeError:
             return [1.0]*len(self.__basis_sites)
 
+    def tof_interval(self):
+        """
+        Query function for instantaneous tof calculation interval.
+        """
+        return self.__tof_interval
+
