@@ -56,8 +56,7 @@ Temporary Items
 
 # swig auto-generated files
 *_wrap.c
-kynetix/solvers/plugin_backends/data.py
-kynetix/solvers/plugin_backends/kmc_functions.py
+kynetix/solvers/kmc_plugins/plugin_backends/kmc_functions.py
 c++/*.py
 *_wrap.cxx
 
@@ -95,3 +94,4 @@ plot_coverages.py
 plot_frequencies.py
 plot_scatters*
 !scripts/kmc_plot/plot_*
+
