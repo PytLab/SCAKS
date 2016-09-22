@@ -14,7 +14,7 @@ EXTDIR = ../kynetix/solvers/kmc_plugins/plugin_backends
 
 _kmc_functions.so: kmc_functions.o kmc_functions_wrap.o
 	$(CXX) $(LDFLAGS) $^ -o $@
-	mkdir build && \
+	mkdir build
 	mv *.o build
 
 kmc_functions.o: src/kmc_functions.cpp
@@ -31,7 +31,7 @@ install:
 	cp _$(EXTNAME).so $(EXTNAME).py $(EXTDIR)
 
 clean:
-	rm -rf build/* wrap/$(EXTNAME)_wrap.cxx $(EXTNAME).py *.so
+	rm -rf build wrap/$(EXTNAME)_wrap.cxx $(EXTNAME).py *.so
 
 uninstall:
 	rm -f $(EXTDIR)/$(EXTNAME).py $(EXTDIR)/_$(EXTNAME).so
