@@ -1,7 +1,7 @@
 # Makefile for kmc analysis C++ extension
 # Author : shaozhengjiang<shaozhengjiang@gmail.com>
 # Date   : 2015-12-29
-# Update : 2016-06-25
+# Update : 2016-09-22
 
 CXX = g++
 SWIG = swig
@@ -12,13 +12,15 @@ LDFLAGS = -shared
 EXTNAME = kmc_functions
 EXTDIR = ../kynetix/solvers/kmc_plugins/plugin_backends
 
-_kmc_functions.so: build/kmc_functions.o build/kmc_functions_wrap.o
+_kmc_functions.so: kmc_functions.o kmc_functions_wrap.o
 	$(CXX) $(LDFLAGS) $^ -o $@
+	mkdir build && \
+	mv *.o build
 
-build/kmc_functions.o: src/kmc_functions.cpp
+kmc_functions.o: src/kmc_functions.cpp
 	$(CXX) $(CPPFLAGS) $(INC) -I include $< -o $@
 
-build/kmc_functions_wrap.o: wrap/kmc_functions_wrap.cxx
+kmc_functions_wrap.o: wrap/kmc_functions_wrap.cxx
 	$(CXX) $(CPPFLAGS) $(INC) -I include $< -o $@
 
 wrap/kmc_functions_wrap.cxx: wrap/kmc_functions.i
@@ -33,3 +35,4 @@ clean:
 
 uninstall:
 	rm -f $(EXTDIR)/$(EXTNAME).py $(EXTDIR)/_$(EXTNAME).so
+
