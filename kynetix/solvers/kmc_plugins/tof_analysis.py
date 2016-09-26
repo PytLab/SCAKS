@@ -69,10 +69,10 @@ class TOFAnalysis(KMCAnalysisPlugin):
         # Create statistic data file.
         variables_str = ("times = []\ntofs = []\n")
         process_mapping = self.__kmc_model.process_mapping()
-        process_mapping_str = get_list_string("processes", process_mapping)
+        process_mapping_str = get_list_string("processes", process_mapping, 1)
 
         with open(self.__filename, "w") as f:
-            content = file_header + variables_str
+            content = file_header + variables_str + process_mapping_str
             f.write(content)
 
     def registerStep(self, step, time, configuration, interactions):
