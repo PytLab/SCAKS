@@ -1,4 +1,5 @@
 import logging
+from operator import mul
 
 try:
     from KMCLib import KMCAnalysisPlugin
@@ -114,11 +115,17 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         steady_reaction_occurencies_str = get_dict_string("steady_reaction_occurencies",
                                                           steady_reaction_occurencies)
 
-        # Calculate rates.
+        # Get number of active sites.
+        repetitions = self.__kmc_model.repetitions()
+        basis_sites = self.__kmc_model.basis_sites()
+        nsites = reduce(mul, repetitions)*len(basis_sites)
+
         delta_t = self.__tof_end_time - self.__tof_start_time
+
+        # Calculate rates.
         reaction_rates = {}
         for reaction, occurency in steady_reaction_occurencies.iteritems():
-            rate = occurency/delta_t
+            rate = occurency/(delta_t*nsites)
             reaction_rates.setdefault(reaction, rate)
         reaction_rates_str = get_dict_string("reaction_rates", reaction_rates)
 

@@ -1,4 +1,5 @@
 import logging
+from operator import mul
 
 try:
     from KMCLib import KMCAnalysisPlugin
@@ -63,6 +64,11 @@ class TOFAnalysis(KMCAnalysisPlugin):
 
         # Name of data file.
         self.__filename = filename
+
+        # Number of active sites.
+        repetitions = self.__kmc_model.repetitions()
+        basis_sites = self.__kmc_model.basis_sites()
+        self.__nsites = reduce(mul, repetitions)*len(basis_sites)
         # }}}
 
     def setup(self, step, time, configuration, interactions):
@@ -84,7 +90,8 @@ class TOFAnalysis(KMCAnalysisPlugin):
         delta_t = time - self.__start_time
         if delta_t > self.__tof_interval:
             # Calculate tof for all processes.
-            tof = [occurency/delta_t for occurency in self.__occurencies]
+            tof = [occurency/(self.__nsites*delta_t)
+                   for occurency in self.__occurencies]
             self.__tofs.append(tof)
             self.__times.append(self.__start_time)  # use start_time here.
 
