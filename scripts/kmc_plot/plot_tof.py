@@ -45,7 +45,7 @@ if "__main__" == __name__:
         tofs.append(tof)
 
     plt.subplot(111)
-    plt.scatter(times, tofs)
+    plt.plot(times, tofs, linewidth=2.5)
 
     plt.ylabel(r"$\bf{TOF}$", fontsize=16)
     plt.xlabel(r"$\bf{time}$", fontsize=16)
