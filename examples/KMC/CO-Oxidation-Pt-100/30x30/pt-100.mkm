@@ -7,15 +7,17 @@ rxn_expressions = [
     'O2_g + 2*_b -> 2O_b',                      # O2 dissociative adsorption at two bridge sites.
     'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b',   # CO2_g associative desorption
     'CO_b + O_b <-> OC-O_2b -> CO2_g + 2*_b',   # CO2_g associative desorption
-#    'CO_b + *_t <-> CO_t + *_b -> CO_b + *_t',  # CO diffusion.
+    'CO_b + *_t <-> CO_t + *_b -> CO_b + *_t',  # CO diffusion.
     'O_b + *_t <-> O_t + *_b -> O_b + *_t',     # O diffusion
+	'O2_g + 2*_b -> O_b + O_b',                 # O2 diss adjecent bri.
+	'CO_t + O_b <-> CO-O_t + *_b -> CO2_g + *_b + *_t',  # O_b diff
 ]
 
 # Gas pressure.
 species_definitions = {}
-species_definitions['CO_g'] = {'pressure': 0.01}    # define the gas pressures
+species_definitions['CO_g'] = {'pressure': 0.028}    # define the gas pressures
 species_definitions['O2_g'] = {'pressure': 0.2}  # 0.094
-species_definitions['CO2_g'] = {'pressure': 0.01}
+species_definitions['CO2_g'] = {'pressure': 0.028}
 
 # Site info.
 species_definitions['b'] = {'site_name': 'bridge', 'type': 'site', 'total': 0.5}
@@ -56,12 +58,14 @@ solver = 'KMCSolver'
 corrector = "ThermodynamicCorrector"
 
 # KMC loop control parameters.
-nstep = 3*10**6                     # number of KMC loop step
-seed = 1399986                         # seed for random number generator
+nstep = 6*10**8                     # number of KMC loop step
+seed = 1399986986                         # seed for random number generator
 random_generator = 'MT'              # type of pseudo random number generator, 'MT' | 'MINSTD' | 'RANLUX24' | 'RANLUX48'
-analysis = ["CoveragesAnalysis", "FrequencyAnalysis"]     # ['CoveragesAnalysis', 'TOFAnalysis']
-analysis_interval = [100, 1]
+analysis = ["CoveragesAnalysis", "FrequencyAnalysis", "TOFAnalysis"]     # ['CoveragesAnalysis', 'TOFAnalysis']
+analysis_interval = [100, 1, 1]
 coverage_ratios = [1.0, 0.5, 0.5, 1.0]
 #tof_start = 20000
-time_limit = 1e5
+#time_limit = 1e8
 trajectory_dump_interval = nstep/500
+tof_interval = 300
+
