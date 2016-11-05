@@ -103,9 +103,7 @@ class KMCSolver(SolverBase):
         model.run(control_parameters=control_parameters,
                   trajectory_filename=trajectory_filename,
                   trajectory_type=trajectory_type,
-                  analysis=analysis,
-                  start_time=self._start_time,
-                  extra_traj=self._extra_trajectories)
+                  analysis=analysis)
 
     def get_control_parameters(self):
         """
@@ -125,7 +123,9 @@ class KMCSolver(SolverBase):
                                                   dump_interval=dump_interval,
                                                   analysis_interval=analysis_interval,
                                                   seed=seed,
-                                                  rng_type=rng_type)
+                                                  rng_type=rng_type,
+                                                  start_time=self._start_time,
+                                                  extra_traj=self._extra_trajectories)
 
         return control_parameters
 
