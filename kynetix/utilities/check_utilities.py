@@ -8,7 +8,7 @@ import logging
 from kynetix.errors.error import *
 
 
-def check_list_tuple(sequence, entry_type=None, param_name="Tested object"):
+def check_sequence(sequence, entry_type=None, param_name="Tested object"):
     """
     Check the given object is a list or tuple of a type.
 
@@ -170,18 +170,18 @@ def check_process_dict(process_dict):
         raise SetupError(msg)
 
     # Check type of group.
-    check_list_tuple(process_dict["coordinates_group"],
+    check_sequence(process_dict["coordinates_group"],
                      entry_type=list,
                      param_name="coordinates_group")
 
     # Check each coordinates in group.
     for coords in process_dict["coordinates_group"]:
-        check_list_tuple(coords,
+        check_sequence(coords,
                          entry_type=list,
                          param_name="coordinates")
         # Check the elements in coordinates.
         for coord in coords:
-            check_list_tuple(coord, float, coord)
+            check_sequence(coord, float, coord)
             if len(coord) != 3:
                 msg = "{} must have 3 entries.".format(coord)
                 raise SetupError(msg)
@@ -191,7 +191,7 @@ def check_process_dict(process_dict):
 
     # Check elements.
     for key in ["elements_before", "elements_after"]:
-        check_list_tuple(process_dict[key], str, key)
+        check_sequence(process_dict[key], str, key)
 
         # Check length.
         for coords in process_dict["coordinates_group"]:
@@ -201,7 +201,7 @@ def check_process_dict(process_dict):
                 raise SetupError(msg)
 
     # Check basis sites.
-    check_list_tuple(process_dict["basis_sites"], int, "basis_site")
+    check_sequence(process_dict["basis_sites"], int, "basis_site")
 
     # All tests passed, return.
     return process_dict
@@ -214,19 +214,19 @@ plotter_range = ("EnergyProfilePlotter", )
 rootfinding_range = ("ConstrainedNewton", "MDNewton")
 
 type_rules = {
-    "rxn_expressions": (check_list_tuple, str),
+    "rxn_expressions": (check_sequence, str),
     "ref_energies": (check_ref_energies, ),
     "species_definitions": (check_species_definitions, ),
     "surface_name": (str, ),
     "temperature": (int, ),
-    "tools": (check_list_tuple, str),
+    "tools": (check_sequence, str),
     "parser": (check_string, parsers_range),
     "solver": (check_string, solvers_range),
     "corrector": (check_string, corrector_range),
     "plotter": (check_string, plotter_range),
-    "ref_species": (check_list_tuple, str),
+    "ref_species": (check_sequence, str),
     "numerical_representation": (str, ),
-    "archived_variables": (check_list_tuple, str),
+    "archived_variables": (check_sequence, str),
     "rootfinding": (check_string, rootfinding_range),
     "max_rootfinding_iterations": (int, ),
     "residual_threshold": (float, ),
@@ -245,27 +245,31 @@ type_rules = {
     "ode_buffer_size": (int, ),
 
     # KMC parameters.
-    "cell_vectors": (check_list_tuple, list),
-    "basis_sites": (check_list_tuple, list),
+    "cell_vectors": (check_sequence, list),
+    "basis_sites": (check_sequence, list),
     "unitcell_area": (float, ),
     "active_ratio": (float, ),
-    "repetitions": (check_list_tuple, int),
-    "periodic": (check_list_tuple, bool),
+    "repetitions": (check_sequence, int),
+    "periodic": (check_sequence, bool),
     "nstep": (int, ),
     "seed": (int, ),
     "random_generator": (str, ),
-    "analysis": (check_list_tuple, str),
+    "analysis": (check_sequence, str),
     "analysis_interval": (check_analysis_interval, ),
     "trajectory_dump_interval": (int, ),
-    "possible_element_types": (check_list_tuple, str),
-    "possible_site_types": (check_list_tuple, str),
+    "possible_element_types": (check_sequence, str),
+    "possible_site_types": (check_sequence, str),
     "empty_type": (str, ),
     "tof_start": (int, ),
     "time_limit": (float, ),
-    "coverage_ratios": (check_list_tuple, float),
-    "extra_trajectories": (check_list_tuple, int),
+    "coverage_ratios": (check_sequence, float),
+    "extra_trajectories": (check_sequence, int),
     "start_time": (float, ),
     "tof_interval": (float, ),
+    "do_redistribution": (bool, ),
+    "redistribution_interval": (int, ),
+    "fast_species": (check_sequence, str),
+    "nsplits": (check_sequence, int),
 }
 
 

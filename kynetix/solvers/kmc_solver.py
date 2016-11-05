@@ -32,7 +32,8 @@ class KMCSolver(SolverBase):
 
         # Update parameters.
         defaults = dict(extra_trajectories=None,
-                        start_time=None)
+                        start_time=None,
+                        do_redistribution=False)
         self.update_parameters(defaults)
 
         # scripting header

@@ -13,20 +13,20 @@ class CheckUtilitiesTest(unittest.TestCase):
         # Test case setting.
         self.maxDiff = None
 
-    def test_check_list_tuple(self):
-        " Test check_list_tuple function can work properly. "
+    def test_check_sequence(self):
+        " Test check_sequence function can work properly. "
         # Check valid string sequence.
         tools = ['parser', 'solver']
-        check_list_tuple(tools, str, "tools")
+        check_sequence(tools, str, "tools")
 
         # Check invalid sequence with different type.
         tools = ['parser', 12]
-        self.assertRaises(SetupError, check_list_tuple, tools,
+        self.assertRaises(SetupError, check_sequence, tools,
                           entry_type=str, param_name="tools")
 
         # Not a sequence.
         tools = 'parser'
-        self.assertRaises(SetupError, check_list_tuple, tools,
+        self.assertRaises(SetupError, check_sequence, tools,
                           entry_type=str, param_name="tools")
 
     def test_check_string(self):

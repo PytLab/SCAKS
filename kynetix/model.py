@@ -874,3 +874,9 @@ class KineticModel(object):
         """
         return self.__tof_interval
 
+    def do_redistribution(self):
+        """
+        Query function for flag for redistribution operation.
+        """
+        return self.__do_redistribution
+
