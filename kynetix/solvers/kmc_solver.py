@@ -33,7 +33,10 @@ class KMCSolver(SolverBase):
         # Update parameters.
         defaults = dict(extra_trajectories=None,
                         start_time=None,
-                        do_redistribution=False)
+                        do_redistribution=False,
+                        redistribution_interval=10,
+                        fast_species=[],
+                        nsplits=(1, 1, 1))
         self.update_parameters(defaults)
 
         # scripting header
@@ -58,6 +61,7 @@ class KMCSolver(SolverBase):
                          "xyz" | "lattice".
 
         """
+        # {{{
         # Get analysis.
         analysis_name = self._owner.analysis()
         if analysis_name:
@@ -105,6 +109,7 @@ class KMCSolver(SolverBase):
                   trajectory_filename=trajectory_filename,
                   trajectory_type=trajectory_type,
                   analysis=analysis)
+        # }}}
 
     def get_control_parameters(self):
         """
