@@ -31,6 +31,7 @@ class KineticModel(object):
                                  verbosity=logging.WARNING)
         """
 
+        # {{{
         # Get class name.
         self.__class_name = self.__class__.__name__
 
@@ -70,6 +71,7 @@ class KineticModel(object):
         else:
             if mpi_master:
                 self.__logger.warning('setup file not read...')
+        # }}}
 
     def __check_inputs(self, inputs_dict):
         """
@@ -379,20 +381,19 @@ class KineticModel(object):
         For tools, create the instances of tool classes and
         assign them as the attrs of model.
         """
+        # {{{
         if mpi_master:
             self.__logger.info('Loading Kinetic Model...\n')
 
-        defaults = dict(
-            data_file='data.pkl',
-            grid_type='square',
-            decimal_precision=100,
-            tools=['parser'],
-            parser='RelativeEnergyParser',
-            table_maker='CsvMaker',
-            solver='SteadyStateSolver',
-            corrector='ThermodynamicCorrector',
-            plotter='EnergyProfilePlotter',
-        )
+        defaults = dict(data_file='data.pkl',
+                        grid_type='square',
+                        decimal_precision=100,
+                        tools=['parser'],
+                        parser='RelativeEnergyParser',
+                        table_maker='CsvMaker',
+                        solver='SteadyStateSolver',
+                        corrector='ThermodynamicCorrector',
+                        plotter='EnergyProfilePlotter')
 
         if mpi_master:
             self.__logger.info('read in parameters...')
@@ -496,6 +497,7 @@ class KineticModel(object):
         # Set kMC parameters.
         if (not isinstance(self.__solver, str)) and (locs["solver"] == "KMCSolver"):
             self.__set_kmc_parameters(locs)
+        # }}}
 
     def __set_kmc_parameters(self, locs):
         """
@@ -503,84 +505,12 @@ class KineticModel(object):
         """
         # kMC parameters check
         solver_type = repr(self.__solver).split('.')[2]
-        # pseudo random generator
-        if solver_type == 'kmc_solver' and 'random_generator' not in locs:
-            if mpi_master:
-                self.__logger.info('pseudo random generator type was not set.')
-                self.__logger.info('use Mersenne-Twister by default.')
 
-        # kMC control parameters
-        if 'kmc_continue' in locs and locs['kmc_continue']:
-            # read in step and time info
-            if mpi_master:
-                self.__logger.info('reading in kMC control parameters...')
-
-            # read from auto_coverages.py
-            if mpi_master:
-                self.__logger.info('reading auto_coverages.py...')
-            has_auto_coverages = os.path.exists('./auto_coverages.py')
-            if has_auto_coverages:
-                #raise FilesError('No auto_coverages.py in current path.')
-                cvg_globs, cvg_locs = {}, {}
-                execfile('./auto_coverages.py', cvg_globs, cvg_locs)
-                cvg_step, cvg_time = cvg_locs['steps'][-1], cvg_locs['times'][-1]
-                if mpi_master:
-                    self.__logger.info('auto_coverages.py was read.')
-            else:
-                if mpi_master:
-                    self.__logger.info('auto_coverages.py not read.')
-
-            # read from auto_TOFs.py
-            if mpi_master:
-                self.__logger.info('reading auto_TOFs.py...')
-            if not os.path.exists('./auto_TOFs.py'):
-                raise FilesError('No auto_TOFs.py in current path.')
-            tof_globs, tof_locs = {}, {}
-            execfile('./auto_TOFs.py', tof_globs, tof_locs)
-            tof_step, tof_time = tof_locs['steps'][-1], tof_locs['times'][-1]
-            # get total_rates calculated from last loop
-            total_rates = tof_locs['total_rates']
-            # get time when the first TOF analysis start
-            tof_start_time = tof_locs['start_time']
-            if mpi_master:
-                self.__logger.info('auto_TOFs.py was read.')
-
-            # read from auto_last_types.py
-            if mpi_master:
-                self.__logger.info('reading auto_last_types.py...')
-            if not os.path.exists('auto_last_types.py'):
-                raise FilesError('No auto_last_types.py in current path.')
-            types_globs, types_locs = {}, {}
-            execfile('auto_last_types.py', types_globs, types_locs)
-            last_types = types_locs['types']
-            if mpi_master:
-                self.__logger.info('auto_last_types.py was read.')
-
-            # check data consistency
-            if has_auto_coverages:
-                if not cvg_step == tof_step:
-                    raise FilesError('Steps(%d, %d) are not consistent.' %
-                                     (cvg_step, tof_step))
-                if not (abs(cvg_time - tof_time) < 1e-5):
-                    raise FilesError('Times(%s, %s) are not consistent.' %
-                                     (cvg_time, tof_time))
-
-            # set model attributes
-            # -----------------------------------------------------------------
-            # **start_time** is the time when all analysis object end
-            # in last kmc loop which is the start point in current kmc loop.
-            #
-            # **tof_start_time** is the time when true TOF analysis
-            # begins(no TOF calculation at this point) in last kmc loop
-            # which is also used in continous kmc loop.
-            # -----------------------------------------------------------------
-            self.__start_step, self.__start_time = tof_step, tof_time
-            self.__tof_start_time = tof_start_time
-            self.__start_types = last_types
-            self.__total_rates = total_rates
-            if mpi_master:
-                self.__logger.info('kMC analysis starts from step = %d, time = %e s',
-                                   self.__start_step, self.__start_time)
+        # Pseudo random generator info.
+        if (solver_type == 'kmc_solver' and
+                'random_generator' not in locs and mpi_master):
+            self.__logger.info('pseudo random generator type was not set.')
+            self.__logger.info('use Mersenne-Twister by default.')
 
     def setup_file(self):
         """
@@ -868,20 +798,6 @@ class KineticModel(object):
         Query function for analysis dump interval.
         """
         return self.__analysis_dump_interval
-
-    @return_deepcopy
-    def color_dict(self):
-        """
-        Query function for color dict for elements on surface.
-        """
-        return self.__color_dict
-
-    @return_deepcopy
-    def circle_attrs(self):
-        """
-        Query function for circle attributes for circle plotting.
-        """
-        return self.__circle_attrs
 
     def processes(self):
         """
