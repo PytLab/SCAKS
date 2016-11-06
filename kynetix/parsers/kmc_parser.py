@@ -1,6 +1,6 @@
 import logging
-from math import exp
 import os
+from math import exp
 from operator import mul
 
 import numpy as np
@@ -237,6 +237,9 @@ class KMCParser(RelativeEnergyParser):
         # Get rate constants.
         rf, rr = self.__get_rxn_rates(process_dict["reaction"])
 
+        # Get process fast flag, False by default.
+        fast = process_dict.get("fast", False)
+
         # Get KMCLibProcess objects.
         processes = []
 
@@ -251,7 +254,8 @@ class KMCParser(RelativeEnergyParser):
                                       elements_before=process_dict["elements_before"],
                                       elements_after=process_dict["elements_after"],
                                       basis_sites=[basis_site],
-                                      rate_constant=rf)
+                                      rate_constant=rf,
+                                      fast=fast)
                 processes.append(fprocess)
 
                 # Add process reaction mapping.
@@ -268,7 +272,8 @@ class KMCParser(RelativeEnergyParser):
                                       elements_before=process_dict["elements_after"],
                                       elements_after=process_dict["elements_before"],
                                       basis_sites=[basis_site],
-                                      rate_constant=rr)
+                                      rate_constant=rr,
+                                      fast=fast)
                 processes.append(rprocess)
 
                 # Add process reaction mapping.
