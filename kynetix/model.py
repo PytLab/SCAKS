@@ -868,15 +868,48 @@ class KineticModel(object):
         except AttributeError:
             return [1.0]*len(self.__basis_sites)
 
+    def extra_trajectories(self):
+        """
+        Query function for extra trajectories setting.
+        """
+        try:
+            return self.__extra_traj
+        except AttributeError:
+            return None
+
+    def start_time(self):
+        """
+        Query function for the time KMC simulation starts from.
+        """
+        try:
+            return self.__start_time
+        except AttributeError:
+            return 0.0
+
     def tof_interval(self):
         """
         Query function for instantaneous tof calculation interval.
         """
-        return self.__tof_interval
+        try:
+            return self.__tof_interval
+        except AttributeError:
+            return 10
 
     def do_redistribution(self):
         """
         Query function for flag for redistribution operation.
         """
-        return self.__do_redistribution
+        try:
+            return self.__do_redistribution
+        except AttributeError:
+            return False
+
+    def nsplits(self):
+        """
+        Query function for split number for partial redistribution.
+        """
+        try:
+            return self.__nsplits
+        except AttributeError:
+            return (1, 1, 1)
 
