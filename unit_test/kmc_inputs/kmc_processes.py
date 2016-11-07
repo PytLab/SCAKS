@@ -54,6 +54,20 @@ processes = [
         "elements_before": ["C", "O_s"],
         "elements_after": ["V", "V"],
         "basis_sites": [1, 2],
+    },
+    {
+        "reaction": "CO_b + *_t <-> CO_t + *_b -> CO_b + *_t",
+        "coordinates_group": [[[0.0, 0.0, 0.0], [0.0, 1.0, 0.0]]],
+        "elements_before": ["C", "V"],
+        "elements_after": ["V", "C"],
+        "basis_sites": [1]
+    },
+    {
+        "reaction": "CO_b + *_t <-> CO_t + *_b -> CO_b + *_t",
+        "coordinates_group": [[[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]]],
+        "elements_before": ["C", "V"],
+        "elements_after": ["V", "C"],
+        "basis_sites": [2]
     }
 ]
 

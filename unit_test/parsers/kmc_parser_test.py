@@ -125,7 +125,7 @@ class KMCParserTest(unittest.TestCase):
         parser.parse_data(filename=kmc_energy, relative=True)
         p = parser.parse_processes(filename=kmc_processes)
 
-        self.assertEqual(30, len(p))
+        self.assertEqual(34, len(p))
 
     def test_construct_lattice(self):
         " Test we can construct lattice object correctly. "
@@ -322,6 +322,7 @@ class KMCParserTest(unittest.TestCase):
 
     def test_process_reactions_mapping(self):
         " Test process mapping query function. "
+        # {{{
         model = KineticModel(setup_file=self.kmc_parser_setup, verbosity=logging.WARNING)
         parser = model.parser()
         parser.parse_data(filename=kmc_energy, relative=True)
@@ -356,10 +357,15 @@ class KMCParserTest(unittest.TestCase):
                        'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(->)',
                        'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(<-)',
                        'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(->)',
-                       'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(<-)']
+                       'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(<-)',
+                       'CO_b + *_t <-> CO_t + *_b -> CO_b + *_t(->)',
+                       'CO_b + *_t <-> CO_t + *_b -> CO_b + *_t(<-)',
+                       'CO_b + *_t <-> CO_t + *_b -> CO_b + *_t(->)',
+                       'CO_b + *_t <-> CO_t + *_b -> CO_b + *_t(<-)']
         ret_mapping = parser.process_mapping()
 
         self.assertListEqual(ref_mapping, ret_mapping)
+        # }}}
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(KMCParserTest)
