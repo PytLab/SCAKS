@@ -60,14 +60,16 @@ processes = [
         "coordinates_group": [[[0.0, 0.0, 0.0], [0.0, 1.0, 0.0]]],
         "elements_before": ["C", "V"],
         "elements_after": ["V", "C"],
-        "basis_sites": [1]
+        "basis_sites": [1],
+        "fast": True,
     },
     {
         "reaction": "CO_b + *_t <-> CO_t + *_b -> CO_b + *_t",
         "coordinates_group": [[[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]]],
         "elements_before": ["C", "V"],
         "elements_after": ["V", "C"],
-        "basis_sites": [2]
+        "basis_sites": [2],
+        "fast": True,
     }
 ]
 

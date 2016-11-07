@@ -85,7 +85,8 @@ class KMCParserTest(unittest.TestCase):
                                              [[0.0, 0.0, 0.0], [-0.5, -0.5, 0.0]]],
                         "elements_before": ["V", "V"],
                         "elements_after": ["O_s", "O_s"],
-                        "basis_sites": [1, 2]}
+                        "basis_sites": [1, 2],
+                        "fast": True}
 
         processes = parser._KMCParser__parse_single_process(process_dict)
 
@@ -97,6 +98,7 @@ class KMCParserTest(unittest.TestCase):
         self.assertListEqual(p.basisSites(), [1])
         self.assertListEqual(p.elementsBefore(), ["V", "V"])
         self.assertListEqual(p.elementsAfter(), ["O_s", "O_s"])
+        self.assertTrue(p.fast())
 
         # Check coordinates.
         ref_coords = [[0.0, 0.0, 0.0], [0.5, 0.5, 0.0]]
@@ -109,6 +111,7 @@ class KMCParserTest(unittest.TestCase):
         self.assertListEqual(p.basisSites(), [2])
         self.assertListEqual(p.elementsBefore(), ["O_s", "O_s"])
         self.assertListEqual(p.elementsAfter(), ["V", "V"])
+        self.assertTrue(p.fast())
 
         # Check coordinates.
         ref_coords = [[0.0, 0.0, 0.0], [-0.5, -0.5, 0.0]]
