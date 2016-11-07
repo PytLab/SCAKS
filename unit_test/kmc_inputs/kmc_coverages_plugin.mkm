@@ -51,7 +51,6 @@ solver = 'KMCSolver'
 corrector = "ThermodynamicCorrector"
 
 # KMC loop control parameters.
-#kmc_continue = True
 nstep = 50                           # number of KMC loop step
 seed = 13996                         # seed for random number generator
 random_generator = 'MT'              # type of pseudo random number generator, 'MT' | 'MINSTD' | 'RANLUX24' | 'RANLUX48'
@@ -59,12 +58,3 @@ analysis = ["CoveragesAnalysis"]     # ['CoveragesAnalysis', 'TOFAnalysis']
 analysis_interval = 5
 trajectory_dump_interval = 10
 
-# Grid plotting control parameters.
-color_dict = dict(V='#FFFFFF',
-                  O_s='#CD5555',
-                  CO='#363636')
-
-circle_attrs = dict(marker='s',
-                    alpha=0.5,
-                    antialiased=True,)
-#                    edgecolor='#FFFFFF')
