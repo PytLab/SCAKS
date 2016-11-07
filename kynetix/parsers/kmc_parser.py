@@ -259,7 +259,9 @@ class KMCParser(RelativeEnergyParser):
                 processes.append(fprocess)
 
                 # Add process reaction mapping.
-                self.__process_mapping.append("{}(->)".format(process_dict["reaction"]))
+                if not fast:
+                    process_mapping = "{}(->)".format(process_dict["reaction"])
+                    self.__process_mapping.append(process_mapping)
 
                 # Info output.
                 if mpi_master:
@@ -277,7 +279,9 @@ class KMCParser(RelativeEnergyParser):
                 processes.append(rprocess)
 
                 # Add process reaction mapping.
-                self.__process_mapping.append("{}(<-)".format(process_dict["reaction"]))
+                if not fast:
+                    process_mapping = "{}(<-)".format(process_dict["reaction"])
+                    self.__process_mapping.append(process_mapping)
 
                 # Info output.
                 if mpi_master:

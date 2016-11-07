@@ -360,11 +360,7 @@ class KMCParserTest(unittest.TestCase):
                        'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(->)',
                        'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(<-)',
                        'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(->)',
-                       'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(<-)',
-                       'CO_b + *_t <-> CO_t + *_b -> CO_b + *_t(->)',
-                       'CO_b + *_t <-> CO_t + *_b -> CO_b + *_t(<-)',
-                       'CO_b + *_t <-> CO_t + *_b -> CO_b + *_t(->)',
-                       'CO_b + *_t <-> CO_t + *_b -> CO_b + *_t(<-)']
+                       'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b(<-)',]
         ret_mapping = parser.process_mapping()
 
         self.assertListEqual(ref_mapping, ret_mapping)
