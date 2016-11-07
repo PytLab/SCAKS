@@ -904,6 +904,24 @@ class KineticModel(object):
         except AttributeError:
             return False
 
+    def redistribution_interval(self):
+        """
+        Query function for interval of redistribution operation.
+        """
+        try:
+            return self.__redistribution_interval
+        except AttributeError:
+            return None
+
+    def fast_species(self):
+        """
+        Query function for default fast species.
+        """
+        try:
+            return self.__fast_species
+        except AttributeError:
+            return []
+
     def nsplits(self):
         """
         Query function for split number for partial redistribution.

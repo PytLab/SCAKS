@@ -54,9 +54,7 @@ corrector = "ThermodynamicCorrector"
 nstep = 50                           # number of KMC loop step
 seed = 13996                         # seed for random number generator
 random_generator = 'MT'              # type of pseudo random number generator, 'MT' | 'MINSTD' | 'RANLUX24' | 'RANLUX48'
-analysis = ['CoveragesAnalysis', 'FrequencyAnalysis']
-analysis_interval = 5
-coverage_ratios = [1.0, 0.5, 0.5, 1.0]
+analysis = []
 trajectory_dump_interval = 10
 start_time = 1.0
 

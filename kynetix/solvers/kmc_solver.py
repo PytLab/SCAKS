@@ -107,24 +107,23 @@ class KMCSolver(SolverBase):
         Function to get KMCLib KMCControlParameters instance.
         """
         # Get parameters in model.
-        time_limit = self._owner.time_limit()
-        nstep = self._owner.nstep()
-        dump_interval = self._owner.trajectory_dump_interval()
-        seed = self._owner.random_seed()
-        rng_type = self._owner.random_generator()
-        analysis_interval = self._owner.analysis_interval()
-        start_time = self._owner.start_time()
-        extra_traj = self._owner.extra_trajectories()
+        control_params = dict(
+            time_limit=self._owner.time_limit(),
+            number_of_steps=self._owner.nstep(),
+            dump_interval=self._owner.trajectory_dump_interval(),
+            seed=self._owner.random_seed(),
+            rng_type=self._owner.random_generator(),
+            analysis_interval=self._owner.analysis_interval(),
+            start_time=self._owner.start_time(),
+            extra_traj=self._owner.extra_trajectories(),
+            do_redistribution=self._owner.do_redistribution(),
+            redistribution_interval=self._owner.redistribution_interval(),
+            fast_species=self._owner.fast_species(),
+            nsplits=self._owner.nsplits()
+        )
 
         # KMCLib control parameter instantiation
-        control_parameters = KMCControlParameters(time_limit=time_limit,
-                                                  number_of_steps=nstep,
-                                                  dump_interval=dump_interval,
-                                                  analysis_interval=analysis_interval,
-                                                  seed=seed,
-                                                  rng_type=rng_type,
-                                                  start_time=start_time,
-                                                  extra_traj=extra_traj)
+        control_parameters = KMCControlParameters(**control_params)
 
         return control_parameters
 
