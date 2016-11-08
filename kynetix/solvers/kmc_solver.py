@@ -106,26 +106,41 @@ class KMCSolver(SolverBase):
         """
         Function to get KMCLib KMCControlParameters instance.
         """
+        # {{{
         # Get parameters in model.
-        control_params = dict(
-            time_limit=self._owner.time_limit(),
-            number_of_steps=self._owner.nstep(),
-            dump_interval=self._owner.trajectory_dump_interval(),
-            seed=self._owner.random_seed(),
-            rng_type=self._owner.random_generator(),
-            analysis_interval=self._owner.analysis_interval(),
-            start_time=self._owner.start_time(),
-            extra_traj=self._owner.extra_trajectories(),
-            do_redistribution=self._owner.do_redistribution(),
-            redistribution_interval=self._owner.redistribution_interval(),
-            fast_species=self._owner.fast_species(),
-            nsplits=self._owner.nsplits()
-        )
+        time_limit=self._owner.time_limit()
+        number_of_steps=self._owner.nstep()
+        dump_interval=self._owner.trajectory_dump_interval()
+        seed=self._owner.random_seed()
+        rng_type=self._owner.random_generator()
+        analysis_interval=self._owner.analysis_interval()
+        start_time=self._owner.start_time()
+        extra_traj=self._owner.extra_trajectories()
+        do_redistribution=self._owner.do_redistribution()
+
+        control_params = dict(time_limit=time_limit,
+                              number_of_steps=number_of_steps,
+                              dump_interval=dump_interval,
+                              seed=seed,
+                              rng_type=rng_type,
+                              analysis_interval=analysis_interval,
+                              start_time=start_time,
+                              extra_traj=extra_traj,
+                              do_redistribution=do_redistribution)
+
+        if do_redistribution:
+            redistribution_dict = dict(
+                redistribution_interval=self._owner.redistribution_interval(),
+                fast_species=self._owner.fast_species(),
+                nsplits=self._owner.nsplits()
+            )
+            control_params.update(redistribution_dict)
 
         # KMCLib control parameter instantiation
         control_parameters = KMCControlParameters(**control_params)
 
         return control_parameters
+        # }}}
 
     #-----------------------
     # script KMCLib objects |
