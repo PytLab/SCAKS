@@ -173,8 +173,11 @@ if __name__ == '__main__':
         fig = plot_scatters(tp, shape, sites, markers, possible_types, color_dict,
                             time=simu_time, step=step, circle_attrs=circle_attrs)
         if not os.path.exists(path):
-                os.mkdir(path)
+            os.mkdir(path)
         fname = path + str(step) + '.png'
+
+        if os.path.exists(fname):
+            fname = "{}{}-redis.png".format(path, step)
 
         logging.info("creating {} ...".format(fname))
         fig.savefig(fname)

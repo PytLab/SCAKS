@@ -158,6 +158,8 @@ if __name__ == '__main__':
         if not os.path.exists(path):
                 os.mkdir(path)
         fname = path + str(step) + '.png'
+        if os.path.exists(fname):
+            fname = "{}{}-redis.png".format(path, step)
 
         logging.info("creating {} ...".format(fname))
         fig.savefig(fname)
