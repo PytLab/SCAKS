@@ -920,7 +920,7 @@ class KineticModel(object):
         try:
             return self.__fast_species
         except AttributeError:
-            return []
+            return None
 
     def nsplits(self):
         """
