@@ -779,7 +779,8 @@ processes = [
         "basis_sites": [0],
     },
 
-    # CO adsorbed at top site.
+    # We define the adsorption process here to make the free sites
+    # to be the fast species.
     {
         "reaction": "CO_g + *_t -> CO_t",
        "coordinates_group": [[[0.0, 0.0, 0.0],
@@ -797,7 +798,6 @@ processes = [
         "fast": True,
     },
 
-    # CO adsorbed on bridge site.
     {
         "reaction": "CO_g + *_b -> CO_b",
         "coordinates_group": [[[0.0, 0.0, 0.0],
