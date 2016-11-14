@@ -713,36 +713,34 @@ processes = [
     },
 
     # CO diffusion at basis site 1.
-    {
-        "reaction": "CO_b + *_t <-> CO_t + *_b -> CO_b + *_t",
-        "coordinates_group": [[[0.0, 0.0, 0.0], [0.0, 1.0, 0.0],  # 1, 2
-                               [0.0, 1.5, 0.0], [0.5, 1.0, 0.0],  # 3, 4
-                               [0.5, -0.5, 0.0], [0.0, -0.5, 0.0],  # 5, 6
-                               [-0.5, 0.0, 0.0], [-0.5, 1.0, 0.0],  # 7, 8
-                               [0.0, 0.5, 0.0], [-0.5, 0.5, 0.0],  # 9, 10
-                               [0.5, 0.5, 0.0]],  # 11
-                              ],
-        "elements_before": ["C", "V", "V", "V", "V", "V", "V", "V", "V", "V", "V"],
-        "elements_after": ["V", "C", "V", "V", "V", "V", "V", "V", "V", "V", "V"],
-        "basis_sites": [1],
-        "fast": True,
-    },
-
-    # CO diffusion at basis site 2.
-    {
-        "reaction": "CO_b + *_t <-> CO_t + *_b -> CO_b + *_t",
-        "coordinates_group": [[[0.0, 0.0, 0.0], [1.0, 0.0, 0.0],  # 1, 2
-                               [1.5, 0.0, 0.0], [1.0, -0.5, 0.0],  # 3, 4
-                               [0.0, -0.5, 0.0], [-0.5, 0.0, 0.0],  # 5, 6
-                               [0.0, 0.5, 0.0], [1.0, 0.5, 0.0],  # 7, 8
-                               [0.5, 0.0, 0.0], [0.5, 0.5, 0.0],  # 9, 10
-                               [0.5, -0.5, 0.0]],  # 11
-                              ],
-        "elements_before": ["C", "V", "V", "V", "V", "V", "V", "V", "V", "V", "V"],
-        "elements_after": ["V", "C", "V", "V", "V", "V", "V", "V", "V", "V", "V"],
-        "basis_sites": [2],
-        "fast": True,
-    },
+#    {
+#        "reaction": "CO_b + *_t <-> CO_t + *_b -> CO_b + *_t",
+#        "coordinates_group": [[[0.0, 0.0, 0.0], [0.0, 1.0, 0.0],  # 1, 2
+#                               [0.0, 1.5, 0.0], [0.5, 1.0, 0.0],  # 3, 4
+#                               [0.5, -0.5, 0.0], [0.0, -0.5, 0.0],  # 5, 6
+#                               [-0.5, 0.0, 0.0], [-0.5, 1.0, 0.0],  # 7, 8
+#                               [0.0, 0.5, 0.0], [-0.5, 0.5, 0.0],  # 9, 10
+#                               [0.5, 0.5, 0.0]],  # 11
+#                              ],
+#        "elements_before": ["C", "V", "V", "V", "V", "V", "V", "V", "V", "V", "V"],
+#        "elements_after": ["V", "C", "V", "V", "V", "V", "V", "V", "V", "V", "V"],
+#        "basis_sites": [1],
+#    },
+#
+#    # CO diffusion at basis site 2.
+#    {
+#        "reaction": "CO_b + *_t <-> CO_t + *_b -> CO_b + *_t",
+#        "coordinates_group": [[[0.0, 0.0, 0.0], [1.0, 0.0, 0.0],  # 1, 2
+#                               [1.5, 0.0, 0.0], [1.0, -0.5, 0.0],  # 3, 4
+#                               [0.0, -0.5, 0.0], [-0.5, 0.0, 0.0],  # 5, 6
+#                               [0.0, 0.5, 0.0], [1.0, 0.5, 0.0],  # 7, 8
+#                               [0.5, 0.0, 0.0], [0.5, 0.5, 0.0],  # 9, 10
+#                               [0.5, -0.5, 0.0]],  # 11
+#                              ],
+#        "elements_before": ["C", "V", "V", "V", "V", "V", "V", "V", "V", "V", "V"],
+#        "elements_after": ["V", "C", "V", "V", "V", "V", "V", "V", "V", "V", "V"],
+#        "basis_sites": [2],
+#    },
 
     # O diffusion.
     {
@@ -777,49 +775,5 @@ processes = [
         "elements_before": ['V', 'V', 'V', 'V', 'O_s', 'V', 'V', 'V', 'V'],
         "elements_after": ['V', 'V', 'V', 'V', 'V', 'V', 'V', 'V', 'O_s'],
         "basis_sites": [0],
-    },
-
-    # We define the adsorption process here to make the free sites
-    # to be the fast species.
-    {
-        "reaction": "CO_g + *_t -> CO_t",
-       "coordinates_group": [[[0.0, 0.0, 0.0],
-                              [-0.5, 0.0, 0.0],
-                              [-0.5, 0.5, 0.0],
-                              [0.0, 0.5, 0.0],
-                              [0.5, 0.5, 0.0],
-                              [0.5, 0.0, 0.0],
-                              [0.5, -0.5, 0.0],
-                              [0.0, -0.5, 0.0],
-                              [-0.5, -0.5, 0.0]]],
-        "elements_before": ["V", "V", "V", "V", "V", "V", "V", "V", "V"],
-        "elements_after": ["C", "V", "V", "V", "V", "V", "V", "V", "V"],
-        "basis_sites": [0],
-        "fast": True,
-    },
-
-    {
-        "reaction": "CO_g + *_b -> CO_b",
-        "coordinates_group": [[[0.0, 0.0, 0.0],
-                               [0.5, 0.5, 0.0],
-                               [1.0, 0.0, 0.0],
-                               [0.5, -0.5, 0.0],
-                               [0.5, 0.0, 0.0]]],
-        "elements_before": ["V", "V", "V", "V", "V"],
-        "elements_after": ["V", "V", "V", "V", "C"],
-        "basis_sites": [0],
-        "fast": True,
-    },
-    {
-        "reaction": "CO_g + *_b -> CO_b",
-        "coordinates_group": [[[0.0, 0.0, 0.0],
-                               [-0.5, 0.5, 0.0],
-                               [0.0, 1.0, 0.0],
-                               [0.5, 0.5, 0.0],
-                               [0.0, 0.5, 0.0]]],
-        "elements_before": ["V", "V", "V", "V", "V"],
-        "elements_after": ["V", "V", "V", "V", "C"],
-        "basis_sites": [0],
-        "fast": True,
     },
 ]
