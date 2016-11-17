@@ -21,9 +21,11 @@ def generate_process_dict(origin, ori_coord, coord, rxn_expression, coord_groups
 
 def tofile(process_dicts, filename):
     with open(filename, "w") as f:
+        process_str = "processes = [\n"
         for process_dict in process_dicts:
-            process_str = "\n" + str(process_dict) + ",\n"
-            f.write(process_str)
+            process_str += "\n" + str(process_dict) + ",\n"
+        process_str += "\n]\n"
+        f.write(process_str)
 
 
 # CoordGroup objects of origins.
