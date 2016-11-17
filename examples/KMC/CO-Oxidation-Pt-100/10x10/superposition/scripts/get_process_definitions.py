@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from operator import add
+import sys
 
 from kynetix.utilities.coordinate_utilities import CoordsGroup
 
@@ -25,85 +26,56 @@ def tofile(process_dicts, filename):
             f.write(process_str)
 
 
-coords_indices = [
-    ([0.0, 0.0, 0.0], 0), ([0.5, 0.0, 0.0], 1), ([1.0, 0.0, 0.0], 0), ([1.5, 0.0, 0.0], 1),
-    ([2.0, 0.0, 0.0], 0), ([2.5, 0.0, 0.0], 1), ([3.0, 0.0, 0.0], 0), ([0.0, 0.5, 0.0], 2),
-    ([1.0, 0.5, 0.0], 2), ([2.0, 0.5, 0.0], 2), ([3.0, 0.5, 0.0], 2), ([0.0, 1.0, 0.0], 0),
-    ([0.5, 1.0, 0.0], 1), ([1.0, 1.0, 0.0], 0), ([1.5, 1.0, 0.0], 1), ([2.0, 1.0, 0.0], 0),
-    ([2.5, 1.0, 0.0], 1), ([3.0, 1.0, 0.0], 0), ([0.0, 1.5, 0.0], 2), ([3.0, 1.5, 0.0], 2),
-    ([0.0, 2.0, 0.0], 0), ([0.5, 2.0, 0.0], 1), ([2.5, 2.0, 0.0], 1), ([3.0, 2.0, 0.0], 0),
-    ([0.0, 2.5, 0.0], 2), ([3.0, 2.5, 0.0], 2), ([0.0, 3.0, 0.0], 0), ([0.5, 3.0, 0.0], 1),
-    ([1.0, 3.0, 0.0], 0), ([1.5, 3.0, 0.0], 1), ([2.0, 3.0, 0.0], 0), ([2.5, 3.0, 0.0], 1),
-    ([3.0, 3.0, 0.0], 0), ([0.0, 3.5, 0.0], 2), ([1.0, 3.5, 0.0], 2), ([2.0, 3.5, 0.0], 2),
-    ([3.0, 3.5, 0.0], 2), ([0.0, 4.0, 0.0], 0), ([0.5, 4.0, 0.0], 1), ([1.0, 4.0, 0.0], 0),
-    ([1.5, 4.0, 0.0], 1), ([2.0, 4.0, 0.0], 0), ([2.5, 4.0, 0.0], 1), ([3.0, 4.0, 0.0], 0),
-]
+# CoordGroup objects of origins.
+# top
+c = [[0.0, 0.0, 0.0],   
+     [-0.5, 0.0, 0.0],  
+     [-0.5, 0.5, 0.0],  
+     [0.0, 0.5, 0.0],   
+     [0.5, 0.5, 0.0],   
+     [0.5, 0.0, 0.0],   
+     [0.5, -0.5, 0.0],  
+     [0.0, -0.5, 0.0],  
+     [-0.5, -0.5, 0.0]]
+e = ["C", "V", "V", "V", "V", "V", "V", "V", "V"]
+top = CoordsGroup(c, e)
 
+# bri1
+c = [[0.0, 0.0, 0.0],  
+     [0.5, 0.5, 0.0],  
+     [1.0, 0.0, 0.0],  
+     [0.5, -0.5, 0.0], 
+     [0.5, 0.0, 0.0]]
+e = ["V", "V", "V", "V", "C"]
+bri1 = CoordsGroup(c, e)
+
+# bri2.
+c = [[0.0, 0.0, 0.0],  
+     [-0.5, 0.5, 0.0], 
+     [0.0, 1.0, 0.0],  
+     [0.5, 0.5, 0.0],  
+     [0.0, 0.5, 0.0]]
+e = ["V", "V", "V", "V", "C"]
+bri2 = CoordsGroup(c, e)
+
+origins = [top, bri1, bri2]
 
 if "__main__" == __name__:
-    ori_coord = [1.0, 2.0, 0.0]
-    coord = [0.0, 4.0, 0.0]
-    rxn_expression = "CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b"
 
-    # Coordinates of origin.
-    ori_coords = [[1.0, 2.0, 0.0], [1.5, 2.0, 0.0], [1.0, 2.5, 0.0]]
+    if len(sys.argv) != 2:
+        print "Usage: python get_process_definitions.py inputfile"
+        sys.exit(1)
+    else:
+        inputfile = sys.argv[1]
 
-    # CoordGroup objects of origins.
-    # top
-    c = [[0.0, 0.0, 0.0],   
-         [-0.5, 0.0, 0.0],  
-         [-0.5, 0.5, 0.0],  
-         [0.0, 0.5, 0.0],   
-         [0.5, 0.5, 0.0],   
-         [0.5, 0.0, 0.0],   
-         [0.5, -0.5, 0.0],  
-         [0.0, -0.5, 0.0],  
-         [-0.5, -0.5, 0.0]]
-    e = ["C", "V", "V", "V", "V", "V", "V", "V", "V"]
-    top = CoordsGroup(c, e)
+    # Get parameters in input files.
+    glob, locs = {}, {}
+    execfile(inputfile, glob, locs)
 
-    # bri1
-    c = [[0.0, 0.0, 0.0],  
-         [0.5, 0.5, 0.0],  
-         [1.0, 0.0, 0.0],  
-         [0.5, -0.5, 0.0], 
-         [0.5, 0.0, 0.0]]
-    e = ["V", "V", "V", "V", "C"]
-    bri1 = CoordsGroup(c, e)
-
-    # bri2.
-    c = [[0.0, 0.0, 0.0],  
-         [-0.5, 0.5, 0.0], 
-         [0.0, 1.0, 0.0],  
-         [0.5, 0.5, 0.0],  
-         [0.0, 0.5, 0.0]]
-    e = ["V", "V", "V", "V", "C"]
-    bri2 = CoordsGroup(c, e)
-
-    origins = [top, bri1, bri2]
-
-    # Get fixed coord_groups.
-    c = [[0.0, 0.0, 0.0],  
-         [-0.5, 0.5, 0.0], 
-         [0.0, 1.0, 0.0],  
-         [0.5, 0.5, 0.0],  
-         [0.0, 0.5, 0.0]]
-    e = ["V", "V", "V", "V", "V"]
-    free1 = CoordsGroup(c, e)
-
-    free2 = free1.move([1, 0, 0])
-    free3 = free1.move([0, -1, 0])
-    free4 = free2.move([0, -1, 0])
-
-    c = [[0.0, 0.0, 0.0],  
-         [0.5, 0.5, 0.0],  
-         [1.0, 0.0, 0.0],  
-         [0.5, -0.5, 0.0], 
-         [0.5, 0.0, 0.0]]
-    e = ["V", "V", "V", "V", "O_s"]
-    O_s = CoordsGroup(c, e)
-
-    coord_groups = [[O_s, free1], [O_s, free2], [O_s, free3], [O_s, free4]]
+    coords_indices = locs["coords_indices"]
+    rxn_expression = locs["rxn_expression"]
+    ori_coords = locs["ori_coords"]
+    coord_groups = locs["coord_groups"]
 
     # Get all processes.
     process_dicts = []
@@ -119,6 +91,6 @@ if "__main__" == __name__:
             process_dicts.append(process_dict)
 
     # Write to file.
-    filename = "kmc_process_1.py"
+    filename = inputfile.split(".")[0] + "_out.py"
     tofile(process_dicts, filename)
 
