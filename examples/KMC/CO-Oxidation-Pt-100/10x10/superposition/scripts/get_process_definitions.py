@@ -116,7 +116,7 @@ if "__main__" == __name__:
                                                  coord,
                                                  rxn_expression,
                                                  coord_group)
-        process_dicts.append(process_dict)
+            process_dicts.append(process_dict)
 
     # Write to file.
     filename = "kmc_process_1.py"
