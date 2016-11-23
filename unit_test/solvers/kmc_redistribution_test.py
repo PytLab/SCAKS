@@ -15,11 +15,23 @@ class KMCRedistributionTest(unittest.TestCase):
     def setUp(self):
         # Test case setting.
         self.maxDiff = None
-        self.setup = kmc_path + "/kmc_redistribution.mkm"
 
-    def test_run_with_redistribution(self):
-        " Make sure the model can run with redistribution operation. "
-        model = KineticModel(setup_file=self.setup, verbosity=logging.WARNING)
+    def test_run_with_split_redistribution(self):
+        " Make sure the model can run with split redistribution operation. "
+        setup_file = kmc_path + "/kmc_split_redistribution.mkm"
+        model = KineticModel(setup_file=setup_file, verbosity=logging.WARNING)
+        parser = model.parser()
+        parser.parse_data(filename=kmc_energy, relative=True)
+
+        # Run the model with redistribution.
+        model.run_kmc(processes_file=kmc_processes,
+                      configuration_file=kmc_config,
+                      sitesmap_file=kmc_sites)
+
+    def test_run_with_process_redistribution(self):
+        " Make sure the model can run with process redistribution operation. "
+        setup_file = kmc_path + "/kmc_process_redistribution.mkm"
+        model = KineticModel(setup_file=setup_file, verbosity=logging.WARNING)
         parser = model.parser()
         parser.parse_data(filename=kmc_energy, relative=True)
 
