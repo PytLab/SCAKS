@@ -70,6 +70,42 @@ processes = [
         "elements_after": ["V", "C"],
         "basis_sites": [2],
         "fast": True,
-    }
+    },
+    # Redistribution processes.
+    {
+        "reaction": "CO_g + *_t -> CO_t",
+        "description": "CO adsorption at top site.",
+        "coordinates_group": [[[0.0, 0.0, 0.0], [-0.5, 0.0, 0.0],
+                               [0.0, 0.5, 0.0], [0.5, 0.0, 0.0],
+                               [0.0, -0.5, 0.0]]],
+        "elements_before": ["V", "V", "V", "V", "V"],
+        "elements_after": ["C", "V", "V", "V", "V"],
+        "basis_sites": [0],
+        "fast": True,
+        "redist": True,
+        "redist_species": "C",
+    },
+    {
+        "reaction": "CO_g + *_b -> CO_b",
+        "description": "CO adsorption at bridge site.",
+        "coordinates_group": [[[0.0, 0.0, 0.0], [0.0, 0.5, 0.0], [0.0, -0.5, 0.0]]],
+        "elements_before": ["V", "V", "V"],
+        "elements_after": ["C", "V", "V"],
+        "basis_sites": [1],
+        "fast": True,
+        "redist": True,
+        "redist_species": "C",
+    },
+    {
+        "reaction": "CO_g + *_b -> CO_b",
+        "description": "CO adsorption at bridge site.",
+        "coordinates_group": [[[0.0, 0.0, 0.0], [0.5, 0.0, 0.0], [-0.5, 0.0, 0.0]]],
+        "elements_before": ["V", "V", "V"],
+        "elements_after": ["C", "V", "V"],
+        "basis_sites": [2],
+        "fast": True,
+        "redist": True,
+        "redist_species": "C",
+    },
 ]
 

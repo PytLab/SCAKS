@@ -128,7 +128,7 @@ class KMCParserTest(unittest.TestCase):
         parser.parse_data(filename=kmc_energy, relative=True)
         p = parser.parse_processes(filename=kmc_processes)
 
-        self.assertEqual(34, len(p))
+        self.assertEqual(37, len(p))
 
     def test_construct_lattice(self):
         " Test we can construct lattice object correctly. "

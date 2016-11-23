@@ -240,6 +240,12 @@ class KMCParser(RelativeEnergyParser):
         # Get process fast flag, False by default.
         fast = process_dict.get("fast", False)
 
+        # Get process redist flag, Falst by default.
+        redist = process_dict.get("redist", False)
+
+        # Get process redist species.
+        redist_species = process_dict.get("redist_species", None)
+
         # Get KMCLibProcess objects.
         processes = []
 
@@ -255,7 +261,9 @@ class KMCParser(RelativeEnergyParser):
                                       elements_after=process_dict["elements_after"],
                                       basis_sites=[basis_site],
                                       rate_constant=rf,
-                                      fast=fast)
+                                      fast=fast,
+                                      redist=redist,
+                                      redist_species=redist_species)
                 processes.append(fprocess)
 
                 # Add process reaction mapping.
@@ -269,14 +277,21 @@ class KMCParser(RelativeEnergyParser):
                     self.__logger.info("    /{}".format(process_dict["elements_before"]))
                     self.__logger.info("    \{}".format(process_dict["elements_after"]))
 
+                # --------------------------------------------------------------
+                # NOTE: If the proess is a redistribution process which is only
+                #       used to re-scatter the fast species, its reverse process
+                #       would not be parsed.
+                # --------------------------------------------------------------
+
                 # Reverse process.
-                rprocess = KMCProcess(coordinates=coordinates,
-                                      elements_before=process_dict["elements_after"],
-                                      elements_after=process_dict["elements_before"],
-                                      basis_sites=[basis_site],
-                                      rate_constant=rr,
-                                      fast=fast)
-                processes.append(rprocess)
+                if not redist:
+                    rprocess = KMCProcess(coordinates=coordinates,
+                                          elements_before=process_dict["elements_after"],
+                                          elements_after=process_dict["elements_before"],
+                                          basis_sites=[basis_site],
+                                          rate_constant=rr,
+                                          fast=fast)
+                    processes.append(rprocess)
 
                 # Add process reaction mapping.
                 if not fast:
@@ -284,7 +299,7 @@ class KMCParser(RelativeEnergyParser):
                     self.__process_mapping.append(process_mapping)
 
                 # Info output.
-                if mpi_master:
+                if not redist and mpi_master:
                     self.__logger.info("Reverse elements changes:")
                     self.__logger.info("    /{}".format(process_dict["elements_after"]))
                     self.__logger.info("    \{}".format(process_dict["elements_before"]))
