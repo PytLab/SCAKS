@@ -35,6 +35,7 @@ class KMCModelTest(unittest.TestCase):
         self.assertTrue(hasattr(model, "_KineticModel__possible_element_types"))
         self.assertTrue(hasattr(model, "_KineticModel__possible_site_types"))
         self.assertTrue(hasattr(model, "_KineticModel__empty_type"))
+        self.assertTrue(hasattr(model, "_KineticModel__distributor_type"))
 
     def test_kmc_model_run(self):
         " Make sure KMC model can run properly. "

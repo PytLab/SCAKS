@@ -827,7 +827,10 @@ class KineticModel(object):
         """
         Query function for empty element type.
         """
-        return self.__empty_type
+        try:
+            return self.__empty_type
+        except AttributeError:
+            return "V"
 
     def possible_site_types(self):
         """
@@ -930,4 +933,13 @@ class KineticModel(object):
             return self.__nsplits
         except AttributeError:
             return (1, 1, 1)
+
+    def distributor_type(self):
+        """
+        Query function for the type of distributor for KMC acceleration.
+        """
+        try:
+            return self.__distributor_type
+        except AttributeError:
+            return "SplitRandomDistributor"
 

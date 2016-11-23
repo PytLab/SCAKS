@@ -212,6 +212,7 @@ solvers_range = ("KMCSolver", "SteadyStateSolver", "QuasiEquilibriumSolver")
 corrector_range = ("ThermodynamicCorrector", )
 plotter_range = ("EnergyProfilePlotter", )
 rootfinding_range = ("ConstrainedNewton", "MDNewton")
+distributor_range = ("SplitRandomDistributor", "ProcessRandomDistributor")
 
 type_rules = {
     "rxn_expressions": (check_sequence, str),
@@ -270,6 +271,7 @@ type_rules = {
     "redistribution_interval": (int, ),
     "fast_species": (check_sequence, str),
     "nsplits": (check_sequence, int),
+    "distributor_type": (check_string, distributor_range),
 }
 
 

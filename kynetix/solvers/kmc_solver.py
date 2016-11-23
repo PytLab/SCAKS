@@ -132,7 +132,9 @@ class KMCSolver(SolverBase):
             redistribution_dict = dict(
                 redistribution_interval=self._owner.redistribution_interval(),
                 fast_species=self._owner.fast_species(),
-                nsplits=self._owner.nsplits()
+                nsplits=self._owner.nsplits(),
+                distributor_type=self._owner.distributor_type(),
+                empty_element=self._owner.empty_type()
             )
             control_params.update(redistribution_dict)
 
