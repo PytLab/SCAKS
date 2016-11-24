@@ -777,6 +777,8 @@ processes = [
         "elements_after": ["C", "V", "V", "V", "V", "V", "V", "V", "V"],
         "basis_sites": [0],
         "fast": True,
+        "redist": True,
+        "redist_species": "C",
     },
 
     # CO adsorbed on bridge site.
@@ -791,6 +793,8 @@ processes = [
         "elements_after": ["V", "V", "V", "V", "C"],
         "basis_sites": [0],
         "fast": True,
+        "redist": True,
+        "redist_species": "C",
     },
     {
         "reaction": "CO_g + *_b -> CO_b",
@@ -803,5 +807,7 @@ processes = [
         "elements_after": ["V", "V", "V", "V", "C"],
         "basis_sites": [0],
         "fast": True,
+        "redist": True,
+        "redist_species": "C"
     },
 ]

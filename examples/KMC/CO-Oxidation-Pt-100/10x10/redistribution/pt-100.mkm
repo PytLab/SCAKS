@@ -71,5 +71,6 @@ tof_interval = 300
 
 do_redistribution = True
 redistribution_interval = 10
+distributor_type = "ProcessRandomDistributor"
 nsplits = (1, 1, 1)
 
