@@ -941,5 +941,5 @@ class KineticModel(object):
         try:
             return self.__distributor_type
         except AttributeError:
-            return "SplitRandomDistributor"
+            return "ConstrainedRandomDistributor"
 
