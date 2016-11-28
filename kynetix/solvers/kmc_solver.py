@@ -18,6 +18,7 @@ from kynetix.errors.error import *
 from kynetix.database.thermo_data import kB_eV
 from kynetix.database.lattice_data import *
 from kynetix.solvers.solver_base import SolverBase
+from kynetix.utilities.profiling_utitlities import do_cprofile
 
 
 class KMCSolver(SolverBase):
@@ -38,6 +39,7 @@ class KMCSolver(SolverBase):
             '# Do not make changes to this file ' +
             'unless you know what you are doing\n\n').format(__version__, time.asctime())
 
+    @do_cprofile("./KMCSolver_run")
     def run(self,
             scripting=True,
             trajectory_type="lattice"):
