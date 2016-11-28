@@ -21,8 +21,8 @@ def do_cprofile(filename):
                 profile.enable()
                 result = func(*args, **kwargs)
                 profile.disable()
-                # Sort stat by cumulative time.
-                sortby = "cumulative"
+                # Sort stat by internal time.
+                sortby = "tottime"
                 ps = pstats.Stats(profile).sort_stats(sortby)
                 ps.dump_stats(filename)
                 ps.print_stats()
