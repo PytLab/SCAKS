@@ -212,7 +212,7 @@ solvers_range = ("KMCSolver", "SteadyStateSolver", "QuasiEquilibriumSolver")
 corrector_range = ("ThermodynamicCorrector", )
 plotter_range = ("EnergyProfilePlotter", )
 rootfinding_range = ("ConstrainedNewton", "MDNewton")
-distributor_range = ("ConstrainedRandomDistributor", "ProcessRandomDistributor")
+distributor_range = ("RandomDistributor", "ProcessRandomDistributor")
 
 type_rules = {
     "rxn_expressions": (check_sequence, str),
