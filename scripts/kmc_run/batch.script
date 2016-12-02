@@ -40,13 +40,14 @@ export OMP_NUM_THREADS=1
 export I_MPI_PIN_DOMAIN=auto
 export MPD_CON_EXT=$PBS_JOBID
 
+# Set python.
+PY=/data/apps/python/Python-2.7.5/bin/python
+
 # Set MPI env.
 source /data/apps/intel/impi/5.0.3.048/intel64/bin/mpivars.sh
 
-PY=/data/apps/python/Python-2.7.5/bin/python
-
 # Create job dirs.
-$PY ./batch_run.py >> job_status
+$PY ./create_jobs.py
 
 # Run jobs.
 for i in $(ls)
