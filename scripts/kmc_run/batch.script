@@ -46,7 +46,7 @@ source /data/apps/intel/impi/5.0.3.048/intel64/bin/mpivars.sh
 PY=/data/apps/python/Python-2.7.5/bin/python
 
 # Create job dirs.
-$PY ./batch_run.py
+$PY ./batch_run.py >> job_status
 
 # Run jobs.
 for i in $(ls)
@@ -55,7 +55,7 @@ do
         echo "Running job in $i ..." >> job_status
         cd $i
         mpirun -r ssh -genv I_MPI_FABRICS shm:dapl -n $NP $PY ./run.py 1>/dev/null 2>error
-        cd -
+        cd - 2&>1 > /dev/null
         echo "job $i done." >> job_status
     fi
 done

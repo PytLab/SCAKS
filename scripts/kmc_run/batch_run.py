@@ -39,5 +39,3 @@ if "__main__" == __name__:
             content = dict2setup(locs)
             f.write(content)
 
-        print("Ok.")
-
