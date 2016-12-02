@@ -31,7 +31,7 @@ if "__main__" == __name__:
         print("Create job {}".format(p))
 
         os.mkdir(dest)
-        commands.getstatusoutput("cp ./template/* {}".format(dest))
+        commands.getstatusoutput("cp -r ./template/* {}".format(dest))
         locs['species_definitions'][species_name]['pressure'] = p
 
         # Write new setup file.
