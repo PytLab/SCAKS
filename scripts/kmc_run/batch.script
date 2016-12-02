@@ -1,5 +1,5 @@
 #!/bin/bash 
-#PBS -N redistribution
+#PBS -N batch_run
 #PBS -r n 
 #PBS -j oe 
 #PBS -l walltime=72:00:00
@@ -56,7 +56,7 @@ do
         echo "Running job in $i ..." >> job_status
         cd $i
         mpirun -r ssh -genv I_MPI_FABRICS shm:dapl -n $NP $PY ./run.py 1>/dev/null 2>error
-        cd - 2&>1 > /dev/null
+        cd - 2>&1 > /dev/null
         echo "job $i done." >> job_status
     fi
 done
