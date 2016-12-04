@@ -2,7 +2,6 @@
 #PBS -N batch_run
 #PBS -r n 
 #PBS -j oe 
-#PBS -l walltime=72:00:00
 #PBS -l nodes=1:ppn=12
 #PBS -q test
 
@@ -40,11 +39,11 @@ export OMP_NUM_THREADS=1
 export I_MPI_PIN_DOMAIN=auto
 export MPD_CON_EXT=$PBS_JOBID
 
-# Set python.
-PY=/data/apps/python/Python-2.7.5/bin/python
-
 # Set MPI env.
 source /data/apps/intel/impi/5.0.3.048/intel64/bin/mpivars.sh
+
+# Set python.
+PY=/data/apps/python/Python-2.7.5/bin/python
 
 # Create job dirs.
 $PY ./create_jobs.py
@@ -55,7 +54,7 @@ do
     if [ ${i:0:2} == "0." ]; then
         echo "Running job in $i ..." >> job_status
         cd $i
-        mpirun -r ssh -genv I_MPI_FABRICS shm:dapl -n $NP $PY ./run.py 1>/dev/null 2>error
+        mpirun -r ssh -genv I_MPI_FABRICS shm:dapl -np $NP $PY ./run.py 1>/dev/null 2>error
         cd - 2>&1 > /dev/null
         echo "job $i done." >> job_status
     fi
