@@ -9,13 +9,17 @@ from kynetix import mpi_master, mpi_size, mpi_installed
 from kynetix.database.thermo_data import kB_eV, h_eV
 from kynetix.errors.error import *
 from kynetix.functions import *
+from kynetix.parsers import *
+from kynetix.solvers import *
 from kynetix.utilities.check_utilities import *
+from kynetix.utilities.profiling_utitlities import do_cprofile
 
 
 class KineticModel(object):
     """
     Main class for kinetic models.
     """
+    @do_cprofile("./KineticModel_init.prof")
     def __init__(self, **kwargs):
         """
         Parameters:
@@ -301,14 +305,9 @@ class KineticModel(object):
         Private function to import parser and
         set the instance of it as attr of model
         """
-        # https://docs.python.org/2/library/functions.html#__import__
-        basepath = os.path.dirname(
-            inspect.getfile(inspect.currentframe()))
-        if basepath not in sys.path:
-            sys.path.append(basepath)
-        # from  loggers import logger
-        _module = __import__('parsers', globals(), locals())
-        parser_instance = getattr(_module, parser_name)(owner=self)
+        # Parser class object.
+        parser_class = globals()[parser_name]
+        parser_instance = parser_class(owner=self)
         setattr(self, "_" + self.__class_name + '__parser', parser_instance)
         if mpi_master:
             self.__logger.info('parser is set.')

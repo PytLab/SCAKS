@@ -39,7 +39,7 @@ class KMCSolver(SolverBase):
             '# Do not make changes to this file ' +
             'unless you know what you are doing\n\n').format(__version__, time.asctime())
 
-    @do_cprofile("./KMCSolver_run.profile")
+    @do_cprofile("./KMCSolver_run.prof")
     def run(self,
             scripting=True,
             trajectory_type="lattice"):
