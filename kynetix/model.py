@@ -67,6 +67,27 @@ class KineticModel(object):
     # Data precision.
     decimal_precision = dc.Integer("decimal_precision", cls_name=cls_name, default=100)
 
+    # Perturbation size for numerical jacobian matrix.
+    perturbation_size = dc.Float("perturbation_size", cls_name=cls_name, default=0.01)
+
+    # Direction of perturbation.
+    perturbation_direction = dc.String("perturbation_direction",
+                                       cls_name=cls_name,
+                                       default="right",
+                                       candidates=["right", "left"])
+
+    # Archived variables.
+    archived_variables = dc.Sequence("archive_data",
+                                     cls_name=cls_name,
+                                     default=["steady_state_coverages"],
+                                     entry_type=str)
+
+    # Numerical representation.
+    numerical_representation = dc.String("numerical_representation",
+                                         cls_name=cls_name,
+                                         default="mpmath",
+                                         candidates=["mpmath", "gmpy", "sympy"])
+
     # File to store data.
     data_file = dc.String("data_file", cls_name=cls_name, default="data.pkl")
 

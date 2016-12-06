@@ -16,6 +16,7 @@ except ImportError:
     print "!!!                                                   !!!"
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
+import kynetix.descriptors.descriptors as dc
 from kynetix import mpi_master
 from kynetix.functions import *
 from kynetix.parsers.rxn_parser import *
@@ -23,6 +24,7 @@ from kynetix.solvers.solver_base import *
 
 
 class MeanFieldSolver(SolverBase):
+
     def __init__(self, owner):
         '''
         A class acts as a base class to be inherited by other
@@ -32,13 +34,6 @@ class MeanFieldSolver(SolverBase):
 
         # Set logger.
         self.__logger = logging.getLogger("model.solvers.SolverBase")
-
-        # Update parameter.
-        defaults = dict(perturbation_size=0.01,
-                        perturbation_direction='right',
-                        numerical_representation='mpmath',
-                        archived_variables=['steady_state_coverage', 'rates'])
-        self.update_parameters(defaults)
 
         # Set numerical representation.
         self.__set_numerical_representation()
@@ -72,7 +67,7 @@ class MeanFieldSolver(SolverBase):
         Private helper function to set numerical representation.
         """
         # Mpmath.
-        if self._numerical_representation == 'mpmath':
+        if self._owner.numerical_representation == 'mpmath':
             mp.mp.dps = self._owner.decimal_precision
             self._math = mp  # to do math operations
             self._linalg = mp
@@ -81,7 +76,7 @@ class MeanFieldSolver(SolverBase):
             self._Axb_solver = mp.lu_solve
             self._norm = lambda x: mp.norm(x, p=2)
         # Gmpy2.
-        elif self._numerical_representation == 'gmpy':
+        elif self._owner.numerical_representation == 'gmpy':
             gmpy2.get_context().precision = 3*self._owner.decimal_precision
             self._math = gmpy2
             self._linalg = np
@@ -101,7 +96,7 @@ class MeanFieldSolver(SolverBase):
             self._Axb_solver = np.linalg.solve
             self._norm = lambda x: gmpy2.sqrt(np.sum(np.square(x)))  # x is a column vector
         # Sympy.
-        elif self._numerical_representation == 'sympy':
+        elif self._owner.numerical_representation == 'sympy':
             self._math = sym
             self._linalg = sym
             precision = self._owner.decimal_precision

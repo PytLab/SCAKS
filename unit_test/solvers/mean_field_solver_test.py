@@ -32,12 +32,6 @@ class MeanFieldSolverTest(unittest.TestCase):
 
         # Test attributes query.
 
-        # Default protected attributes.
-        self.assertTrue(hasattr(solver, "_perturbation_size"))
-        self.assertTrue(hasattr(solver, "_perturbation_direction"))
-        self.assertTrue(hasattr(solver, "_numerical_representation"))
-        self.assertTrue(hasattr(solver, "_archived_variables"))
-
         # Numerical representations.
         self.assertTrue(hasattr(solver, "_math"))
         self.assertTrue(hasattr(solver, "_linalg"))

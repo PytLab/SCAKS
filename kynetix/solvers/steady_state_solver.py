@@ -1105,7 +1105,7 @@ class SteadyStateSolver(MeanFieldSolver):
 
         # Get perturbation size.
         if epsilon is None:
-            epsilon = self._mpf(self._perturbation_size)
+            epsilon = self._mpf(self._owner.perturbation_size)
         if mpi_master:
             self.__logger.info("epsilon = {:.2e}\n".format(float(epsilon)))
 
@@ -1180,15 +1180,15 @@ class SteadyStateSolver(MeanFieldSolver):
 
         # Get perturbation size.
         if epsilon is None:
-            epsilon = self._mpf(self._perturbation_size)
+            epsilon = self._mpf(self._owner.perturbation_size)
 
         # Get dr/dG matrix.
         drdG = numerical_jacobian(f=self.__get_Gs_tof,
                                   x=Gs,
-                                  num_repr=self._numerical_representation,
+                                  num_repr=self._owner.numerical_representation,
                                   matrix=self._matrix,
                                   h=epsilon,
-                                  direction=self._perturbation_direction)
+                                  direction=self._owner.perturbation_direction)
         r = self.__get_Gs_tof(Gs)
 
         # multiply 1/r to drdG matrix.
@@ -1267,7 +1267,7 @@ class SteadyStateSolver(MeanFieldSolver):
 
         # Get perturbation size.
         if epsilon is None:
-            epsilon = self._mpf(self._perturbation_size)
+            epsilon = self._mpf(self._owner.perturbation_size)
         if mpi_master:
             self.__logger.info("epsilon = {:.2e}\n".format(float(epsilon)))
 
