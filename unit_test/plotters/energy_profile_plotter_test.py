@@ -22,8 +22,8 @@ class EnergyProfilePlotterTest(unittest.TestCase):
         " Test plotter construction and query. "
         # Construction.
         model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        parser = model.parser()
-        plotter = model.plotter()
+        parser = model.parser
+        plotter = model.plotter
 
         self.assertTrue(isinstance(plotter, EnergyProfilePlotter))
 

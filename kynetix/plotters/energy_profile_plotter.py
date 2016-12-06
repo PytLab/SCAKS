@@ -28,23 +28,23 @@ class EnergyProfilePlotter(PlotterBase):
         Matplotlib.figure.Figure object.
         """
         # {{{
-        rxn_expressions = self._owner.rxn_expressions()
+        rxn_expressions = self._owner.rxn_expressions
 
         # Check.
-        if rxn_expression not in self._owner.rxn_expressions():
+        if rxn_expression not in self._owner.rxn_expressions:
             msg = "'{}' not in model's reaction expressions.".format(rxn_expression)
             raise ParameterError(msg)
 
         # Get energy tuple.
         idx = rxn_expressions.index(rxn_expression)
 
-        if not self._owner.has_relative_energy():
+        if not self._owner.has_relative_energy:
             msg_template = "Model '{}' has no relative energy, please try to parse data."
             msg = msg.format(self._owner)
             raise AttributeError(msg)
 
         # Convert relative energies to energy tuple.
-        relative_energies = self._owner.relative_energies()
+        relative_energies = self._owner.relative_energies
         Gaf = relative_energies['Gaf'][idx]
         dG = relative_energies['dG'][idx]
         energy_tuple = (0.0, Gaf, dG) if Gaf else (0.0, dG)
@@ -68,15 +68,15 @@ class EnergyProfilePlotter(PlotterBase):
         Matplotlib.figure.Figure object.
         """
         # Get reaction expressions.
-        rxn_expressions = self._owner.rxn_expressions()
+        rxn_expressions = self._owner.rxn_expressions
 
         # Get relative energies.
-        if not self._owner.has_relative_energy():
+        if not self._owner.has_relative_energy:
             msg_template = "Model '{}' has no relative energy, please try to parse data."
             msg = msg.format(self._owner)
             raise AttributeError(msg)
 
-        relative_energies = self._owner.relative_energies()
+        relative_energies = self._owner.relative_energies
         energy_tuples = []
         # Loop over all relative energies to collect energy tuples.
         for Gaf, dG in zip(relative_energies['Gaf'], relative_energies['dG']):

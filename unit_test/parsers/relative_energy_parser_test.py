@@ -19,7 +19,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
         " Test relative energy parser can be constructed. "
         # Construction.
         model = KineticModel(setup_file=self.parser_setup, verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
 
         # Check the parser class and base class type.
         self.assertTrue(isinstance(parser, RelativeEnergyParser))
@@ -30,7 +30,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
 
         # Construction.
         model = KineticModel(setup_file=self.parser_setup, verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
 
         ref_unknown_species = ['O2_g', 'CO_s', 'O_s', 'CO-O_2s']
         ret_unknown_species = parser._RelativeEnergyParser__get_unknown_species()
@@ -51,7 +51,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
         " Make sure we can get unknown species vector and energy value. "
         # Construction.
         model = KineticModel(setup_file=self.parser_setup, verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
 
         # Read relative energy data file.
         filename = mkm_energy
@@ -103,7 +103,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
         " Test relative energy can be converted to absolute energy. "
         # Construction.
         model = KineticModel(setup_file=self.parser_setup, verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
 
         # Check G dict before conversion.
         self.assertDictEqual({}, parser._RelativeEnergyParser__G_dict)
@@ -137,17 +137,17 @@ class RelativeEnergyParserTest(unittest.TestCase):
 
         # Construction.
         model = KineticModel(setup_file=self.parser_setup, verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
 
         # Check before parse.
         ref_species_definitions = {'CO2_g': {'pressure': 0.0},
                                    'CO_g': {'pressure': 1.0},
                                    'O2_g': {'pressure': 0.3333333333333333},
                                    's': {'site_name': '111', 'total': 1.0, 'type': 'site'}}
-        self.assertDictEqual(ref_species_definitions, model.species_definitions())
+        self.assertDictEqual(ref_species_definitions, model.species_definitions)
 
-        self.assertFalse(model.has_absolute_energy())
-        self.assertFalse(model.has_relative_energy())
+        self.assertFalse(model.has_absolute_energy)
+        self.assertFalse(model.has_relative_energy)
 
         # Parse absolute data.
         parser.parse_data(relative=False, filename=mkm_energy)
@@ -165,24 +165,24 @@ class RelativeEnergyParserTest(unittest.TestCase):
         self.assertTrue(hasattr(parser, "_Ga"))
         self.assertTrue(hasattr(parser, "_dG"))
 
-        self.assertDictEqual(ref_species_definitions, model.species_definitions())
-        self.assertTrue(model.has_absolute_energy())
-        self.assertTrue(model.has_relative_energy())
+        self.assertDictEqual(ref_species_definitions, model.species_definitions)
+        self.assertTrue(model.has_absolute_energy)
+        self.assertTrue(model.has_relative_energy)
 
         # Check if relative == true.
         # Construct again.
         model = KineticModel(setup_file=self.parser_setup,
                              verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
 
         # Check.
         parser.parse_data(relative=True, filename=mkm_energy)
         ref_relative_energies = {'Gaf': [0.0, 0.0, 1.25],
                                  'Gar': [0.758, 2.64, 0.9259999999999999],
                                  'dG': [-0.758, -2.64, 0.324]}
-        self.assertDictEqual(ref_relative_energies, model.relative_energies())
-        self.assertFalse(model.has_absolute_energy())
-        self.assertTrue(model.has_relative_energy())
+        self.assertDictEqual(ref_relative_energies, model.relative_energies)
+        self.assertFalse(model.has_absolute_energy)
+        self.assertTrue(model.has_relative_energy)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(RelativeEnergyParserTest)

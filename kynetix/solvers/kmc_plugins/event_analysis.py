@@ -71,7 +71,7 @@ class EventAnalysis(KMCAnalysisPlugin):
         header = ("="*len(title) + "\n\n" + title + "\n\n" + "="*len(title) + "\n\n")
 
         # Get processes mapping string.
-        process_mapping = self.__kmc_model.parser().process_mapping()
+        process_mapping = self.__kmc_model.parser.process_mapping
         table = PrettyTable()
         table.field_names = ["process index", "reaction"]
         table.align["reaction"] = "l"
@@ -152,7 +152,7 @@ class EventAnalysis(KMCAnalysisPlugin):
         picked_index = interactions.pickedIndex()
         process_available_sites = interactions.processAvailableSites()
         process_rates = interactions.processRates()
-        reactions = self.__kmc_model.parser().process_mapping()
+        reactions = self.__kmc_model.parser.process_mapping
 
         # Get probability table.
         total_rates = [n*r for n, r in zip(process_available_sites, process_rates)]

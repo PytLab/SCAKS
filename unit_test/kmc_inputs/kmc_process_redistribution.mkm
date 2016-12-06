@@ -17,7 +17,7 @@ species_definitions['b'] = {'site_name': 'bridge', 'type': 'site', 'total': 0.5}
 species_definitions['t'] = {'site_name': 'top', 'type': 'site', 'total': 0.5}
 
 # Temperature.
-temperature = 298  # K
+temperature = 298.  # K
 
 # Lattice information.
 surface_name = 'Au'
@@ -52,7 +52,7 @@ corrector = "ThermodynamicCorrector"
 
 # KMC loop control parameters.
 nstep = 50                           # number of KMC loop step
-seed = 13996                         # seed for random number generator
+random_seed = 13996                         # seed for random number generator
 random_generator = 'MT'              # type of pseudo random number generator, 'MT' | 'MINSTD' | 'RANLUX24' | 'RANLUX48'
 analysis = []
 trajectory_dump_interval = 10

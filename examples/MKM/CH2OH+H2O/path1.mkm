@@ -37,8 +37,6 @@ surface_name = 'Cu'
 
 temperature = 500  # Temperature of the reaction, K
 
-gas_thermo_mode = 'shomate_gas'
-
 # model attributes
 tools = ['parser', 'solver']
 # specify tools for model to use

@@ -20,7 +20,7 @@ class KMCTOFPluginTest(unittest.TestCase):
     def test_run_with_tof(self):
         " Make sure KMCSolver object can be constructed correctly. "
         model = KineticModel(setup_file=self.setup, verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
         parser.parse_data(filename=kmc_energy, relative=True)
         
         # Run the model with analysis.

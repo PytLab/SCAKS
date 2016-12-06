@@ -21,7 +21,7 @@ class KMCParserTest(unittest.TestCase):
         " Test kmc parser can be constructed correctly. "
         # Construction.
         model = KineticModel(setup_file=self.kmc_parser_setup, verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
 
         # Check the parser class and base class type.
         self.assertTrue(isinstance(parser, KMCParser))
@@ -31,7 +31,7 @@ class KMCParserTest(unittest.TestCase):
         " Make sure we can get correct relative energies. "
         # Construction.
         model = KineticModel(setup_file=self.kmc_parser_setup, verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
         parser.parse_data(filename=kmc_energy, relative=True)
 
         ref_e = (0.0, 1.92, -1.92)
@@ -54,7 +54,7 @@ class KMCParserTest(unittest.TestCase):
         " Make sure we can get correct forward and reverse rates for a reaction. "
         # Construction.
         model = KineticModel(setup_file=self.kmc_parser_setup, verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
         parser.parse_data(filename=kmc_energy, relative=True)
 
         ref_r = (1575287.974387463, 3.8789566422291146e-14)
@@ -74,7 +74,7 @@ class KMCParserTest(unittest.TestCase):
         # {{{
         # Construction.
         model = KineticModel(setup_file=self.kmc_parser_setup, verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
         parser.parse_data(filename=kmc_energy, relative=True)
 
         process_dict = {"reaction": "CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b",
@@ -124,7 +124,7 @@ class KMCParserTest(unittest.TestCase):
         " Make sure we can parse all processes in kmc_processes.py correctly. "
         # Construction.
         model = KineticModel(setup_file=self.kmc_parser_setup, verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
         parser.parse_data(filename=kmc_energy, relative=True)
         p = parser.parse_processes(filename=kmc_processes)
 
@@ -134,7 +134,7 @@ class KMCParserTest(unittest.TestCase):
         " Test we can construct lattice object correctly. "
         # {{{
         model = KineticModel(setup_file=self.kmc_parser_setup, verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
         lattice = parser.construct_lattice()
 
         # Check.
@@ -201,7 +201,7 @@ class KMCParserTest(unittest.TestCase):
         " Make sure we can parse the configuration correctly. "
         # {{{
         model = KineticModel(setup_file=self.kmc_parser_setup, verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
         config = parser.parse_configuration(filename=kmc_config)
 
         # Check types.
@@ -259,7 +259,7 @@ class KMCParserTest(unittest.TestCase):
         " Make sure we can construct sitesmap correctly. "
         # {{{
         model = KineticModel(setup_file=self.kmc_parser_setup, verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
         sitesmap = parser.construct_sitesmap(filename=kmc_sites)
 
         # Check sites.
@@ -327,7 +327,7 @@ class KMCParserTest(unittest.TestCase):
         " Test process mapping query function. "
         # {{{
         model = KineticModel(setup_file=self.kmc_parser_setup, verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
         parser.parse_data(filename=kmc_energy, relative=True)
         p = parser.parse_processes(filename=kmc_processes)
 

@@ -24,7 +24,7 @@ class SteadyStateSolverTest(unittest.TestCase):
         " Test solver can be constructed in kinetic model. "
         # Construction.
         model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        solver = model.solver()
+        solver = model.solver
 
         # Check the parser class and base class type.
         self.assertTrue(isinstance(solver, SteadyStateSolver))
@@ -109,7 +109,7 @@ class SteadyStateSolverTest(unittest.TestCase):
         " Test get_elementary_dtheta_dt_expression() function. "
         # Construction.
         model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        solver = model.solver()
+        solver = model.solver
 
         # Check.
         adsorbate = "O_s"
@@ -135,7 +135,7 @@ class SteadyStateSolverTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        solver = model.solver()
+        solver = model.solver
 
         ref_dtheta_dt = ("kf[0]*p['CO_g']*theta['*_s'] - kr[0]*theta['CO_s'] + " +
                          "kr[2]*p['CO2_g']*theta['*_s']**2 - " +
@@ -153,7 +153,7 @@ class SteadyStateSolverTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        solver = model.solver()
+        solver = model.solver
 
         # Check.
         dtheta_dt_CO_s = ("dtheta_dt[0] = kf[0]*p['CO_g']*theta['*_s'] - " +
@@ -172,8 +172,8 @@ class SteadyStateSolverTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         # Get data.
         parser.parse_data(filename=mkm_energy)
@@ -192,7 +192,7 @@ class SteadyStateSolverTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        solver = model.solver()
+        solver = model.solver
 
         # Check.
         adsorbate = "CO_s"
@@ -212,7 +212,7 @@ class SteadyStateSolverTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        solver = model.solver()
+        solver = model.solver
 
         # Check.
         adsorbate = "O_s"
@@ -235,7 +235,7 @@ class SteadyStateSolverTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        solver = model.solver()
+        solver = model.solver
 
         adsorbate = "CO_s"
         poly_expression = ("dtheta_dt[0] = kf[0]*p['CO_g']*theta['*_s'] - " +
@@ -263,8 +263,8 @@ class SteadyStateSolverTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -284,8 +284,8 @@ class SteadyStateSolverTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -301,8 +301,8 @@ class SteadyStateSolverTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -318,31 +318,26 @@ class SteadyStateSolverTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
         
         # Check.
         coverages = solver.boltzmann_coverages()
-        ref_sscvg = (mpf('0.9993009023313341077071690952744161899993498376199216404808490009152529045923214583626561308597735533188'),
-                     mpf('0.0006990944292324176713411953522859201607970088893776515794721879333704919691278789195839768935388121262119'))
+        ref_sscvg = [0.9993009023315728, 0.0006990944289937246]
         ret_sscvg = solver.get_steady_state_cvgs(coverages)
-        self.assertTupleEqual(ref_sscvg, ret_sscvg)
-
-        # Check error.
-        ref_error = mpf('2.915131960917183181735290581323356891541606225932002083392991290212256934502240148437948718330981045238e-38')
-        ret_error = solver.error()
-        self.assertEqual(ret_error, ref_error)
+        for ref, ret in zip(ref_sscvg, ret_sscvg):
+            self.assertAlmostEqual(ref, float(ret))
 
     def test_get_intermediates_Gs(self):
         " Test private function __get_intermediates_Gs(). "
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -360,8 +355,8 @@ class SteadyStateSolverTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -372,20 +367,19 @@ class SteadyStateSolverTest(unittest.TestCase):
 
         # Check.
         Gs = solver._SteadyStateSolver__get_intermediates_Gs()
-        ref_tof = [mpf('0.0000655973959734845716839853127464104731569988368580121920613237008751507516356019917597493208387158845367'),
-                   mpf('-0.00006559739597348503704886124510603927478715353925738869127523791123005360979166894188698600090288385521978'),
-                   mpf('-0.00003279869798674251852443062255301963739357676962869434563761895561502680489741843434563928385867591142223')]
+        ref_tof = [0.000065597,-0.000065597,-0.000032798]
         ret_tof = solver._SteadyStateSolver__get_Gs_tof(Gs)
 
-        self.assertListEqual(ref_tof, ret_tof)
+        for ref, ret in zip(ref_tof, ret_tof):
+            self.assertAlmostEqual(ref, float(ret))
 
     def test_get_Gs_gas_tof(self):
         " Test private function __get_Gs_tof(). "
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -396,17 +390,17 @@ class SteadyStateSolverTest(unittest.TestCase):
 
         # Check gas tof.
         Gs = solver._SteadyStateSolver__get_intermediates_Gs()
-        ref_tof = mpf('0.0000655973959734845716839853127464104731569988368580121920613237008751507516356019917597493208387158845367')
+        ref_tof = 0.000065597
         ret_tof = solver._SteadyStateSolver__get_Gs_tof(Gs, gas_name="CO2_g")
-        self.assertEqual(ref_tof, ret_tof)
+        self.assertAlmostEqual(ref_tof, float(ret_tof))
 
     def test_get_single_XTRC(self):
         " Test function get_single_XTRC(). "
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -417,11 +411,10 @@ class SteadyStateSolverTest(unittest.TestCase):
 
         # Check.
         gas_name = "CO2_g"
-        ref_XTRC = [mpf('-1.140775679060479546680777929992790525034725825880253939251504297700926329015933617537522978478527774183'),
-                    mpf('-1.140775679060479546680777929992790525034725825880253939251504297700926329015933617537522978478527774183'),
-                    mpf('0.881465200934955213215196217181568318297209213874500010342977516784412704475283998243820141954241091872')]
+        ref_XTRC = [-1.140775679060,-1.1407756790, 0.8814652009]
         ret_XTRC = solver.get_single_XTRC(gas_name)
-        self.assertListEqual(ref_XTRC, ret_XTRC)
+        for ref, ret in zip(ref_XTRC, ret_XTRC):
+            self.assertAlmostEqual(ref, float(ret))
 
     def test_get_XTRC(self):
         " Test function get_XTRC(). "
@@ -432,8 +425,8 @@ class SteadyStateSolverTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -444,11 +437,10 @@ class SteadyStateSolverTest(unittest.TestCase):
 
         # Check.
         gas_name = "CO2_g"
-        ref_XRC = [mpf('-0.000000004330301262036152923211709673711721112213085538797673380141841669630093740288896353967710982069299592622'),
-                   mpf('0.9986021755886114784434712184789699872827416819468954527192794077349320805208548704540326869330347344589'),
-                   mpf('0.001398549092163431169588440111213386822318548225009429894534084532021244154191984863118384815049813695996')]
+        ref_XRC = [-0.00000, 0.9986, 0.00139]
         ret_XRC = solver.get_single_XRC(gas_name, epsilon=1e-5)
-        self.assertListEqual(ref_XRC, ret_XRC)
+        for ref, ret in zip(ref_XRC, ret_XRC):
+            self.assertAlmostEqual(ref, float(ret), places=4)
 
 #    def test_get_single_XRC_multi_thread(self):
 #        " Test function get_single_XRC() in multi-threads. "
@@ -479,8 +471,8 @@ class SteadyStateSolverTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -535,8 +527,8 @@ class SteadyStateSolverTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -559,8 +551,8 @@ class SteadyStateSolverTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()

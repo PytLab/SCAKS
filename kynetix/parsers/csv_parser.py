@@ -2,6 +2,7 @@ import csv
 import logging
 import os
 
+from kynetix import Property
 from kynetix.parsers.parser_base import ParserBase
 from kynetix.errors.error import *
 from kynetix.functions import *
@@ -39,8 +40,7 @@ class CsvParser(ParserBase):
         species_definitions: The updated species definition of model.
         """
         # NOTE: Get the REFERENCE of model's species definitions.
-        attribute_name = mangled_name(self._owner, "species_definitions")
-        species_definitions = getattr(self._owner, attribute_name)
+        species_definitions = self._owner.species_definitions
 
         # Check file existance.
         if not os.path.exists(filename):
@@ -87,12 +87,14 @@ class CsvParser(ParserBase):
         return
         # }}}
 
+    @Property
     def has_relative_energy(self):
         """
         Query function for relative energy flag.
         """
         return self.__has_relative_energy
 
+    @Property
     def has_absolute_energy(self):
         """
         Query function for absolute energy flag.

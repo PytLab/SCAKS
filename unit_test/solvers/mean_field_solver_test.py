@@ -24,7 +24,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         " Test solver can be constructed in kinetic model. "
         # Construction.
         model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        solver = model.solver()
+        solver = model.solver
 
         # Check the parser class and base class type.
         self.assertTrue(isinstance(solver, SteadyStateSolver))
@@ -61,8 +61,8 @@ class MeanFieldSolverTest(unittest.TestCase):
         " Test solver can get data correctly. "
         # Construction.
         model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         # Get data before parsing data, an exception would be expected.
         self.assertRaises(IOError, solver.get_data)
@@ -111,9 +111,9 @@ class MeanFieldSolverTest(unittest.TestCase):
         " Test we can get correct state energy. "
         # Construction.
         model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
         parser.parse_data(filename=mkm_energy)
-        solver = model.solver()
+        solver = model.solver
         solver.get_data()
 
         # Check.
@@ -127,9 +127,9 @@ class MeanFieldSolverTest(unittest.TestCase):
         " Make sure we can get correct relative energy for an elementary reaction. "
         # Construction.
         model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
         parser.parse_data(filename=mkm_energy)
-        solver = model.solver()
+        solver = model.solver
         solver.get_data()
 
         # Check.
@@ -152,9 +152,9 @@ class MeanFieldSolverTest(unittest.TestCase):
         " Test we can get relative energies from absolute energies correctly. "
         # Construction.
         model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
         parser.parse_data(filename=mkm_energy)
-        solver = model.solver()
+        solver = model.solver
         solver.get_data()
 
         # Check.
@@ -174,8 +174,8 @@ class MeanFieldSolverTest(unittest.TestCase):
         " Make sure we can get rate constants correctly. "
         # Construction.
         model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         self.assertRaises(AttributeError, solver.get_rate_constants)
 
@@ -199,8 +199,8 @@ class MeanFieldSolverTest(unittest.TestCase):
         " Test we can get the Boltzmann converages. "
         # Construction.
         model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         # Check Boltzmann before parsing absolute energies.
         parser.parse_data(filename=mkm_energy, relative=True)
@@ -231,8 +231,8 @@ class MeanFieldSolverTest(unittest.TestCase):
         "Make sure we can get the rate expression for an elementary reaction correctly. "
         # Construction.
         model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         rxn_expression = 'CO_g + *_s -> CO_s'
         ref_f_expr = "kf[0]*p['CO_g']*theta['*_s']"
@@ -257,7 +257,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         " Test we can get all rate expressions correctly. "
         # Construction.
         model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        solver = model.solver()
+        solver = model.solver
 
         ref_rate_expressions = (["rfs[0] = kf[0]*p['CO_g']*theta['*_s']",
                                  "rfs[1] = kf[1]*p['O2_g']*theta['*_s']**2",
@@ -275,8 +275,8 @@ class MeanFieldSolverTest(unittest.TestCase):
         " Make sure we can get rates correctly. "
         # Construction.
         model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         # Get data.
         parser.parse_data(filename=mkm_energy)
@@ -302,8 +302,8 @@ class MeanFieldSolverTest(unittest.TestCase):
         " Make sure we can get the correct reversibilities. "
         # Construction.
         model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -320,8 +320,8 @@ class MeanFieldSolverTest(unittest.TestCase):
         " Test we can get TOF correctly. "
         # Construction.
         model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -348,7 +348,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         " Make sure we can get all correct symbols. "
         # Construction.
         model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        solver = model.solver()
+        solver = model.solver
 
         solver.get_data_symbols()
 
@@ -400,7 +400,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         " Test protected function _extract_symbol(). "
         # Construction.
         model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        solver = model.solver()
+        solver = model.solver
 
         solver.get_data_symbols()
 
@@ -432,8 +432,8 @@ class MeanFieldSolverTest(unittest.TestCase):
         " Make sure we can get correct barrier expression for an elementary reaction. "
         # Construction.
         model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -456,8 +456,8 @@ class MeanFieldSolverTest(unittest.TestCase):
         " Make sure we can get all barrier expressions correctly. "
         # Construction.
         model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -490,8 +490,8 @@ class MeanFieldSolverTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -526,8 +526,8 @@ class MeanFieldSolverTest(unittest.TestCase):
         " Test we can get get correct equilibrium constants symbols. "
         # Construction.
         model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -562,8 +562,8 @@ class MeanFieldSolverTest(unittest.TestCase):
         " Make sure we can get correct rate expression for an elementary reaction. "
         # Construction.
         model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -619,8 +619,8 @@ class MeanFieldSolverTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -652,8 +652,8 @@ class MeanFieldSolverTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -677,8 +677,8 @@ class MeanFieldSolverTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -706,8 +706,8 @@ class MeanFieldSolverTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -766,8 +766,8 @@ class MeanFieldSolverTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -787,8 +787,8 @@ class MeanFieldSolverTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -814,8 +814,8 @@ class MeanFieldSolverTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -840,8 +840,8 @@ class MeanFieldSolverTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()

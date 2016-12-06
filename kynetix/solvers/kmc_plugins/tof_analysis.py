@@ -46,13 +46,13 @@ class TOFAnalysis(KMCAnalysisPlugin):
         self.__steps = []
 
         # variables for instantaneous tof collection.
-        nprocess = len(kmc_model.processes())
+        nprocess = len(kmc_model.processes)
         self.__occurencies = [0]*nprocess
 
         self.__start_time = 0.0
         self.__tofs, self.__times = [], []
 
-        self.__tof_interval = self.__kmc_model.tof_interval()
+        self.__tof_interval = self.__kmc_model.tof_interval
 
         # Set logger.
         if mpi_master:
@@ -66,15 +66,15 @@ class TOFAnalysis(KMCAnalysisPlugin):
         self.__filename = filename
 
         # Number of active sites.
-        repetitions = self.__kmc_model.repetitions()
-        basis_sites = self.__kmc_model.basis_sites()
+        repetitions = self.__kmc_model.repetitions
+        basis_sites = self.__kmc_model.basis_sites
         self.__nsites = reduce(mul, repetitions)*len(basis_sites)
         # }}}
 
     def setup(self, step, time, configuration, interactions):
         # Create statistic data file.
         variables_str = ("times = []\ntofs = []\n")
-        process_mapping = self.__kmc_model.process_mapping()
+        process_mapping = self.__kmc_model.process_mapping
         process_mapping_str = get_list_string("processes", process_mapping, 1)
 
         with open(self.__filename, "w") as f:
@@ -97,7 +97,7 @@ class TOFAnalysis(KMCAnalysisPlugin):
 
             # Refresh.
             self.__start_time = time
-            nprocess = len(self.__kmc_model.processes())
+            nprocess = len(self.__kmc_model.processes)
             self.__occurencies = [0]*nprocess
 
             # Flush buffer.

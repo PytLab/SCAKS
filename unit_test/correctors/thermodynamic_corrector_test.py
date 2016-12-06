@@ -23,8 +23,8 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        parser = model.parser()
-        corrector = model.corrector()
+        parser = model.parser
+        corrector = model.corrector
 
         self.assertTrue(isinstance(corrector, ThermodynamicCorrector))
 
@@ -33,7 +33,7 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        corrector = model.corrector()
+        corrector = model.corrector
 
         # Check.
         gas = "CO_g"
@@ -51,7 +51,7 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        corrector = model.corrector()
+        corrector = model.corrector
 
         # Check.
         gas = "CO_g"
@@ -68,9 +68,9 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
         " Test solver's correction energy function. "
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
         parser.parse_data(filename=mkm_energy)
-        solver = model.solver()
+        solver = model.solver
         solver.get_data()
 
         ref_e = {'*_s': mpf('0.0'),

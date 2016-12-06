@@ -23,7 +23,7 @@ species_definitions['s'] = {'site_name': '111', 'total': 1.0, 'type': 'site'}
 # surface info
 surface_name = 'RuO2'
 
-temperature = 450
+temperature = 450.
 
 gas_thermo_mode = 'shomate_gas'
 

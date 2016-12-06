@@ -20,7 +20,7 @@ class CsvMakerTest(unittest.TestCase):
         " Test table maker can be constructed correctly. "
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        table_maker = model.table_maker()
+        table_maker = model.table_maker
 
         # Check.
         self.assertTrue(table_maker, CsvMaker)
@@ -29,7 +29,7 @@ class CsvMakerTest(unittest.TestCase):
         " Test we can initialize table correctly. "
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        table_maker = model.table_maker()
+        table_maker = model.table_maker
 
         # Init a table.
         table_maker.init_table()
@@ -39,7 +39,7 @@ class CsvMakerTest(unittest.TestCase):
         # Construction.
         model = KineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
-        table_maker = model.table_maker()
+        table_maker = model.table_maker
 
         # Check.
         ref_e = 0.0

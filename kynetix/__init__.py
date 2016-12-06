@@ -79,7 +79,7 @@ class ModelShell(object):
             self._archived_data_dict[data_name] = data
             # Dump data dict to data file
             if self._archived_data_dict:
-                with open(self._owner.data_file(), 'wb') as f:
+                with open(self._owner.data_file, 'wb') as f:
                     pickle.dump(self._archived_data_dict, f)
 
     @staticmethod
@@ -87,4 +87,22 @@ class ModelShell(object):
         f = open(filename, 'a')
         f.write(line)
         f.close()
+
+
+class Property(object):
+    def __init__(self, func):
+        self.func = func
+
+    def __get__(self, instance, cls):
+        val = self.func(instance)
+        attr_name = "_{}__{}".format(instance.__class__.__name__,
+                                     self.func.__name__)
+        if attr_name not in instance.__dict__:
+            setattr(instance, attr_name, val)
+        return val
+
+    def __set__(self, instance, value):
+        msg ="Changing value of {}.{} is not allowed".format(instance.__class__.__name__,
+                                                             self.func.__name__)
+        raise AttributeError(msg)
 

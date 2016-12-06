@@ -1,17 +1,17 @@
 import cPickle as cpkl
+import copy
 import inspect
 import logging
 import logging.config
 import os
 import sys
 
+import kynetix.descriptors as dc
+from kynetix import Property
 from kynetix import mpi_master, mpi_size, mpi_installed
 from kynetix.database.thermo_data import kB_eV, h_eV
 from kynetix.errors.error import *
 from kynetix.functions import *
-from kynetix.parsers import *
-from kynetix.solvers import *
-from kynetix.utilities.check_utilities import *
 from kynetix.utilities.profiling_utitlities import do_cprofile
 
 
@@ -19,12 +19,194 @@ class KineticModel(object):
     """
     Main class for kinetic models.
     """
-    @do_cprofile("./KineticModel_init.prof")
-    def __init__(self, **kwargs):
+
+    # Attribute descriptors.
+    # {{{
+    cls_name = "KineticModel"
+
+    setup_file = dc.String("setup_file", cls_name=cls_name, default="")
+    setup_dict = dc.Dict("setup_dict", cls_name=cls_name, default={})
+    verbosity = dc.Integer("verbosity",
+                           cls_name=cls_name,
+                           default=logging.INFO,
+                           candidates=range(0, 60, 10))
+
+    parser = dc.Component("parser", cls_name=cls_name,
+                          default=None, candidates=["RelativeEnergyParser",
+                                                    "CsvParser",
+                                                    "KMCParser"])
+
+    solver = dc.Component("solver", cls_name=cls_name,
+                          default=None, candidates=["KMCSolver",
+                                                    "SteadyStateSolver"])
+
+    corrector = dc.Component("corrector", cls_name=cls_name,
+                             default=None, candidates=["ThermodynamicCorrector"])
+
+    table_maker = dc.Component("table_maker", cls_name=cls_name,
+                                default=None, candidates=["CsvMaker"])
+
+    plotter = dc.Component("plotter", cls_name=cls_name,
+                           default=None, candidates=["EnergyProfilePlotter"])
+
+    # Temperature.
+    temperature = dc.Float("temperature", cls_name=cls_name, default=298.)
+
+    # Reaction expressions.
+    rxn_expressions = dc.Sequence("rxn_expressions",
+                                  cls_name=cls_name,
+                                  default=[],
+                                  entry_type=str)
+
+    # Definition dict of species.
+    species_definitions = dc.Dict("species_definitions", cls_name=cls_name, default={})
+
+    # Model core components.
+    components = dc.Sequence("components", cls_name=cls_name, default=["parser"], entry_type=str)
+
+    # Data precision.
+    decimal_precision = dc.Integer("decimal_precision", cls_name=cls_name, default=100)
+
+    # File to store data.
+    data_file = dc.String("data_file", cls_name=cls_name, default="data.pkl")
+
+    # Species used for conversion from relative energy to absolute eneergy.
+    ref_species = dc.Sequence("ref_species", cls_name=cls_name, default=[], entry_type=str)
+
+    # Reference energies used to calculate formation energy.
+    ref_energies = dc.Dict("ref_energies", cls_name=cls_name, default={})
+
+    # Basis vectors of unit cell.
+    cell_vectors = dc.SpaceVectors("cell_vectors",
+                                   cls_name=cls_name,
+                                   default=[[1.0, 0.0, 0.0],
+                                            [0.0, 1.0, 0.0],
+                                            [0.0, 0.0, 1.0]])
+
+    # Basis sites coordinates.
+    basis_sites = dc.SpaceVectors("basis_sites",
+                                  cls_name=cls_name,
+                                  default=[[0.0, 0.0, 0.0]])
+
+    # Area of unit cell (m^2).
+    unitcell_area = dc.Float("unitcell_area", cls_name=cls_name, default=0.0)
+
+    # Ratio of active area.
+    active_ratio = dc.Float("active_ratio", cls_name=cls_name, default=1.0)
+
+    # Supercell repetitions.
+    repetitions = dc.Sequence("repetitions",
+                              cls_name=cls_name,
+                              default=(1, 1, 1),
+                              entry_type=int)
+
+    # POC.
+    periodic = dc.Sequence("periodic",
+                           cls_name=cls_name,
+                           default=(True, True, True),
+                           entry_type=bool)
+
+    # kMC step number.
+    nstep = dc.Integer("nstep", cls_name=cls_name, default=1)
+
+    # Random seed for kMC simulation.
+    random_seed = dc.Integer("random_seed", cls_name=cls_name, default=None)
+
+    # Interval for trajectory dumping.
+    trajectory_dump_interval = dc.Integer("trajectory_dump_interval",
+                                          cls_name=cls_name,
+                                          default=1)
+
+    # Random generator type.
+    random_generator = dc.String("random_generator",
+                                 cls_name=cls_name,
+                                 default="MT",
+                                 candidates=["MT", "MINSTD", "RANLUX24", "RANLUNX48"])
+
+    # kMC On-the-fly analysis type.
+    analysis = dc.Sequence("analysis",
+                           cls_name=cls_name,
+                           default=[],
+                           entry_type=str,
+                           candidates=["CoveragesAnalysis",
+                                       "FrequencyAnalysis",
+                                       "TOFAnalysis"])
+
+    # Interval of doing on-the-fly analysis.
+    analysis_interval = dc.Sequence("analysis_interval",
+                                    cls_name=cls_name,
+                                    default=None,
+                                    entry_type=int)
+
+    # All possible element types.
+    possible_element_types = dc.Sequence("possible_element_types",
+                                         cls_name=cls_name,
+                                         default=[],
+                                         entry_type=str)
+
+    # All possible site types.
+    possible_site_types = dc.Sequence("possible_site_types",
+                                      cls_name=cls_name,
+                                      default=[],
+                                      entry_type=str)
+
+    # Empty type.
+    empty_type = dc.String("empty_type", cls_name=cls_name, default="V")
+
+    # Step from which TOF statistic begins.
+    tof_start = dc.Integer("tof_start", cls_name=cls_name, default=0)
+
+    # Time limit.
+    time_limit = dc.Float("time_limit", cls_name=cls_name, default=float("inf"))
+
+    # Coverage ratios.
+    coverages_ratios = dc.Sequence("coverages_ratios",
+                                   cls_name=cls_name,
+                                   default=[],
+                                   entry_type=float)
+
+    # Extra trajectory dump control range.
+    extra_trajectories = dc.Sequence("extra_trajectries",
+                                     cls_name=cls_name,
+                                     default=None,
+                                     entry_type=int)
+
+    # The time kMC simulation start.
+    start_time = dc.Float("start_time", cls_name=cls_name, default=0.0)
+
+    # Interval for instantaneous TOF calculation.
+    tof_interval = dc.Float("tof_interval", cls_name=cls_name, default=10)
+
+    # Flag for redistribution operation.
+    do_redistribution = dc.Bool("do_redistribution", cls_name=cls_name, default=False)
+
+    # Interval for redistribution operation.
+    redistribution_interval = dc.Integer("redistribution_interval",
+                                         cls_name=cls_name,
+                                         default=1)
+
+    # Default fast species.
+    fast_species = dc.Sequence("fast_species", cls_name=cls_name, default=None, entry_type=str)
+
+    # Split number for constrained redistribution.
+    nsplits = dc.Sequence("nsplits", cls_name=cls_name, default=(1, 1, 1), entry_type=int)
+
+    # Distributor type.
+    distributor_type = dc.String("distributor_type",
+                                 cls_name=cls_name,
+                                 default="RandomDistributor",
+                                 candidates=["RandomDistributor", "ProcessRandomDistributor"])
+    # }}}
+
+    def __init__(self, setup_file=None,
+                       setup_dict=None,
+                       verbosity=logging.INFO):
         """
         Parameters:
         -----------
         setup_file: kinetic model set up file, str.
+
+        setup_dict: A dictionary contains essential setup parameters for kinetic model.
         
         verbosity: logging level, int.
 
@@ -36,16 +218,27 @@ class KineticModel(object):
         """
 
         # {{{
-        # Get class name.
         self.__class_name = self.__class__.__name__
 
-        # Set physical constants.
-        self.__kB = kB_eV  # Boltzmann constant from NIST, eV/K
-        self.__h = h_eV    # Planck constant from NIST, eV s
+        # Physical constants.
+        self.__kB = kB_eV
+        self.__h = h_eV
 
-        # Parse in keyword args.
-        for key in kwargs:
-            setattr(self, "_" + self.__class_name + "__" + key, kwargs[key])
+        # Get setup dict.
+        if setup_file is None and setup_dict is None:
+            msg = "setup_file or setup_dict must be supplied for kinetic model construction"
+            raise ValueError(msg)
+
+        # Setup dict has higher priority than setup file.
+        if setup_dict is not None:
+            self.setup_dict = setup_dict
+        else:
+            self.setup_file = setup_file
+            globs, locs = {}, {}
+            execfile(self.setup_file, globs, locs)
+            self.setup_dict = locs
+
+        self.verbosity = verbosity
 
         # Set logger.
         self.__set_logger()
@@ -64,64 +257,8 @@ class KineticModel(object):
         self.__relative_energies = {}
 
         # Load setup file.
-        if hasattr(self, '_' + self.__class_name + '__setup_file'):
-            if mpi_master:
-                self.__logger.info('setup file [ {} ] is found'.format(self.__setup_file))
-            model_name = self.__setup_file.rsplit('.', 1)[0]
-            self.__model_name = model_name
-            self.__load(self.__setup_file)
-            if mpi_master:
-                self.__logger.info('kinetic modeling...success!\n')
-        else:
-            if mpi_master:
-                self.__logger.warning('setup file not read...')
-        # }}}
-
-    def __check_inputs(self, inputs_dict):
-        """
-        Private helper function to check all parameters in setup file.
-
-        Parameters:
-        -----------
-        inputs_dict: A dict store all setup information.
-
-        Returns:
-        --------
-        inputs_dict: The valid input dict (REFERENCE of input).
-        """
-        # {{{
-        invalid_parameters = []
-        for key, value in inputs_dict.iteritems():
-            # Check parameter validity.
-            if key not in type_rules and mpi_master:
-                msg = (("Parameter [{}] is not a valid setup parameter, " +
-                        "it will be ignored.")).format(key)
-                self.__logger.warning(msg)
-
-                # Collect the invalid parameter.
-                invalid_parameters.append(key)
-                continue
-
-            rule = type_rules[key]
-            if len(rule) == 1:
-                # If it is check function.
-                if hasattr(rule[0], "__call__"):
-                    check_func = rule[0]
-                    check_func(value)
-                # If it is a type.
-                elif type(rule[0]) is type:
-                    if not isinstance(value, rule[0]):
-                        msg = "{} should be a {}".format(key, rule[0])
-                        raise SetupError(msg)
-            else:  # Call corresponding check function.
-                check_func, arg = rule
-                check_func(value, arg, key)
-
-        # Clean input dict.
-        for invalid_param in invalid_parameters:
-            del inputs_dict[invalid_param]
-
-        return inputs_dict
+        self.__load(self.setup_dict)
+        self.__logger.info('kinetic modeling...success!\n')
         # }}}
 
     def run_mkm(self, **kwargs):
@@ -150,15 +287,15 @@ class KineticModel(object):
         """
         # {{{
         # Setup default parameters.
-        init_cvgs = setdefault_args("init_cvgs", kwargs, None)
-        relative = setdefault_args("relative", kwargs, False)
-        correct_energy = setdefault_args("correct_energy", kwargs, False)
-        solve_ode = setdefault_args("solve_ode", kwargs, False)
-        fsolve = setdefault_args("fsolve", kwargs, False)
-        coarse_guess = setdefault_args("coarse_guess", kwargs, True)
-        XRC = setdefault_args("XRC", kwargs, False)
-        product_name = setdefault_args("product_name", kwargs, None)
-        data_file = setdefault_args("data_file", kwargs, "./rel_energy.py")
+        init_cvgs = kwargs.pop("init_cvgs", None)
+        relative = kwargs.pop("relative", False)
+        correct_energy = kwargs.pop("correct_energy", False)
+        solve_ode = kwargs.pop("solve_ode", False)
+        fsolve = kwargs.pop("fsolve", False)
+        coarse_guess = kwargs.pop("coarse_guess", True)
+        XRC = kwargs.pop("XRC", False)
+        product_name = kwargs.pop("product_name", None)
+        data_file = kwargs.pop("data_file", "./rel_energy.py")
 
         if mpi_master:
             self.__logger.info('--- Solve Micro-kinetic model ---')
@@ -300,22 +437,11 @@ class KineticModel(object):
         self.__solver.run(scripting=scripting,
                           trajectory_type=trajectory_type)
 
-    def __set_parser(self, parser_name):
-        """
-        Private function to import parser and
-        set the instance of it as attr of model
-        """
-        # Parser class object.
-        parser_class = globals()[parser_name]
-        parser_instance = parser_class(owner=self)
-        setattr(self, "_" + self.__class_name + '__parser', parser_instance)
-        if mpi_master:
-            self.__logger.info('parser is set.')
-
     def __set_logger(self):
         """
         Private function to get logging.logger instance as logger of kinetic model.
         """
+        # {{{
         logger = logging.getLogger('model')
         if os.path.exists('./logging.conf'):
             logging.config.fileConfig('./logging.conf')
@@ -342,6 +468,7 @@ class KineticModel(object):
             logger.addHandler(console_hdlr)
 
         self.__logger = logger
+        # }}}
 
     def set_logger_level(self, handler_type, level):
         """
@@ -373,7 +500,7 @@ class KineticModel(object):
 
         return old_level
 
-    def __load(self, setup_file):
+    def __load(self, setup_dict):
         """
         Load 'setup_file' into kinetic model by exec setup file
         and assigning all local variables as attrs of model.
@@ -383,76 +510,44 @@ class KineticModel(object):
         # {{{
         if mpi_master:
             self.__logger.info('Loading Kinetic Model...\n')
-
-        defaults = dict(data_file='data.pkl',
-                        grid_type='square',
-                        decimal_precision=100,
-                        tools=['parser'],
-                        parser='RelativeEnergyParser',
-                        table_maker='CsvMaker',
-                        solver='SteadyStateSolver',
-                        corrector='ThermodynamicCorrector',
-                        plotter='EnergyProfilePlotter')
-
-        if mpi_master:
             self.__logger.info('read in parameters...')
 
-        # Exec setup file set local variables as attrs of model
-        globs = {}
-        locs = defaults
-        execfile(setup_file, globs, locs)
-
-        # Check parameters validity.
-        if mpi_master:
-            self.__logger.info("Check setup file validity...")
-        self.__check_inputs(locs)
-
-        # Customize model tools
-        if 'tools' in locs:
-            if 'parser' not in locs['tools']:
-                raise ParameterError('[ parser ] must be in tools.')
-            self.__tools = locs['tools']
-            del locs['tools']
-
-            if mpi_master:
-                self.__logger.info('tools = {}'.format(str(self.__tools)))
+        setup_dict_copy = copy.deepcopy(setup_dict)
 
         # Set model attributes in setup file.
-        for key in locs.keys():
-            # ignore tools which will be loaded later
-            if key in self.__tools:
+        for key, value in setup_dict.iteritems():
+            # Parser & solver will be set later.
+            if key in ["parser", "solver"]:
                 continue
-            setattr(self, "_" + self.__class_name + "__" + key, locs[key])
+
+            # Set parameters in setup dict as attiributes of model.
+            setattr(self, key, value)
 
             # Output info.
             specials = ("rxn_expressions", "species_definitions")
             if key not in specials:
                 if mpi_master:
-                    self.__logger.info('{} = {}'.format(key, str(locs[key])))
+                    self.__logger.info('{} = {}'.format(key, str(value)))
 
             # If it is a iterable, loop to output.
             else:
                 if mpi_master:
                     self.__logger.info("{} =".format(key))
-                if type(locs[key]) is dict:
-                    for k, v in locs[key].iteritems():
+                if type(setup_dict[key]) is dict:
+                    for k, v in value.iteritems():
                         if mpi_master:
                             self.__logger.info("        {}: {}".format(k, v))
                 else:
-                    for item in locs[key]:
+                    for item in value:
                         if mpi_master:
                             self.__logger.info("        {}".format(item))
 
-        # assign parser ahead to provide essential attrs for other tools
-        if mpi_master:
-            self.__logger.info('instantiate {}'.format(str(locs['parser'])))
-        self.__set_parser(locs['parser'])
+            # Delete.
+            del setup_dict_copy[key]
 
-        # if parser is kmc_parser use kmc_solver correspondingly
-        if locs['parser'] == 'KMCParser':
-            locs['solver'] = 'KMCSolver'
-            if mpi_master:
-                self.__logger.info('set solver [ KMCSolver ].')
+        # Instantialize parser.
+        self.parser = setup_dict["parser"]
+        del setup_dict_copy["parser"]
 
         # use parser parse essential attrs for other tools
         # Parse elementary rxns
@@ -467,216 +562,90 @@ class KineticModel(object):
              self.__elementary_rxns_list) = \
                 self.__parser.parse_elementary_rxns(self.__rxn_expressions)
 
-        # load tools of model
-        if mpi_master:
-            self.__logger.info('instantiate model tools...')
-        for key in self.__tools:
-            # Auto-import classes.
-            if key == 'parser':  # ignore parser which is loaded before
-                continue
-            if locs[key]:
-                if not key.endswith('s'):
-                    pyfile = key + 's'
-                else:
-                    pyfile = key
-                basepath = os.path.dirname(inspect.getfile(inspect.currentframe()))
-                if basepath not in sys.path:
-                    sys.path.append(basepath)
-                sublocs = {}
-                _temp = __import__(pyfile, globals(), sublocs, [locs[key]])
-                tool_instance = getattr(_temp, locs[key])(owner=self)
-                setattr(self, "_" + self.__class_name + "__" + key, tool_instance)
-                if mpi_master:
-                    self.__logger.info('{} = {}'.format(key, locs[key]))
-            else:
-                setattr(self, "_" + self.__class_name + "__" + key, None)
-                if mpi_master:
-                    self.__logger.warning('{} is set to None.'.format(key))
+        # Instantialize solver.
+        if "solver" in setup_dict:
+            self.solver = setup_dict["solver"]
+            del setup_dict_copy["solver"]
 
-        # Set kMC parameters.
-        if (not isinstance(self.__solver, str)) and (locs["solver"] == "KMCSolver"):
-            self.__set_kmc_parameters(locs)
+        # Check if there is redundant parameters.
+        if setup_dict_copy:
+            for key in setup_dict_copy:
+                msg = "Found redundant parameter '{}'".format(key)
+                self.__logger.warning(msg)
         # }}}
 
-    def __set_kmc_parameters(self, locs):
-        """
-        Private helper function to set KMC related parameters.
-        """
-        # kMC parameters check
-        solver_type = repr(self.__solver).split('.')[2]
-
-        # Pseudo random generator info.
-        if (solver_type == 'kmc_solver' and
-                'random_generator' not in locs and mpi_master):
-            self.__logger.info('pseudo random generator type was not set.')
-            self.__logger.info('use Mersenne-Twister by default.')
-
-    def setup_file(self):
-        """
-        Query function for setup file.
-        """
-        return self.__setup_file
-
-    def name(self):
-        """
-        Query function for model name.
-        """
-        return self.__model_name
-
+    @Property
     def kB(self):
-        """
-        Query function for Boltzmann constant.
-        """
         return self.__kB
 
+    @Property
     def h(self):
-        """
-        Query function for Plank constant.
-        """
         return self.__h
 
+    @Property
     def logger(self):
         """
         Query function for model logger.
         """
         return self.__logger
 
-    @return_deepcopy
-    def tools(self):
-        """
-        Query function for model tools.
-        """
-        return self.__tools
-
-    def parser(self):
-        """
-        Query function for model parser object.
-        """
-        return self.__parser
-
-    def solver(self):
-        """
-        Query function for model solver object.
-        """
-        return self.__solver
-
-    def corrector(self):
-        """
-        Query function for model corrector.
-        """
-        return self.__corrector
-
-    def plotter(self):
-        """
-        Query function for model plotter.
-        """
-        return self.__plotter
-
-    @return_deepcopy
-    def rxn_expressions(self):
-        """
-        Query function for reaction expressions in model.
-        """
-        return self.__rxn_expressions
-
-    @return_deepcopy
-    def species_definitions(self):
-        """
-        Query function for species definitions in model.
-        """
-        return self.__species_definitions
-
-    @return_deepcopy
-    def decimal_precision(self):
-        """
-        Query function for data precision.
-        """
-        return self.__decimal_precision
-
+    @Property
     def elementary_rxns_list(self):
         """
         Query function for elementary reactions list.
         """
         return self.__elementary_rxns_list
 
-    def temperature(self):
-        """
-        Query function for system temperature.
-        """
-        return self.__temperature
-
-    @return_deepcopy
+    @Property
     def site_names(self):
         """
         Query function for site names in model.
         """
         return self.__site_names
 
-    @return_deepcopy
+    @Property
     def adsorbate_names(self):
         """
         Query function for adsorbate names in model.
         """
         return self.__adsorbate_names
 
-    @return_deepcopy
+    @Property
     def gas_names(self):
         """
         Query function for gas names in model.
         """
         return self.__gas_names
 
-    @return_deepcopy
+    @Property
     def liquid_names(self):
         """
         Query function for liquid names in model.
         """
         return self.__liquid_names
 
-    @return_deepcopy
+    @Property
     def transition_state_names(self):
         """
         Query function for transition state species names in model.
         """
         return self.__transition_state_names
 
-    def gas_thermo_mode(self):
-        """
-        Query function for gas mode in model.
-        """
-        return self.__gas_thermo_mode
-
-    @return_deepcopy
-    def ref_species(self):
-        """
-        Query function for reference species name.
-        """
-        return self.__ref_species
-
-    def surface_name(self):
-        """
-        Query function for surface name.
-        """
-        return self.__surface_name
-
-    def verbosity(self):
-        """
-        Query function for logging verbosity.
-        """
-        return self.__verbosity
-
+    @Property
     def has_relative_energy(self):
         """
         Query function for relative energy flag.
         """
         return self.__has_relative_energy
 
+    @Property
     def has_absolute_energy(self):
         """
         Query function for absolute energy flag.
         """
         return self.__has_absolute_energy
 
+    @Property
     @return_deepcopy
     def relative_energies(self):
         """
@@ -684,261 +653,34 @@ class KineticModel(object):
         """
         return self.__relative_energies
 
-    def data_file(self):
-        """
-        Query function for data archive file name.
-        """
-        return self.__data_file
-
-    def table_maker(self):
-        """
-        Query function for table_maker object.
-        """
-        return self.__table_maker
-
-    @return_deepcopy
-    def ref_energies(self):
-        """
-        Query function for reference energy dict.
-        """
-        return self.__ref_energies
-
     # ------------------------------------
     # KMC Parameters query functions.
 
-    @return_deepcopy
-    def cell_vectors(self):
-        """
-        Query function for cell base vectors.
-        """
-        return self.__cell_vectors
-
-    @return_deepcopy
-    def basis_sites(self):
-        """
-        Query function for basis sites.
-        """
-        return self.__basis_sites
-
-    def unitcell_area(self):
-        """
-        Query function for area of unitcell.
-        """
-        return self.__unitcell_area
-
-    def active_ratio(self):
-        """
-        Query function for active ratio(Ast/Auc).
-        """
-        return self.__active_ratio
-
-    def repetitions(self):
-        """
-        Query function for lattice repetitions.
-        """
-        return self.__repetitions
-
-    def periodic(self):
-        """
-        Query function for lattice periodic.
-        """
-        return self.__periodic
-
-    def nstep(self):
-        """
-        Query function for number of kmc step.
-        """
-        return self.__nstep
-
-    def random_seed(self):
-        """
-        Query function for random seed.
-        """
-        try:
-            return self.__seed
-        except AttributeError:
-            return None
-
-    def trajectory_dump_interval(self):
-        """
-        Query function for trajectory dump interval.
-        """
-        try:
-            return self.__trajectory_dump_interval
-        except AttributeError:
-            return None
-
-    def random_generator(self):
-        """
-        Query function for random generator name.
-        """
-        try:
-            return self.__random_generator
-        except AttributeError:
-            return None
-
-    def analysis(self):
-        """
-        Query function for analysis names.
-        """
-        return self.__analysis
-
-    def analysis_interval(self):
-        """
-        Query function for analysis interval.
-        """
-        try:
-            return self.__analysis_interval
-        except AttributeError:
-            return None
-
-    def analysis_dump_interval(self):
-        """
-        Query function for analysis dump interval.
-        """
-        return self.__analysis_dump_interval
-
+    @Property
     def processes(self):
         """
         Query function for processes list.
         """
         return self.__processes
 
+    @Property
     def configuration(self):
         """
         Query function for KMCConfiguration of model.
         """
         return self.__configuration
 
+    @Property
     def sitesmap(self):
         """
         Query function for KMCSitesMap of model.
         """
         return self.__sitesmap
 
-    def possible_element_types(self):
-        """
-        Query function for possible element types.
-        """
-        return self.__possible_element_types
-
-    def empty_type(self):
-        """
-        Query function for empty element type.
-        """
-        try:
-            return self.__empty_type
-        except AttributeError:
-            return "V"
-
-    def possible_site_types(self):
-        """
-        Query function for possible site types.
-        """
-        return self.__possible_site_types
-
+    @Property
     def process_mapping(self):
         """
         Query function for process reaction type mapping.
         """
         return self.__process_mapping
-
-    def tof_start(self):
-        """
-        Query function for TOF collection starting step.
-        """
-        try:
-            return self.__tof_start
-        except AttributeError:
-            return 0
-
-    def time_limit(self):
-        """
-        Query function for KMC loop time upper bound.
-        """
-        try:
-            return self.__time_limit
-        except AttributeError:
-            return float("inf")
-
-    def coverage_ratios(self):
-        """
-        Query function for coverage ratios for all basis sites.
-        """
-        try:
-            return self.__coverage_ratios
-        except AttributeError:
-            return [1.0]*len(self.__basis_sites)
-
-    def extra_trajectories(self):
-        """
-        Query function for extra trajectories setting.
-        """
-        try:
-            return self.__extra_traj
-        except AttributeError:
-            return None
-
-    def start_time(self):
-        """
-        Query function for the time KMC simulation starts from.
-        """
-        try:
-            return self.__start_time
-        except AttributeError:
-            return 0.0
-
-    def tof_interval(self):
-        """
-        Query function for instantaneous tof calculation interval.
-        """
-        try:
-            return self.__tof_interval
-        except AttributeError:
-            return 10
-
-    def do_redistribution(self):
-        """
-        Query function for flag for redistribution operation.
-        """
-        try:
-            return self.__do_redistribution
-        except AttributeError:
-            return False
-
-    def redistribution_interval(self):
-        """
-        Query function for interval of redistribution operation.
-        """
-        try:
-            return self.__redistribution_interval
-        except AttributeError:
-            return None
-
-    def fast_species(self):
-        """
-        Query function for default fast species.
-        """
-        try:
-            return self.__fast_species
-        except AttributeError:
-            return None
-
-    def nsplits(self):
-        """
-        Query function for split number for partial redistribution.
-        """
-        try:
-            return self.__nsplits
-        except AttributeError:
-            return (1, 1, 1)
-
-    def distributor_type(self):
-        """
-        Query function for the type of distributor for KMC acceleration.
-        """
-        try:
-            return self.__distributor_type
-        except AttributeError:
-            return "RandomDistributor"
 

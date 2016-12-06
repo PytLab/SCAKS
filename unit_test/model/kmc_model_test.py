@@ -28,7 +28,7 @@ class KMCModelTest(unittest.TestCase):
         self.assertTrue(hasattr(model, "_KineticModel__repetitions"))
         self.assertTrue(hasattr(model, "_KineticModel__periodic"))
         self.assertTrue(hasattr(model, "_KineticModel__nstep"))
-        self.assertTrue(hasattr(model, "_KineticModel__seed"))
+        self.assertTrue(hasattr(model, "_KineticModel__random_seed"))
         self.assertTrue(hasattr(model, "_KineticModel__random_generator"))
         self.assertTrue(hasattr(model, "_KineticModel__analysis"))
         self.assertTrue(hasattr(model, "_KineticModel__analysis_interval"))
@@ -42,8 +42,8 @@ class KMCModelTest(unittest.TestCase):
         # Construction.
         kmc_setup = kmc_path + "/kmc_model.mkm"
         model = KineticModel(setup_file=kmc_setup, verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
 
         # Parse data.
         parser.parse_data(filename=kmc_energy, relative=True)

@@ -20,7 +20,7 @@ class KMCRedistributionTest(unittest.TestCase):
         " Make sure the model can run with split redistribution operation. "
         setup_file = kmc_path + "/kmc_split_redistribution.mkm"
         model = KineticModel(setup_file=setup_file, verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
         parser.parse_data(filename=kmc_energy, relative=True)
 
         # Run the model with redistribution.
@@ -32,7 +32,7 @@ class KMCRedistributionTest(unittest.TestCase):
         " Make sure the model can run with process redistribution operation. "
         setup_file = kmc_path + "/kmc_process_redistribution.mkm"
         model = KineticModel(setup_file=setup_file, verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
         parser.parse_data(filename=kmc_energy, relative=True)
 
         # Run the model with redistribution.

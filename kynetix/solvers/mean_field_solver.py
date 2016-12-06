@@ -50,7 +50,7 @@ class MeanFieldSolver(SolverBase):
         self._has_symbols = False
 
         # Set essential attrs for solver
-        self._rxns_list = self._owner.elementary_rxns_list()
+        self._rxns_list = self._owner.elementary_rxns_list
         self._rxns_num = len(self._rxns_list)
 
         # set constants symbol dict
@@ -58,9 +58,9 @@ class MeanFieldSolver(SolverBase):
 
         # Constant symbols substitution dict.
         self._constants_subs_dict = {
-            self._kB_sym: self._mpf(self._owner.kB()),
-            self._h_sym: self._mpf(self._owner.h()),
-            self._T_sym: self._mpf(self._owner.temperature()),
+            self._kB_sym: self._mpf(self._owner.kB),
+            self._h_sym: self._mpf(self._owner.h),
+            self._T_sym: self._mpf(self._owner.temperature),
         }
 
         # classify adsorbates according to site type
@@ -73,7 +73,7 @@ class MeanFieldSolver(SolverBase):
         """
         # Mpmath.
         if self._numerical_representation == 'mpmath':
-            mp.mp.dps = self._owner.decimal_precision()
+            mp.mp.dps = self._owner.decimal_precision
             self._math = mp  # to do math operations
             self._linalg = mp
             self._mpf = mp.mpf
@@ -82,7 +82,7 @@ class MeanFieldSolver(SolverBase):
             self._norm = lambda x: mp.norm(x, p=2)
         # Gmpy2.
         elif self._numerical_representation == 'gmpy':
-            gmpy2.get_context().precision = 3*self._owner.decimal_precision()
+            gmpy2.get_context().precision = 3*self._owner.decimal_precision
             self._math = gmpy2
             self._linalg = np
             self._mpf = gmpy2.mpfr
@@ -104,7 +104,7 @@ class MeanFieldSolver(SolverBase):
         elif self._numerical_representation == 'sympy':
             self._math = sym
             self._linalg = sym
-            precision = self._owner.decimal_precision()
+            precision = self._owner.decimal_precision
             self._mpf = lambda x: \
                 sym.N(sym.RealNumber(str(x), precision), precision)
 
@@ -132,11 +132,11 @@ class MeanFieldSolver(SolverBase):
         Private helper function to classify coverages according to type of site.
         """
         classified_adsorbates = {}
-        for site_name in self._owner.site_names():
+        for site_name in self._owner.site_names:
             classified_adsorbates.setdefault(site_name, [])
 
-        species_definitions = self._owner.species_definitions()
-        for adsorbate_name in self._owner.adsorbate_names():
+        species_definitions = self._owner.species_definitions
+        for adsorbate_name in self._owner.adsorbate_names:
             formula = ChemFormula(adsorbate_name)
             site_name = formula.site()
             classified_adsorbates[site_name].append(adsorbate_name)
@@ -153,14 +153,14 @@ class MeanFieldSolver(SolverBase):
 
         # Create cvgs_dict containing adsorbates
         cvgs_dict = {}
-        adsorbate_names = self._owner.adsorbate_names()
+        adsorbate_names = self._owner.adsorbate_names
         for adsorbate_name in adsorbate_names:
             idx = adsorbate_names.index(adsorbate_name)
             cvgs_dict.setdefault(adsorbate_name, cvgs_tuple[idx])
 
         # Add free site coverages
-        species_definitions = self._owner.species_definitions()
-        for site_name in self._owner.site_names():
+        species_definitions = self._owner.species_definitions
+        for site_name in self._owner.site_names:
             total_cvg = species_definitions[site_name]['total']
             sum_cvg = 0.0
             for sp in self._classified_adsorbates[site_name]:
@@ -175,7 +175,7 @@ class MeanFieldSolver(SolverBase):
         Protected function to convert coverages dict to coverages tuple.
         """
         cvgs_list = []
-        for adsorbate_name in self._owner.adsorbate_names():
+        for adsorbate_name in self._owner.adsorbate_names:
             cvgs_list.append(cvgs_dict[adsorbate_name])
         return tuple(cvgs_list)
 
@@ -183,25 +183,25 @@ class MeanFieldSolver(SolverBase):
         """
         Function to get data from model.
         """
-        species_definitions = self._owner.species_definitions()
+        species_definitions = self._owner.species_definitions
 
         # Get gas pressure dict.
         p_dict = {}
-        for gas_name in self._owner.gas_names():
+        for gas_name in self._owner.gas_names:
             pressure = species_definitions[gas_name]['pressure']
             p_dict.setdefault(gas_name, self._mpf(pressure))
         self._p = p_dict
 
         # Get concentration dict.
         c_dict = {}
-        for liquid_name in self._owner.liquid_names():
+        for liquid_name in self._owner.liquid_names:
             concentration = species_definitions[liquid_name]['concentration']
             c_dict.setdefault(liquid_name, self._mpf(concentration))
         self._c = c_dict
 
         # Get energy data(relative or absolute)
-        if self._owner.has_relative_energy():
-            self._relative_energies = self._owner.relative_energies()
+        if self._owner.has_relative_energy:
+            self._relative_energies = self._owner.relative_energies
             # Set flag.
             self._has_relative_energy = True
         else:
@@ -209,7 +209,7 @@ class MeanFieldSolver(SolverBase):
                           'or add data in data table.')
 
         # get energy for each species
-        if self._owner.has_absolute_energy():
+        if self._owner.has_absolute_energy:
             G_dict = {}
             for species in species_definitions:
                 if ("type" in species_definitions[species] and
@@ -304,7 +304,7 @@ class MeanFieldSolver(SolverBase):
         -----------
         An relative energy dict, including 'Gaf', 'Gar', 'dG'.
         """
-        rxn_expressions = self._owner.rxn_expressions()
+        rxn_expressions = self._owner.rxn_expressions
         relative_energies = {'Gaf': [], 'Gar': [], 'dG': []}
 
         for rxn_expression in rxn_expressions:
@@ -343,7 +343,7 @@ class MeanFieldSolver(SolverBase):
             raise ParameterError(msg)
 
         # Calculate rate constants.
-        T = self._owner.temperature()
+        T = self._owner.temperature
         kfs, krs = [], []
         Gafs, Gars = relative_energies["Gaf"], relative_energies["Gar"]
 
@@ -368,10 +368,10 @@ class MeanFieldSolver(SolverBase):
         --------
         cvgs: A tuple of coverages in order of adsorbates names.
         """
-        free_site_names = tuple(['*_' + site for site in self._owner.site_names()])
-        self._cvg_types = self._owner.adsorbate_names() + free_site_names
+        free_site_names = tuple(['*_' + site for site in self._owner.site_names])
+        self._cvg_types = self._owner.adsorbate_names + free_site_names
         kB, h, T = [self._mpf(constant) for constant in
-                    [self._owner.kB(), self._owner.h(), self._owner.temperature()]]
+                    [self._owner.kB, self._owner.h, self._owner.temperature]]
 
         # Check whether solver has load data from species_definition
         if not self._has_absolute_energy:
@@ -384,11 +384,11 @@ class MeanFieldSolver(SolverBase):
                              for adsorbate in self._cvg_types])
         else:
             boltz_sum = sum([self._math.exp(-self._G[adsorbate]/(kB*T))
-                             for adsorbate in self._owner.adsorbate_names()])
+                             for adsorbate in self._owner.adsorbate_names])
 
         # Get coverages list
         cvgs = []
-        for adsorbate in self._owner.adsorbate_names():
+        for adsorbate in self._owner.adsorbate_names:
             cvg = self._math.exp(-self._G[adsorbate]/(kB*T))/boltz_sum
             cvgs.append(cvg)
 
@@ -412,7 +412,7 @@ class MeanFieldSolver(SolverBase):
         >>> solver.get_elementary_rate_expression(rxn_list)
         >>> ("kf[1]*p['O2_g']*theta['*_s']**2", "kr[1]*theta['O_s']**2")
         """
-        idx = self._owner.rxn_expressions().index(rxn_expression)
+        idx = self._owner.rxn_expressions.index(rxn_expression)
 
         # Local function.
         def list2string(formula_list, direction):
@@ -462,7 +462,7 @@ class MeanFieldSolver(SolverBase):
         Function to get rate expression for all elementary reactions in model.
         """
         f_rate_expressions, r_rate_expressions = [], []
-        rxn_expressions = self._owner.rxn_expressions()
+        rxn_expressions = self._owner.rxn_expressions
 
         # Loop over all rxn expressions to get all rate expressions.
         for idx, rxn_expression in enumerate(rxn_expressions):
@@ -582,7 +582,7 @@ class MeanFieldSolver(SolverBase):
         all_data = ''
         all_data += head_str + line_str
 
-        rxn_expressions = self._owner.rxn_expressions()
+        rxn_expressions = self._owner.rxn_expressions
 
         for idx, (rxn, rev) in enumerate(zip(rxn_expressions, reversibilities)):
             idx = str(idx).zfill(2)
@@ -617,13 +617,13 @@ class MeanFieldSolver(SolverBase):
         net_rates = self.get_net_rates(cvgs, relative_energies)
 
         # Get turnover frequencies.
-        _, reapro_matrix = self._owner.parser().get_stoichiometry_matrices()
+        _, reapro_matrix = self._owner.parser.get_stoichiometry_matrices()
         reapro_matrix *= -1
         rate_vector = np.matrix(net_rates)  # get rate vector
         tof_list = (rate_vector*reapro_matrix).tolist()[0]
 
         # log TOFs
-        self.__log_tof(tof_list, self._owner.gas_names())
+        self.__log_tof(tof_list, self._owner.gas_names)
 
         # Archive.
         self.archive_data('tofs', tof_list)
@@ -633,7 +633,7 @@ class MeanFieldSolver(SolverBase):
             return tof_list
         else:
             # Check gas name.
-            gas_names = self._owner.gas_names()
+            gas_names = self._owner.gas_names
             if gas_name not in gas_names:
                 msg = "'{}' is not a gas species in model".format(gas_name)
                 raise ParameterError(msg)
@@ -678,7 +678,7 @@ class MeanFieldSolver(SolverBase):
         m = len(fx)
         n = len(x)
         J = self._matrix(m, n)
-        inter_num = len(self._owner.adsorbate_names())
+        inter_num = len(self._owner.adsorbate_names)
 
         for j in xrange(n):
             print j
@@ -703,7 +703,7 @@ class MeanFieldSolver(SolverBase):
         """
         Function to correct free energies of solver.
         """
-        corrector = self._owner.corrector()
+        corrector = self._owner.corrector
 
         # Get correction function.
         if method == "shomate":
@@ -711,7 +711,7 @@ class MeanFieldSolver(SolverBase):
         elif method == "entropy":
             correct_func = corrector.entropy_correction
 
-        for gas_name in self._owner.gas_names():
+        for gas_name in self._owner.gas_names:
             correction_energy = correct_func(gas_name)
             self._G[gas_name] += correction_energy
 
@@ -728,21 +728,21 @@ class MeanFieldSolver(SolverBase):
         """
         # Pressure symbols objects.
         self._p_sym = tuple([sym.Symbol('p_' + gas_name, real=True, positive=True)
-                             for gas_name in self._owner.gas_names()])
+                             for gas_name in self._owner.gas_names])
 
         # Concentration symbols objects.
         self._c_sym = tuple([sym.Symbol('c_' + liquid_name, real=True, positive=True)
-                             for liquid_name in self._owner.liquid_names()])
+                             for liquid_name in self._owner.liquid_names])
 
         # Coverage symnols objects.
         # Adsorbates.
         self._ads_theta_sym = tuple([sym.Symbol(r'theta_' + ads_name, real=True, positive=True)
-                                     for ads_name in self._owner.adsorbate_names()])
+                                     for ads_name in self._owner.adsorbate_names])
 
         # Free sites.
         fsite_theta_sym = []
-        for site_name in self._owner.site_names():
-            total = self._owner.species_definitions()[site_name]['total']
+        for site_name in self._owner.site_names:
+            total = self._owner.species_definitions[site_name]['total']
             free_site_cvg = total
             for ads_name in self._classified_adsorbates[site_name]:
                 free_site_cvg -= self._extract_symbol(sp_name=ads_name,
@@ -751,11 +751,11 @@ class MeanFieldSolver(SolverBase):
         self._fsite_theta_sym = tuple(fsite_theta_sym)
 
         # Free energies symbols for each species.
-        sp_list = self._owner.species_definitions().keys()
+        sp_list = self._owner.species_definitions.keys()
         G_sym_list = []
         for idx, sp_name in enumerate(sp_list):
             # Add star symbol.
-            if sp_name in self._owner.site_names():
+            if sp_name in self._owner.site_names:
                 sp_name = '*_' + sp_name
                 sp_list[idx] = sp_name
 
@@ -794,19 +794,19 @@ class MeanFieldSolver(SolverBase):
         """
         # Set species list and symbols tuple.
         if symbol_type == 'pressure':
-            sp_list = self._owner.gas_names()
+            sp_list = self._owner.gas_names
             symbol_tup = self._p_sym
         elif symbol_type == 'concentration':
-            sp_list = self._owner.liquid_names()
+            sp_list = self._owner.liquid_names
             symbol_tup = self._c_sym
         elif symbol_type == 'ads_cvg':
-            sp_list = self._owner.adsorbate_names()
+            sp_list = self._owner.adsorbate_names
             symbol_tup = self._ads_theta_sym
         elif symbol_type == 'free_site_cvg':
-            sp_list = self._owner.site_names()
+            sp_list = self._owner.site_names
             symbol_tup = self._fsite_theta_sym
         elif symbol_type == 'free_energy':
-            sp_list = self._owner.species_definitions().keys()
+            sp_list = self._owner.species_definitions.keys()
             symbol_tup = self._G_sym
         else:
             msg_template = ("illegal symbol_type. symbol_type must be in {}")
@@ -884,7 +884,7 @@ class MeanFieldSolver(SolverBase):
             ts_energy_sym = state_energy_sym_list[1]
         elif len(state_energy_sym_list) == 2:
             # Get TS symbol.
-            rxn_idx = self._owner.rxn_expressions().index(rxn_expression)
+            rxn_idx = self._owner.rxn_expressions.index(rxn_expression)
             dG = self._relative_energies['dG'][rxn_idx]
             ts_idx = 0 if dG < 0 else -1
             ts_energy_sym = state_energy_sym_list[ts_idx]
@@ -916,7 +916,7 @@ class MeanFieldSolver(SolverBase):
         """
         # Go through all reaction expressions to get symbols of barriers.
         Gaf_syms, Gar_syms = [], []
-        for rxn_expression in self._owner.rxn_expressions():
+        for rxn_expression in self._owner.rxn_expressions:
             Gaf_sym, Gar_sym = self.get_single_barrier_symbols(rxn_expression)
             Gaf_syms.append(Gaf_sym)
             Gar_syms.append(Gar_sym)
@@ -958,7 +958,7 @@ class MeanFieldSolver(SolverBase):
         kB, h, T = self._kB_sym, self._h_sym, self._T_sym
         kf_syms, kr_syms = [], []
 
-        for idx, rxn_expression in enumerate(self._owner.rxn_expressions()):
+        for idx, rxn_expression in enumerate(self._owner.rxn_expressions):
             Gaf_syms, Gar_syms = self.get_barrier_symbols()
 
             Gaf = Gaf_syms[idx]
@@ -985,7 +985,7 @@ class MeanFieldSolver(SolverBase):
         Forward and reverse rate expression symbols.
         """
         # Get expression index.
-        rxn_idx = self._owner.rxn_expressions().index(rxn_expression)
+        rxn_idx = self._owner.rxn_expressions.index(rxn_expression)
 
         # Get rate constant symbols.
         kf_syms, kr_syms = self.get_rate_constant_syms()
@@ -1039,7 +1039,7 @@ class MeanFieldSolver(SolverBase):
         """
         # Loop over all elementary reaction.
         rf_syms, rr_syms = [], []
-        for rxn_expression in self._owner.rxn_expressions():
+        for rxn_expression in self._owner.rxn_expressions:
             rf_sym, rr_sym = self.get_single_rate_sym(rxn_expression)
             rf_syms.append(rf_sym)
             rr_syms.append(rr_sym)
@@ -1169,9 +1169,9 @@ class MeanFieldSolver(SolverBase):
 
         # Free energy value dict.
         G_dict = {}
-        sp_list = self._owner.species_definitions().keys()
+        sp_list = self._owner.species_definitions.keys()
         for G_sym, sp_name in zip(self._G_sym, sp_list):
-            if sp_name in self._owner.site_names():
+            if sp_name in self._owner.site_names:
                 sp_name = "*_" + sp_name
             G_dict.setdefault(G_sym, self._G[sp_name])
 
@@ -1192,7 +1192,7 @@ class MeanFieldSolver(SolverBase):
         Protected function to get gas pressure symbols substitution dict.
         """
         p_dict = {}
-        gas_names = self._owner.gas_names()
+        gas_names = self._owner.gas_names
         for p_sym, gas_name in zip(self._p_sym, gas_names):
             p_dict.setdefault(p_sym, self._p[gas_name])
 
@@ -1203,7 +1203,7 @@ class MeanFieldSolver(SolverBase):
         Protected function to get concentration symbols substitution dict.
         """
         c_dict = {}
-        liquid_names = self._owner.liquid_names()
+        liquid_names = self._owner.liquid_names
         for c_sym, liquid_name in zip(self._c_sym, liquid_names):
             c_dict.setdefault(c_sym, self._c[liquid_names])
 
@@ -1252,7 +1252,7 @@ class MeanFieldSolver(SolverBase):
         """
         Function to get TOF symbols for all elementary reactions.
         """
-        _, gas_matrix = self._owner.parser().get_stoichiometry_matrices()
+        _, gas_matrix = self._owner.parser.get_stoichiometry_matrices()
         gas_matrix = -sym.Matrix(gas_matrix)
 
         # Get net rates symbolic expressions vector.
@@ -1279,7 +1279,7 @@ class MeanFieldSolver(SolverBase):
         tof_vect = [self._mpf(float(tof)) for tof in tof_vect]
 
         # log TOFs
-        self.__log_tof(tof_vect, self._owner.gas_names())
+        self.__log_tof(tof_vect, self._owner.gas_names)
 
         return tuple(tof_vect)
 

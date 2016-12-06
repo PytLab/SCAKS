@@ -21,7 +21,7 @@ class ParserBaseTest(unittest.TestCase):
         " Test parser can be constructed in kinetic model. "
         # Construction.
         model = KineticModel(setup_file=self.parser_base_setup, verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
 
         # Check the parser class and base class type.
         self.assertTrue(isinstance(parser, RelativeEnergyParser))
@@ -32,7 +32,7 @@ class ParserBaseTest(unittest.TestCase):
 #        # Construction.
 #        model = KineticModel(setup_file="input_files/parser_base.mkm",
 #                             verbosity=logging.WARNING)
-#        parser = model.parser()
+#        parser = model.parser
 #
 #        # Test species definitions.
 #        ref_species_definitions = {'CO-O_2s': {'elements': {'C': 1, 'O': 2},
@@ -71,7 +71,7 @@ class ParserBaseTest(unittest.TestCase):
         " Make sure we can get the reactant product matrix and intermediate matrix correctly."
         # Construction.
         model = KineticModel(setup_file=self.parser_base_setup, verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
 
         ref_reapro_matrix = np.matrix([[1.0, -1.0, 0.0],
                                        [2.0, 0.0, -2.0],
@@ -89,7 +89,7 @@ class ParserBaseTest(unittest.TestCase):
 
         # Construction.
         model = KineticModel(setup_file=self.parser_base_setup, verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
 
         elementary_rxns = ['CO_g + *_s -> CO_s',
                            'O2_g + 2*_s -> 2O_s',
@@ -120,7 +120,7 @@ class ParserBaseTest(unittest.TestCase):
 
         # Construction.
         model = KineticModel(setup_file=self.parser_base_setup, verbosity=logging.WARNING)
-        parser = model.parser()
+        parser = model.parser
 
         ref_total_rxn_equation = "2CO_g + O2_g -> 2CO2_g"
         ret_total_rxn_equation = parser.get_total_rxn_equation()
