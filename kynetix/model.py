@@ -22,151 +22,128 @@ class KineticModel(object):
 
     # Attribute descriptors.
     # {{{
-    cls_name = "KineticModel"
-
-    setup_file = dc.String("setup_file", cls_name=cls_name, default="")
-    setup_dict = dc.Dict("setup_dict", cls_name=cls_name, default={})
+    setup_file = dc.String("setup_file", default="")
+    setup_dict = dc.Dict("setup_dict", default={})
     verbosity = dc.Integer("verbosity",
-                           cls_name=cls_name,
                            default=logging.INFO,
                            candidates=range(0, 60, 10))
 
-    parser = cpdc.Component("parser", cls_name=cls_name,
-                            default=None, candidates=["RelativeEnergyParser",
-                                                    "CsvParser",
-                                                    "KMCParser"])
+    parser = cpdc.Component("parser", default=None, candidates=["RelativeEnergyParser",
+                                                                "CsvParser",
+                                                                "KMCParser"])
 
-    solver = cpdc.Component("solver", cls_name=cls_name,
-                            default=None, candidates=["KMCSolver",
-                                                    "SteadyStateSolver"])
+    solver = cpdc.Component("solver", default=None, candidates=["KMCSolver",
+                                                                "SteadyStateSolver"])
 
-    corrector = cpdc.Component("corrector", cls_name=cls_name,
-                               default=None, candidates=["ThermodynamicCorrector"])
+    corrector = cpdc.Component("corrector", default=None, candidates=["ThermodynamicCorrector"])
 
-    table_maker = cpdc.Component("table_maker", cls_name=cls_name,
-                                 default=None, candidates=["CsvMaker"])
+    table_maker = cpdc.Component("table_maker", default=None, candidates=["CsvMaker"])
 
-    plotter = cpdc.Component("plotter", cls_name=cls_name,
-                             default=None, candidates=["EnergyProfilePlotter"])
+    plotter = cpdc.Component("plotter", default=None, candidates=["EnergyProfilePlotter"])
 
     # Temperature.
-    temperature = dc.Float("temperature", cls_name=cls_name, default=298.)
+    temperature = dc.Float("temperature", default=298.0)
 
     # Reaction expressions.
-    rxn_expressions = dc.Sequence("rxn_expressions",
-                                  cls_name=cls_name,
-                                  default=[],
-                                  entry_type=str)
+    rxn_expressions = dc.Sequence("rxn_expressions", default=[], entry_type=str)
 
     # Definition dict of species.
-    species_definitions = dc.Dict("species_definitions", cls_name=cls_name, default={})
+    species_definitions = dc.Dict("species_definitions", default={})
 
     # Model core components.
-    components = dc.Sequence("components", cls_name=cls_name, default=["parser"], entry_type=str)
+    components = dc.Sequence("components", default=["parser"], entry_type=str)
 
     # Data precision.
-    decimal_precision = dc.Integer("decimal_precision", cls_name=cls_name, default=100)
+    decimal_precision = dc.Integer("decimal_precision", default=100)
 
     # Perturbation size for numerical jacobian matrix.
-    perturbation_size = dc.Float("perturbation_size", cls_name=cls_name, default=0.01)
+    perturbation_size = dc.Float("perturbation_size", default=0.01)
 
     # Direction of perturbation.
-    perturbation_direction = dc.String("perturbation_direction",
-                                       cls_name=cls_name,
+    perturbation_direction = dc.String("perturbation_direction", 
                                        default="right",
                                        candidates=["right", "left"])
 
     # Archived variables.
     archived_variables = dc.Sequence("archive_data",
-                                     cls_name=cls_name,
                                      default=["steady_state_coverages"],
                                      entry_type=str)
 
     # Numerical representation.
     numerical_representation = dc.String("numerical_representation",
-                                         cls_name=cls_name,
                                          default="mpmath",
                                          candidates=["mpmath", "gmpy", "sympy"])
 
     # Rootfinding iterator type.
     rootfinding = dc.String("rootfinding",
-                            cls_name=cls_name,
                             default="MDNewton",
                             candidates=["MDNewton", "ConstrainedNewton"])
 
     # Iteration tolerance.
-    tolerance = dc.Float("tolerance", cls_name=cls_name, default=1e-8)
+    tolerance = dc.Float("tolerance", default=1e-8)
 
     # Max iteraction steps.
     max_rootfinding_iterations = dc.Integer("max_rootfinding_iterations",
-                                            cls_name=cls_name,
                                             default=100)
 
     # Ode integration buffer size.
-    ode_buffer_size = dc.Integer("ode_buffer_size", cls_name=cls_name, default=500)
+    ode_buffer_size = dc.Integer("ode_buffer_size", default=500)
 
     # Ode ouptut interval.
-    ode_output_interval = dc.Integer("ode_output_interval", cls_name=cls_name, default=200)
+    ode_output_interval = dc.Integer("ode_output_interval", default=200)
 
     # File to store data.
-    data_file = dc.String("data_file", cls_name=cls_name, default="data.pkl")
+    data_file = dc.String("data_file", default="data.pkl")
 
     # Species used for conversion from relative energy to absolute eneergy.
-    ref_species = dc.Sequence("ref_species", cls_name=cls_name, default=[], entry_type=str)
+    ref_species = dc.Sequence("ref_species", default=[], entry_type=str)
 
     # Reference energies used to calculate formation energy.
-    ref_energies = dc.Dict("ref_energies", cls_name=cls_name, default={})
+    ref_energies = dc.Dict("ref_energies", default={})
 
     # Basis vectors of unit cell.
     cell_vectors = dc.SpaceVectors("cell_vectors",
-                                   cls_name=cls_name,
                                    default=[[1.0, 0.0, 0.0],
                                             [0.0, 1.0, 0.0],
                                             [0.0, 0.0, 1.0]])
 
     # Basis sites coordinates.
     basis_sites = dc.SpaceVectors("basis_sites",
-                                  cls_name=cls_name,
                                   default=[[0.0, 0.0, 0.0]])
 
     # Area of unit cell (m^2).
-    unitcell_area = dc.Float("unitcell_area", cls_name=cls_name, default=0.0)
+    unitcell_area = dc.Float("unitcell_area", default=0.0)
 
     # Ratio of active area.
-    active_ratio = dc.Float("active_ratio", cls_name=cls_name, default=1.0)
+    active_ratio = dc.Float("active_ratio", default=1.0)
 
     # Supercell repetitions.
     repetitions = dc.Sequence("repetitions",
-                              cls_name=cls_name,
                               default=(1, 1, 1),
                               entry_type=int)
 
     # POC.
     periodic = dc.Sequence("periodic",
-                           cls_name=cls_name,
                            default=(True, True, True),
                            entry_type=bool)
 
     # kMC step number.
-    nstep = dc.Integer("nstep", cls_name=cls_name, default=1)
+    nstep = dc.Integer("nstep", default=1)
 
     # Random seed for kMC simulation.
-    random_seed = dc.Integer("random_seed", cls_name=cls_name, default=None)
+    random_seed = dc.Integer("random_seed", default=None)
 
     # Interval for trajectory dumping.
     trajectory_dump_interval = dc.Integer("trajectory_dump_interval",
-                                          cls_name=cls_name,
                                           default=1)
 
     # Random generator type.
     random_generator = dc.String("random_generator",
-                                 cls_name=cls_name,
                                  default="MT",
                                  candidates=["MT", "MINSTD", "RANLUX24", "RANLUNX48"])
 
     # kMC On-the-fly analysis type.
     analysis = dc.Sequence("analysis",
-                           cls_name=cls_name,
                            default=[],
                            entry_type=str,
                            candidates=["CoveragesAnalysis",
@@ -175,66 +152,59 @@ class KineticModel(object):
 
     # Interval of doing on-the-fly analysis.
     analysis_interval = dc.Sequence("analysis_interval",
-                                    cls_name=cls_name,
                                     default=None,
                                     entry_type=int)
 
     # All possible element types.
     possible_element_types = dc.Sequence("possible_element_types",
-                                         cls_name=cls_name,
                                          default=[],
                                          entry_type=str)
 
     # All possible site types.
     possible_site_types = dc.Sequence("possible_site_types",
-                                      cls_name=cls_name,
                                       default=[],
                                       entry_type=str)
 
     # Empty type.
-    empty_type = dc.String("empty_type", cls_name=cls_name, default="V")
+    empty_type = dc.String("empty_type", default="V")
 
     # Step from which TOF statistic begins.
-    tof_start = dc.Integer("tof_start", cls_name=cls_name, default=0)
+    tof_start = dc.Integer("tof_start", default=0)
 
     # Time limit.
-    time_limit = dc.Float("time_limit", cls_name=cls_name, default=float("inf"))
+    time_limit = dc.Float("time_limit", default=float("inf"))
 
     # Coverage ratios.
     coverages_ratios = dc.Sequence("coverages_ratios",
-                                   cls_name=cls_name,
                                    default=[],
                                    entry_type=float)
 
     # Extra trajectory dump control range.
     extra_trajectories = dc.Sequence("extra_trajectries",
-                                     cls_name=cls_name,
                                      default=None,
                                      entry_type=int)
 
     # The time kMC simulation start.
-    start_time = dc.Float("start_time", cls_name=cls_name, default=0.0)
+    start_time = dc.Float("start_time", default=0.0)
 
     # Interval for instantaneous TOF calculation.
-    tof_interval = dc.Float("tof_interval", cls_name=cls_name, default=10)
+    tof_interval = dc.Float("tof_interval", default=10)
 
     # Flag for redistribution operation.
-    do_redistribution = dc.Bool("do_redistribution", cls_name=cls_name, default=False)
+    do_redistribution = dc.Bool("do_redistribution", default=False)
 
     # Interval for redistribution operation.
     redistribution_interval = dc.Integer("redistribution_interval",
-                                         cls_name=cls_name,
                                          default=1)
 
     # Default fast species.
-    fast_species = dc.Sequence("fast_species", cls_name=cls_name, default=None, entry_type=str)
+    fast_species = dc.Sequence("fast_species", default=None, entry_type=str)
 
     # Split number for constrained redistribution.
-    nsplits = dc.Sequence("nsplits", cls_name=cls_name, default=(1, 1, 1), entry_type=int)
+    nsplits = dc.Sequence("nsplits", default=(1, 1, 1), entry_type=int)
 
     # Distributor type.
     distributor_type = dc.String("distributor_type",
-                                 cls_name=cls_name,
                                  default="RandomDistributor",
                                  candidates=["RandomDistributor", "ProcessRandomDistributor"])
     # }}}
