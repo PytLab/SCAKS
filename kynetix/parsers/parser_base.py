@@ -29,7 +29,8 @@ class ParserBase(ModelShell):
 
         # Parser's species definition
         # NOTE: parser's species definitions is the reference of model's.
-        self.__species_definitions = owner._KineticModel__species_definitions
+        attribute_name = mangled_name(self._owner, "species_definitions")
+        self.__species_definitions = getattr(self._owner, attribute_name)
 
         # Set logger.
         self.__logger = logging.getLogger("model.parser.ParserBase")
