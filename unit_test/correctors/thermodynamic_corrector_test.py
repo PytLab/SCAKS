@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 from mpmath import mpf
 
-from kynetix.model import KineticModel
+from kynetix.models.micro_kinetic_model import MicroKineticModel
 from kynetix.correctors import *
 
 from unit_test import *
@@ -21,7 +21,7 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
     def test_construction_and_query(self):
         " Test plotter construction and query. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         parser = model.parser
         corrector = model.corrector
@@ -31,7 +31,7 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
     def test_shomate_correction(self):
         " Test we can get correct energy correction by Shomate equation. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         corrector = model.corrector
 
@@ -49,7 +49,7 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
     def test_entropy_correction(self):
         " Make sure we can get correct entropy correction. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         corrector = model.corrector
 
@@ -66,7 +66,7 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
 
     def test_solvers_correction_energy(self):
         " Test solver's correction energy function. "
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         parser = model.parser
         parser.parse_data(filename=mkm_energy)

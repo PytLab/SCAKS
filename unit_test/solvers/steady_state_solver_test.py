@@ -7,7 +7,7 @@ from numpy import matrix
 import mpmath as mp
 from mpmath import mpf
 
-from kynetix.model import KineticModel
+from kynetix.models.micro_kinetic_model import MicroKineticModel
 from kynetix.solvers import *
 
 from unit_test import *
@@ -23,7 +23,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_solver_construction_query(self):
         " Test solver can be constructed in kinetic model. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
         solver = model.solver
 
         # Check the parser class and base class type.
@@ -52,7 +52,7 @@ class SteadyStateSolverTest(unittest.TestCase):
 #    def test_get_data(self):
 #        " Test solver can get data correctly. "
 #        # Construction.
-#        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+#        model = MicroKineticModel(setup_file="input_files/steady_state_solver.mkm",
 #                             verbosity=logging.WARNING)
 #        parser = model.parser()
 #        solver = model.solver()
@@ -102,7 +102,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_elementary_dtheta_dt_expression(self):
         " Test get_elementary_dtheta_dt_expression() function. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
         solver = model.solver
 
         # Check.
@@ -127,7 +127,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_adsorbate_dtheta_dt_expression(self):
         " Test get_adsorbate_dtheta_dt_expression() function. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         solver = model.solver
 
@@ -145,7 +145,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_dtheta_dt_expression(self):
         " Make sure we can get dtheta/dt expression correctly. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         solver = model.solver
 
@@ -164,7 +164,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_steady_state_function(self):
         " Test steady_state_function(). "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
@@ -184,7 +184,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_term_adsorbate_derivation(self):
         " Test private function __term_adsorbate_derivation(). "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         solver = model.solver
 
@@ -204,7 +204,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_total_term_adsorbate_derivation(self):
         " Test private function __total_term_adsorbate_derivation(). "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         solver = model.solver
 
@@ -227,7 +227,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_poly_adsorbate_derivation(self):
         " Test we can derive dtheta/dt expression correctly. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         solver = model.solver
 
@@ -255,7 +255,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_analytical_jacobian(self):
         " Make sure we can get analytical Jacobian matrix correctly. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
@@ -276,7 +276,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_get_residual(self):
         " Test we can get correct residual. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
@@ -293,7 +293,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_coarse_steady_state_cvgs(self):
         " Make sure we can get a coarse coverages. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
@@ -310,7 +310,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_get_steady_state_coverages(self):
         " Test we can get correct steady state coverages. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
@@ -328,7 +328,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_get_intermediates_Gs(self):
         " Test private function __get_intermediates_Gs(). "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
@@ -347,7 +347,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_get_Gs_tof(self):
         " Test private function __get_Gs_tof(). "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
@@ -370,7 +370,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_get_Gs_gas_tof(self):
         " Test private function __get_Gs_tof(). "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
@@ -391,7 +391,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_get_single_XTRC(self):
         " Test function get_single_XTRC(). "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
@@ -417,7 +417,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_get_single_XRC(self):
         " Test function get_single_XRC(). "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
@@ -439,7 +439,7 @@ class SteadyStateSolverTest(unittest.TestCase):
 #    def test_get_single_XRC_multi_thread(self):
 #        " Test function get_single_XRC() in multi-threads. "
 #        # Construction.
-#        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+#        model = MicroKineticModel(setup_file="input_files/steady_state_solver.mkm",
 #                             verbosity=logging.WARNING)
 #        parser = model.parser()
 #        solver = model.solver()
@@ -463,7 +463,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_get_elementary_dtheta_dt_sym(self):
         " Test we can get correct dtheta/dt expression for an elementary reaction. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
@@ -519,7 +519,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_steady_state_function_by_sym(self):
         " Test function steady_state_function(). "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
@@ -543,7 +543,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_analytical_jacobian_by_sym(self):
         " Test we can get correct jacobian matrix by symbol derivation. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver

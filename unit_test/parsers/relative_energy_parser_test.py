@@ -2,7 +2,7 @@ import logging
 import os
 import unittest
 
-from kynetix.model import KineticModel
+from kynetix.models.micro_kinetic_model import MicroKineticModel
 from kynetix.functions import *
 from kynetix.parsers import *
 
@@ -18,7 +18,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
     def test_relative_energy_parser_construction(self):
         " Test relative energy parser can be constructed. "
         # Construction.
-        model = KineticModel(setup_file=self.parser_setup, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.parser_setup, verbosity=logging.WARNING)
         parser = model.parser
 
         # Check the parser class and base class type.
@@ -29,7 +29,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
         " Make sure we can get unknown species correctly. "
 
         # Construction.
-        model = KineticModel(setup_file=self.parser_setup, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.parser_setup, verbosity=logging.WARNING)
         parser = model.parser
 
         ref_unknown_species = ['O2_g', 'CO_s', 'O_s', 'CO-O_2s']
@@ -39,7 +39,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
         self.assertListEqual(ref_unknown_species, ret_unknown_species)
 
         # Now add 'O2_g' to ref_species.
-        model._KineticModel__ref_species.append('O2_g')
+        model.ref_species.append('O2_g')
 
         ref_unknown_species = ['CO_s', 'O_s', 'CO-O_2s']
         ret_unknown_species = parser._RelativeEnergyParser__get_unknown_species()
@@ -50,7 +50,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
     def test_unknown_coeff_vector(self):
         " Make sure we can get unknown species vector and energy value. "
         # Construction.
-        model = KineticModel(setup_file=self.parser_setup, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.parser_setup, verbosity=logging.WARNING)
         parser = model.parser
 
         # Read relative energy data file.
@@ -102,7 +102,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
     def test_data_conversion(self):
         " Test relative energy can be converted to absolute energy. "
         # Construction.
-        model = KineticModel(setup_file=self.parser_setup, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.parser_setup, verbosity=logging.WARNING)
         parser = model.parser
 
         # Check G dict before conversion.
@@ -136,7 +136,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
         " Test data in relative energy file can be parsed correctly. "
 
         # Construction.
-        model = KineticModel(setup_file=self.parser_setup, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.parser_setup, verbosity=logging.WARNING)
         parser = model.parser
 
         # Check before parse.
@@ -171,7 +171,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
 
         # Check if relative == true.
         # Construct again.
-        model = KineticModel(setup_file=self.parser_setup,
+        model = MicroKineticModel(setup_file=self.parser_setup,
                              verbosity=logging.WARNING)
         parser = model.parser
 

@@ -1,7 +1,7 @@
 import logging
 import unittest
 
-from kynetix.model import KineticModel
+from kynetix.models.micro_kinetic_model import MicroKineticModel
 from kynetix.parsers import *
 
 from unit_test import *
@@ -36,7 +36,7 @@ class MicroKineticModelTest(unittest.TestCase):
     def test_mkm_construction_query(self):
         " Test micro kinetic model can be constructed with parser. "
         # Test construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
 
         # Load data in setup file.
         glob, loc = {}, {}
@@ -51,11 +51,11 @@ class MicroKineticModelTest(unittest.TestCase):
 
         self.assertTrue(isinstance(model.parser, RelativeEnergyParser))
 
-    def test_run_mkm(self):
+    def test_run(self):
         " Test micro kinetic model can run correctly. "
         self.setup_file = mkm_path + "/mkm_model.mkm"
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        model.run_mkm(data_file=mkm_energy)
+        model = MicroKineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
+        model.run(data_file=mkm_energy)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(MicroKineticModelTest)

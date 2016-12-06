@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 from mpmath import mpf
 
-from kynetix.model import KineticModel
+from kynetix.models.micro_kinetic_model import MicroKineticModel
 from kynetix.parsers.rxn_parser import *
 from kynetix.solvers import *
 
@@ -23,7 +23,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         # {{{
         " Test solver can be constructed in kinetic model. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
         solver = model.solver
 
         # Check the parser class and base class type.
@@ -54,7 +54,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         # {{{
         " Test solver can get data correctly. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
 
@@ -104,7 +104,7 @@ class MeanFieldSolverTest(unittest.TestCase):
     def test_get_state_energy(self):
         " Test we can get correct state energy. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
         parser = model.parser
         parser.parse_data(filename=mkm_energy)
         solver = model.solver
@@ -120,7 +120,7 @@ class MeanFieldSolverTest(unittest.TestCase):
     def test_get_single_relative_energies(self):
         " Make sure we can get correct relative energy for an elementary reaction. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
         parser = model.parser
         parser.parse_data(filename=mkm_energy)
         solver = model.solver
@@ -145,7 +145,7 @@ class MeanFieldSolverTest(unittest.TestCase):
     def test_get_relative_from_absolute(self):
         " Test we can get relative energies from absolute energies correctly. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
         parser = model.parser
         parser.parse_data(filename=mkm_energy)
         solver = model.solver
@@ -167,7 +167,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         # {{{
         " Make sure we can get rate constants correctly. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
 
@@ -192,7 +192,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         # {{{
         " Test we can get the Boltzmann converages. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
 
@@ -224,7 +224,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         # {{{
         "Make sure we can get the rate expression for an elementary reaction correctly. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
 
@@ -250,7 +250,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         # {{{
         " Test we can get all rate expressions correctly. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
         solver = model.solver
 
         ref_rate_expressions = (["rfs[0] = kf[0]*p['CO_g']*theta['*_s']",
@@ -268,7 +268,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         # {{{
         " Make sure we can get rates correctly. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
 
@@ -295,7 +295,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         # {{{
         " Make sure we can get the correct reversibilities. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
 
@@ -313,7 +313,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         # {{{
         " Test we can get TOF correctly. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
 
@@ -341,7 +341,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         # {{{
         " Make sure we can get all correct symbols. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
         solver = model.solver
 
         solver.get_data_symbols()
@@ -393,7 +393,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         # {{{
         " Test protected function _extract_symbol(). "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
         solver = model.solver
 
         solver.get_data_symbols()
@@ -425,7 +425,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         # {{{
         " Make sure we can get correct barrier expression for an elementary reaction. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
 
@@ -449,7 +449,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         # {{{
         " Make sure we can get all barrier expressions correctly. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
 
@@ -482,7 +482,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         # {{{
         " Test we can get get correct rate constants symbols. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
@@ -519,7 +519,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         # {{{
         " Test we can get get correct equilibrium constants symbols. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
 
@@ -555,7 +555,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         # {{{
         " Make sure we can get correct rate expression for an elementary reaction. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
 
@@ -611,7 +611,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         # {{{
         " Test private function _get_G_sub_dict(). "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
@@ -644,7 +644,7 @@ class MeanFieldSolverTest(unittest.TestCase):
     def test_get_theta_subs_dict(self):
         " Test protected function _get_theta_subs_dict(). "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
@@ -669,7 +669,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         # {{{
         " Test protected function _get_p_subs_dict(). "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
@@ -698,7 +698,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         # {{{
         " Make sure we can get correct substitution dict for all symbols. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
@@ -758,7 +758,7 @@ class MeanFieldSolverTest(unittest.TestCase):
     def test_get_rate_constants_by_sym(self):
         " Make sure we can get rate constant correctly by symbols derivation. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
@@ -779,7 +779,7 @@ class MeanFieldSolverTest(unittest.TestCase):
     def test_get_rates_by_syms(self):
         " Make sure we can get correct rates values by symbol derivation. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
@@ -806,7 +806,7 @@ class MeanFieldSolverTest(unittest.TestCase):
     def test_get_net_rates_by_sym(self):
         " Test net rates calculating by symbol derivation. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
@@ -832,7 +832,7 @@ class MeanFieldSolverTest(unittest.TestCase):
     def test_get_tof_by_sym(self):
         " Make sure we can get correct TOF value by symbols derivation. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver

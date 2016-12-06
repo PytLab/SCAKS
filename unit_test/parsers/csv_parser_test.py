@@ -1,7 +1,7 @@
 import logging
 import unittest
 
-from kynetix.model import KineticModel
+from kynetix.models.micro_kinetic_model import MicroKineticModel
 from kynetix.parsers import *
 
 from unit_test import *
@@ -16,7 +16,7 @@ class CsvParserTest(unittest.TestCase):
         " Test csv parser can be constructed. "
         # Construction.
         csv_setup = mkm_path + "/csv_parser.mkm"
-        model = KineticModel(setup_file=csv_setup, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=csv_setup, verbosity=logging.WARNING)
         parser = model.parser
 
         # Check the parser class and base class type.
@@ -27,7 +27,7 @@ class CsvParserTest(unittest.TestCase):
         " Test parsers can calculate reaction barriers correctly. "
         # Construction.
         csv_setup = mkm_path + "/csv_parser.mkm"
-        model = KineticModel(setup_file=csv_setup, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=csv_setup, verbosity=logging.WARNING)
         parser = model.parser
 
         # Before get absolute data.
@@ -58,7 +58,7 @@ class CsvParserTest(unittest.TestCase):
         " Test data in csv file can be read correctly. "
         # Construction.
         csv_setup = mkm_path + "/csv_parser.mkm"
-        model = KineticModel(setup_file=csv_setup, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=csv_setup, verbosity=logging.WARNING)
         parser = model.parser
 
         ref_species_definitions = {'CO2_g': {'pressure': 0.0},

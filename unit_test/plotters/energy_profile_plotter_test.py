@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 from mpmath import mpf
 
-from kynetix.model import KineticModel
+from kynetix.models.micro_kinetic_model import MicroKineticModel
 from kynetix.plotters import *
 
 from unit_test import *
@@ -21,7 +21,7 @@ class EnergyProfilePlotterTest(unittest.TestCase):
     def test_construction_and_query(self):
         " Test plotter construction and query. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
         parser = model.parser
         plotter = model.plotter
 

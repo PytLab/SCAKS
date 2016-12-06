@@ -3,7 +3,7 @@ import logging
 import os
 import unittest
 
-from kynetix.model import KineticModel
+from kynetix.models.micro_kinetic_model import MicroKineticModel
 from kynetix.functions import *
 from kynetix.table_makers import *
 
@@ -18,7 +18,7 @@ class CsvMakerTest(unittest.TestCase):
 
     def test_construction(self):
         " Test table maker can be constructed correctly. "
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         table_maker = model.table_maker
 
@@ -27,7 +27,7 @@ class CsvMakerTest(unittest.TestCase):
 
     def test_init_table(self):
         " Test we can initialize table correctly. "
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         table_maker = model.table_maker
 
@@ -37,7 +37,7 @@ class CsvMakerTest(unittest.TestCase):
     def test_get_formation_energy(self):
         " Test private function __get_formation_energy(). "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
+        model = MicroKineticModel(setup_file=self.setup_file,
                              verbosity=logging.WARNING)
         table_maker = model.table_maker
 
