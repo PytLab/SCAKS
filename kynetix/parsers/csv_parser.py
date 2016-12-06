@@ -40,7 +40,8 @@ class CsvParser(ParserBase):
         species_definitions: The updated species definition of model.
         """
         # NOTE: Get the REFERENCE of model's species definitions.
-        species_definitions = self._owner.species_definitions
+        attribute_name = mangled_name(self._owner, "species_definitions")
+        species_definitions = getattr(self._owner, attribute_name)
 
         # Check file existance.
         if not os.path.exists(filename):

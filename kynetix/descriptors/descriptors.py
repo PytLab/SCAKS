@@ -1,10 +1,12 @@
 """
 Definitions of attribute descriptors.
 """
+
 import numpy as np
+import copy
 
 class AttrDescriptor(object):
-    def __init__(self, name, default):
+    def __init__(self, name, default, deepcopy=False):
         """
         Base descriptor class for the attributes.
 
@@ -13,16 +15,20 @@ class AttrDescriptor(object):
         name: The attribute name, str.
         default: The default value when calling __get__() method,
                  could be any type.
+        deepcopy: The flag for returning the deepcopy or not, bool.
         """
-        # Get the mangled name.
         self.name = name
         self.default = default
+        self.deepcopy = deepcopy
 
     def __get__(self, instance, owner):
         private_name = "_{}__{}".format(instance.__class__.__name__, self.name)
         if private_name not in instance.__dict__:
             instance.__dict__[private_name] = self.default
-        return instance.__dict__[private_name]
+        if self.deepcopy:
+            return copy.deepcopy(instance.__dict__[private_name])
+        else:
+            return instance.__dict__[private_name]
 
     def __set__(self, instance, value):
         private_name = "_{}__{}".format(instance.__class__.__name__, self.name)
@@ -30,7 +36,7 @@ class AttrDescriptor(object):
 
 
 class Type(AttrDescriptor):
-    def __init__(self, name, type, default, candidates=None):
+    def __init__(self, name, type, default, deepcopy=False, candidates=None):
         """
         Descriptor for basic type attributes of kinetic model and its tools.
 
@@ -41,7 +47,7 @@ class Type(AttrDescriptor):
                  could be any type.
         candidates: All possible values of the attribute.
         """
-        super(Type, self).__init__(name, default)
+        super(Type, self).__init__(name, default, deepcopy)
         self.candidates = candidates
         self.type = type
 
@@ -60,13 +66,13 @@ class Type(AttrDescriptor):
 
 
 class Integer(Type):
-    def __init__(self, name, default, candidates=None):
-        super(Integer, self).__init__(name, int, default, candidates)
+    def __init__(self, name, default, deepcopy=False, candidates=None):
+        super(Integer, self).__init__(name, int, default, deepcopy, candidates)
 
 
 class Float(Type):
-    def __init__(self, name, default, candidates=None):
-        super(Float, self).__init__(name, float, default, candidates)
+    def __init__(self, name, default, deepcopy=False, candidates=None):
+        super(Float, self).__init__(name, float, default, deepcopy, candidates)
 
     def __set__(self, instance, value):
         # Overwrite father method.
@@ -82,26 +88,26 @@ class Float(Type):
         instance.__dict__[private_name] = value
 
 class String(Type):
-    def __init__(self, name, default, candidates=None):
-        super(String, self).__init__(name, str, default, candidates)
+    def __init__(self, name, default, deepcopy=False, candidates=None):
+        super(String, self).__init__(name, str, default, deepcopy, candidates)
 
 
 class Bool(Type):
-    def __init__(self, name, default, candidates=None):
-        super(Bool, self).__init__(name, bool, default, candidates)
+    def __init__(self, name, default, deepcopy=False, candidates=None):
+        super(Bool, self).__init__(name, bool, default, deepcopy, candidates)
 
 
 class Dict(Type):
-    def __init__(self, name, default, candidates=None):
-        super(Dict, self).__init__(name, dict, default, candidates)
+    def __init__(self, name, default,deepcopy=False, candidates=None):
+        super(Dict, self).__init__(name, dict, default, deepcopy, candidates)
 
 
 class Sequence(AttrDescriptor):
-    def __init__(self, name, default, entry_type=None, candidates=None):
+    def __init__(self, name, default, deepcopy=False, entry_type=None, candidates=None):
         """
         Descriptor for list type attributes of kinetic model and its tools.
         """
-        super(Sequence, self).__init__(name, default)
+        super(Sequence, self).__init__(name, default, deepcopy)
         self.candidates = candidates
         self.entry_type = entry_type
 
@@ -129,11 +135,11 @@ class Sequence(AttrDescriptor):
 
 
 class FloatList2D(AttrDescriptor):
-    def __init__(self, name, default):
+    def __init__(self, name, default, deepcopy=False):
         """
         Descriptor for 2D float list attributes of kinetic model.
         """
-        super(FloatList2D, self).__init__(name, default)
+        super(FloatList2D, self).__init__(name, default, deepcopy)
 
     def _check(self, value):
         data_array = np.array(value)
@@ -151,11 +157,11 @@ class FloatList2D(AttrDescriptor):
 
 
 class SpaceVectors(FloatList2D):
-    def __init__(self, name, default):
+    def __init__(self, name, default, deepcopy=False):
         """
         Descriptor for 3D space vectors list.
         """
-        super(SpaceVectors, self).__init__(name, default)
+        super(SpaceVectors, self).__init__(name, default, deepcopy)
 
     def __set__(self, instance, value):
         self._check(value)

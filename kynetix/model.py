@@ -48,7 +48,7 @@ class KineticModel(object):
     rxn_expressions = dc.Sequence("rxn_expressions", default=[], entry_type=str)
 
     # Definition dict of species.
-    species_definitions = dc.Dict("species_definitions", default={})
+    species_definitions = dc.Dict("species_definitions", default={}, deepcopy=True)
 
     # Model core components.
     components = dc.Sequence("components", default=["parser"], entry_type=str)
