@@ -1,6 +1,5 @@
 import cPickle as cpkl
 import copy
-import inspect
 import logging
 import logging.config
 import os
@@ -53,7 +52,6 @@ class KineticModel(object):
     # Model core components.
     components = dc.Sequence("components", default=["parser"], entry_type=str)
 
-    # Data precision.
     decimal_precision = dc.Integer("decimal_precision", default=100)
 
     # Perturbation size for numerical jacobian matrix.
@@ -229,11 +227,13 @@ class KineticModel(object):
         """
 
         # {{{
-        self.__class_name = self.__class__.__name__
+
+        # The class name.
+        self._cls_name = self.__class__.__name__
 
         # Physical constants.
-        self.__kB = kB_eV
-        self.__h = h_eV
+        self._kB = kB_eV
+        self._h = h_eV
 
         # Get setup dict.
         if setup_file is None and setup_dict is None:
@@ -252,24 +252,24 @@ class KineticModel(object):
         self.verbosity = verbosity
 
         # Set logger.
-        self.__set_logger()
+        self._set_logger()
 
         # Output MPI info.
         if mpi_installed and mpi_master:
-            self.__logger.info("------------------------------------")
-            self.__logger.info(" Model is runing in MPI Environment ")
-            self.__logger.info(" Number of process: {}".format(mpi_size))
-            self.__logger.info("------------------------------------")
-            self.__logger.info(" ")
+            self._logger.info("------------------------------------")
+            self._logger.info(" Model is runing in MPI Environment ")
+            self._logger.info(" Number of process: {}".format(mpi_size))
+            self._logger.info("------------------------------------")
+            self._logger.info(" ")
 
         # Energy flags.
-        self.__has_absolute_energy = False
-        self.__has_relative_energy = False
-        self.__relative_energies = {}
+        self._has_absolute_energy = False
+        self._has_relative_energy = False
+        self._relative_energies = {}
 
         # Load setup file.
-        self.__load(self.setup_dict)
-        self.__logger.info('kinetic modeling...success!\n')
+        self._load(self.setup_dict)
+        self._logger.info('kinetic modeling...success!\n')
         # }}}
 
     def run_mkm(self, **kwargs):
@@ -311,10 +311,10 @@ class KineticModel(object):
         if kwargs:
             for key in kwargs:
                 msg = "Found redundant keyword argument: {}".format(key)
-                self.__logger.warning(msg)
+                self._logger.warning(msg)
 
         if mpi_master:
-            self.__logger.info('--- Solve Micro-kinetic model ---')
+            self._logger.info('--- Solve Micro-kinetic model ---')
 
         # Get parser and solver.
         parser = self.__parser
@@ -322,25 +322,25 @@ class KineticModel(object):
 
         # Parse data.
         if mpi_master:
-            self.__logger.info('reading data...')
+            self._logger.info('reading data...')
         if relative:
             if mpi_master:
-                self.__logger.info('use relative energy directly...')
+                self._logger.info('use relative energy directly...')
         else:
             if mpi_master:
-                self.__logger.info('convert relative to absolute energy...')
+                self._logger.info('convert relative to absolute energy...')
         parser.parse_data(filename=data_file, relative=relative)
 
         # -- solve steady state coverages --
         if mpi_master:
-            self.__logger.info('passing data to solver...')
+            self._logger.info('passing data to solver...')
         solver.get_data()
 
         # solve ODE
         # !! do ODE integration AFTER passing data to solver !!
         if solve_ode:
             if mpi_master:
-                self.__logger.info("initial coverages = %s", str(init_cvgs))
+                self._logger.info("initial coverages = %s", str(init_cvgs))
             solver.solve_ode(initial_cvgs=init_cvgs)
             return
 
@@ -361,7 +361,7 @@ class KineticModel(object):
                 raise ParameterError(msg)
 
             if mpi_master:
-                self.__logger.info('use user-defined coverages as initial guess...')
+                self._logger.info('use user-defined coverages as initial guess...')
 
         elif os.path.exists("./data.pkl"):
             with open('data.pkl', 'rb') as f:
@@ -369,32 +369,32 @@ class KineticModel(object):
             init_guess = 'steady_state_coverage'
             if init_guess in data:
                 if mpi_master:
-                    self.__logger.info('use coverages in data.pkl as initial guess...')
+                    self._logger.info('use coverages in data.pkl as initial guess...')
                 init_cvgs = data[init_guess]
                 coarse_guess = False
             else:
                 if mpi_master:
-                    self.__logger.info('use Boltzmann coverages as initial guess...')
+                    self._logger.info('use Boltzmann coverages as initial guess...')
                 init_cvgs = solver.boltzmann_coverages()
 
         else:  # use Boltzmann coverage
             if mpi_master:
-                self.__logger.info('use Boltzmann coverages as initial guess...')
+                self._logger.info('use Boltzmann coverages as initial guess...')
             init_cvgs = solver.boltzmann_coverages()
 
         # Solve steady state coverages.
         # Use scipy.optimize.fsolve or not (fast but low-precision).
         if fsolve:
             if mpi_master:
-                self.__logger.info('using fsolve to get steady state coverages...')
+                self._logger.info('using fsolve to get steady state coverages...')
             ss_cvgs = solver.fsolve_steady_state_cvgs(init_cvgs)
         else:
             if coarse_guess:
                 if mpi_master:
-                    self.__logger.info('getting coarse steady state coverages...')
+                    self._logger.info('getting coarse steady state coverages...')
                 init_cvgs = solver.coarse_steady_state_cvgs(init_cvgs)  # coarse root
             if mpi_master:
-                self.__logger.info('getting precise steady state coverages...')
+                self._logger.info('getting precise steady state coverages...')
             ss_cvgs = solver.get_steady_state_cvgs(init_cvgs)
 
         # Get TOFs for gases.
@@ -453,7 +453,7 @@ class KineticModel(object):
         self.__solver.run(scripting=scripting,
                           trajectory_type=trajectory_type)
 
-    def __set_logger(self):
+    def _set_logger(self):
         """
         Private function to get logging.logger instance as logger of kinetic model.
         """
@@ -462,11 +462,7 @@ class KineticModel(object):
         if os.path.exists('./logging.conf'):
             logging.config.fileConfig('./logging.conf')
         else:
-            # Set logging level.
-            if hasattr(self, "_" + self.__class_name + "__verbosity"):
-                logger.setLevel(self.__verbosity)
-            else:
-                logger.setLevel(logging.INFO)
+            logger.setLevel(self.verbosity)
 
             # Create handlers.
             std_hdlr = logging.FileHandler('out.log')
@@ -483,7 +479,7 @@ class KineticModel(object):
             logger.addHandler(std_hdlr)
             logger.addHandler(console_hdlr)
 
-        self.__logger = logger
+        self._logger = logger
         # }}}
 
     def set_logger_level(self, handler_type, level):
@@ -502,7 +498,7 @@ class KineticModel(object):
         """
         # Locate handler.
         handler = None
-        for h in self.__logger.handlers:
+        for h in self._logger.handlers:
             if h.__class__.__name__ == handler_type:
                 handler = h
                 break
@@ -516,7 +512,7 @@ class KineticModel(object):
 
         return old_level
 
-    def __load(self, setup_dict):
+    def _load(self, setup_dict):
         """
         Load 'setup_file' into kinetic model by exec setup file
         and assigning all local variables as attrs of model.
@@ -525,8 +521,8 @@ class KineticModel(object):
         """
         # {{{
         if mpi_master:
-            self.__logger.info('Loading Kinetic Model...\n')
-            self.__logger.info('read in parameters...')
+            self._logger.info('Loading Kinetic Model...\n')
+            self._logger.info('read in parameters...')
 
         setup_dict_copy = copy.deepcopy(setup_dict)
 
@@ -543,20 +539,20 @@ class KineticModel(object):
             specials = ("rxn_expressions", "species_definitions")
             if key not in specials:
                 if mpi_master:
-                    self.__logger.info('{} = {}'.format(key, str(value)))
+                    self._logger.info('{} = {}'.format(key, str(value)))
 
             # If it is a iterable, loop to output.
             else:
                 if mpi_master:
-                    self.__logger.info("{} =".format(key))
+                    self._logger.info("{} =".format(key))
                 if type(setup_dict[key]) is dict:
                     for k, v in value.iteritems():
                         if mpi_master:
-                            self.__logger.info("        {}: {}".format(k, v))
+                            self._logger.info("        {}: {}".format(k, v))
                 else:
                     for item in value:
                         if mpi_master:
-                            self.__logger.info("        {}".format(item))
+                            self._logger.info("        {}".format(item))
 
             # Delete.
             del setup_dict_copy[key]
@@ -568,7 +564,7 @@ class KineticModel(object):
         # use parser parse essential attrs for other tools
         # Parse elementary rxns
         if mpi_master:
-            self.__logger.info('Parsing elementary rxns...')
+            self._logger.info('Parsing elementary rxns...')
         if self.__rxn_expressions:
             (self.__adsorbate_names,
              self.__gas_names,
@@ -587,23 +583,23 @@ class KineticModel(object):
         if setup_dict_copy:
             for key in setup_dict_copy:
                 msg = "Found redundant parameter '{}'".format(key)
-                self.__logger.warning(msg)
+                self._logger.warning(msg)
         # }}}
 
     @dc.Property
     def kB(self):
-        return self.__kB
+        return self._kB
 
     @dc.Property
     def h(self):
-        return self.__h
+        return self._h
 
     @dc.Property
     def logger(self):
         """
         Query function for model logger.
         """
-        return self.__logger
+        return self._logger
 
     @dc.Property
     def elementary_rxns_list(self):
@@ -652,14 +648,14 @@ class KineticModel(object):
         """
         Query function for relative energy flag.
         """
-        return self.__has_relative_energy
+        return self._has_relative_energy
 
     @dc.Property
     def has_absolute_energy(self):
         """
         Query function for absolute energy flag.
         """
-        return self.__has_absolute_energy
+        return self._has_absolute_energy
 
     @dc.Property
     @return_deepcopy
@@ -667,7 +663,7 @@ class KineticModel(object):
         """
         Query function for relative energy in data file.
         """
-        return self.__relative_energies
+        return self._relative_energies
 
     # ------------------------------------
     # KMC Parameters query functions.

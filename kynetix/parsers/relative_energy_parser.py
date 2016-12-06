@@ -309,8 +309,7 @@ class RelativeEnergyParser(ParserBase):
                     species_definitions[species]["formation_energy"] = self.__G_dict[species]
 
             # Set flag.
-            attribute_name = mangled_name(self._owner, "has_absolute_energy")
-            setattr(self._owner, attribute_name, True)
+            self._owner._has_absolute_energy = True
 
         # Get relative energy.
         if '_dG' and '_Ga' in self.__dict__:
@@ -321,12 +320,10 @@ class RelativeEnergyParser(ParserBase):
 
         # Get relative energies and pass it to model.
         relative_energies = self.__get_relative_from_relative()
-        attribute_name = mangled_name(self._owner, "relative_energies")
-        setattr(self._owner, attribute_name, relative_energies)
+        self._owner._relative_energies = relative_energies
 
-        # Set flags.
-        attribute_name = mangled_name(self._owner, "has_relative_energy")
-        setattr(self._owner, attribute_name, True)
+        # Set flags in model.
+        self._owner._has_relative_energy = True
 
         # Check the consistency of relative energies.
         if self._owner.has_absolute_energy:
