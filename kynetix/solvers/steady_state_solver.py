@@ -27,14 +27,6 @@ class SteadyStateSolver(MeanFieldSolver):
         # set logger
         self.__logger = logging.getLogger('model.solvers.SteadyStateSolver')
 
-        # Set parameter.
-        defaults = dict(rootfinding='MDNewton',
-                        tolerance=1e-8,
-                        max_rootfinding_iterations=100,
-                        stable_criterion=1e-10,
-                        ode_buffer_size=500,
-                        ode_output_interval=200)
-        self.update_parameters(defaults)
         # }}}
 
     def __constrain_coverages(self, cvgs_tuple):
@@ -825,7 +817,7 @@ class SteadyStateSolver(MeanFieldSolver):
             try:
             # {{{
                 # Good initial coverages.
-                if f_resid(c0) <= self._tolerance and not single_pt:
+                if f_resid(c0) <= self._owner.tolerance and not single_pt:
                     converged = True
                     self._coverage = c0
                     if mpi_master:
@@ -846,7 +838,7 @@ class SteadyStateSolver(MeanFieldSolver):
 
                 # Instantiate rootfinding iterator
                 # ConstrainedNewton iterator
-                if self._rootfinding == 'ConstrainedNewton':
+                if self._owner.rootfinding == 'ConstrainedNewton':
                     iterator_parameters = dict(J=J,
                                                constraint=constraint,
                                                norm=self._norm,
@@ -855,15 +847,15 @@ class SteadyStateSolver(MeanFieldSolver):
                                                Axb_solver=self._Axb_solver)
                     newton_iterator = ConstrainedNewton(f, c0, **iterator_parameters)
                 # MDNewton iterator
-                elif self._rootfinding == 'MDNewton':
+                elif self._owner.rootfinding == 'MDNewton':
                     iterator_parameters = dict(J=J, verbose=False)
                     newton_iterator = MDNewton(f, c0, **iterator_parameters)
                 else:
-                    msg='Unrecognized rootfinding iterator name [{}]'.format(self._rootfinding)
+                    msg='Unrecognized rootfinding iterator name [{}]'.format(self._owner.rootfinding)
                     raise ParameterError(msg)
 
                 if mpi_master:
-                    self.__logger.info('{} Iterator instantiation - success!'.format(self._rootfinding))
+                    self.__logger.info('{} Iterator instantiation - success!'.format(self._owner.rootfinding))
 
                 x = c0
                 old_error = 1e99
@@ -891,11 +883,11 @@ class SteadyStateSolver(MeanFieldSolver):
                                            nt_counter, float(resid), float(error))
 
                     # Reach the max iteraction time or not.
-                    reach_max_iter = nt_counter > self._max_rootfinding_iterations
+                    reach_max_iter = nt_counter > self._owner.max_rootfinding_iterations
 
                     # Less than tolerance
-                    if ((not reach_max_iter) and (error < self._tolerance)):
-                        if resid < self._tolerance:
+                    if ((not reach_max_iter) and (error < self._owner.tolerance)):
+                        if resid < self._owner.tolerance:
                             # Check whether there is minus value in x
                             for cvg in x:
                                 if cvg < 0.0:
@@ -1473,13 +1465,13 @@ class SteadyStateSolver(MeanFieldSolver):
                     ys.append(r.y.tolist())
 
                 # Info output.
-                if mpi_master and (nstep % self._ode_output_interval == 0):
+                if mpi_master and (nstep % self._owner.ode_output_interval == 0):
                     msg = "{:10.2f}%{:20f}" + "{:20.8e}"*nads
                     msg = msg.format(r.t/t_end*100, r.t, *r.y)
                     self.__logger.info(msg)
 
                 # Flush time coverages to file.
-                if traj_output and (nstep % self._ode_buffer_size == 0):
+                if traj_output and (nstep % self._owner.ode_buffer_size == 0):
                     if ts and ys:
                         last_time = ts[-1]
                         last_coverages = ys[-1]

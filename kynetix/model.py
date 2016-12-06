@@ -88,6 +88,26 @@ class KineticModel(object):
                                          default="mpmath",
                                          candidates=["mpmath", "gmpy", "sympy"])
 
+    # Rootfinding iterator type.
+    rootfinding = dc.String("rootfinding",
+                            cls_name=cls_name,
+                            default="MDNewton",
+                            candidates=["MDNewton", "ConstrainedNewton"])
+
+    # Iteration tolerance.
+    tolerance = dc.Float("tolerance", cls_name=cls_name, default=1e-8)
+
+    # Max iteraction steps.
+    max_rootfinding_iterations = dc.Integer("max_rootfinding_iterations",
+                                            cls_name=cls_name,
+                                            default=100)
+
+    # Ode integration buffer size.
+    ode_buffer_size = dc.Integer("ode_buffer_size", cls_name=cls_name, default=500)
+
+    # Ode ouptut interval.
+    ode_output_interval = dc.Integer("ode_output_interval", cls_name=cls_name, default=200)
+
     # File to store data.
     data_file = dc.String("data_file", cls_name=cls_name, default="data.pkl")
 
