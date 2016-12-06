@@ -4,7 +4,7 @@ import unittest
 
 import numpy as np
 
-from kynetix.model import KineticModel
+from kynetix.models.kmc_model import KMCModel
 from kynetix.solvers import *
 
 from unit_test import *
@@ -19,14 +19,14 @@ class KMCSolverTest(unittest.TestCase):
 
     def test_construction(self):
         " Make sure KMCSolver object can be constructed correctly. "
-        model = KineticModel(setup_file=self.setup, verbosity=logging.WARNING)
+        model = KMCModel(setup_file=self.setup, verbosity=logging.WARNING)
         solver = model.solver
 
         self.assertTrue(isinstance(solver, KMCSolver))
 
     def test_get_control_parameter(self):
         " Make sure we can get KMCControlParameter object. "
-        model = KineticModel(setup_file=self.setup, verbosity=logging.WARNING)
+        model = KMCModel(setup_file=self.setup, verbosity=logging.WARNING)
         solver = model.solver
 
         control_parameters = solver.get_control_parameters()
@@ -41,13 +41,13 @@ class KMCSolverTest(unittest.TestCase):
 
     def test_run(self):
         " Test the we can run the kmc model correctly. "
-        model = KineticModel(setup_file=self.setup, verbosity=logging.WARNING)
+        model = KMCModel(setup_file=self.setup, verbosity=logging.WARNING)
         parser = model.parser
         parser.parse_data(filename=kmc_energy, relative=True)
         solver = model.solver
-        model._KineticModel__processes = parser.parse_processes(filename=kmc_processes)
-        model._KineticModel__configuration = parser.parse_configuration(filename=kmc_config)
-        model._KineticModel__sitesmap = parser.construct_sitesmap(filename=kmc_sites)
+        model._KMCModel__processes = parser.parse_processes(filename=kmc_processes)
+        model._KMCModel__configuration = parser.parse_configuration(filename=kmc_config)
+        model._KMCModel__sitesmap = parser.construct_sitesmap(filename=kmc_sites)
 
         solver.run()
 

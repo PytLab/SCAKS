@@ -1,6 +1,5 @@
 import logging
 import os
-import logging
 
 from kynetix import mpi_master, mpi_size, mpi_installed
 import kynetix.models.kinetic_model as km

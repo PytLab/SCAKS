@@ -4,7 +4,7 @@ import unittest
 
 import numpy as np
 
-from kynetix.model import KineticModel
+from kynetix.models.kmc_model import KMCModel
 from kynetix.solvers import *
 
 from unit_test import *
@@ -19,14 +19,14 @@ class KMCTOFPluginTest(unittest.TestCase):
 
     def test_run_with_tof(self):
         " Make sure KMCSolver object can be constructed correctly. "
-        model = KineticModel(setup_file=self.setup, verbosity=logging.WARNING)
+        model = KMCModel(setup_file=self.setup, verbosity=logging.WARNING)
         parser = model.parser
         parser.parse_data(filename=kmc_energy, relative=True)
         
         # Run the model with analysis.
-        model.run_kmc(processes_file=kmc_processes,
-                      configuration_file=kmc_config,
-                      sitesmap_file=kmc_sites)
+        model.run(processes_file=kmc_processes,
+                  configuration_file=kmc_config,
+                  sitesmap_file=kmc_sites)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(KMCTOFPluginTest)
