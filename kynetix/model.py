@@ -6,8 +6,8 @@ import logging.config
 import os
 import sys
 
-import kynetix.descriptors as dc
-from kynetix import Property
+import kynetix.descriptors.descriptors as dc
+import kynetix.descriptors.component_descriptors as cpdc
 from kynetix import mpi_master, mpi_size, mpi_installed
 from kynetix.database.thermo_data import kB_eV, h_eV
 from kynetix.errors.error import *
@@ -31,23 +31,23 @@ class KineticModel(object):
                            default=logging.INFO,
                            candidates=range(0, 60, 10))
 
-    parser = dc.Component("parser", cls_name=cls_name,
-                          default=None, candidates=["RelativeEnergyParser",
+    parser = cpdc.Component("parser", cls_name=cls_name,
+                            default=None, candidates=["RelativeEnergyParser",
                                                     "CsvParser",
                                                     "KMCParser"])
 
-    solver = dc.Component("solver", cls_name=cls_name,
-                          default=None, candidates=["KMCSolver",
+    solver = cpdc.Component("solver", cls_name=cls_name,
+                            default=None, candidates=["KMCSolver",
                                                     "SteadyStateSolver"])
 
-    corrector = dc.Component("corrector", cls_name=cls_name,
-                             default=None, candidates=["ThermodynamicCorrector"])
+    corrector = cpdc.Component("corrector", cls_name=cls_name,
+                               default=None, candidates=["ThermodynamicCorrector"])
 
-    table_maker = dc.Component("table_maker", cls_name=cls_name,
-                                default=None, candidates=["CsvMaker"])
+    table_maker = cpdc.Component("table_maker", cls_name=cls_name,
+                                 default=None, candidates=["CsvMaker"])
 
-    plotter = dc.Component("plotter", cls_name=cls_name,
-                           default=None, candidates=["EnergyProfilePlotter"])
+    plotter = cpdc.Component("plotter", cls_name=cls_name,
+                             default=None, candidates=["EnergyProfilePlotter"])
 
     # Temperature.
     temperature = dc.Float("temperature", cls_name=cls_name, default=298.)
@@ -579,78 +579,78 @@ class KineticModel(object):
                 self.__logger.warning(msg)
         # }}}
 
-    @Property
+    @dc.Property
     def kB(self):
         return self.__kB
 
-    @Property
+    @dc.Property
     def h(self):
         return self.__h
 
-    @Property
+    @dc.Property
     def logger(self):
         """
         Query function for model logger.
         """
         return self.__logger
 
-    @Property
+    @dc.Property
     def elementary_rxns_list(self):
         """
         Query function for elementary reactions list.
         """
         return self.__elementary_rxns_list
 
-    @Property
+    @dc.Property
     def site_names(self):
         """
         Query function for site names in model.
         """
         return self.__site_names
 
-    @Property
+    @dc.Property
     def adsorbate_names(self):
         """
         Query function for adsorbate names in model.
         """
         return self.__adsorbate_names
 
-    @Property
+    @dc.Property
     def gas_names(self):
         """
         Query function for gas names in model.
         """
         return self.__gas_names
 
-    @Property
+    @dc.Property
     def liquid_names(self):
         """
         Query function for liquid names in model.
         """
         return self.__liquid_names
 
-    @Property
+    @dc.Property
     def transition_state_names(self):
         """
         Query function for transition state species names in model.
         """
         return self.__transition_state_names
 
-    @Property
+    @dc.Property
     def has_relative_energy(self):
         """
         Query function for relative energy flag.
         """
         return self.__has_relative_energy
 
-    @Property
+    @dc.Property
     def has_absolute_energy(self):
         """
         Query function for absolute energy flag.
         """
         return self.__has_absolute_energy
 
-    @Property
+    @dc.Property
     @return_deepcopy
     def relative_energies(self):
         """
@@ -661,28 +661,28 @@ class KineticModel(object):
     # ------------------------------------
     # KMC Parameters query functions.
 
-    @Property
+    @dc.Property
     def processes(self):
         """
         Query function for processes list.
         """
         return self.__processes
 
-    @Property
+    @dc.Property
     def configuration(self):
         """
         Query function for KMCConfiguration of model.
         """
         return self.__configuration
 
-    @Property
+    @dc.Property
     def sitesmap(self):
         """
         Query function for KMCSitesMap of model.
         """
         return self.__sitesmap
 
-    @Property
+    @dc.Property
     def process_mapping(self):
         """
         Query function for process reaction type mapping.

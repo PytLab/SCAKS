@@ -9,8 +9,9 @@ from scipy.integrate import odeint, ode
 from scipy.linalg import norm
 from scipy.optimize import fsolve
 
+import kynetix.descriptors.descriptors as dc
 from kynetix import mpi_master
-from kynetix import file_header, Property
+from kynetix import file_header
 from kynetix.errors.error import *
 from kynetix.utilities.format_utilities import get_list_string
 from kynetix.parsers.rxn_parser import *
@@ -1536,21 +1537,21 @@ class SteadyStateSolver(MeanFieldSolver):
         return times, coverages
         # }}}
 
-    @Property
+    @dc.Property
     def error(self):
         """
         Query function for converged error.
         """
         return self._error
 
-    @Property
+    @dc.Property
     def coverages(self):
         """
         Query function for converaged coverages.
         """
         return self._coverages
 
-    @Property
+    @dc.Property
     def good_guess(self):
         """
         Query function for good initial coverages.

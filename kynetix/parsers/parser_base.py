@@ -4,7 +4,8 @@ import logging
 
 import numpy as np
 
-from kynetix import ModelShell, Property
+import kynetix.descriptors.descriptors as dc
+from kynetix import ModelShell
 from kynetix import mpi_master
 from kynetix.functions import *
 from kynetix.errors.error import *
@@ -403,7 +404,7 @@ class ParserBase(ModelShell):
         """
         return self.__regex_dict
 
-    @Property
+    @dc.Property
     def species_definitions(self):
         """
         Query function for parser's species definitions.

@@ -3,7 +3,8 @@ import logging
 
 from scipy.linalg import solve
 
-from kynetix import mpi_master, Property
+import kynetix.descriptors.descriptors as dc
+from kynetix import mpi_master
 from kynetix.parsers.parser_base import *
 from kynetix.functions import *
 
@@ -340,7 +341,7 @@ class RelativeEnergyParser(ParserBase):
         return
         # }}}
 
-    @Property
+    @dc.Property
     @return_deepcopy
     def Ga(self):
         """
@@ -348,7 +349,7 @@ class RelativeEnergyParser(ParserBase):
         """
         return self._Ga
 
-    @Property
+    @dc.Property
     @return_deepcopy
     def dG(self):
         """

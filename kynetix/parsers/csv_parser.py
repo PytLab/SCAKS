@@ -2,7 +2,7 @@ import csv
 import logging
 import os
 
-from kynetix import Property
+import kynetix.descriptors.descriptors as dc
 from kynetix.parsers.parser_base import ParserBase
 from kynetix.errors.error import *
 from kynetix.functions import *
@@ -87,14 +87,14 @@ class CsvParser(ParserBase):
         return
         # }}}
 
-    @Property
+    @dc.Property
     def has_relative_energy(self):
         """
         Query function for relative energy flag.
         """
         return self.__has_relative_energy
 
-    @Property
+    @dc.Property
     def has_absolute_energy(self):
         """
         Query function for absolute energy flag.

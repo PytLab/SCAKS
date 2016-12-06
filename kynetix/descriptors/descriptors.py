@@ -1,12 +1,7 @@
 """
 Definitions of attribute descriptors.
 """
-
-from kynetix.parsers import *
-from kynetix.solvers import *
-from kynetix.table_makers import *
-from kynetix.correctors import *
-from kynetix.plotters import *
+import numpy as np
 
 class AttrDescriptor(object):
     def __init__(self, name, cls_name, default):
@@ -168,26 +163,20 @@ class SpaceVectors(FloatList2D):
         instance.__dict__[self.name] = value
 
 
-class Component(AttrDescriptor):
-    def __init__(self, name, cls_name, default, candidates):
-        """
-        Descriptor for kinetic model core components.
-        """
-        super(Component, self).__init__(name, cls_name, default)
-        self.candidates = candidates
+class Property(object):
+    def __init__(self, func):
+        self.func = func
+
+    def __get__(self, instance, cls):
+        val = self.func(instance)
+        attr_name = "_{}__{}".format(instance.__class__.__name__,
+                                     self.func.__name__)
+        if attr_name not in instance.__dict__:
+            setattr(instance, attr_name, val)
+        return val
 
     def __set__(self, instance, value):
-        # Instantialize the corresponding kinetic component.
-        if type(value) is not str:
-            raise ValueError("{} ({}) is not string".format(self.ori_name, value))
-        if value not in self.candidates:
-            raise ValueError("{} ({}) is not in {}".format(self.ori_name,
-                                                           value,
-                                                           self.candidates))
-        if value in globals():
-            parser_class = globals()[value]
-            parser_instance = parser_class(owner=instance)
-            instance.__dict__[self.name] = parser_instance
-        else:
-            raise ValueError("{} class is not found".format(value))
+        msg ="Changing value of {}.{} is not allowed".format(instance.__class__.__name__,
+                                                             self.func.__name__)
+        raise AttributeError(msg)
 
