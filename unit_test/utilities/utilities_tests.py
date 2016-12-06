@@ -1,12 +1,10 @@
 import unittest
 
-from check_utilities_test import CheckUtilitiesTest
 from coordinates_utilities_test import CoordinatesUtilitiesTest
 
 def suite():
     suite = unittest.TestSuite(
-        [unittest.TestLoader().loadTestsFromTestCase(CheckUtilitiesTest),
-         unittest.TestLoader().loadTestsFromTestCase(CoordinatesUtilitiesTest),
+         [unittest.TestLoader().loadTestsFromTestCase(CoordinatesUtilitiesTest),
          ])
     return suite
 
