@@ -297,6 +297,11 @@ class KineticModel(object):
         product_name = kwargs.pop("product_name", None)
         data_file = kwargs.pop("data_file", "./rel_energy.py")
 
+        if kwargs:
+            for key in kwargs:
+                msg = "Found redundant keyword argument: {}".format(key)
+                self.__logger.warning(msg)
+
         if mpi_master:
             self.__logger.info('--- Solve Micro-kinetic model ---')
 
