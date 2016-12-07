@@ -27,6 +27,7 @@ if __name__ == '__main__':
     # Remove auto-generated files.
     commands.getstatusoutput("for i in `find ./ -name 'auto_*'`; do rm -rf $i; done")
     commands.getstatusoutput("for i in `find ./ -name 'out.log'`; do rm -rf $i; done")
+    commands.getstatusoutput("for i in `find ./ -name 'log'`; do rm -rf $i; done")
     commands.getstatusoutput("for i in `find ./ -name '*.pkl'`; do rm -rf $i; done")
     commands.getstatusoutput("rm ./*.csv")
 

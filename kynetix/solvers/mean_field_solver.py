@@ -585,7 +585,7 @@ class MeanFieldSolver(SolverBase):
             all_data += data
         all_data += line_str
 
-        if mpi_master:
+        if self._owner.log_allowed:
             self.__logger.info(all_data)
 
         return all_data
@@ -651,7 +651,7 @@ class MeanFieldSolver(SolverBase):
             all_data += data
         all_data += line_str
 
-        if mpi_master:
+        if self._owner.log_allowed:
             self.__logger.info(all_data)
 
         return all_data

@@ -7,7 +7,7 @@ import sys
 
 import kynetix.descriptors.descriptors as dc
 import kynetix.descriptors.component_descriptors as cpdc
-from kynetix import mpi_master, mpi_size, mpi_installed
+from kynetix import mpi_master, mpi_size, mpi_installed, mpi_rank
 from kynetix.database.thermo_data import kB_eV, h_eV
 from kynetix.errors.error import *
 from kynetix.functions import *
@@ -99,7 +99,7 @@ class KineticModel(object):
         self._set_logger()
 
         # Output MPI info.
-        if mpi_installed and mpi_master:
+        if self.log_allowed:
             self._logger.info("------------------------------------")
             self._logger.info(" Model is runing in MPI Environment ")
             self._logger.info(" Number of process: {}".format(mpi_size))
@@ -113,34 +113,42 @@ class KineticModel(object):
 
         # Load setup file.
         self._load(self.setup_dict)
-        self._logger.info('{} creating...success!\n'.format(self.__class__.__name__))
+        if self.log_allowed:
+            self._logger.info('{} creating...success!\n'.format(self.__class__.__name__))
         # }}}
 
-    def _set_logger(self):
+    def _set_logger(self, filename=None):
         """
         Private function to get logging.logger instance as logger of kinetic model.
         """
         # {{{
+        # Create logger.
         logger = logging.getLogger('model')
-        if os.path.exists('./logging.conf'):
-            logging.config.fileConfig('./logging.conf')
-        else:
-            logger.setLevel(self.verbosity)
+        logger.setLevel(self.verbosity)
 
-            # Create handlers.
-            std_hdlr = logging.FileHandler('out.log')
-            std_hdlr.setLevel(logging.DEBUG)
-            console_hdlr = logging.StreamHandler()
-            console_hdlr.setLevel(logging.INFO)
+        # Set log file name.
+        if filename is None:
+            if not os.path.exists("./log"):
+                os.mkdir("./log")
+            if not mpi_installed or 1 == mpi_size:
+                filename = "./log/out.log"
+            else:
+                filename = "./log/out_{}.log".format(mpi_rank)
 
-            # Create formatter and add it to the handlers.
-            formatter = logging.Formatter('%(name)s   %(levelname)-8s %(message)s')
-            std_hdlr.setFormatter(formatter)
-            console_hdlr.setFormatter(formatter)
+        # Create handlers.
+        std_hdlr = logging.FileHandler(filename)
+        std_hdlr.setLevel(logging.DEBUG)
+        console_hdlr = logging.StreamHandler()
+        console_hdlr.setLevel(logging.INFO)
 
-            # Add the handlers to logger.
-            logger.addHandler(std_hdlr)
-            logger.addHandler(console_hdlr)
+        # Create formatter and add it to the handlers.
+        formatter = logging.Formatter('%(name)s   %(levelname)-8s %(message)s')
+        std_hdlr.setFormatter(formatter)
+        console_hdlr.setFormatter(formatter)
+
+        # Add the handlers to logger.
+        logger.addHandler(std_hdlr)
+        logger.addHandler(console_hdlr)
 
         self._logger = logger
         # }}}
@@ -194,7 +202,7 @@ class KineticModel(object):
         assign them as the attrs of model.
         """
         # {{{
-        if mpi_master:
+        if self.log_allowed:
             self._logger.info('Loading Kinetic Model...\n')
             self._logger.info('read in parameters...')
 
@@ -203,7 +211,7 @@ class KineticModel(object):
         for key, value in setup_dict.iteritems():
             # Check redundant parameter.
             if key not in class_attrs:
-                if mpi_master:
+                if self.log_allowed:
                     msg = "Found redundant parameter '{}'".format(key)
                     self._logger.warning(msg)
                 continue
@@ -218,20 +226,20 @@ class KineticModel(object):
             # Output info.
             specials = ("rxn_expressions", "species_definitions")
             if key not in specials:
-                if mpi_master:
+                if self.log_allowed:
                     self._logger.info('{} = {}'.format(key, str(value)))
 
             # If it is a iterable, loop to output.
             else:
-                if mpi_master:
+                if self.log_allowed:
                     self._logger.info("{} =".format(key))
                 if type(setup_dict[key]) is dict:
                     for k, v in value.iteritems():
-                        if mpi_master:
+                        if self.log_allowed:
                             self._logger.info("        {}: {}".format(k, v))
                 else:
                     for item in value:
-                        if mpi_master:
+                        if self.log_allowed:
                             self._logger.info("        {}".format(item))
 
         # Instantialize parser.
@@ -241,7 +249,7 @@ class KineticModel(object):
 
         # use parser parse essential attrs for other tools
         # Parse elementary rxns
-        if mpi_master:
+        if self.log_allowed:
             self._logger.info('Parsing elementary rxns...')
         if self.rxn_expressions:
             (self.__adsorbate_names,
@@ -256,6 +264,17 @@ class KineticModel(object):
         if "solver" in setup_dict:
             self.solver = setup_dict["solver"]
         # }}}
+
+    def run(self, *kwargs):
+        pass
+
+    @dc.Property
+    def log_allowed(self):
+        """
+        Flag for if log output is allowed.
+        """
+        # This function should be overridden in sub-class.
+        return False
 
     @dc.Property
     def kB(self):

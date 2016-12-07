@@ -82,7 +82,7 @@ class SteadyStateSolver(MeanFieldSolver):
         def compare_cvgs(cvgs1, cvgs2):
             "Compare two coverage tuples."
             if len(cvgs1) != len(cvgs2):
-                if mpi_master:
+                if self._owner.log_allowed:
                     self.__logger.warning('coverage length inconsistency is detected.')
                 return False
             for cvg1, cvg2 in zip(cvgs1, cvgs2):
@@ -93,7 +93,7 @@ class SteadyStateSolver(MeanFieldSolver):
         consistant = compare_cvgs(constrained_cvgs_tuple, cvgs_tuple)
         # log if constraint has been carried out
         if not consistant:
-            if mpi_master:
+            if self._owner.log_allowed:
                 self.__logger.warning('coverage constraining...\n')
                 self.__logger.debug('    initial coverage: %s', str(map(float, cvgs_tuple)))
                 self.__logger.debug('constrained coverage: %s\n',
@@ -754,7 +754,7 @@ class SteadyStateSolver(MeanFieldSolver):
             self._coverage = converged_cvgs
             # log steady state coverages.
             self.__log_sscvg(converged_cvgs, self._owner.adsorbate_names)
-            if mpi_master:
+            if self._owner.log_allowed:
                 self.__logger.info('error = %e', error)
 
             # Archive converged root and error.
@@ -807,7 +807,7 @@ class SteadyStateSolver(MeanFieldSolver):
         J = lambda x: self.analytical_jacobian(x, relative_energies=relative_energies)
 
         ############    Main Loop with changed initial guess   ##############
-        if mpi_master:
+        if self._owner.log_allowed:
             self.__logger.info('Entering main loop...')
         icvg_counter = 1  # initial coverage counter, outer
         cancel = False
@@ -820,7 +820,7 @@ class SteadyStateSolver(MeanFieldSolver):
                 if f_resid(c0) <= self._owner.tolerance and not single_pt:
                     converged = True
                     self._coverage = c0
-                    if mpi_master:
+                    if self._owner.log_allowed:
                         self.__logger.info('Good initial guess: \n%s', str(map(float, c0)))
 
                     # log steady state coverages
@@ -832,7 +832,7 @@ class SteadyStateSolver(MeanFieldSolver):
                     resid = self.get_residual(c0)
                     error = min(norm, resid)
                     self._error = error
-                    if mpi_master:
+                    if self._owner.log_allowed:
                         self.__logger.info('error = %e', error)
                     break
 
@@ -854,21 +854,21 @@ class SteadyStateSolver(MeanFieldSolver):
                     msg='Unrecognized rootfinding iterator name [{}]'.format(self._owner.rootfinding)
                     raise ParameterError(msg)
 
-                if mpi_master:
+                if self._owner.log_allowed:
                     self.__logger.info('{} Iterator instantiation - success!'.format(self._owner.rootfinding))
 
                 x = c0
                 old_error = 1e99
                 if c0:
                     # log initial guess
-                    if mpi_master:
+                    if self._owner.log_allowed:
                         self.__logger.info('initial guess coverage - success')
                         self.__logger.debug(str(map(float, c0)))
 
                 #####    Sub LOOP for a c0    #####
 
                 nt_counter = 0    # newton loop counter, inner
-                if mpi_master:
+                if self._owner.log_allowed:
                     self.__logger.info('entering Newton Iteration( %d )...', icvg_counter)
                     # log title
                     self.__logger.info('  %-10s   %5s  %18s  %18s',
@@ -878,7 +878,7 @@ class SteadyStateSolver(MeanFieldSolver):
                 for x, error, fx in newton_iterator:  # inner loop
                     nt_counter += 1
                     resid = f_resid(x)
-                    if mpi_master:
+                    if self._owner.log_allowed:
                         self.__logger.info('%-10s%10d%23.10e%23.10e', 'in_process',
                                            nt_counter, float(resid), float(error))
 
@@ -897,14 +897,14 @@ class SteadyStateSolver(MeanFieldSolver):
                                     lt_zero = False
                             # check END #
                             if not lt_zero:
-                                if mpi_master:
+                                if self._owner.log_allowed:
                                     self.__logger.info('%-10s%10d%23.10e%23.10e', 'success',
                                                        nt_counter, float(resid), float(error))
                                 # log steady state coverages
                                 self.__log_sscvg(x, self._owner.adsorbate_names)
                                 self._coverage = x
                                 self._error = error
-                                if mpi_master:
+                                if self._owner.log_allowed:
                                     self.__logger.info('error = %e', min(error, resid))
 
                                 # Update flags.
@@ -912,7 +912,7 @@ class SteadyStateSolver(MeanFieldSolver):
                                 converged = True
                                 break
                             else:  # bad root, iteration continue...
-                                if mpi_master:
+                                if self._owner.log_allowed:
                                     self.__logger.warning('bad root: %s', str(map(float, x)))
                                     self.__logger.warning('root finding continue...\n')
                         else:
@@ -920,7 +920,7 @@ class SteadyStateSolver(MeanFieldSolver):
 
                     # Reach the max iteration limit.
                     elif reach_max_iter:
-                        if mpi_master:
+                        if self._owner.log_allowed:
                             self.__logger.info('%-10s%10d%23.10e%23.10e', 'break',
                                                nt_counter, float(resid), float(error))
                             self.__logger.warning('Max rootfinding iteration number reached!')
@@ -931,7 +931,7 @@ class SteadyStateSolver(MeanFieldSolver):
 
                     # residual is almost stagnated
 #                     elif abs(error - old_error) < self._stable_criterion:
-#                         if mpi_master:
+#                         if self._owner.log_allowed:
 #                             self.__logger.info('%-10s%10d%23.10e%23.10e', 'stable',
 #                                                nt_counter, float(resid), float(error))
 #                             self.__logger.warning('stable root: %s', str(map(float, x)))
@@ -993,7 +993,7 @@ class SteadyStateSolver(MeanFieldSolver):
             all_data += data
         all_data += line_str
 
-        if mpi_master:
+        if self._owner.log_allowed:
             self.__logger.info(all_data)
 
         return all_data
@@ -1080,7 +1080,7 @@ class SteadyStateSolver(MeanFieldSolver):
         epsilon: The perturbation size for numerical jacobian matrix.
         """
         # {{{
-        if mpi_master:
+        if self._owner.log_allowed:
             self.__logger.info("Calculating Degree of Thermodynamic Rate Control(XTRC)...")
             self.__logger.info("-"*55 + "\n")
 
@@ -1090,7 +1090,7 @@ class SteadyStateSolver(MeanFieldSolver):
         # Get intermediate names.
         intermediates = (self._owner.adsorbate_names +
                          self._owner.transition_state_names)
-        if mpi_master:
+        if self._owner.log_allowed:
             self.__logger.info("surface species: {}".format(intermediates))
 
         kT = self._owner.kB*self._owner.temperature
@@ -1098,7 +1098,7 @@ class SteadyStateSolver(MeanFieldSolver):
         # Get perturbation size.
         if epsilon is None:
             epsilon = self._mpf(self._owner.perturbation_size)
-        if mpi_master:
+        if self._owner.log_allowed:
             self.__logger.info("epsilon = {:.2e}\n".format(float(epsilon)))
 
             # Original tof
@@ -1108,7 +1108,7 @@ class SteadyStateSolver(MeanFieldSolver):
         XTRCs = []
         # Loop over all intermediates.
         for i, intermediate in enumerate(intermediates):
-            if mpi_master:
+            if self._owner.log_allowed:
                 self.__logger.info("Calculating XTRC for '{}'...".format(intermediate))
 
             Gs_prime = copy.deepcopy(Gs)
@@ -1144,7 +1144,7 @@ class SteadyStateSolver(MeanFieldSolver):
             all_data += data
         all_data += line_str
 
-        if mpi_master:
+        if self._owner.log_allowed:
             self.__logger.info(all_data)
 
         return all_data
@@ -1222,7 +1222,7 @@ class SteadyStateSolver(MeanFieldSolver):
 
         all_data += line_str
 
-        if mpi_master:
+        if self._owner.log_allowed:
             self.__logger.info(all_data)
 
         return all_data
@@ -1241,7 +1241,7 @@ class SteadyStateSolver(MeanFieldSolver):
         parallel: use multi-threads or not, default value is False.
         """
         # {{{
-        if mpi_master:
+        if self._owner.log_allowed:
             self.__logger.info("Calculating Degree of Rate Control(XRC)...")
             self.__logger.info("-"*55 + "\n")
 
@@ -1260,7 +1260,7 @@ class SteadyStateSolver(MeanFieldSolver):
         # Get perturbation size.
         if epsilon is None:
             epsilon = self._mpf(self._owner.perturbation_size)
-        if mpi_master:
+        if self._owner.log_allowed:
             self.__logger.info("epsilon = {:.2e}\n".format(float(epsilon)))
 
         # Loop over all elementary reactions.
@@ -1297,7 +1297,7 @@ class SteadyStateSolver(MeanFieldSolver):
         if not parallel:
             XRCs = [None]*n_rxns
             for i in xrange(n_rxns):
-                if mpi_master:
+                if self._owner.log_allowed:
                     self.__logger.info("Calculating XRC for {} ...".format(rxn_expressions[i]))
 
                 # Get XRC for that elementary reaction.
@@ -1305,7 +1305,7 @@ class SteadyStateSolver(MeanFieldSolver):
                 XRCs[i] = XRC
 
                 # Ouput log info.
-                if mpi_master:
+                if self._owner.log_allowed:
                     self.__logger.info("XRC({}) = {:.2e}\n".format(rxn_expressions[i], float(XRC)))
         else:
             self.__logger.info("Calculating XRCs in multi-threads...")
@@ -1347,7 +1347,7 @@ class SteadyStateSolver(MeanFieldSolver):
             all_data += data
         all_data += line_str
 
-        if mpi_master:
+        if self._owner.log_allowed:
             self.__logger.info(all_data)
 
         return all_data
@@ -1357,13 +1357,13 @@ class SteadyStateSolver(MeanFieldSolver):
         """
         Use ODE integration to get new initial coverages guess.
         """
-        if mpi_master:
+        if self._owner.log_allowed:
             self.__logger.info("Use ODE integration to get new initial coverages...")
         end_time = random.randint(0, 10**5)
 
         new_cvgs = self.solve_ode(time_end=end_time)[-1]
 
-        if mpi_master:
+        if self._owner.log_allowed:
             self.__logger.info('modify initial coverage - success')
             self.__logger.debug(str(new_cvgs))
 
@@ -1436,7 +1436,7 @@ class SteadyStateSolver(MeanFieldSolver):
         ts, ys = [], []
 
         # integration loop
-        if mpi_master:
+        if self._owner.log_allowed:
             self.__logger.info('entering {} ODE integration loop...'.format(algo))
             msg = "start = {:.2f}  end = {:.2f}  step = {:.2f}\n".format(t_start, t_end, t_step)
             self.__logger.info(msg)
@@ -1465,7 +1465,7 @@ class SteadyStateSolver(MeanFieldSolver):
                     ys.append(r.y.tolist())
 
                 # Info output.
-                if mpi_master and (nstep % self._owner.ode_output_interval == 0):
+                if self._owner.log_allowed and (nstep % self._owner.ode_output_interval == 0):
                     msg = "{:10.2f}%{:20f}" + "{:20.8e}"*nads
                     msg = msg.format(r.t/t_end*100, r.t, *r.y)
                     self.__logger.info(msg)
@@ -1478,7 +1478,7 @@ class SteadyStateSolver(MeanFieldSolver):
                     ts, ys = self.__ode_flush(flush_counter, ts, ys)
                     flush_counter += 1
 
-            if mpi_master:
+            if self._owner.log_allowed:
                 self.__logger.info('%10s\n', 'finish')
 
         finally:
@@ -1489,7 +1489,7 @@ class SteadyStateSolver(MeanFieldSolver):
             if traj_output:
                 self.__ode_flush(flush_counter, ts, ys)
 
-            if mpi_master:
+            if self._owner.log_allowed:
                 self.__logger.info('ODE integration trajectory is written' +
                                    ' to auto_ode_coverages.py.')
 
