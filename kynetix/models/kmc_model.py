@@ -138,6 +138,10 @@ class KMCModel(km.KineticModel):
         """
         super(KMCModel, self).__init__(setup_file, setup_dict, verbosity)
 
+    # Overwrite father's function.
+    def _set_logger(self, filename="out.log"):
+        super(KMCModel, self)._set_logger(filename)
+
     def run(self,
             processes_file=None,
             configuration_file=None,
@@ -175,8 +179,18 @@ class KMCModel(km.KineticModel):
         self.__process_mapping = parser.process_mapping()
 
         # Run the lattice model.
-        self.__solver.run(scripting=scripting,
-                          trajectory_type=trajectory_type)
+        self.__solver.run(scripting=scripting, trajectory_type=trajectory_type)
+
+    @dc.Property
+    def log_allowed(self):
+        """
+        Flag for if log output is allowed.
+        """
+        # Only master processor can output log.
+        if mpi_master:
+            return True
+        else:
+            return False
 
     @dc.Property
     def processes(self):

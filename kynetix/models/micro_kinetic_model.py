@@ -80,6 +80,13 @@ class MicroKineticModel(km.KineticModel):
         """
         super(MicroKineticModel, self).__init__(setup_file, setup_dict, verbosity)
 
+    def _set_logger(self, filename=None):
+        super(MicroKineticModel, self)._set_logger(filename)
+
+        # if not master processor, no INFO to console.
+        if not mpi_master:
+            self.set_logger_level("console_hdlr", logging.WARN)
+
     def run(self, **kwargs):
         """
         Function to solve Micro-kinetic model using Steady State Approxmiation
@@ -121,7 +128,7 @@ class MicroKineticModel(km.KineticModel):
                 msg = "Found redundant keyword argument: {}".format(key)
                 self._logger.warning(msg)
 
-        if mpi_master:
+        if self.log_allowed:
             self._logger.info('--- Solve Micro-kinetic model ---')
 
         # Get parser and solver.
@@ -129,25 +136,25 @@ class MicroKineticModel(km.KineticModel):
         solver = self.__solver
 
         # Parse data.
-        if mpi_master:
+        if self.log_allowed:
             self._logger.info('reading data...')
         if relative:
-            if mpi_master:
+            if self.log_allowed:
                 self._logger.info('use relative energy directly...')
         else:
-            if mpi_master:
+            if self.log_allowed:
                 self._logger.info('convert relative to absolute energy...')
         parser.parse_data(filename=data_file, relative=relative)
 
         # -- solve steady state coverages --
-        if mpi_master:
+        if self.log_allowed:
             self._logger.info('passing data to solver...')
         solver.get_data()
 
         # solve ODE
         # !! do ODE integration AFTER passing data to solver !!
         if solve_ode:
-            if mpi_master:
+            if self.log_allowed:
                 self._logger.info("initial coverages = %s", str(init_cvgs))
             solver.solve_ode(initial_cvgs=init_cvgs)
             return
@@ -168,7 +175,7 @@ class MicroKineticModel(km.KineticModel):
                 msg = msg.format(len(self.__adsorbate_names), len(init_cvgs))
                 raise ParameterError(msg)
 
-            if mpi_master:
+            if self.log_allowed:
                 self._logger.info('use user-defined coverages as initial guess...')
 
         elif os.path.exists("./data.pkl"):
@@ -176,32 +183,32 @@ class MicroKineticModel(km.KineticModel):
                 data = cpkl.load(f)
             init_guess = 'steady_state_coverage'
             if init_guess in data:
-                if mpi_master:
+                if self.log_allowed:
                     self._logger.info('use coverages in data.pkl as initial guess...')
                 init_cvgs = data[init_guess]
                 coarse_guess = False
             else:
-                if mpi_master:
+                if self.log_allowed:
                     self._logger.info('use Boltzmann coverages as initial guess...')
                 init_cvgs = solver.boltzmann_coverages()
 
         else:  # use Boltzmann coverage
-            if mpi_master:
+            if self.log_allowed:
                 self._logger.info('use Boltzmann coverages as initial guess...')
             init_cvgs = solver.boltzmann_coverages()
 
         # Solve steady state coverages.
         # Use scipy.optimize.fsolve or not (fast but low-precision).
         if fsolve:
-            if mpi_master:
+            if self.log_allowed:
                 self._logger.info('using fsolve to get steady state coverages...')
             ss_cvgs = solver.fsolve_steady_state_cvgs(init_cvgs)
         else:
             if coarse_guess:
-                if mpi_master:
+                if self.log_allowed:
                     self._logger.info('getting coarse steady state coverages...')
                 init_cvgs = solver.coarse_steady_state_cvgs(init_cvgs)  # coarse root
-            if mpi_master:
+            if self.log_allowed:
                 self._logger.info('getting precise steady state coverages...')
             ss_cvgs = solver.get_steady_state_cvgs(init_cvgs)
 
@@ -220,4 +227,12 @@ class MicroKineticModel(km.KineticModel):
 
         return
         # }}}
+
+    @dc.Property
+    def log_allowed(self):
+        """
+        Flag for if log output is allowed.
+        """
+        # All processors can output log information.
+        return True
 
