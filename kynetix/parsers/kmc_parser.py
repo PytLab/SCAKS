@@ -205,7 +205,7 @@ class KMCParser(RelativeEnergyParser):
             processes = self.__parse_single_process(process_dict)
             all_processes.extend(processes)
 
-        if mpi_master:
+        if self._owner.log_allowed:
             self.__logger.info("Total {} processes instantalized.".format(len(all_processes)))
 
         return all_processes
@@ -251,7 +251,7 @@ class KMCParser(RelativeEnergyParser):
 
         for basis_site in process_dict["basis_sites"]:
             for coordinates in process_dict["coordinates_group"]:
-                if mpi_master:
+                if self._owner.log_allowed:
                     self.__logger.info("Coordinates = {}".format(coordinates))
                     self.__logger.info("Basis site = {}".format(basis_site))
 
@@ -272,7 +272,7 @@ class KMCParser(RelativeEnergyParser):
                     self.__process_mapping.append(process_mapping)
 
                 # Info output.
-                if mpi_master:
+                if self._owner.log_allowed:
                     self.__logger.info("Forward elements changes:")
                     self.__logger.info("    /{}".format(process_dict["elements_before"]))
                     self.__logger.info("    \{}".format(process_dict["elements_after"]))
@@ -299,12 +299,12 @@ class KMCParser(RelativeEnergyParser):
                     self.__process_mapping.append(process_mapping)
 
                 # Info output.
-                if not redist and mpi_master:
+                if not redist and self._owner.log_allowed:
                     self.__logger.info("Reverse elements changes:")
                     self.__logger.info("    /{}".format(process_dict["elements_after"]))
                     self.__logger.info("    \{}".format(process_dict["elements_before"]))
 
-        if mpi_master:
+        if self._owner.log_allowed:
             self.__logger.info("\n")
 
         return processes
@@ -317,7 +317,7 @@ class KMCParser(RelativeEnergyParser):
         # {{{
         # Get raw relative energies.
         Gaf, Gar, dG = self.__get_relative_energies(rxn_expression)
-        if mpi_master:
+        if self._owner.log_allowed:
             self.__logger.info("{} (Gaf={}, Gar={}, dG={})".format(rxn_expression, Gaf, Gar, dG))
 
         # Get reactants and product types.
@@ -326,7 +326,7 @@ class KMCParser(RelativeEnergyParser):
         istate, fstate = formula_list[0], formula_list[-1]
         is_types = [formula.type() for formula in istate]
         fs_types = [formula.type() for formula in fstate]
-        if mpi_master:
+        if self._owner.log_allowed:
             self.__logger.info("species type: {} -> {}".format(is_types, fs_types))
 
         # Get rate constant.
@@ -356,7 +356,7 @@ class KMCParser(RelativeEnergyParser):
             Ea = Gaf
             m = self.get_molecular_mass(formula.species(), absolute=True)
             rf = SolverBase.get_kCT(Ea, Auc, act_ratio, p, m, T)
-            if mpi_master:
+            if self._owner.log_allowed:
                 self.__logger.info("R(forward) = {} s^-1 (Collision Theory)".format(rf))
         # No gas participating.
         else:
@@ -373,11 +373,11 @@ class KMCParser(RelativeEnergyParser):
 
                 # Info output.
                 msg = "Correct forward barrier: {} -> {}".format(Gaf-correction_energy, Gaf)
-                if mpi_master:
+                if self._owner.log_allowed:
                     self.__logger.info(msg)
 
             rf = SolverBase.get_kTST(Gaf, T)
-            if mpi_master:
+            if self._owner.log_allowed:
                 self.__logger.info("R(forward) = {} s^-1 (Transition State Theory)".format(rf))
 
         # Reverse rate.
@@ -394,7 +394,7 @@ class KMCParser(RelativeEnergyParser):
             Ea = Gar
             m = self.get_molecular_mass(formula.species(), absolute=True)
             rr = SolverBase.get_kCT(Ea, Auc, act_ratio, p, m, T)
-            if mpi_master:
+            if self._owner.log_allowed:
                 self.__logger.info("R(reverse) = {} s^-1 (Collision Theory)".format(rr))
         # No gas participating.
         else:
@@ -410,19 +410,19 @@ class KMCParser(RelativeEnergyParser):
                 dG -= correction_energy
 
                 # Info output.
-                if mpi_master:
+                if self._owner.log_allowed:
                     msg = "Correct dG: {} -> {}".format(dG+correction_energy, dG)
                     self.__logger.info(msg)
 
                 # Use Equilibrium condition to get reverse rate.
                 K = exp(-dG/(kB_eV*T))
                 rr = rf/K
-                if mpi_master:
+                if self._owner.log_allowed:
                     self.__logger.info("R(reverse) = {} s^-1 (Equilibrium Condition)".format(rr))
             else:
                 # Use Transition State Theory.
                 rr = SolverBase.get_kTST(Gar, T)
-                if mpi_master:
+                if self._owner.log_allowed:
                     self.__logger.info("R(reverse) = {} s^-1 (Transition State Theory)".format(rr))
 
         return rf, rr

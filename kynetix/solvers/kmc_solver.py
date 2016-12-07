@@ -82,7 +82,7 @@ class KMCSolver(SolverBase):
                                 interactions=interactions)
 
         if scripting:
-            if mpi_master:
+            if self._owner.log_allowed:
                 self.script_lattice_model(model, script_name='kmc_model.py')
                 self.__logger.info('script auto_kmc_model.py created.')
 
@@ -93,7 +93,7 @@ class KMCSolver(SolverBase):
         trajectory_filename = "auto_{}_trajectory.py".format(trajectory_type)
 
         # Run KMC main loop.
-        if mpi_master:
+        if self._owner.log_allowed:
             self.__logger.info("")
             self.__logger.info("Entering KMCLibX main kMC loop...")
 
@@ -163,7 +163,7 @@ class KMCSolver(SolverBase):
                 script_name = 'auto_' + script_name
                 with open(script_name, 'w') as f:
                     f.write(content)
-                if mpi_master:
+                if self._owner.log_allowed:
                     self.__logger.info('interactions script written to %s', script_name)
 
             return content

@@ -70,7 +70,7 @@ class ParserBase(ModelShell):
 
         for equation_str in self._owner.rxn_expressions:
             # debug info
-            if mpi_master:
+            if self._owner.log_allowed:
                 self.__logger.debug('parsing [ %s ]', equation_str)
 
             # Get RxnEquation object.

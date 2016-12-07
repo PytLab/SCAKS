@@ -89,7 +89,7 @@ class CsvMaker(TableMakerBase):
                        "information": "None"}
                 writer.writerow(row)
 
-        if mpi_master:
+        if self._owner.log_allowed:
             self.__logger.info("Initialize data table - '{}'".format(filename))
 
     def __get_formation_energy(self, species_name, raw_energy):
