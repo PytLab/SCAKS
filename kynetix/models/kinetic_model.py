@@ -75,9 +75,6 @@ class KineticModel(object):
 
         # {{{
 
-        # The class name.
-        self._cls_name = self.__class__.__name__
-
         # Physical constants.
         self._kB = kB_eV
         self._h = h_eV
@@ -190,10 +187,13 @@ class KineticModel(object):
             self._logger.info('Loading Kinetic Model...\n')
             self._logger.info('read in parameters...')
 
-        setup_dict_copy = copy.deepcopy(setup_dict)
-
         # Set model attributes in setup file.
         for key, value in setup_dict.iteritems():
+            # Check redundant parameter.
+            if key not in self.__class__.__dict__:
+                msg = "Found redundant parameter '{}'".format(key)
+                self._logger.warning(msg)
+
             # Parser & solver will be set later.
             if key in ["parser", "solver"]:
                 continue
@@ -220,12 +220,10 @@ class KineticModel(object):
                         if mpi_master:
                             self._logger.info("        {}".format(item))
 
-            # Delete.
-            del setup_dict_copy[key]
-
         # Instantialize parser.
+        if "parser" not in setup_dict:
+            raise ParameterError("Parser is not set in kinetic model.")
         self.parser = setup_dict["parser"]
-        del setup_dict_copy["parser"]
 
         # use parser parse essential attrs for other tools
         # Parse elementary rxns
@@ -243,13 +241,6 @@ class KineticModel(object):
         # Instantialize solver.
         if "solver" in setup_dict:
             self.solver = setup_dict["solver"]
-            del setup_dict_copy["solver"]
-
-        # Check if there is redundant parameters.
-        if setup_dict_copy:
-            for key in setup_dict_copy:
-                msg = "Found redundant parameter '{}'".format(key)
-                self._logger.warning(msg)
         # }}}
 
     @dc.Property
