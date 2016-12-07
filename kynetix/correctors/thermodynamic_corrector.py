@@ -51,7 +51,7 @@ class ThermodynamicCorrector(CorrectorBase):
             raise ParameterError(msg)
 
         # Set temperature.
-        temperature = self._owner.temperature() if T is None else T
+        temperature = self._owner.temperature if T is None else T
         temperature_ref = 298.15
 
         def H(T, params):
@@ -172,13 +172,13 @@ class ThermodynamicCorrector(CorrectorBase):
 
         # Set default parameter values.
         if m is None:
-            parser = self._owner.parser()
+            parser = self._owner.parser
             m = parser.get_molecular_mass(species_name, absolute=True)
         if p is None:
-            species_definitions = self._owner.species_definitions()
+            species_definitions = self._owner.species_definitions
             p = species_definitions[species_site]['pressure']
         if T is None:
-            T = self._owner.temperature()
+            T = self._owner.temperature
 
         # Calculate partition functions.
 

@@ -46,14 +46,14 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         # LatticeModel object.
         self.__kmc_model = kmc_model
 
-        self.__coverage_ratios = kmc_model.coverage_ratios()
+        self.__coverage_ratios = kmc_model.coverage_ratios
 
         # Recorder variables.
         self.__times = []
         self.__steps = []
         self.__coverages = []
 
-        self.__possible_types = kmc_model.possible_element_types()
+        self.__possible_types = kmc_model.possible_element_types
 
         # Set logger.
         if mpi_master:
@@ -73,7 +73,7 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
 
         # Remove empty type from possible_types.
         possible_types_copy = deepcopy(self.__possible_types)
-        empty_type = self.__kmc_model.empty_type()
+        empty_type = self.__kmc_model.empty_type
         empty_type_idx = possible_types_copy.index(empty_type)
         possible_types_copy.pop(empty_type_idx)
 
@@ -108,7 +108,7 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
 
         # Remove empty type from possible_types.
         possible_types_copy = deepcopy(self.__possible_types)
-        empty_type = self.__kmc_model.empty_type()
+        empty_type = self.__kmc_model.empty_type
         empty_type_idx = possible_types_copy.index(empty_type)
         possible_types_copy.pop(empty_type_idx)
 

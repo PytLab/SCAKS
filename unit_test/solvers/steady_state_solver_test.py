@@ -7,7 +7,7 @@ from numpy import matrix
 import mpmath as mp
 from mpmath import mpf
 
-from kynetix.model import KineticModel
+from kynetix.models.micro_kinetic_model import MicroKineticModel
 from kynetix.solvers import *
 
 from unit_test import *
@@ -18,25 +18,43 @@ class SteadyStateSolverTest(unittest.TestCase):
     def setUp(self):
         # Test case setting.
         self.maxDiff = None
-        self.setup_file = mkm_path + "/steady_state_solver.mkm"
+        self.setup_dict = dict(
+            rxn_expressions = [
+                'CO_g + *_s -> CO_s',
+                'O2_g + 2*_s -> 2O_s',
+                'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s',
+            ],
+
+            species_definitions = {
+                'CO_g': {'pressure': 1.0},
+                'O2_g': {'pressure': 1./3.},
+                'CO2_g': {'pressure': 0.00},
+                's': {'site_name': '111', 'type': 'site', 'total': 1.0},
+            },
+
+            temperature = 450.0,
+            parser = "RelativeEnergyParser",
+            solver = "SteadyStateSolver",
+            corrector = "ThermodynamicCorrector",
+            plotter = "EnergyProfilePlotter",
+            ref_species = ['CO_g', 'CO2_g', 's'],
+            rootfinding = 'ConstrainedNewton',
+            decimal_precision = 100,
+            tolerance = 1e-20,
+            max_rootfinding_iterations = 100,
+        )
 
     def test_solver_construction_query(self):
         " Test solver can be constructed in kinetic model. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        solver = model.solver()
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        solver = model.solver
 
         # Check the parser class and base class type.
         self.assertTrue(isinstance(solver, SteadyStateSolver))
         self.assertEqual(solver.__class__.__base__.__name__, "MeanFieldSolver")
 
         # Test attributes query.
-
-        # Default protected attributes.
-        self.assertTrue(hasattr(solver, "_perturbation_size"))
-        self.assertTrue(hasattr(solver, "_perturbation_direction"))
-        self.assertTrue(hasattr(solver, "_numerical_representation"))
-        self.assertTrue(hasattr(solver, "_archived_variables"))
 
         # Numerical representations.
         self.assertTrue(hasattr(solver, "_math"))
@@ -58,7 +76,7 @@ class SteadyStateSolverTest(unittest.TestCase):
 #    def test_get_data(self):
 #        " Test solver can get data correctly. "
 #        # Construction.
-#        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+#        model = MicroKineticModel(setup_file="input_files/steady_state_solver.mkm",
 #                             verbosity=logging.WARNING)
 #        parser = model.parser()
 #        solver = model.solver()
@@ -108,8 +126,8 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_elementary_dtheta_dt_expression(self):
         " Test get_elementary_dtheta_dt_expression() function. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        solver = model.solver()
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        solver = model.solver
 
         # Check.
         adsorbate = "O_s"
@@ -133,9 +151,8 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_adsorbate_dtheta_dt_expression(self):
         " Test get_adsorbate_dtheta_dt_expression() function. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
-                             verbosity=logging.WARNING)
-        solver = model.solver()
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        solver = model.solver
 
         ref_dtheta_dt = ("kf[0]*p['CO_g']*theta['*_s'] - kr[0]*theta['CO_s'] + " +
                          "kr[2]*p['CO2_g']*theta['*_s']**2 - " +
@@ -151,9 +168,8 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_dtheta_dt_expression(self):
         " Make sure we can get dtheta/dt expression correctly. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
-                             verbosity=logging.WARNING)
-        solver = model.solver()
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        solver = model.solver
 
         # Check.
         dtheta_dt_CO_s = ("dtheta_dt[0] = kf[0]*p['CO_g']*theta['*_s'] - " +
@@ -170,10 +186,9 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_steady_state_function(self):
         " Test steady_state_function(). "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
-                             verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
 
         # Get data.
         parser.parse_data(filename=mkm_energy)
@@ -190,9 +205,8 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_term_adsorbate_derivation(self):
         " Test private function __term_adsorbate_derivation(). "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
-                             verbosity=logging.WARNING)
-        solver = model.solver()
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        solver = model.solver
 
         # Check.
         adsorbate = "CO_s"
@@ -210,9 +224,8 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_total_term_adsorbate_derivation(self):
         " Test private function __total_term_adsorbate_derivation(). "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
-                             verbosity=logging.WARNING)
-        solver = model.solver()
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        solver = model.solver
 
         # Check.
         adsorbate = "O_s"
@@ -233,9 +246,8 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_poly_adsorbate_derivation(self):
         " Test we can derive dtheta/dt expression correctly. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
-                             verbosity=logging.WARNING)
-        solver = model.solver()
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        solver = model.solver
 
         adsorbate = "CO_s"
         poly_expression = ("dtheta_dt[0] = kf[0]*p['CO_g']*theta['*_s'] - " +
@@ -261,10 +273,9 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_analytical_jacobian(self):
         " Make sure we can get analytical Jacobian matrix correctly. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
-                             verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -282,10 +293,9 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_get_residual(self):
         " Test we can get correct residual. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
-                             verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -299,10 +309,9 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_coarse_steady_state_cvgs(self):
         " Make sure we can get a coarse coverages. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
-                             verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -316,33 +325,26 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_get_steady_state_coverages(self):
         " Test we can get correct steady state coverages. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
-                             verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
         
         # Check.
         coverages = solver.boltzmann_coverages()
-        ref_sscvg = (mpf('0.9993009023313341077071690952744161899993498376199216404808490009152529045923214583626561308597735533188'),
-                     mpf('0.0006990944292324176713411953522859201607970088893776515794721879333704919691278789195839768935388121262119'))
+        ref_sscvg = [0.9993009023315728, 0.0006990944289937246]
         ret_sscvg = solver.get_steady_state_cvgs(coverages)
-        self.assertTupleEqual(ref_sscvg, ret_sscvg)
-
-        # Check error.
-        ref_error = mpf('2.915131960917183181735290581323356891541606225932002083392991290212256934502240148437948718330981045238e-38')
-        ret_error = solver.error()
-        self.assertEqual(ret_error, ref_error)
+        for ref, ret in zip(ref_sscvg, ret_sscvg):
+            self.assertAlmostEqual(ref, float(ret))
 
     def test_get_intermediates_Gs(self):
         " Test private function __get_intermediates_Gs(). "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
-                             verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -358,10 +360,9 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_get_Gs_tof(self):
         " Test private function __get_Gs_tof(). "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
-                             verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -372,20 +373,18 @@ class SteadyStateSolverTest(unittest.TestCase):
 
         # Check.
         Gs = solver._SteadyStateSolver__get_intermediates_Gs()
-        ref_tof = [mpf('0.0000655973959734845716839853127464104731569988368580121920613237008751507516356019917597493208387158845367'),
-                   mpf('-0.00006559739597348503704886124510603927478715353925738869127523791123005360979166894188698600090288385521978'),
-                   mpf('-0.00003279869798674251852443062255301963739357676962869434563761895561502680489741843434563928385867591142223')]
+        ref_tof = [0.000065597,-0.000065597,-0.000032798]
         ret_tof = solver._SteadyStateSolver__get_Gs_tof(Gs)
 
-        self.assertListEqual(ref_tof, ret_tof)
+        for ref, ret in zip(ref_tof, ret_tof):
+            self.assertAlmostEqual(ref, float(ret))
 
     def test_get_Gs_gas_tof(self):
         " Test private function __get_Gs_tof(). "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
-                             verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -396,17 +395,16 @@ class SteadyStateSolverTest(unittest.TestCase):
 
         # Check gas tof.
         Gs = solver._SteadyStateSolver__get_intermediates_Gs()
-        ref_tof = mpf('0.0000655973959734845716839853127464104731569988368580121920613237008751507516356019917597493208387158845367')
+        ref_tof = 0.000065597
         ret_tof = solver._SteadyStateSolver__get_Gs_tof(Gs, gas_name="CO2_g")
-        self.assertEqual(ref_tof, ret_tof)
+        self.assertAlmostEqual(ref_tof, float(ret_tof))
 
     def test_get_single_XTRC(self):
         " Test function get_single_XTRC(). "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
-                             verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -417,11 +415,10 @@ class SteadyStateSolverTest(unittest.TestCase):
 
         # Check.
         gas_name = "CO2_g"
-        ref_XTRC = [mpf('-1.140775679060479546680777929992790525034725825880253939251504297700926329015933617537522978478527774183'),
-                    mpf('-1.140775679060479546680777929992790525034725825880253939251504297700926329015933617537522978478527774183'),
-                    mpf('0.881465200934955213215196217181568318297209213874500010342977516784412704475283998243820141954241091872')]
+        ref_XTRC = [-1.140775679060,-1.1407756790, 0.8814652009]
         ret_XTRC = solver.get_single_XTRC(gas_name)
-        self.assertListEqual(ref_XTRC, ret_XTRC)
+        for ref, ret in zip(ref_XTRC, ret_XTRC):
+            self.assertAlmostEqual(ref, float(ret))
 
     def test_get_XTRC(self):
         " Test function get_XTRC(). "
@@ -430,10 +427,9 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_get_single_XRC(self):
         " Test function get_single_XRC(). "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
-                             verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -444,16 +440,15 @@ class SteadyStateSolverTest(unittest.TestCase):
 
         # Check.
         gas_name = "CO2_g"
-        ref_XRC = [mpf('-0.000000004330301262036152923211709673711721112213085538797673380141841669630093740288896353967710982069299592622'),
-                   mpf('0.9986021755886114784434712184789699872827416819468954527192794077349320805208548704540326869330347344589'),
-                   mpf('0.001398549092163431169588440111213386822318548225009429894534084532021244154191984863118384815049813695996')]
+        ref_XRC = [-0.00000, 0.9986, 0.00139]
         ret_XRC = solver.get_single_XRC(gas_name, epsilon=1e-5)
-        self.assertListEqual(ref_XRC, ret_XRC)
+        for ref, ret in zip(ref_XRC, ret_XRC):
+            self.assertAlmostEqual(ref, float(ret), places=4)
 
 #    def test_get_single_XRC_multi_thread(self):
 #        " Test function get_single_XRC() in multi-threads. "
 #        # Construction.
-#        model = KineticModel(setup_file="input_files/steady_state_solver.mkm",
+#        model = MicroKineticModel(setup_file="input_files/steady_state_solver.mkm",
 #                             verbosity=logging.WARNING)
 #        parser = model.parser()
 #        solver = model.solver()
@@ -477,10 +472,9 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_get_elementary_dtheta_dt_sym(self):
         " Test we can get correct dtheta/dt expression for an elementary reaction. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
-                             verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -533,10 +527,9 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_steady_state_function_by_sym(self):
         " Test function steady_state_function(). "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
-                             verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()
@@ -557,10 +550,9 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_analytical_jacobian_by_sym(self):
         " Test we can get correct jacobian matrix by symbol derivation. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
-                             verbosity=logging.WARNING)
-        parser = model.parser()
-        solver = model.solver()
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
 
         parser.parse_data(filename=mkm_energy)
         solver.get_data()

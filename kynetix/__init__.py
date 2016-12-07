@@ -75,11 +75,11 @@ class ModelShell(object):
         data: value in data dict, any python data type.
         """
         # Update data dict.
-        if data_name in self._archived_variables:
+        if data_name in self._owner.archived_variables:
             self._archived_data_dict[data_name] = data
             # Dump data dict to data file
             if self._archived_data_dict:
-                with open(self._owner.data_file(), 'wb') as f:
+                with open(self._owner.data_file, 'wb') as f:
                     pickle.dump(self._archived_data_dict, f)
 
     @staticmethod

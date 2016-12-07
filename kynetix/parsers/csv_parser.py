@@ -2,6 +2,7 @@ import csv
 import logging
 import os
 
+import kynetix.descriptors.descriptors as dc
 from kynetix.parsers.parser_base import ParserBase
 from kynetix.errors.error import *
 from kynetix.functions import *
@@ -72,30 +73,15 @@ class CsvParser(ParserBase):
         csvfile.close()
 
         # Set flag.
-        attribute_name = mangled_name(self._owner, "has_absolute_energy")
-        setattr(self._owner, attribute_name, True)
+        self._owner._has_absolute_energy = True
 
         # Get relative energies from absolute energies.
         relative_energies = self.get_relative_from_absolute()
-        attribute_name = mangled_name(self._owner, "relative_energies")
-        setattr(self._owner, attribute_name, relative_energies)
+        self._owner._relative_energies = relative_energies
 
         # Set flag.
-        attribute_name = mangled_name(self._owner, "has_relative_energy")
-        setattr(self._owner, attribute_name, True)
+        self._owner._has_relative_energy = True
 
         return
         # }}}
-
-    def has_relative_energy(self):
-        """
-        Query function for relative energy flag.
-        """
-        return self.__has_relative_energy
-
-    def has_absolute_energy(self):
-        """
-        Query function for absolute energy flag.
-        """
-        return self.__has_absolute_energy
 

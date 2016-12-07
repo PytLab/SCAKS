@@ -39,7 +39,6 @@ class KMCSolver(SolverBase):
             '# Do not make changes to this file ' +
             'unless you know what you are doing\n\n').format(__version__, time.asctime())
 
-    @do_cprofile("./KMCSolver_run.prof")
     def run(self,
             scripting=True,
             trajectory_type="lattice"):
@@ -56,7 +55,7 @@ class KMCSolver(SolverBase):
         """
         # {{{
         # Get analysis.
-        analysis_name = self._owner.analysis()
+        analysis_name = self._owner.analysis
         if analysis_name:
             analysis = []
             for classname in analysis_name:
@@ -67,15 +66,15 @@ class KMCSolver(SolverBase):
             analysis = None
 
         # Get interactions.
-        processes = self._owner.processes()
+        processes = self._owner.processes
         interactions = KMCInteractions(processes=processes,
                                        implicit_wildcards=True)
 
         # Get configuration.
-        configuration = self._owner.configuration()
+        configuration = self._owner.configuration
 
         # Get sitesmap.
-        sitesmap = self._owner.sitesmap()
+        sitesmap = self._owner.sitesmap
 
         # Construct KMCLatticeModel object.
         model = KMCLatticeModel(configuration=configuration,
@@ -110,15 +109,15 @@ class KMCSolver(SolverBase):
         """
         # {{{
         # Get parameters in model.
-        time_limit=self._owner.time_limit()
-        number_of_steps=self._owner.nstep()
-        dump_interval=self._owner.trajectory_dump_interval()
-        seed=self._owner.random_seed()
-        rng_type=self._owner.random_generator()
-        analysis_interval=self._owner.analysis_interval()
-        start_time=self._owner.start_time()
-        extra_traj=self._owner.extra_trajectories()
-        do_redistribution=self._owner.do_redistribution()
+        time_limit=self._owner.time_limit
+        number_of_steps=self._owner.nstep
+        dump_interval=self._owner.trajectory_dump_interval
+        seed=self._owner.random_seed
+        rng_type=self._owner.random_generator
+        analysis_interval=self._owner.analysis_interval
+        start_time=self._owner.start_time
+        extra_traj=self._owner.extra_trajectories
+        do_redistribution=self._owner.do_redistribution
 
         control_params = dict(time_limit=time_limit,
                               number_of_steps=number_of_steps,
@@ -132,11 +131,11 @@ class KMCSolver(SolverBase):
 
         if do_redistribution:
             redistribution_dict = dict(
-                redistribution_interval=self._owner.redistribution_interval(),
-                fast_species=self._owner.fast_species(),
-                nsplits=self._owner.nsplits(),
-                distributor_type=self._owner.distributor_type(),
-                empty_element=self._owner.empty_type()
+                redistribution_interval=self._owner.redistribution_interval,
+                fast_species=self._owner.fast_species,
+                nsplits=self._owner.nsplits,
+                distributor_type=self._owner.distributor_type,
+                empty_element=self._owner.empty_type
             )
             control_params.update(redistribution_dict)
 

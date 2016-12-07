@@ -9,6 +9,7 @@ from scipy.integrate import odeint, ode
 from scipy.linalg import norm
 from scipy.optimize import fsolve
 
+import kynetix.descriptors.descriptors as dc
 from kynetix import mpi_master
 from kynetix import file_header
 from kynetix.errors.error import *
@@ -26,14 +27,6 @@ class SteadyStateSolver(MeanFieldSolver):
         # set logger
         self.__logger = logging.getLogger('model.solvers.SteadyStateSolver')
 
-        # Set parameter.
-        defaults = dict(rootfinding='MDNewton',
-                        tolerance=1e-8,
-                        max_rootfinding_iterations=100,
-                        stable_criterion=1e-10,
-                        ode_buffer_size=500,
-                        ode_output_interval=200)
-        self.update_parameters(defaults)
         # }}}
 
     def __constrain_coverages(self, cvgs_tuple):
@@ -42,9 +35,9 @@ class SteadyStateSolver(MeanFieldSolver):
         between 0.0 and 1.0 or total number.
         """
         # {{{
-        species_definitions = self._owner.species_definitions()
-        adsorbate_names = self._owner.adsorbate_names()
-        site_names = self._owner.site_names()
+        species_definitions = self._owner.species_definitions
+        adsorbate_names = self._owner.adsorbate_names
+        site_names = self._owner.site_names
 
         # Convert tuple to dict
         cvgs_dict = self._cvg_tuple2dict(cvgs_tuple)
@@ -133,7 +126,7 @@ class SteadyStateSolver(MeanFieldSolver):
         """
         # {{{
         # Check adsorbate name.
-        if adsorbate_name not in self._owner.adsorbate_names():
+        if adsorbate_name not in self._owner.adsorbate_names:
             raise ValueError("'{}' is not an adsorbate!".format(adsorbate_name))
 
         # Get formula object list of the rxn_expression.
@@ -196,7 +189,7 @@ class SteadyStateSolver(MeanFieldSolver):
         # Collect all dtheta/dt exprression for an elementary reaction.
         dtheta_dt_expression_list = []
 
-        for rxn_expression in self._owner.rxn_expressions():
+        for rxn_expression in self._owner.rxn_expressions:
             single_dtheta_dt = self.get_elementary_dtheta_dt_expression(adsorbate_name,
                                                                         rxn_expression)
             if single_dtheta_dt:
@@ -214,7 +207,7 @@ class SteadyStateSolver(MeanFieldSolver):
         """
         # {{{
         dtheta_dt_expressions_list = []
-        for idx, adsorbate_name in enumerate(self._owner.adsorbate_names()):
+        for idx, adsorbate_name in enumerate(self._owner.adsorbate_names):
             dtheta_dt_expression = "dtheta_dt[" + str(idx) + "] = "
             dtheta_dt_expression += self.get_adsorbate_dtheta_dt_expression(adsorbate_name)
             dtheta_dt_expressions_list.append(dtheta_dt_expression)
@@ -244,7 +237,7 @@ class SteadyStateSolver(MeanFieldSolver):
         c = self._c
 
         # Rate of coverage change(dtheta_dt).
-        dtheta_dt = [0.0]*len(self._owner.adsorbate_names())
+        dtheta_dt = [0.0]*len(self._owner.adsorbate_names)
 
         dtheta_dt_expressions = '\n'.join(self.get_dtheta_dt_expressions())
         exec dtheta_dt_expressions in locals()
@@ -324,7 +317,7 @@ class SteadyStateSolver(MeanFieldSolver):
         The derivation expression, str.
         """
         # {{{
-        if adsorbate_name not in self._owner.adsorbate_names():
+        if adsorbate_name not in self._owner.adsorbate_names:
             raise ValueError("'" + adsorbate_name + "' is not in adsorbate_names")
 
         def theta(sp_name):
@@ -338,7 +331,7 @@ class SteadyStateSolver(MeanFieldSolver):
         formula = ChemFormula(adsorbate_name)
         site_name = formula.site()
         site_cvg_expr = theta('*_' + site_name)
-        site_total = self._owner.species_definitions()[site_name]['total']
+        site_total = self._owner.species_definitions[site_name]['total']
 
         # Get derivation expression wrt free site.
         def deriv_site_part(site_name, term_expression):
@@ -476,7 +469,7 @@ class SteadyStateSolver(MeanFieldSolver):
 
         # Generate Jacobian matrix.
         J = self._matrix(m, n)
-        adsorbate_names = self._owner.adsorbate_names()
+        adsorbate_names = self._owner.adsorbate_names
 
         # Fill matrix.
         for i in xrange(m):
@@ -505,12 +498,12 @@ class SteadyStateSolver(MeanFieldSolver):
         """
         # {{{
         # Check adsorbate name.
-        if adsorbate_name not in self._owner.adsorbate_names():
+        if adsorbate_name not in self._owner.adsorbate_names:
             msg = "'{}' is not an adsorbate".format(adsorbate_name)
             raise ParameterError(msg)
 
         # Check rxn expression.
-        if rxn_expression not in self._owner.rxn_expressions():
+        if rxn_expression not in self._owner.rxn_expressions:
             msg = "'{}' not in model's rxn_expressions.".format(rxn_expression)
             raise ParameterError(msg)
 
@@ -557,7 +550,7 @@ class SteadyStateSolver(MeanFieldSolver):
         total_dtheta_dt_sym = 0
 
         # Loop over all elementary reactions.
-        for rxn_expression in self._owner.rxn_expressions():
+        for rxn_expression in self._owner.rxn_expressions:
             dtheta_dt_sym = self.get_elementary_dtheta_dt_sym(adsorbate_name,
                                                               rxn_expression)
             # Adsorbate not in this reaction expression.
@@ -573,7 +566,7 @@ class SteadyStateSolver(MeanFieldSolver):
         Function to get dtheta/dt expressions for all adsorbates.
         """
         dtheta_dt_syms = []
-        for adsorbate_name in self._owner.adsorbate_names():
+        for adsorbate_name in self._owner.adsorbate_names:
             dtheta_dt_sym = self.get_adsorbate_dtheta_dt_sym(adsorbate_name)
             dtheta_dt_syms.append(dtheta_dt_sym)
 
@@ -625,7 +618,7 @@ class SteadyStateSolver(MeanFieldSolver):
             dthe_dt_sym = dtheta_dt_syms[i]
             # adsorbate (column).
             for j in xrange(n):
-                ads_name = self._owner.adsorbate_names()[j]
+                ads_name = self._owner.adsorbate_names[j]
                 theta_sym = self._extract_symbol(ads_name, 'ads_cvg')
                 sym_jacobian[i][j] = sym.Derivative(dthe_dt_sym, theta_sym).doit()
 
@@ -760,7 +753,7 @@ class SteadyStateSolver(MeanFieldSolver):
 
             self._coverage = converged_cvgs
             # log steady state coverages.
-            self.__log_sscvg(converged_cvgs, self._owner.adsorbate_names())
+            self.__log_sscvg(converged_cvgs, self._owner.adsorbate_names)
             if mpi_master:
                 self.__logger.info('error = %e', error)
 
@@ -824,14 +817,14 @@ class SteadyStateSolver(MeanFieldSolver):
             try:
             # {{{
                 # Good initial coverages.
-                if f_resid(c0) <= self._tolerance and not single_pt:
+                if f_resid(c0) <= self._owner.tolerance and not single_pt:
                     converged = True
                     self._coverage = c0
                     if mpi_master:
                         self.__logger.info('Good initial guess: \n%s', str(map(float, c0)))
 
                     # log steady state coverages
-                    self.__log_sscvg(c0, self._owner.adsorbate_names())
+                    self.__log_sscvg(c0, self._owner.adsorbate_names)
 
                     # Get error.
                     fx = self.steady_state_function(c0, relative_energies)  # dtheta/dts
@@ -845,7 +838,7 @@ class SteadyStateSolver(MeanFieldSolver):
 
                 # Instantiate rootfinding iterator
                 # ConstrainedNewton iterator
-                if self._rootfinding == 'ConstrainedNewton':
+                if self._owner.rootfinding == 'ConstrainedNewton':
                     iterator_parameters = dict(J=J,
                                                constraint=constraint,
                                                norm=self._norm,
@@ -854,15 +847,15 @@ class SteadyStateSolver(MeanFieldSolver):
                                                Axb_solver=self._Axb_solver)
                     newton_iterator = ConstrainedNewton(f, c0, **iterator_parameters)
                 # MDNewton iterator
-                elif self._rootfinding == 'MDNewton':
+                elif self._owner.rootfinding == 'MDNewton':
                     iterator_parameters = dict(J=J, verbose=False)
                     newton_iterator = MDNewton(f, c0, **iterator_parameters)
                 else:
-                    msg='Unrecognized rootfinding iterator name [{}]'.format(self._rootfinding)
+                    msg='Unrecognized rootfinding iterator name [{}]'.format(self._owner.rootfinding)
                     raise ParameterError(msg)
 
                 if mpi_master:
-                    self.__logger.info('{} Iterator instantiation - success!'.format(self._rootfinding))
+                    self.__logger.info('{} Iterator instantiation - success!'.format(self._owner.rootfinding))
 
                 x = c0
                 old_error = 1e99
@@ -890,11 +883,11 @@ class SteadyStateSolver(MeanFieldSolver):
                                            nt_counter, float(resid), float(error))
 
                     # Reach the max iteraction time or not.
-                    reach_max_iter = nt_counter > self._max_rootfinding_iterations
+                    reach_max_iter = nt_counter > self._owner.max_rootfinding_iterations
 
                     # Less than tolerance
-                    if ((not reach_max_iter) and (error < self._tolerance)):
-                        if resid < self._tolerance:
+                    if ((not reach_max_iter) and (error < self._owner.tolerance)):
+                        if resid < self._owner.tolerance:
                             # Check whether there is minus value in x
                             for cvg in x:
                                 if cvg < 0.0:
@@ -908,7 +901,7 @@ class SteadyStateSolver(MeanFieldSolver):
                                     self.__logger.info('%-10s%10d%23.10e%23.10e', 'success',
                                                        nt_counter, float(resid), float(error))
                                 # log steady state coverages
-                                self.__log_sscvg(x, self._owner.adsorbate_names())
+                                self.__log_sscvg(x, self._owner.adsorbate_names)
                                 self._coverage = x
                                 self._error = error
                                 if mpi_master:
@@ -1030,7 +1023,7 @@ class SteadyStateSolver(MeanFieldSolver):
                    "formation energies, so try to get steady state coverages first.")
             raise AttributeError(msg)
 
-        Gs_order = self._owner.adsorbate_names() + self._owner.transition_state_names()
+        Gs_order = self._owner.adsorbate_names + self._owner.transition_state_names
 
         # Copy the original energies.
         G_copy = copy.deepcopy(self._G)
@@ -1056,7 +1049,7 @@ class SteadyStateSolver(MeanFieldSolver):
             return tof_list
         else:
             # Check gas name.
-            gas_names = self._owner.gas_names()
+            gas_names = self._owner.gas_names
             if gas_name not in gas_names:
                 msg = "'{}' is not a gas species in model".format(gas_name)
                 raise ParameterError(msg)
@@ -1068,8 +1061,8 @@ class SteadyStateSolver(MeanFieldSolver):
         """
         Private helper function to get formation energies of intermediates.
         """
-        all_intermediates = (self._owner.adsorbate_names() +
-                             self._owner.transition_state_names())
+        all_intermediates = (self._owner.adsorbate_names +
+                             self._owner.transition_state_names)
         Gs = []
         for intermediates_name in all_intermediates:
             Gs.append(self._G[intermediates_name])
@@ -1095,16 +1088,16 @@ class SteadyStateSolver(MeanFieldSolver):
         Gs = self.__get_intermediates_Gs()
 
         # Get intermediate names.
-        intermediates = (self._owner.adsorbate_names() +
-                         self._owner.transition_state_names())
+        intermediates = (self._owner.adsorbate_names +
+                         self._owner.transition_state_names)
         if mpi_master:
             self.__logger.info("surface species: {}".format(intermediates))
 
-        kT = self._owner.kB()*self._owner.temperature()
+        kT = self._owner.kB*self._owner.temperature
 
         # Get perturbation size.
         if epsilon is None:
-            epsilon = self._mpf(self._perturbation_size)
+            epsilon = self._mpf(self._owner.perturbation_size)
         if mpi_master:
             self.__logger.info("epsilon = {:.2e}\n".format(float(epsilon)))
 
@@ -1142,8 +1135,8 @@ class SteadyStateSolver(MeanFieldSolver):
 
         all_data = ''
         all_data += head_str + line_str
-        intermediates = (self._owner.adsorbate_names() +
-                         self._owner.transition_state_names())
+        intermediates = (self._owner.adsorbate_names +
+                         self._owner.transition_state_names)
 
         for idx, (intermediate, XTRC) in enumerate(zip(intermediates, XTRCs)):
             idx = str(idx).zfill(2)
@@ -1175,19 +1168,19 @@ class SteadyStateSolver(MeanFieldSolver):
         # Get intermediates formation energies.
         Gs = self.__get_intermediates_Gs()
 
-        kT = self._owner.kB()*self._owner.temperature()
+        kT = self._owner.kB*self._owner.temperature
 
         # Get perturbation size.
         if epsilon is None:
-            epsilon = self._mpf(self._perturbation_size)
+            epsilon = self._mpf(self._owner.perturbation_size)
 
         # Get dr/dG matrix.
         drdG = numerical_jacobian(f=self.__get_Gs_tof,
                                   x=Gs,
-                                  num_repr=self._numerical_representation,
+                                  num_repr=self._owner.numerical_representation,
                                   matrix=self._matrix,
                                   h=epsilon,
-                                  direction=self._perturbation_direction)
+                                  direction=self._owner.perturbation_direction)
         r = self.__get_Gs_tof(Gs)
 
         # multiply 1/r to drdG matrix.
@@ -1211,9 +1204,9 @@ class SteadyStateSolver(MeanFieldSolver):
         Private helper function to log XTRC for all gas species.
         """
         # {{{
-        gas_names = self._owner.gas_names()
-        intermediate_names = (self._owner.adsorbate_names() +
-                              self._owner.transition_state_names())
+        gas_names = self._owner.gas_names
+        intermediate_names = (self._owner.adsorbate_names +
+                              self._owner.transition_state_names)
 
         head_str = "\n{:<15s}{:<30s}{:<30s}\n".format("gas", "intermediate", "XTRC")
         head_str = "Degree of Thermodynamic Rate Control:\n" + head_str
@@ -1266,12 +1259,12 @@ class SteadyStateSolver(MeanFieldSolver):
 
         # Get perturbation size.
         if epsilon is None:
-            epsilon = self._mpf(self._perturbation_size)
+            epsilon = self._mpf(self._owner.perturbation_size)
         if mpi_master:
             self.__logger.info("epsilon = {:.2e}\n".format(float(epsilon)))
 
         # Loop over all elementary reactions.
-        rxn_expressions = self._owner.rxn_expressions()
+        rxn_expressions = self._owner.rxn_expressions
         n_rxns = len(rxn_expressions)
 
         def get_XRCi(idx):
@@ -1346,7 +1339,7 @@ class SteadyStateSolver(MeanFieldSolver):
 
         all_data = ''
         all_data += head_str + line_str
-        rxn_expressions = self._owner.rxn_expressions()
+        rxn_expressions = self._owner.rxn_expressions
 
         for idx, (rxn_expression, XRC) in enumerate(zip(rxn_expressions, XRCs)):
             idx = str(idx).zfill(2)
@@ -1421,7 +1414,7 @@ class SteadyStateSolver(MeanFieldSolver):
         t_end = time_end
         t_step = time_span
 
-        adsorbate_names = self._owner.adsorbate_names()
+        adsorbate_names = self._owner.adsorbate_names
         nads = len(adsorbate_names)
 
         # set initial points
@@ -1472,13 +1465,13 @@ class SteadyStateSolver(MeanFieldSolver):
                     ys.append(r.y.tolist())
 
                 # Info output.
-                if mpi_master and (nstep % self._ode_output_interval == 0):
+                if mpi_master and (nstep % self._owner.ode_output_interval == 0):
                     msg = "{:10.2f}%{:20f}" + "{:20.8e}"*nads
                     msg = msg.format(r.t/t_end*100, r.t, *r.y)
                     self.__logger.info(msg)
 
                 # Flush time coverages to file.
-                if traj_output and (nstep % self._ode_buffer_size == 0):
+                if traj_output and (nstep % self._owner.ode_buffer_size == 0):
                     if ts and ys:
                         last_time = ts[-1]
                         last_coverages = ys[-1]
@@ -1536,18 +1529,21 @@ class SteadyStateSolver(MeanFieldSolver):
         return times, coverages
         # }}}
 
+    @dc.Property
     def error(self):
         """
         Query function for converged error.
         """
         return self._error
 
+    @dc.Property
     def coverages(self):
         """
         Query function for converaged coverages.
         """
         return self._coverages
 
+    @dc.Property
     def good_guess(self):
         """
         Query function for good initial coverages.

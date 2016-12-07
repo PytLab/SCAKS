@@ -3,6 +3,7 @@ import logging
 
 from scipy.linalg import solve
 
+import kynetix.descriptors.descriptors as dc
 from kynetix import mpi_master
 from kynetix.parsers.parser_base import *
 from kynetix.functions import *
@@ -32,11 +33,11 @@ class RelativeEnergyParser(ParserBase):
         """
 
         if hasattr(self, "_Ga"):
-            if len(self._Ga) != len(self._owner.rxn_expressions()):
+            if len(self._Ga) != len(self._owner.rxn_expressions):
                 raise ValueError("Invalid shape of Ga.")
 
         if hasattr(self, "_dG"):
-            if len(self._dG) != len(self._owner.rxn_expressions()):
+            if len(self._dG) != len(self._owner.rxn_expressions):
                 raise ValueError("Invalid shape of dG.")
 
         return
@@ -49,13 +50,13 @@ class RelativeEnergyParser(ParserBase):
         Private function to get species whose free energy is unknown.
         """
         # Get all species.
-        all_species = (self._owner.site_names() + self._owner.gas_names() +
-                       self._owner.liquid_names() + self._owner.adsorbate_names() +
-                       self._owner.transition_state_names())
+        all_species = (self._owner.site_names + self._owner.gas_names +
+                       self._owner.liquid_names + self._owner.adsorbate_names +
+                       self._owner.transition_state_names)
         all_species = list(all_species)
 
         # Remove known species.
-        for known_species in self._owner.ref_species():
+        for known_species in self._owner.ref_species:
             all_species.remove(known_species)
             self.__G_dict.setdefault(known_species, 0.0)
 
@@ -89,7 +90,7 @@ class RelativeEnergyParser(ParserBase):
         The shape of coefficient vector is the same with that of unknown_species.
         """
         # Get relative energies for the elementary reaction.
-        idx = self._owner.rxn_expressions().index(rxn_expression)
+        idx = self._owner.rxn_expressions.index(rxn_expression)
         Ga, dG = self._Ga[idx], self._dG[idx]
 
         # Get ChemState object list.
@@ -169,7 +170,7 @@ class RelativeEnergyParser(ParserBase):
 
         # Get coefficients matrix A and values vector b
         A, b = [], []
-        for rxn_expression in self._owner.rxn_expressions():
+        for rxn_expression in self._owner.rxn_expressions:
             coeff_vects, value = self.__get_unknown_coeff_vector(rxn_expression)
             A.extend(coeff_vects)
             b.extend(value)
@@ -184,7 +185,7 @@ class RelativeEnergyParser(ParserBase):
             if mpi_master:
                 self.__logger.warning('!!! %d equations for %d variables !!!' +
                                   'please check your [ ref_species ] in [ %s ]',
-                                  row, col, self._owner.setup_file())
+                                  row, col, self._owner.setup_file)
         if mpi_master:
             self.__logger.debug('b = \n{}'.format(str(b)))
             self.__logger.debug('b.shape = {}'.format(str(b.shape)))
@@ -228,7 +229,7 @@ class RelativeEnergyParser(ParserBase):
         """
         Private helper function to get relative energies dict from relative energy.
         """
-
+        # {{{
         # Correct forward barrier.
         Gafs, dGs = [], []
         for Gaf, dG in zip(self._Ga, self._dG):
@@ -250,6 +251,7 @@ class RelativeEnergyParser(ParserBase):
         relative_energies.setdefault("Gar", Gars)
 
         return relative_energies
+        # }}}
 
     def parse_data(self, relative=False, filename="./rel_energy.py"):
         # {{{
@@ -292,7 +294,7 @@ class RelativeEnergyParser(ParserBase):
             species_definitions = getattr(self._owner, attribute_name)
 
             # Update reference species formation energies.
-            for species in self._owner.ref_species():
+            for species in self._owner.ref_species:
                 if species in species_definitions:
                     species_definitions[species]["formation_energy"] = 0.0
                 else:
@@ -307,8 +309,7 @@ class RelativeEnergyParser(ParserBase):
                     species_definitions[species]["formation_energy"] = self.__G_dict[species]
 
             # Set flag.
-            attribute_name = mangled_name(self._owner, "has_absolute_energy")
-            setattr(self._owner, attribute_name, True)
+            self._owner._has_absolute_energy = True
 
         # Get relative energy.
         if '_dG' and '_Ga' in self.__dict__:
@@ -317,20 +318,18 @@ class RelativeEnergyParser(ParserBase):
             raise IOError(("No relative energy was read, " +
                            "please check the '{}'").format(filename))
 
-        # Get relative energies.
+        # Get relative energies and pass it to model.
         relative_energies = self.__get_relative_from_relative()
-        attribute_name = mangled_name(self._owner, "relative_energies")
-        setattr(self._owner, attribute_name, relative_energies)
+        self._owner._relative_energies = relative_energies
 
-        # Set flags.
-        attribute_name = mangled_name(self._owner, "has_relative_energy")
-        setattr(self._owner, attribute_name, True)
+        # Set flags in model.
+        self._owner._has_relative_energy = True
 
         # Check the consistency of relative energies.
-        if self._owner.has_absolute_energy():
+        if self._owner.has_absolute_energy:
             relative_energies_from_absolute = self.get_relative_from_absolute()
             consistent = self.__compare_relative_energies(relative_energies_from_absolute,
-                                                          self._owner.relative_energies())
+                                                          self._owner.relative_energies)
             if not consistent:
                 msg = ("relative energies from solving equations " +
                        "are not equal to that in data files.")
@@ -339,6 +338,7 @@ class RelativeEnergyParser(ParserBase):
         return
         # }}}
 
+    @dc.Property
     @return_deepcopy
     def Ga(self):
         """
@@ -346,24 +346,11 @@ class RelativeEnergyParser(ParserBase):
         """
         return self._Ga
 
+    @dc.Property
     @return_deepcopy
     def dG(self):
         """
         Query function for dG.
         """
         return self._dG
-
-    @return_deepcopy
-    def Ea(self):
-        """
-        Query function for Ea.
-        """
-        return self.__Ea
-
-    @return_deepcopy
-    def dE(self):
-        """
-        Query function for dE.
-        """
-        return self.__dE
 

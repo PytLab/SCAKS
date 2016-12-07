@@ -40,7 +40,7 @@ class CsvMaker(TableMakerBase):
             writer.writeheader()
 
             # Gas species.
-            for gas in self._owner.gas_names():
+            for gas in self._owner.gas_names:
                 row = {"species_type": "gas",
                        "species_name": gas,
                        "DFT_energy": "0.0",
@@ -50,7 +50,7 @@ class CsvMaker(TableMakerBase):
                 writer.writerow(row)
 
             # Liquid names.
-            for liquid in self._owner.liquid_names():
+            for liquid in self._owner.liquid_names:
                 row = {"species_type": "liquid",
                        "species_name": liquid,
                        "DFT_energy": "0.0",
@@ -60,7 +60,7 @@ class CsvMaker(TableMakerBase):
                 writer.writerow(row)
 
             # Intermediates.
-            for intermediate in self._owner.adsorbate_names():
+            for intermediate in self._owner.adsorbate_names:
                 row = {"species_type": "intermediate",
                        "species_name": intermediate,
                        "DFT_energy": "0.0",
@@ -70,7 +70,7 @@ class CsvMaker(TableMakerBase):
                 writer.writerow(row)
 
             # Transition states.
-            for ts in self._owner.transition_state_names():
+            for ts in self._owner.transition_state_names:
                 row = {"species_type": "transition state",
                        "species_name": ts,
                        "DFT_energy": "0.0",
@@ -80,7 +80,7 @@ class CsvMaker(TableMakerBase):
                 writer.writerow(row)
 
             # Slab.
-            for slab in self._owner.site_names():
+            for slab in self._owner.site_names:
                 row = {"species_type": "slab",
                        "species_name": slab,
                        "DFT_energy": "0.0",
@@ -96,11 +96,11 @@ class CsvMaker(TableMakerBase):
         """
         Private function to get generalized formation energy of a species.
         """
-        ref_energies = self._owner.ref_energies()
+        ref_energies = self._owner.ref_energies
         energy = raw_energy
 
         # Single site.
-        if species_name in self._owner.site_names():
+        if species_name in self._owner.site_names:
             energy -= ref_energies[species_name]
             return energy
 

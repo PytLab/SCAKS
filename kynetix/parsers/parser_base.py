@@ -4,6 +4,7 @@ import logging
 
 import numpy as np
 
+import kynetix.descriptors.descriptors as dc
 from kynetix import ModelShell
 from kynetix import mpi_master
 from kynetix.functions import *
@@ -28,7 +29,8 @@ class ParserBase(ModelShell):
 
         # Parser's species definition
         # NOTE: parser's species definitions is the reference of model's.
-        self.__species_definitions = owner._KineticModel__species_definitions
+        attribute_name = mangled_name(self._owner, "species_definitions")
+        self.__species_definitions = getattr(self._owner, attribute_name)
 
         # Set logger.
         self.__logger = logging.getLogger("model.parser.ParserBase")
@@ -58,6 +60,7 @@ class ParserBase(ModelShell):
                                'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s']
         >>> parser.parse_elementary_rxns(elementary_rxns)
         """
+        # {{{
         elementary_rxns_list = []
         adsorbate_names = []
         gas_names = []
@@ -65,7 +68,7 @@ class ParserBase(ModelShell):
         site_names = []
         transition_state_names = []
 
-        for equation_str in self._owner.rxn_expressions():
+        for equation_str in self._owner.rxn_expressions:
             # debug info
             if mpi_master:
                 self.__logger.debug('parsing [ %s ]', equation_str)
@@ -122,6 +125,7 @@ class ParserBase(ModelShell):
                 site_names,
                 transition_state_names,
                 elementary_rxns_list)
+        # }}}
 
     def get_stoichiometry_matrices(self):
         """
@@ -139,20 +143,21 @@ class ParserBase(ModelShell):
                        will be positive, vice-versa.
                        row vector: [*self.gas_names], numpy.matrix.
         """
+        # {{{
         # Site and adsorbate names.
-        sites_names = (['*_'+site_name for site_name in self._owner.site_names()] +
-                       list(self._owner.adsorbate_names()))
+        sites_names = (['*_'+site_name for site_name in self._owner.site_names] +
+                       list(self._owner.adsorbate_names))
 
         # Reactant and product names.
-        reapro_names = list(self._owner.gas_names() + self._owner.liquid_names())
+        reapro_names = list(self._owner.gas_names + self._owner.liquid_names)
 
         # Initialize matrices.
-        m = len(self._owner.elementary_rxns_list())
+        m = len(self._owner.elementary_rxns_list)
         n_s, n_g = len(sites_names), len(reapro_names)
         site_matrix = np.matrix(np.zeros((m, n_s)))
         reapro_matrix = np.matrix(np.zeros((m, n_g)))
 
-        rxns_list = self._owner.elementary_rxns_list()
+        rxns_list = self._owner.elementary_rxns_list
 
         # Go through all elementary equations.
         for i, rxn_list in enumerate(rxns_list):
@@ -187,11 +192,13 @@ class ParserBase(ModelShell):
                     reapro_matrix[i, j] -= stoich
 
         return site_matrix, reapro_matrix
+        # }}}
 
     def get_total_rxn_equation(self):
         """
         Function to get total reaction expression of the kinetic model.
         """
+        # {{{
         site_matrix, reapro_matrix = self.get_stoichiometry_matrices()
 
         # Helper function to get null space of transposition of site_matrix.
@@ -217,7 +224,7 @@ class ParserBase(ModelShell):
 
         # create total rxn expression
         reactants_list, products_list = [], []
-        reapro_names = self._owner.gas_names() + self._owner.liquid_names()
+        reapro_names = self._owner.gas_names + self._owner.liquid_names
         for sp_name in reapro_names:
             idx = reapro_names.index(sp_name)
             coefficient = total_coefficients[idx]
@@ -247,6 +254,7 @@ class ParserBase(ModelShell):
 
         # If check passed, return.
         return total_rxn_equation
+        # }}}
 
     @staticmethod
     def get_molecular_mass(species_name, absolute=False):
@@ -266,6 +274,7 @@ class ParserBase(ModelShell):
         >>> m.parser.get_molecular_mass('CH4', absolute=True)
         >>> 2.6639131127638393e-26
         """
+        # {{{
         elements = string2symbols(species_name)
 
         # get molecular total relative mass
@@ -281,6 +290,7 @@ class ParserBase(ModelShell):
             return amu*molecular_mass
         else:
             return molecular_mass
+        # }}}
 
     def _get_state_energy(self, state):
         """
@@ -294,12 +304,13 @@ class ParserBase(ModelShell):
         --------
         Absolute free energy of the state, float.
         """
+        # {{{
         # Extract species info.
         species_site_dict = state.get_species_site_dict()
         site_dict = state.get_sites_dict()
         formula_list = state.tolist()
 
-        species_definitions = self._owner.species_definitions()
+        species_definitions = self._owner.species_definitions
         energy = 0.0
 
         for formula in formula_list:
@@ -315,6 +326,7 @@ class ParserBase(ModelShell):
                 energy += n*species_definitions[site]["formation_energy"]
 
         return energy
+        # }}}
 
     def get_single_relative_energies(self, rxn_expression):
         """
@@ -335,7 +347,7 @@ class ParserBase(ModelShell):
         """
         # {{{
         # Check.
-        if not self._owner.has_absolute_energy():
+        if not self._owner.has_absolute_energy:
             msg = "Absolute energie are needed for getting barriers."
             raise AttributeError(msg)
 
@@ -373,9 +385,10 @@ class ParserBase(ModelShell):
         """
         Function to set relative energies from absolute energies.
         """
+        # {{{
         Gafs, Gars, dGs = [], [], []
 
-        for rxn_expression in self._owner.rxn_expressions():
+        for rxn_expression in self._owner.rxn_expressions:
             Gaf, Gar, dG = self.get_single_relative_energies(rxn_expression)
             Gafs.append(Gaf)
             Gars.append(Gar)
@@ -384,6 +397,7 @@ class ParserBase(ModelShell):
         relative_energies = dict(Gar=Gars, Gaf=Gafs, dG=dGs)
 
         return relative_energies
+        # }}}
 
     def regex_dict(self):
         """
@@ -391,10 +405,11 @@ class ParserBase(ModelShell):
         """
         return self.__regex_dict
 
-    @return_deepcopy
+    @dc.Property
     def species_definitions(self):
         """
         Query function for parser's species definitions.
         """
         # Use deep copy to avoid modification of the model's attribution.
         return self.__species_definitions
+
