@@ -203,8 +203,10 @@ class KineticModel(object):
         for key, value in setup_dict.iteritems():
             # Check redundant parameter.
             if key not in class_attrs:
-                msg = "Found redundant parameter '{}'".format(key)
-                self._logger.warning(msg)
+                if mpi_master:
+                    msg = "Found redundant parameter '{}'".format(key)
+                    self._logger.warning(msg)
+                continue
 
             # Parser & solver will be set later.
             if key in ["parser", "solver"]:
