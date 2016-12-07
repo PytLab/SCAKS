@@ -1,9 +1,7 @@
 import cPickle as cpkl
 import copy
 import logging
-import logging.config
 import os
-import sys
 
 import kynetix.descriptors.descriptors as dc
 import kynetix.descriptors.component_descriptors as cpdc
