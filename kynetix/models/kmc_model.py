@@ -187,10 +187,7 @@ class KMCModel(km.KineticModel):
         Flag for if log output is allowed.
         """
         # Only master processor can output log.
-        if mpi_master:
-            return True
-        else:
-            return False
+        return True if mpi_master else False
 
     @dc.Property
     def processes(self):
