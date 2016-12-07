@@ -175,6 +175,17 @@ class KineticModel(object):
 
         return old_level
 
+    def __mro_class_attrs(self):
+        """
+        Private helper function to get all class attribute names(include father classes) .
+        """
+        d = {}
+
+        for cls in self.__class__.__mro__:
+            d.update(cls.__dict__)
+
+        return d.keys()
+
     def _load(self, setup_dict):
         """
         Load 'setup_file' into kinetic model by exec setup file
@@ -188,9 +199,10 @@ class KineticModel(object):
             self._logger.info('read in parameters...')
 
         # Set model attributes in setup file.
+        class_attrs = self.__mro_class_attrs()
         for key, value in setup_dict.iteritems():
             # Check redundant parameter.
-            if key not in self.__class__.__dict__:
+            if key not in class_attrs:
                 msg = "Found redundant parameter '{}'".format(key)
                 self._logger.warning(msg)
 
