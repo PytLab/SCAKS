@@ -26,9 +26,6 @@ species_definitions['t'] = {'site_name': 'top', 'type': 'site', 'total': 0.5}
 # Temperature.
 temperature = 500  # K
 
-# Lattice information.
-surface_name = 'Pt-100'
-
 # Unitcell.
 cell_vectors = [[3.0, 0.0, 0.0],
                 [0.0, 3.0, 0.0],
@@ -51,8 +48,6 @@ possible_site_types = ["P"]
 
 
 # KMC model attributes.
-# specify tools for model to use
-tools = ['parser', 'solver', 'corrector']
 parser = 'KMCParser'  # default
 solver = 'KMCSolver'
 corrector = "ThermodynamicCorrector"
