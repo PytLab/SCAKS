@@ -33,12 +33,8 @@ species_definitions['CH3OH_g'] = {'pressure': 0.3}  # bar
 
 species_definitions['s'] = {'site_name': '111', 'total': 1.0, 'type': 'site'}
 
-surface_name = 'Cu'
-
 temperature = 500  # Temperature of the reaction, K
 
-# model attributes
-tools = ['parser', 'solver']
 # specify tools for model to use
 parser = 'RelativeEnergyParser'  # default
 solver = 'SteadyStateSolver'
