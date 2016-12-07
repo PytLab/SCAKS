@@ -15,12 +15,36 @@ class ParserBaseTest(unittest.TestCase):
     def setUp(self):
         # Test case setting.
         self.maxDiff = None
-        self.parser_base_setup = mkm_path + "/parser_base.mkm"
+        self.setup_dict = dict(
+            rxn_expressions = [
+                'CO_g + *_s -> CO_s',
+                'O2_g + 2*_s -> 2O_s',
+                'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s',
+            ],
+
+            species_definitions = {
+                'CO_g': {'pressure': 1.0},
+                'O2_g': {'pressure': 1./3.},
+                'CO2_g': {'pressure': 0.00},
+                's': {'site_name': '111', 'type': 'site', 'total': 1.0},
+            },
+
+            temperature = 450.0,
+            parser = "RelativeEnergyParser",
+            solver = "SteadyStateSolver",
+            corrector = "ThermodynamicCorrector",
+            plotter = "EnergyProfilePlotter",
+            ref_species = ['CO_g', 'CO2_g', 's'],
+            rootfinding = 'ConstrainedNewton',
+            tolerance = 1e-20,
+            max_rootfinding_iterations = 100,
+        )
+
 
     def test_parser_construction(self):
         " Test parser can be constructed in kinetic model. "
         # Construction.
-        model = MicroKineticModel(setup_file=self.parser_base_setup, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
         parser = model.parser
 
         # Check the parser class and base class type.
@@ -70,7 +94,7 @@ class ParserBaseTest(unittest.TestCase):
     def test_stoichiometry_matrices(self):
         " Make sure we can get the reactant product matrix and intermediate matrix correctly."
         # Construction.
-        model = MicroKineticModel(setup_file=self.parser_base_setup, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
         parser = model.parser
 
         ref_reapro_matrix = np.matrix([[1.0, -1.0, 0.0],
@@ -88,7 +112,7 @@ class ParserBaseTest(unittest.TestCase):
         " Test all elementary reaction equations can be parsed correctly. "
 
         # Construction.
-        model = MicroKineticModel(setup_file=self.parser_base_setup, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
         parser = model.parser
 
         elementary_rxns = ['CO_g + *_s -> CO_s',
@@ -119,7 +143,7 @@ class ParserBaseTest(unittest.TestCase):
         " Test we can get the total reaction equation from elementary reactions. "
 
         # Construction.
-        model = MicroKineticModel(setup_file=self.parser_base_setup, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
         parser = model.parser
 
         ref_total_rxn_equation = "2CO_g + O2_g -> 2CO2_g"

@@ -15,25 +15,64 @@ class KMCSolverTest(unittest.TestCase):
     def setUp(self):
         # Test case setting.
         self.maxDiff = None
-        self.setup = kmc_path + "/kmc_solver.mkm"
+        self.setup_dict = dict(
+            rxn_expressions = [
+                'CO_g + *_t -> CO_t',
+                'CO_g + *_b -> CO_b',
+                'O2_g + 2*_b -> 2O_b',
+                'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b',
+                'CO_b + *_t <-> CO_t + *_b -> CO_b + *_t',
+            ],
+
+            species_definitions = {
+                'CO_g': {'pressure': 0.01},
+                'O2_g': {'pressure': 0.2},
+                'CO2_g': {'pressure': 0.01},
+                'b': {'site_name': 'bridge', 'type': 'site', 'total': 0.5},
+                't': {'site_name': 'top', 'type': 'site', 'total': 0.5},
+            },
+
+            temperature = 298.,
+            parser = "KMCParser",
+            solver = "KMCSolver",
+            corrector = "ThermodynamicCorrector",
+            cell_vectors = [[3.0, 0.0, 0.0],
+                            [0.0, 3.0, 0.0],
+                            [0.0, 0.0, 3.0]],
+            basis_sites = [[0.0, 0.0, 0.0],
+                           [0.5, 0.0, 0.0],
+                           [0.0, 0.5, 0.0],
+                           [0.5, 0.5, 0.0]],
+            unitcell_area = 9.0e-20,
+            active_ratio = 4./9,
+            repetitions = (3, 3, 1),
+            periodic = (True, True, False),
+            possible_element_types = ["O", "V", "O_s", "C"],
+            empty_type = "V",
+            possible_site_types = ["P"],
+            nstep = 50,
+            random_seed = 13996,
+            random_generator = 'MT',
+            trajectory_dump_interval = 10,
+        )
 
     def test_construction(self):
         " Make sure KMCSolver object can be constructed correctly. "
-        model = KMCModel(setup_file=self.setup, verbosity=logging.WARNING)
+        model = KMCModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
         solver = model.solver
 
         self.assertTrue(isinstance(solver, KMCSolver))
 
     def test_get_control_parameter(self):
         " Make sure we can get KMCControlParameter object. "
-        model = KMCModel(setup_file=self.setup, verbosity=logging.WARNING)
+        model = KMCModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
         solver = model.solver
 
         control_parameters = solver.get_control_parameters()
 
         # Check.
         self.assertEqual(10, control_parameters.dumpInterval())
-        self.assertListEqual([], control_parameters.analysisInterval())
+        self.assertEqual(1, control_parameters.analysisInterval())
         self.assertEqual(50, control_parameters.numberOfSteps())
         self.assertEqual(0, control_parameters.rngType())
         self.assertEqual(13996, control_parameters.seed())
@@ -41,7 +80,7 @@ class KMCSolverTest(unittest.TestCase):
 
     def test_run(self):
         " Test the we can run the kmc model correctly. "
-        model = KMCModel(setup_file=self.setup, verbosity=logging.WARNING)
+        model = KMCModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
         parser = model.parser
         parser.parse_data(filename=kmc_energy, relative=True)
         solver = model.solver

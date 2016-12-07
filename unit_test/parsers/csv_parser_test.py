@@ -11,12 +11,34 @@ class CsvParserTest(unittest.TestCase):
 
     def setUp(self):
         self.maxDiff = None
+        self.setup_dict = dict(
+            rxn_expressions = [
+                'CO_g + *_s -> CO_s',
+                'O2_g + 2*_s -> 2O_s',
+                'CO_s + O_s <-> CO-O_s + *_s -> CO2_g + 2*_s',
+            ],
+
+            species_definitions = {
+                'CO_g': {'pressure': 1.0},
+                'O2_g': {'pressure': 1./3.},
+                'CO2_g': {'pressure': 0.00},
+                's': {'site_name': '111', 'type': 'site', 'total': 1.0},
+            },
+
+            temperature = 450.0,
+            parser = "CsvParser",
+            solver = "SteadyStateSolver",
+            corrector = "ThermodynamicCorrector",
+            plotter = "EnergyProfilePlotter",
+            rootfinding = 'ConstrainedNewton',
+            tolerance = 1e-20,
+            max_rootfinding_iterations = 100,
+        )
 
     def test_csv_parser_construction(self):
         " Test csv parser can be constructed. "
         # Construction.
-        csv_setup = mkm_path + "/csv_parser.mkm"
-        model = MicroKineticModel(setup_file=csv_setup, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
         parser = model.parser
 
         # Check the parser class and base class type.
@@ -26,8 +48,7 @@ class CsvParserTest(unittest.TestCase):
     def test_get_single_relative_energies(self):
         " Test parsers can calculate reaction barriers correctly. "
         # Construction.
-        csv_setup = mkm_path + "/csv_parser.mkm"
-        model = MicroKineticModel(setup_file=csv_setup, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
         parser = model.parser
 
         # Before get absolute data.
@@ -57,8 +78,7 @@ class CsvParserTest(unittest.TestCase):
     def test_data_parse(self):
         " Test data in csv file can be read correctly. "
         # Construction.
-        csv_setup = mkm_path + "/csv_parser.mkm"
-        model = MicroKineticModel(setup_file=csv_setup, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
         parser = model.parser
 
         ref_species_definitions = {'CO2_g': {'pressure': 0.0},

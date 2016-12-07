@@ -12,7 +12,6 @@ class MicroKineticModelTest(unittest.TestCase):
     def setUp(self):
         # Test case setting.
         self.maxDiff = None
-        self.setup_file = mkm_path + "/mkm_model.mkm"
         self.setup_dict = dict(
             rxn_expressions = [
                 'CO_g + *_s -> CO_s',

@@ -13,12 +13,35 @@ class RelativeEnergyParserTest(unittest.TestCase):
 
     def setUp(self):
         self.maxDiff = None
-        self.parser_setup = mkm_path + "/relative_energy_parser.mkm"
+        self.setup_dict = dict(
+            rxn_expressions = [
+                'CO_g + *_s -> CO_s',
+                'O2_g + 2*_s -> 2O_s',
+                'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s',
+            ],
+
+            species_definitions = {
+                'CO_g': {'pressure': 1.0},
+                'O2_g': {'pressure': 1./3.},
+                'CO2_g': {'pressure': 0.00},
+                's': {'site_name': '111', 'type': 'site', 'total': 1.0},
+            },
+
+            temperature = 450.0,
+            parser = "RelativeEnergyParser",
+            solver = "SteadyStateSolver",
+            corrector = "ThermodynamicCorrector",
+            plotter = "EnergyProfilePlotter",
+            ref_species = ['CO_g', 'CO2_g', 's'],
+            rootfinding = 'ConstrainedNewton',
+            tolerance = 1e-20,
+            max_rootfinding_iterations = 100,
+        )
 
     def test_relative_energy_parser_construction(self):
         " Test relative energy parser can be constructed. "
         # Construction.
-        model = MicroKineticModel(setup_file=self.parser_setup, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
         parser = model.parser
 
         # Check the parser class and base class type.
@@ -29,7 +52,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
         " Make sure we can get unknown species correctly. "
 
         # Construction.
-        model = MicroKineticModel(setup_file=self.parser_setup, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
         parser = model.parser
 
         ref_unknown_species = ['O2_g', 'CO_s', 'O_s', 'CO-O_2s']
@@ -50,7 +73,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
     def test_unknown_coeff_vector(self):
         " Make sure we can get unknown species vector and energy value. "
         # Construction.
-        model = MicroKineticModel(setup_file=self.parser_setup, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
         parser = model.parser
 
         # Read relative energy data file.
@@ -102,7 +125,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
     def test_data_conversion(self):
         " Test relative energy can be converted to absolute energy. "
         # Construction.
-        model = MicroKineticModel(setup_file=self.parser_setup, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
         parser = model.parser
 
         # Check G dict before conversion.
@@ -136,7 +159,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
         " Test data in relative energy file can be parsed correctly. "
 
         # Construction.
-        model = MicroKineticModel(setup_file=self.parser_setup, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
         parser = model.parser
 
         # Check before parse.
@@ -171,8 +194,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
 
         # Check if relative == true.
         # Construct again.
-        model = MicroKineticModel(setup_file=self.parser_setup,
-                             verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
         parser = model.parser
 
         # Check.

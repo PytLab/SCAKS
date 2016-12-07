@@ -13,12 +13,54 @@ class KMCModelTest(unittest.TestCase):
     def setUp(self):
         # Test case setting.
         self.maxDiff = None
+        self.setup_dict = dict(
+            rxn_expressions = [
+                'CO_g + *_t -> CO_t',
+                'CO_g + *_b -> CO_b',
+                'O2_g + 2*_b -> 2O_b',
+                'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b',
+                'CO_b + *_t <-> CO_t + *_b -> CO_b + *_t',
+            ],
+
+            species_definitions = {
+                'CO_g': {'pressure': 0.01},
+                'O2_g': {'pressure': 0.2},
+                'CO2_g': {'pressure': 0.01},
+                'b': {'site_name': 'bridge', 'type': 'site', 'total': 0.5},
+                't': {'site_name': 'top', 'type': 'site', 'total': 0.5},
+            },
+
+            temperature = 298.,
+            parser = "KMCParser",
+            solver = "KMCSolver",
+            corrector = "ThermodynamicCorrector",
+            cell_vectors = [[3.0, 0.0, 0.0],
+                            [0.0, 3.0, 0.0],
+                            [0.0, 0.0, 3.0]],
+            basis_sites = [[0.0, 0.0, 0.0],
+                           [0.5, 0.0, 0.0],
+                           [0.0, 0.5, 0.0],
+                           [0.5, 0.5, 0.0]],
+            unitcell_area = 9.0e-20,
+            active_ratio = 4./9,
+            repetitions = (3, 3, 1),
+            periodic = (True, True, False),
+            possible_element_types = ["O", "V", "O_s", "C"],
+            empty_type = "V",
+            possible_site_types = ["P"],
+            nstep = 50,
+            random_seed = 13996,
+            random_generator = 'MT',
+            analysis = [],
+            analysis_interval = [],
+            trajectory_dump_interval = 10,
+            distributor_type = "ProcessRandomDistributor",
+        )
 
     def test_kmc_model_construction_query(self):
         " Test kmc model can be constructed with relative energy parser. "
         # Test construction.
-        kmc_setup = kmc_path + "/kmc_model.mkm"
-        model = KMCModel(setup_file=kmc_setup, verbosity=logging.WARNING)
+        model = KMCModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
 
         # Test parameters in setup file have been parsed.
         self.assertTrue(hasattr(model, "_KMCModel__cell_vectors"))
@@ -40,8 +82,7 @@ class KMCModelTest(unittest.TestCase):
     def test_kmc_model_run(self):
         " Make sure KMC model can run properly. "
         # Construction.
-        kmc_setup = kmc_path + "/kmc_model.mkm"
-        model = KMCModel(setup_file=kmc_setup, verbosity=logging.WARNING)
+        model = KMCModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
         parser = model.parser
         solver = model.solver
 
@@ -50,16 +91,16 @@ class KMCModelTest(unittest.TestCase):
 
         # Run the model.
         model.run(processes_file=kmc_processes,
-                      configuration_file=kmc_config,
-                      sitesmap_file=kmc_sites)
+                  configuration_file=kmc_config,
+                  sitesmap_file=kmc_sites)
 
         # Run the model with default sites types.
         model.run(processes_file=kmc_processes,
-                      configuration_file=kmc_config)
+                  configuration_file=kmc_config)
 
         # Run with default configuration.
         model.run(processes_file=kmc_processes,
-                      sitesmap_file=kmc_sites)
+                  sitesmap_file=kmc_sites)
 
         # Run with default configuration and sitemap.
         model.run(processes_file=kmc_processes)
