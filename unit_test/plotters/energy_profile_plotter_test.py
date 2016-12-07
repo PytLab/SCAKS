@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 from mpmath import mpf
 
-from kynetix.model import KineticModel
+from kynetix.models.micro_kinetic_model import MicroKineticModel
 from kynetix.plotters import *
 
 from unit_test import *
@@ -16,14 +16,38 @@ class EnergyProfilePlotterTest(unittest.TestCase):
     def setUp(self):
         # Test case setting.
         self.maxDiff = None
-        self.setup_file = mkm_path + "/energy_profile_plotter.mkm"
+        self.setup_dict = dict(
+            rxn_expressions = [
+                'CO_g + *_s -> CO_s',
+                'O2_g + 2*_s -> 2O_s',
+                'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s',
+            ],
+
+            species_definitions = {
+                'CO_g': {'pressure': 1.0},
+                'O2_g': {'pressure': 1./3.},
+                'CO2_g': {'pressure': 0.00},
+                's': {'site_name': '111', 'type': 'site', 'total': 1.0},
+            },
+
+            temperature = 450.0,
+            parser = "RelativeEnergyParser",
+            solver = "SteadyStateSolver",
+            corrector = "ThermodynamicCorrector",
+            plotter = "EnergyProfilePlotter",
+            ref_species = ['CO_g', 'CO2_g', 's'],
+            rootfinding = 'ConstrainedNewton',
+            decimal_precision = 100,
+            tolerance = 1e-20,
+            max_rootfinding_iterations = 100,
+        )
 
     def test_construction_and_query(self):
         " Test plotter construction and query. "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file, verbosity=logging.WARNING)
-        parser = model.parser()
-        plotter = model.plotter()
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        parser = model.parser
+        plotter = model.plotter
 
         self.assertTrue(isinstance(plotter, EnergyProfilePlotter))
 

@@ -43,7 +43,7 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         self.__steps = []
 
         # Process pick statistics list.
-        nprocess = len(kmc_model.processes())
+        nprocess = len(kmc_model.processes)
         self.__process_occurencies = [0]*nprocess
         self.__steady_process_occurencies = [0]*nprocess
 
@@ -74,7 +74,7 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         self.__process_occurencies[picked_index] += 1
 
         # Collect steady frequency info.
-        if step >= self.__kmc_model.tof_start():
+        if step >= self.__kmc_model.tof_start:
             self.__steady_process_occurencies[picked_index] += 1
 
             if not self.__tof_start_time:
@@ -93,7 +93,7 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
                                           self.__process_occurencies)
 
         # Calculate reaction occurencies.
-        process_mapping = self.__kmc_model.process_mapping()
+        process_mapping = self.__kmc_model.process_mapping
 
         # Construct reaction occurencies dict.
         reaction_occurencies = {}
@@ -116,8 +116,8 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
                                                           steady_reaction_occurencies)
 
         # Get number of active sites.
-        repetitions = self.__kmc_model.repetitions()
-        basis_sites = self.__kmc_model.basis_sites()
+        repetitions = self.__kmc_model.repetitions
+        basis_sites = self.__kmc_model.basis_sites
         nsites = reduce(mul, repetitions)*len(basis_sites)
 
         delta_t = self.__tof_end_time - self.__tof_start_time

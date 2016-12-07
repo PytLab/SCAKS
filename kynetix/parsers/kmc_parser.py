@@ -56,11 +56,11 @@ class KMCParser(RelativeEnergyParser):
         if filename is None:
             filename = "kmc_sites.py"
 
-        possible_site_types = self._owner.possible_site_types()
+        possible_site_types = self._owner.possible_site_types
 
         # Get site number.
-        repetitions = self._owner.repetitions()
-        basis_sites = self._owner.basis_sites()
+        repetitions = self._owner.repetitions
+        basis_sites = self._owner.basis_sites
         nsite = reduce(mul, repetitions)*len(basis_sites)
 
         def init_default_types():
@@ -111,13 +111,13 @@ class KMCParser(RelativeEnergyParser):
         Function to construct KMCLattice object.
         """
         # Construct unitcell.
-        cell_vectors = np.array(self._owner.cell_vectors())
-        basis_sites = np.array(self._owner.basis_sites())
+        cell_vectors = np.array(self._owner.cell_vectors)
+        basis_sites = np.array(self._owner.basis_sites)
         unit_cell = KMCUnitCell(cell_vectors=cell_vectors, basis_points=basis_sites)
 
         # Construct lattice.
-        repetitions = self._owner.repetitions()
-        periodic = self._owner.periodic()
+        repetitions = self._owner.repetitions
+        periodic = self._owner.periodic
         lattice = KMCLattice(unit_cell=unit_cell,
                              repetitions=repetitions,
                              periodic=periodic)
@@ -141,16 +141,16 @@ class KMCParser(RelativeEnergyParser):
         # {{{
         # Inner function to initialize emtpy lattice.
         def init_empty_types():
-            repetitions = self._owner.repetitions()
-            basis_sites = self._owner.basis_sites()
+            repetitions = self._owner.repetitions
+            basis_sites = self._owner.basis_sites
             nsite = reduce(mul, repetitions)*len(basis_sites)
             types = [empty_type for i in xrange(nsite)]
             return types
 
-        possible_element_types = self._owner.possible_element_types()
+        possible_element_types = self._owner.possible_element_types
 
         # Check.
-        empty_type = self._owner.empty_type()
+        empty_type = self._owner.empty_type
         check_string(empty_type, possible_element_types, "empty_type")
 
         # Load types data in file.
@@ -219,7 +219,7 @@ class KMCParser(RelativeEnergyParser):
         process_dict = check_process_dict(process_dict)
 
         # Check if reaction in rxn_expressions.
-        rxn_expressions = self._owner.rxn_expressions()
+        rxn_expressions = self._owner.rxn_expressions
 
         if process_dict["reaction"] not in rxn_expressions:
             msg = "'{}' is not in model's rxn_expressions.".format(process_dict["reaction"])
@@ -227,7 +227,7 @@ class KMCParser(RelativeEnergyParser):
 
         # Check if the elements are in possible elements.
         all_elements = process_dict["elements_before"] + process_dict["elements_after"]
-        possible_elements = self._owner.possible_element_types()
+        possible_elements = self._owner.possible_element_types
         for element in all_elements:
             if element not in possible_elements:
                 msg = "Element '{}' in process not in possible types {}"
@@ -330,16 +330,16 @@ class KMCParser(RelativeEnergyParser):
             self.__logger.info("species type: {} -> {}".format(is_types, fs_types))
 
         # Get rate constant.
-        T = self._owner.temperature()
-        Auc = self._owner.unitcell_area()
-        act_ratio = self._owner.active_ratio()
+        T = self._owner.temperature
+        Auc = self._owner.unitcell_area
+        act_ratio = self._owner.active_ratio
 
         # Get model corrector.
-        corrector = self._owner.corrector()
+        corrector = self._owner.corrector
         # Check.
         if type(corrector) == str:
             msg = "No instantialized corrector, try to modify '{}'"
-            msg = msg.format(self._owner.setup_file())
+            msg = msg.format(self._owner.setup_file)
             raise SetupError(msg)
 
         # Forward rate.
@@ -350,7 +350,7 @@ class KMCParser(RelativeEnergyParser):
             idx = is_types.index("gas")
             formula = istate[idx]
             gas_name = formula.formula()
-            p = self._owner.species_definitions()[gas_name]["pressure"]
+            p = self._owner.species_definitions[gas_name]["pressure"]
             
             # Use Collision Theory.
             Ea = Gaf
@@ -366,7 +366,7 @@ class KMCParser(RelativeEnergyParser):
                 idx = fs_types.index("gas")
                 formula = fstate[idx]
                 gas_name = formula.formula()
-                p = self._owner.species_definitions()[gas_name]["pressure"]
+                p = self._owner.species_definitions[gas_name]["pressure"]
                 m = self.get_molecular_mass(formula.species(), absolute=True)
                 correction_energy = corrector.entropy_correction(gas_name, m, p, T)
                 Gaf += correction_energy
@@ -388,7 +388,7 @@ class KMCParser(RelativeEnergyParser):
             idx = fs_types.index("gas")
             formula = fstate[idx]
             gas_name = formula.formula()
-            p = self._owner.species_definitions()[gas_name]["pressure"]
+            p = self._owner.species_definitions[gas_name]["pressure"]
             
             # Use Collision Theory.
             Ea = Gar
@@ -404,7 +404,7 @@ class KMCParser(RelativeEnergyParser):
                 idx = is_types.index("gas")
                 formula = istate[idx]
                 gas_name = formula.formula()
-                p = self._owner.species_definitions()[gas_name]["pressure"]
+                p = self._owner.species_definitions[gas_name]["pressure"]
                 m = self.get_molecular_mass(formula.species(), absolute=True)
                 correction_energy = corrector.entropy_correction(gas_name, m, p, T)
                 dG -= correction_energy
@@ -438,7 +438,7 @@ class KMCParser(RelativeEnergyParser):
             raise AttributeError(msg)
 
         # Get raw relative energies.
-        rxn_expressions = self._owner.rxn_expressions()
+        rxn_expressions = self._owner.rxn_expressions
         idx = rxn_expressions.index(rxn_expression)
 
         Gaf, dG = self._Ga[idx], self._dG[idx]

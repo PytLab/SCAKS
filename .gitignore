@@ -96,3 +96,6 @@ plot_frequencies.py
 plot_scatters*
 !scripts/kmc_plot/plot_*
 
+# temp files.
+trajplots.tgz
+temp/

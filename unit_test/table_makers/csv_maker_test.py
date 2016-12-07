@@ -3,7 +3,7 @@ import logging
 import os
 import unittest
 
-from kynetix.model import KineticModel
+from kynetix.models.micro_kinetic_model import MicroKineticModel
 from kynetix.functions import *
 from kynetix.table_makers import *
 
@@ -14,22 +14,45 @@ class CsvMakerTest(unittest.TestCase):
 
     def setUp(self):
         self.maxDiff = None
-        self.setup_file = mkm_path + "/csv_maker.mkm"
+        self.setup_dict = dict(
+            rxn_expressions = [
+                'HCOOH_g + 2*_s <-> HCOO-H_s + *_s -> HCOO_s + H_s',
+                'HCOO_s + *_s <-> H-COO_s + *_s -> COO_s + H_s',
+                'COO_s -> CO2_g + *_s',
+                '2H_s <-> H-H_s + *_s -> H2_g + 2*_s',
+            ],
+
+            species_definitions = {
+                'HCOOH_g': {'pressure': 0.06},
+                'H2_g': {'pressure': 0.03},
+                'CO2_g': {'pressure': 0.03},
+                's': {'site_name': '111', 'type': 'site', 'total': 1.0},
+            },
+            ref_energies = {
+                'C': -8.218910000000001,
+                'H': -3.379537,                         
+                'O': -7.460926000000001,
+                's': -177.41,
+            },
+
+            temperature = 450.0,
+            table_maker = "CsvMaker",
+            parser = "CsvParser",
+            solver = "SteadyStateSolver",
+        )
 
     def test_construction(self):
         " Test table maker can be constructed correctly. "
-        model = KineticModel(setup_file=self.setup_file,
-                             verbosity=logging.WARNING)
-        table_maker = model.table_maker()
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        table_maker = model.table_maker
 
         # Check.
         self.assertTrue(table_maker, CsvMaker)
 
     def test_init_table(self):
         " Test we can initialize table correctly. "
-        model = KineticModel(setup_file=self.setup_file,
-                             verbosity=logging.WARNING)
-        table_maker = model.table_maker()
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        table_maker = model.table_maker
 
         # Init a table.
         table_maker.init_table()
@@ -37,9 +60,8 @@ class CsvMakerTest(unittest.TestCase):
     def test_get_formation_energy(self):
         " Test private function __get_formation_energy(). "
         # Construction.
-        model = KineticModel(setup_file=self.setup_file,
-                             verbosity=logging.WARNING)
-        table_maker = model.table_maker()
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        table_maker = model.table_maker
 
         # Check.
         ref_e = 0.0

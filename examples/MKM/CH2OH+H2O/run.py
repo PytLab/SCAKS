@@ -8,7 +8,7 @@ import sys
 import time
 
 from kynetix import mpi_master
-from kynetix.model import KineticModel
+from kynetix.models.micro_kinetic_model import MicroKineticModel
 from kynetix.utilities.format_utilities import convert_time
 
 # Custom parameters.
@@ -38,11 +38,11 @@ if "__main__" == __name__:
     start = time.time()
     try:
         # Build micor-kinetic model.
-        model = KineticModel(setup_file=output)
+        model = MicroKineticModel(setup_file=output)
 
         # Read data.
-        parser = model.parser()
-        solver = model.solver()
+        parser = model.parser
+        solver = model.solver
         parser.parse_data(relative=UseRelativeEnergy)
         solver.get_data()
 
@@ -53,10 +53,10 @@ if "__main__" == __name__:
         init_guess = trajectory[-1]
 
         # Run.
-        model.run_mkm(init_cvgs=init_guess,
-                      solve_ode=OdeOnly,
-                      coarse_guess=False,
-                      relative=True,
+        model.run(init_cvgs=init_guess,
+                  solve_ode=OdeOnly,
+                  coarse_guess=False,
+                  relative=True,
                       XRC=CalcXRC,
                       product_name=ProductionName)
     except Exception as e:
