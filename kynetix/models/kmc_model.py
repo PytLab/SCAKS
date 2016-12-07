@@ -84,9 +84,9 @@ class KMCModel(km.KineticModel):
     time_limit = dc.Float("time_limit", default=float("inf"))
 
     # Coverage ratios.
-    coverages_ratios = dc.Sequence("coverages_ratios",
-                                   default=[],
-                                   entry_type=float)
+    coverage_ratios = dc.Sequence("coverage_ratios",
+                                  default=[],
+                                  entry_type=float)
 
     # Extra trajectory dump control range.
     extra_trajectories = dc.Sequence("extra_trajectries",
