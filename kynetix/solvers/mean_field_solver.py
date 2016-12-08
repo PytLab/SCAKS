@@ -5,7 +5,7 @@ import mpmath as mp
 import numpy as np
 import gmpy2
 import sympy as sym
-#import sympy.mpmath as symp
+
 try:
     import matplotlib.pyplot as plt
 except ImportError:
@@ -1279,65 +1279,70 @@ class MeanFieldSolver(SolverBase):
 
     ###### calculate micro kinetic model with Sympy END ######
 
+    @dc.Property
     def has_absolute_energy(self):
         """
         Query function for has_absolute_energy flag.
         """
         return self._has_absolute_energy
 
+    @dc.Property
     def has_relative_energy(self):
         """
         Query function for has_relative_energy flag.
         """
         return self._has_relative_energy
 
+    @dc.Property
     def has_energy_correction(self):
         """
         Query function for has energy correction flag.
         """
         return self._has_energy_correction
 
+    @dc.Property
     def has_symbols(self):
         """
         Query function for has symbol flag.
         """
         return self._has_symbols
 
-    @return_deepcopy
+    @dc.Property
     def classified_adsorbates(self):
         """
         Query function for classified adsorbates.
         """
         return self._classified_adsorbates
 
-    @return_deepcopy
+    @dc.Property
     def pressures(self):
         """
         Query function for gas pressures.
         """
         return self._p
 
-    @return_deepcopy
+    @dc.Property
     def concentrations(self):
         """
         Query function for liquid concentrations.
         """
         return self._c
 
-    @return_deepcopy
-    def formation_energies(self):
+    @dc.Property
+    def absolute_energies(self):
         """
         Query function for formation energies.
         """
         return self._G
 
-    @return_deepcopy
+    @dc.Property
     def relative_energies(self):
         """
         Query function for relative energies.
         """
         return self._relative_energies
 
+    @dc.Property
     def rate_expressions(self):
         """
         Query functions for rate expressions for all elementary reactions.

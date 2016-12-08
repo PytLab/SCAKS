@@ -65,13 +65,13 @@ class SteadyStateSolverTest(unittest.TestCase):
         self.assertTrue(hasattr(solver, "_norm"))
 
         # Flags.
-        self.assertFalse(solver.has_absolute_energy())
-        self.assertFalse(solver.has_relative_energy())
-        self.assertFalse(solver.has_energy_correction())
-        self.assertFalse(solver.has_symbols())
+        self.assertFalse(solver.has_absolute_energy)
+        self.assertFalse(solver.has_relative_energy)
+        self.assertFalse(solver.has_energy_correction)
+        self.assertFalse(solver.has_symbols)
 
         ref_classified_adsorbates = {'s': ['CO_s', 'O_s']}
-        self.assertDictEqual(ref_classified_adsorbates, solver.classified_adsorbates())
+        self.assertDictEqual(ref_classified_adsorbates, solver.classified_adsorbates)
 
 #    def test_get_data(self):
 #        " Test solver can get data correctly. "
