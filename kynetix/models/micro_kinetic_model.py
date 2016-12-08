@@ -50,9 +50,6 @@ class MicroKineticModel(km.KineticModel):
     # Ode ouptut interval.
     ode_output_interval = dc.Integer("ode_output_interval", default=200)
 
-    # File to store data.
-    data_file = dc.String("data_file", default="data.pkl")
-
     # Species used for conversion from relative energy to absolute eneergy.
     ref_species = dc.Sequence("ref_species", default=[], entry_type=str)
 
@@ -79,6 +76,12 @@ class MicroKineticModel(km.KineticModel):
                                       verbosity=logging.WARNING)
         """
         super(MicroKineticModel, self).__init__(setup_file, setup_dict, verbosity)
+
+        # Create data directory if need.
+        if mpi.size != 1 and not os.path.exists("./data"):
+            mpi.barrier()
+            if mpi.is_master:
+                os.mkdir("./data")
 
     def _set_logger(self, filename=None):
         super(MicroKineticModel, self)._set_logger(filename)
@@ -177,13 +180,13 @@ class MicroKineticModel(km.KineticModel):
             if self.log_allowed:
                 self._logger.info('use user-defined coverages as initial guess...')
 
-        elif os.path.exists("./data.pkl"):
-            with open('data.pkl', 'rb') as f:
+        elif os.path.exists(self.data_file):
+            with open(self.data_file, 'rb') as f:
                 data = cpkl.load(f)
             init_guess = 'steady_state_coverage'
             if init_guess in data:
                 if self.log_allowed:
-                    self._logger.info('use coverages in data.pkl as initial guess...')
+                    self._logger.info('use coverages in {} as initial guess...'.format(self.data_file))
                 init_cvgs = data[init_guess]
                 coarse_guess = False
             else:
@@ -226,6 +229,13 @@ class MicroKineticModel(km.KineticModel):
 
         return
         # }}}
+
+    @dc.Property
+    def data_file(self):
+        if mpi.size == 1:
+            return "data.pkl"
+        else:
+            return "./data/data_{}.pkl".format(mpi.rank)
 
     @dc.Property
     def log_allowed(self):
