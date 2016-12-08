@@ -5,7 +5,7 @@ import os
 
 import kynetix.descriptors.descriptors as dc
 import kynetix.descriptors.component_descriptors as cpdc
-from kynetix import mpi_master, mpi_size, mpi_installed, mpi_rank
+from kynetix.mpicommons import mpi
 from kynetix.database.thermo_data import kB_eV, h_eV
 from kynetix.errors.error import *
 from kynetix.functions import *
@@ -100,7 +100,7 @@ class KineticModel(object):
         if self.log_allowed:
             self._logger.info("------------------------------------")
             self._logger.info(" Model is runing in MPI Environment ")
-            self._logger.info(" Number of process: {}".format(mpi_size))
+            self._logger.info(" Number of process: {}".format(mpi.size))
             self._logger.info("------------------------------------")
             self._logger.info(" ")
 
@@ -126,12 +126,13 @@ class KineticModel(object):
 
         # Set log file name.
         if filename is None:
-            if not os.path.exists("./log"):
-                os.mkdir("./log")
-            if not mpi_installed or 1 == mpi_size:
-                filename = "./log/out.log"
+            if 1 == mpi.size:
+                filename = "out.log"
             else:
-                filename = "./log/out_{}.log".format(mpi_rank)
+                mpi.barrier()
+                if not os.path.exists("./log") and mpi.is_master:
+                    os.mkdir("./log")
+                filename = "./log/out_{}.log".format(mpi.rank)
 
         # Create handlers.
         std_hdlr = logging.FileHandler(filename)

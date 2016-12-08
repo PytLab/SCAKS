@@ -13,7 +13,6 @@ except ImportError:
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
 from kynetix import __version__
-from kynetix import mpi_master
 from kynetix.errors.error import *
 from kynetix.database.thermo_data import kB_eV
 from kynetix.database.lattice_data import *

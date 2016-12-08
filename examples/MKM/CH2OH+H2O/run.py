@@ -7,7 +7,7 @@ import logging
 import sys
 import time
 
-from kynetix import mpi_master
+from kynetix.mpicommons import mpi
 from kynetix.models.micro_kinetic_model import MicroKineticModel
 from kynetix.utilities.format_utilities import convert_time
 
@@ -30,7 +30,7 @@ if "__main__" == __name__:
     # Get setup file.
     status, output= commands.getstatusoutput("ls *.mkm | tail -1")
     if status:
-        if mpi_master:
+        if mpi.is_master:
             logger.error(output)
             logger.info("Exiting...")
         sys.exit(1)
@@ -60,7 +60,7 @@ if "__main__" == __name__:
                       XRC=CalcXRC,
                       product_name=ProductionName)
     except Exception as e:
-        if mpi_master:
+        if mpi.is_master:
             msg = "{} exception is catched.".format(type(e).__name__)
             logger.exception(msg)
         raise e
@@ -70,6 +70,6 @@ if "__main__" == __name__:
     t = end - start
     h, m, s = convert_time(t)
 
-    if mpi_master:
+    if mpi.is_master:
         logger.info("Time used: {:d} h {:d} min {:f} sec".format(h, m, s))
 

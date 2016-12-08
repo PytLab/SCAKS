@@ -10,7 +10,6 @@ from scipy.linalg import norm
 from scipy.optimize import fsolve
 
 import kynetix.descriptors.descriptors as dc
-from kynetix import mpi_master
 from kynetix import file_header
 from kynetix.errors.error import *
 from kynetix.utilities.format_utilities import get_list_string

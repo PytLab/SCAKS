@@ -17,7 +17,6 @@ except ImportError:
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
 import kynetix.descriptors.descriptors as dc
-from kynetix import mpi_master
 from kynetix.functions import *
 from kynetix.parsers.rxn_parser import *
 from kynetix.solvers.solver_base import *

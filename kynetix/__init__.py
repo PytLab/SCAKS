@@ -4,23 +4,9 @@ try:
 except ImportError:
     import picke
 
-try:
-    from mpi4py import MPI
-    mpi_installed = True
-    mpi_comm = MPI.COMM_WORLD
-    mpi_rank = mpi_comm.Get_rank()
-    mpi_size = mpi_comm.Get_size()
-except ImportError:
-    mpi_installed = False
-    mpi_rank = 0
-    mpi_size = 1
-
 from kynetix.functions import *
 from kynetix.errors.error import *
 
-
-# Condition for info output or not.
-mpi_master = (mpi_rank == 0)
 
 __version__ = '1.0.0'
 

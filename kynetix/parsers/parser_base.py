@@ -6,7 +6,6 @@ import numpy as np
 
 import kynetix.descriptors.descriptors as dc
 from kynetix import ModelShell
-from kynetix import mpi_master
 from kynetix.functions import *
 from kynetix.errors.error import *
 from kynetix.database.elements_data import *

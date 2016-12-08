@@ -2,7 +2,7 @@ import cPickle as cpkl
 import logging
 import os
 
-from kynetix import mpi_master, mpi_size, mpi_installed
+from kynetix.mpicommons import mpi
 import kynetix.models.kinetic_model as km
 import kynetix.descriptors.descriptors as dc
 import kynetix.descriptors.component_descriptors as cpdc
@@ -82,10 +82,9 @@ class MicroKineticModel(km.KineticModel):
 
     def _set_logger(self, filename=None):
         super(MicroKineticModel, self)._set_logger(filename)
-
         # if not master processor, no INFO to console.
-        if not mpi_master:
-            self.set_logger_level("console_hdlr", logging.WARN)
+        if not mpi.is_master:
+            self.set_logger_level("StreamHandler", logging.WARNING)
 
     def run(self, **kwargs):
         """

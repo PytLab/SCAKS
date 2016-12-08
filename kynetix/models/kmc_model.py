@@ -1,7 +1,7 @@
 import logging
 import os
 
-from kynetix import mpi_master, mpi_size, mpi_installed
+from kynetix.mpicommons import mpi
 import kynetix.models.kinetic_model as km
 import kynetix.descriptors.descriptors as dc
 import kynetix.descriptors.component_descriptors as cpdc
@@ -187,7 +187,7 @@ class KMCModel(km.KineticModel):
         Flag for if log output is allowed.
         """
         # Only master processor can output log.
-        return True if mpi_master else False
+        return True if mpi.is_master else False
 
     @dc.Property
     def processes(self):
