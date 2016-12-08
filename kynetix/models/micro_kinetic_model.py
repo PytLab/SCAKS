@@ -54,7 +54,7 @@ class MicroKineticModel(km.KineticModel):
     ref_species = dc.Sequence("ref_species", default=[], entry_type=str)
 
     # Reference energies used to calculate formation energy.
-    ref_energies = dc.Dict("ref_energies", default={})
+    ref_energies = dc.RefEnergies("ref_energies", default={})
     # }}}
 
     def __init__(self, setup_file=None,

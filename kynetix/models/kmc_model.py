@@ -60,9 +60,7 @@ class KMCModel(km.KineticModel):
                                        "TOFAnalysis"])
 
     # Interval of doing on-the-fly analysis.
-    analysis_interval = dc.Sequence("analysis_interval",
-                                    default=None,
-                                    entry_type=int)
+    analysis_interval = dc.AnalysisInterval("analysis_interval", default=None)
 
     # All possible element types.
     possible_element_types = dc.Sequence("possible_element_types",
