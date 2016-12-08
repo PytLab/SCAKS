@@ -57,8 +57,8 @@ if "__main__" == __name__:
                   solve_ode=OdeOnly,
                   coarse_guess=False,
                   relative=True,
-                      XRC=CalcXRC,
-                      product_name=ProductionName)
+                  XRC=CalcXRC,
+                  product_name=ProductionName)
     except Exception as e:
         if mpi.is_master:
             msg = "{} exception is catched.".format(type(e).__name__)
