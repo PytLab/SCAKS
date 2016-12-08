@@ -22,11 +22,6 @@ class MicroKineticModel(km.KineticModel):
                                        default="right",
                                        candidates=["right", "left"])
 
-    # Archived variables.
-    archived_variables = dc.Sequence("archive_data",
-                                     default=["steady_state_coverages"],
-                                     entry_type=str)
-
     # Numerical representation.
     numerical_representation = dc.String("numerical_representation",
                                          default="mpmath",
