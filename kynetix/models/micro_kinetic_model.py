@@ -204,7 +204,7 @@ class MicroKineticModel(km.KineticModel):
         if fsolve:
             if self.log_allowed:
                 self._logger.info('using fsolve to get steady state coverages...')
-            ss_cvgs = solver.fsolve_steady_state_cvgs(init_cvgs)
+            self.__ss_cvgs = solver.fsolve_steady_state_cvgs(init_cvgs)
         else:
             if coarse_guess:
                 if self.log_allowed:
@@ -212,13 +212,13 @@ class MicroKineticModel(km.KineticModel):
                 init_cvgs = solver.coarse_steady_state_cvgs(init_cvgs)  # coarse root
             if self.log_allowed:
                 self._logger.info('getting precise steady state coverages...')
-            ss_cvgs = solver.get_steady_state_cvgs(init_cvgs)
+            self.__ss_cvgs = solver.get_steady_state_cvgs(init_cvgs)
 
         # Get TOFs for gases.
-        tofs = solver.get_tof(ss_cvgs)
+        self.__tofs = solver.get_tof(self.__ss_cvgs)
 
         # Get reversibilities.
-        rf, rr = solver.get_rates(ss_cvgs)
+        rf, rr = solver.get_rates(self.__ss_cvgs)
         reversibilities = solver.get_reversibilities(rf, rr)
 
         # Calculate XRC.
@@ -244,4 +244,25 @@ class MicroKineticModel(km.KineticModel):
         """
         # All processors can output log information.
         return True
+
+    @dc.Property
+    def steady_state_coverages(self):
+        try:
+            return self.__ss_cvgs
+        except AttributeError:
+            raise AttributeError("Unsolved model has no steady state coverages.")
+
+    @dc.Property
+    def TOFs(self):
+        try:
+            return self.__tofs
+        except AttributeError:
+            raise AttributeError("Unsolved model has no turnover frequencies.")
+
+    @dc.Property
+    def reversibilities(self):
+        try:
+            return self.__reversibilities
+        except AttributeError:
+            raise AttributeError("Unsolved model has no reversibilities.")
 
