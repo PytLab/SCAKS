@@ -1,3 +1,7 @@
+"""
+Module for wrapped MPI interfaces used in Kynetix.
+"""
+
 try:
     from mpi4py import MPI
     MPI_INSTALLED = True
