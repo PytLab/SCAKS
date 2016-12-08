@@ -8,6 +8,61 @@ import logging
 from kynetix.errors.error import *
 
 
+def check_sequence(sequence, entry_type=None, param_name="Tested object"):
+    """
+    Check the given object is a list or tuple of a type.
+
+    Parameters:
+    -----------
+    sequence: The object to test.
+
+    entry_type: The type of entry of list.
+
+    param_name: The test parameter name.
+
+    Returns:
+    --------
+    sequence: The valid sequence object.
+    """
+
+    msg = "{} is not a sequence of {}".format(param_name, entry_type)
+
+    if type(sequence) not in (tuple, list):
+        raise SetupError(msg)
+
+    for entry in sequence:
+        if not isinstance(entry, entry_type):
+            raise SetupError(msg)
+
+    return sequence
+
+
+def check_string(string, string_range=None, param_name="Tested object"):
+    """
+    Check the string type and if it is in the given sequence.
+
+    Parameters:
+    -----------
+    string: The test string, str.
+
+    string_range: All possible string, list or tuple.
+
+    param_name: The test parameter name, str.
+
+    Return:
+    -------
+    string: The valid string object.
+    """
+    if not isinstance(string, str):
+        raise SetupError("{} is not a string.".format(param_name))
+
+    if string not in string_range:
+        msg = "{} must be one of {}".format(param_name, string_range)
+        raise SetupError(msg)
+
+    return string
+
+
 def check_species_definitions(species_definitions):
     """
     Check the species definitions in setup file.
