@@ -806,8 +806,25 @@ class MeanFieldSolver(SolverBase):
             raise ValueError("Unknown method: '{}'".format(method))
 
         # Loop over all elementary reactions.
-        for idx in xrange(len(self._owner.rxn_expressions)):
+        self.__logger.info("Use {} method to correct relative energies".format(method))
+        for idx, rxn_expression in enumerate(self._owner.rxn_expressions):
+            # Data used for info output.
+            Gaf = self._relative_energies["Gaf"][idx]
+            Gar = self._relative_energies["Gar"][idx]
+            dG = self._relative_energies["dG"][idx]
+
             self.__correct_single_relative_energies(idx, correct_func)
+
+            # Data used for info output.
+            Gaf_prime = self._relative_energies["Gaf"][idx]
+            Gar_prime = self._relative_energies["Gar"][idx]
+            dG_prime = self._relative_energies["dG"][idx]
+
+            msg = ("{}: Gaf({:.2f} -> {:.2f}), Gar({:.2f} -> {:.2f}), " +
+                   "dG({:.2f} -> {:.2f})").format(rxn_expression, Gaf, Gaf_prime,
+                                                                  Gar, Gar_prime,
+                                                                  dG, dG_prime)
+            self.__logger.info(msg)
 
         self._rel_corrected = True
 
