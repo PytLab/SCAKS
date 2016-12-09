@@ -723,20 +723,16 @@ class MeanFieldSolver(SolverBase):
         # Set flag.
         self._abs_corrected = True
 
-    def __correct_single_relative_energies(self, idx, correct_func):
+    def __correct_single_relative_energies(self, rxn_idx, correct_func):
         """
         Private helper function to correct relative energies for a single elementary reaction.
 
         Parameters:
         -----------
-        idx: The index of the reaction expression, int.
+        rxn_idx     : The index of the reaction expression, int.
         correct_func: The function object to correct energy.
         """
-        Gaf = self._relative_energies["Gaf"][idx]
-        Gar = self._relative_energies["Gar"][idx]
-        dG = self._relative_energies["dG"][idx]
-
-        formula_lists = self._owner.elementary_rxns_list[idx]
+        formula_lists = self._owner.elementary_rxns_list[rxn_idx]
         deltas = [] # energy changes for IS, TS, FS
         for formula_list in formula_lists:
             delta = 0.0
@@ -744,8 +740,25 @@ class MeanFieldSolver(SolverBase):
                 delta += correct_func(formula.formula())
             deltas.append(delta)
 
+        self.__change_relative_energies(rxn_idx, deltas)
+
+    def __change_relative_energies(self, rxn_idx, deltas):
+        """
+        Change the relative energies of solver from the enegies changes of
+        a single elementary reaction.
+
+        Parameters:
+        -----------
+        rxn_idx: The index of the reaction expression, int.
+        deltas : The energy change vector for the corresponding elementary reaction,
+                 float list.
+        """
+        Gaf = self._relative_energies["Gaf"][rxn_idx]
+        Gar = self._relative_energies["Gar"][rxn_idx]
+        dG = self._relative_energies["dG"][rxn_idx]
+
         # We have to treat adsorption and desorption particularly.
-        if len(formula_lists) == 2:
+        if len(deltas) == 2:
             E_IS = 0.0
             E_FS = E_IS + dG
             delta_is, delta_fs = deltas
@@ -756,7 +769,7 @@ class MeanFieldSolver(SolverBase):
             Gaf = E_TS - E_IS
             Gar = E_TS - E_FS
             dG = E_FS - E_IS
-        elif len(formula_lists) == 3:
+        elif len(deltas) == 3:
             # Correct relative energies.
             d_is, d_ts, d_fs = deltas
             d_Gaf = d_ts - d_is
@@ -767,9 +780,9 @@ class MeanFieldSolver(SolverBase):
             dG += d_dG
 
         # Update relative energies.
-        self._relative_energies["Gaf"][idx] = Gaf
-        self._relative_energies["Gar"][idx] = Gar
-        self._relative_energies["dG"][idx] = dG
+        self._relative_energies["Gaf"][rxn_idx] = Gaf
+        self._relative_energies["Gar"][rxn_idx] = Gar
+        self._relative_energies["dG"][rxn_idx] = dG
 
     def correct_relative_energies(self, method="shomate"):
         """
