@@ -53,7 +53,7 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
     def test_shomate_correction(self):
         " Test we can get correct energy correction by Shomate equation. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.ERROR)
         corrector = model.corrector
         # Check.
         gas = "CO_g"
@@ -66,10 +66,17 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
         ref_delta = -0.87627116516400394
         self.assertEqual(ret_delta, ref_delta)
 
+        gas = "O4_g"
+        # A warning would be expected.
+        self.assertEqual(corrector.shomate_correction(gas), 0.0)
+
+        species = "O-O_s"
+        self.assertEqual(corrector.shomate_correction(species), 0.0)
+
     def test_entropy_correction(self):
         " Make sure we can get correct entropy correction. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.ERROR)
         corrector = model.corrector
 
         # Check.
@@ -82,6 +89,13 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
         ret_delta = corrector.entropy_correction(gas)
         ref_delta = -1.2250150716175705
         self.assertEqual(ref_delta, ret_delta)
+
+        gas = "O4_g"
+        # A warning would be expected.
+        self.assertEqual(corrector.entropy_correction(gas), 0.0)
+
+        species = "O-O_s"
+        self.assertEqual(corrector.entropy_correction(species), 0.0)
 
     def test_solvers_correction_energy(self):
         " Test solver's correction energy function. "
