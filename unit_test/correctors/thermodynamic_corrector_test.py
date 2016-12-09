@@ -128,6 +128,25 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
         ret_e = solver._G
 
         self.assertDictEqual(ref_e, ret_e)
+        self.assertTrue(solver.absolute_corrected)
+
+    def test_relative_energies_correction(self):
+        " Test solver can correct its relative energies with help of corrector. "
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        parser = model.parser
+        parser.parse_data(filename=mkm_energy, relative=True)
+        solver = model.solver
+        solver.get_data()
+
+        solver.correct_relative_energies()
+
+        ref_energies = {'Gaf': [0.083909901320271651, 0.0, 1.25],
+                        'Gar': [0.0, 1.7637288348359963, 1.8219034880035028],
+                        'dG': [0.083909901320271651, -1.7637288348359963, -0.57190348800350277]}
+        ret_energies = solver.relative_energies
+
+        self.assertDictEqual(ref_energies, ret_energies)
+        self.assertTrue(solver.relative_corrected)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(ThermodynamicCorrectorTest)

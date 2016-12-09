@@ -712,6 +712,8 @@ class MeanFieldSolver(SolverBase):
             correct_func = corrector.shomate_correction
         elif method == "entropy":
             correct_func = corrector.entropy_correction
+        else:
+            raise ValueError("Unknown method: '{}'".format(method))
 
         for gas_name in self._owner.gas_names:
             correction_energy = correct_func(gas_name)
@@ -719,6 +721,84 @@ class MeanFieldSolver(SolverBase):
 
         # Set flag.
         self._abs_corrected = True
+
+    def __correct_single_relative_energies(self,
+                                           rxn_expression,
+                                           idx,
+                                           correct_func):
+        """
+        Correct relative energies for a single elementary reaction.
+
+        Parameters:
+        -----------
+        rxn_expression: The expression for the elementary reaction, str.
+        idx: The index of the reaction expression, int.
+        correct_func: The function object to correct energy.
+        """
+        Gaf = self._relative_energies["Gaf"][idx]
+        Gar = self._relative_energies["Gar"][idx]
+        dG = self._relative_energies["dG"][idx]
+
+        rxn = RxnEquation(rxn_expression)
+
+        formula_lists = rxn.to_formula_list()
+        deltas = [] # energy changes for IS, TS, FS
+        for formula_list in formula_lists:
+            delta = 0.0
+            for formula in formula_list:
+                delta += correct_func(formula.formula())
+            deltas.append(delta)
+
+        # We have to treat adsorption and desorption particularly.
+        if len(formula_lists) == 2:
+            E_IS = 0.0
+            E_FS = E_IS + dG
+            delta_is, delta_fs = deltas
+            E_IS += delta_is
+            E_FS += delta_fs
+            E_TS = max(E_IS, E_FS)
+            # Calculate relative energies again.
+            Gaf = E_TS - E_IS
+            Gar = E_TS - E_FS
+            dG = E_FS - E_IS
+        elif len(formula_lists) == 3:
+            # Correct relative energies.
+            d_is, d_ts, d_fs = deltas
+            d_Gaf = d_ts - d_is
+            d_Gar = d_ts - d_fs
+            d_dG = d_fs - d_is
+            Gaf += d_Gaf
+            Gar += d_Gar
+            dG += d_dG
+
+        # Update relative energies.
+        self._relative_energies["Gaf"][idx] = Gaf
+        self._relative_energies["Gar"][idx] = Gar
+        self._relative_energies["dG"][idx] = dG
+
+    def correct_relative_energies(self, method="shomate"):
+        if not self._has_relative_energy:
+            raise AttributeError("No relative energies in solver.")
+
+        if self._rel_corrected:
+            # Avoid correction twice.
+            return
+
+        corrector = self._owner.corrector
+
+        if method == "shomate":
+            correct_func = corrector.shomate_correction
+        elif method == "entropy":
+            correct_func = corrector.entropy_correction
+        else:
+            raise ValueError("Unknown method: '{}'".format(method))
+
+        # Loop over all elementary reactions.
+        for idx, rxn_expression in enumerate(self._owner.rxn_expressions):
+            self.__correct_single_relative_energies(rxn_expression, idx, correct_func)
+
+        self._rel_corrected = True
+
 
     ######################################################
     ######                                          ######
