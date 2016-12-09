@@ -5,6 +5,11 @@ Definitions of attribute descriptors.
 import numpy as np
 import copy
 
+from kynetix.utilities.check_utilities import check_species_definitions
+from kynetix.utilities.check_utilities import check_ref_energies
+from kynetix.utilities.check_utilities import check_analysis_interval
+
+
 class AttrDescriptor(object):
     def __init__(self, name, default, deepcopy=False):
         """
@@ -98,8 +103,35 @@ class Bool(Type):
 
 
 class Dict(Type):
-    def __init__(self, name, default,deepcopy=False, candidates=None):
+    def __init__(self, name, default, deepcopy=False, candidates=None):
         super(Dict, self).__init__(name, dict, default, deepcopy, candidates)
+
+
+class SpeciesDefinitions(AttrDescriptor):
+    def __init__(self, name, default, deepcopy=True):
+        super(SpeciesDefinitions, self).__init__(name, default, deepcopy)
+
+    def __set__(self, instance, value):
+        check_species_definitions(value)
+        super(SpeciesDefinitions, self).__set__(instance, value)
+
+
+class RefEnergies(AttrDescriptor):
+    def __init__(self, name, default, deepcopy=False):
+        super(RefEnergies, self).__init__(name, default, deepcopy)
+
+    def __set__(self, instance, value):
+        check_ref_energies(value)
+        super(RefEnergies, self).__set__(instance, value)
+
+
+class AnalysisInterval(AttrDescriptor):
+    def __init__(self, name, default, deepcopy=False):
+        super(AnalysisInterval, self).__init__(name, default, deepcopy)
+
+    def __set__(self, instance, value):
+        check_analysis_interval(value)
+        super(AnalysisInterval, self).__set__(instance, value)
 
 
 class Sequence(AttrDescriptor):

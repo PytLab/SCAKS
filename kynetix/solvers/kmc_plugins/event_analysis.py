@@ -20,7 +20,7 @@ except ImportError:
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     from kynetix.solvers.kmc_plugins.kmc_functions import *
 
-from kynetix import mpi_master
+from kynetix.mpicommons import mpi
 
 
 class EventAnalysis(KMCAnalysisPlugin):
@@ -46,7 +46,7 @@ class EventAnalysis(KMCAnalysisPlugin):
         self.__kmc_model = kmc_model
 
         # Set logger.
-        if mpi_master:
+        if mpi.is_master:
             self.__logger = logging.getLogger("model.solvers.KMCSolver.EventAnalysis")
 
         # Set data file name.
@@ -82,7 +82,7 @@ class EventAnalysis(KMCAnalysisPlugin):
         processes_str = "{} processes listed below:\n".format(len(process_mapping))
         processes_str += table.get_string()
 
-        if mpi_master:
+        if mpi.is_master:
             with open(self.__filename, "w") as f:
                 content = header + processes_str + "\n"
                 f.write(content)
@@ -104,7 +104,7 @@ class EventAnalysis(KMCAnalysisPlugin):
 
         self.__previous_table = current_table
 
-        if mpi_master and self.__flush_counter >= self.__buffer_size:
+        if mpi.is_master and self.__flush_counter >= self.__buffer_size:
             self.__flush()
 
     def __get_table_string(self, step, interactions_table, picked_index):
@@ -171,7 +171,7 @@ class EventAnalysis(KMCAnalysisPlugin):
         """
         Write all data to files.
         """
-        if mpi_master:
+        if mpi.is_master:
             self.__flush()
             msg = "Event analysis informations are written to {}.".format(self.__filename)
             self.__logger.info(msg)

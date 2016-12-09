@@ -13,11 +13,11 @@ from kynetix.utilities.format_utilities import convert_time
 
 # Custom parameters.
 UseRelativeEnergy = True    # Use only relative energies.
-OdeInterval = 1000          # ODE integration time interval.
-OdeEnd = 100000000          # ODE integration time limit.
+OdeInterval = 0.01          # ODE integration time interval.
+OdeEnd = 100          # ODE integration time limit.
 OdeOutput = False           # Output ODE integration data or not.
 CalcXRC = False             # Calculate Degree of Rate Control(XRC) or not.
-ProductionName = "CH3OH_g"  # Production name of your model.
+ProductionName = "CO2_g"  # Production name of your model.
 OdeOnly = False             # Do ODE integration only.
 
 if "__main__" == __name__:
@@ -45,6 +45,7 @@ if "__main__" == __name__:
         solver = model.solver
         parser.parse_data(relative=UseRelativeEnergy)
         solver.get_data()
+        solver.correct_relative_energies(method="entropy")
 
         # Initial coverages guess.
         trajectory = solver.solve_ode(time_span=OdeInterval,

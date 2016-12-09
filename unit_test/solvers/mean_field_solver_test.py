@@ -65,13 +65,14 @@ class MeanFieldSolverTest(unittest.TestCase):
         self.assertTrue(hasattr(solver, "_norm"))
 
         # Flags.
-        self.assertFalse(solver.has_absolute_energy())
-        self.assertFalse(solver.has_relative_energy())
-        self.assertFalse(solver.has_energy_correction())
-        self.assertFalse(solver.has_symbols())
+        self.assertFalse(solver.has_absolute_energy)
+        self.assertFalse(solver.has_relative_energy)
+        self.assertFalse(solver.absolute_corrected)
+        self.assertFalse(solver.relative_corrected)
+        self.assertFalse(solver.has_symbols)
 
         ref_classified_adsorbates = {'s': ['CO_s', 'O_s']}
-        self.assertDictEqual(ref_classified_adsorbates, solver.classified_adsorbates())
+        self.assertDictEqual(ref_classified_adsorbates, solver.classified_adsorbates)
         # }}}
 
     def test_get_data(self):
@@ -89,30 +90,30 @@ class MeanFieldSolverTest(unittest.TestCase):
         parser.parse_data(relative=True, filename=mkm_energy)
         solver.get_data()
 
-        self.assertTrue(solver.has_relative_energy())
+        self.assertTrue(solver.has_relative_energy)
 
         # Check pressure.
         ref_pressures = {'CO2_g': mpf('0.0'), 'CO_g': mpf('1.0'), 'O2_g': mpf(1./3.)}
-        self.assertDictEqual(ref_pressures, solver.pressures())
+        self.assertDictEqual(ref_pressures, solver.pressures)
 
         # Check concentrations.
         ref_concentrations = {}
-        self.assertDictEqual(ref_concentrations, solver.concentrations())
+        self.assertDictEqual(ref_concentrations, solver.concentrations)
 
         # Relative energies.
         ref_relative_energies = {'Gaf': [0.0, 0.0, 1.25],
                                  'Gar': [0.758, 2.64, 0.9259999999999999],
                                  'dG': [-0.758, -2.64, 0.324]}
-        self.assertDictEqual(ref_relative_energies, solver.relative_energies())
+        self.assertDictEqual(ref_relative_energies, solver.relative_energies)
 
         # Formation energies.
-        self.assertRaises(AttributeError, solver.formation_energies)
+        self.assertFalse(hasattr(solver, "_G"))
 
         # Parse absolute energies.
         parser.parse_data(relative=False, filename=mkm_energy)
         solver.get_data()
 
-        self.assertTrue(solver.has_absolute_energy())
+        self.assertTrue(solver.has_absolute_energy)
 
         # Check formation energies.
         ref_formation_energies = {'*_s': mpf('0.0'),
@@ -122,7 +123,7 @@ class MeanFieldSolverTest(unittest.TestCase):
                                   'CO_s': mpf('-0.7580000000016'),
                                   'O2_g': mpf('3.508000000002'),
                                   'O_s': mpf('0.4340000000011')}
-        self.assertDictEqual(ref_formation_energies, solver.formation_energies())
+        self.assertDictEqual(ref_formation_energies, solver.absolute_energies)
         # }}}
 
     def test_get_state_energy(self):

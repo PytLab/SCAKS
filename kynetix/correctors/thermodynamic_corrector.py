@@ -47,13 +47,14 @@ class ThermodynamicCorrector(CorrectorBase):
         # Check gas name.
         formula = ChemFormula(gas_name)
         if formula.type() != "gas":
-            msg = "A gas name is expected, {} is recieved.".format(gas_name)
-            raise ParameterError(msg)
+            # If it's not a gas, no correction.
+            return 0.0
 
         # Set temperature.
         temperature = self._owner.temperature if T is None else T
         temperature_ref = 298.15
 
+        # Nested functions for thermodynamic parameters.
         def H(T, params):
             A, B, C, D, E, F, G, H = params
             t = T/1000.0
@@ -123,9 +124,11 @@ class ThermodynamicCorrector(CorrectorBase):
                 break
 
         if not_there:
-            msg_template = "No Shomate parameters specified for species '{}' at {}K"
-            msg = msg_template.format(gas_name, temperature)
-            raise ValueError(msg)
+            msg = "No Shomate parameters specified for species '{}' at {}K"
+            msg = msg.format(gas_name, temperature)
+            self.__logger.warning(msg)
+            #raise ValueError(msg)
+            free_energy = 0.0
 
         return free_energy
         # }}}
@@ -154,8 +157,9 @@ class ThermodynamicCorrector(CorrectorBase):
         # Check gas name.
         formula = ChemFormula(gas_name)
         if formula.type() != "gas":
-            msg = "A gas name is expected, '{}' is recieved.".format(gas_name)
-            raise ParameterError(msg)
+            #msg = "A gas name is expected, '{}' is recieved.".format(gas_name)
+            #raise ParameterError(msg)
+            return 0.0
 
         # Extract species_site and species name.
         species_site = formula.species_site()
@@ -166,9 +170,11 @@ class ThermodynamicCorrector(CorrectorBase):
         vibration_included = species_site in vibration_temperatures
 
         if not (rotation_included and vibration_included):
-            msg_template = "'{}' is not in database (thermodynamic_corrector.py)"
-            msg = msg_template.format(species_site)
-            raise SpeciesError(msg)
+            msg = "'{}' is not in database (thermodynamic_corrector.py)"
+            msg = msg.format(species_site)
+            self.__logger.warning(msg)
+            #raise SpeciesError(msg)
+            return 0.0
 
         # Set default parameter values.
         if m is None:

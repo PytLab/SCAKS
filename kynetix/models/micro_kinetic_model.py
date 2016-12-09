@@ -2,7 +2,7 @@ import cPickle as cpkl
 import logging
 import os
 
-from kynetix import mpi_master, mpi_size, mpi_installed
+from kynetix.mpicommons import mpi
 import kynetix.models.kinetic_model as km
 import kynetix.descriptors.descriptors as dc
 import kynetix.descriptors.component_descriptors as cpdc
@@ -50,14 +50,11 @@ class MicroKineticModel(km.KineticModel):
     # Ode ouptut interval.
     ode_output_interval = dc.Integer("ode_output_interval", default=200)
 
-    # File to store data.
-    data_file = dc.String("data_file", default="data.pkl")
-
     # Species used for conversion from relative energy to absolute eneergy.
     ref_species = dc.Sequence("ref_species", default=[], entry_type=str)
 
     # Reference energies used to calculate formation energy.
-    ref_energies = dc.Dict("ref_energies", default={})
+    ref_energies = dc.RefEnergies("ref_energies", default={})
     # }}}
 
     def __init__(self, setup_file=None,
@@ -80,12 +77,17 @@ class MicroKineticModel(km.KineticModel):
         """
         super(MicroKineticModel, self).__init__(setup_file, setup_dict, verbosity)
 
+        # Create data directory if need.
+        if mpi.size != 1 and not os.path.exists("./data"):
+            mpi.barrier()
+            if mpi.is_master:
+                os.mkdir("./data")
+
     def _set_logger(self, filename=None):
         super(MicroKineticModel, self)._set_logger(filename)
-
         # if not master processor, no INFO to console.
-        if not mpi_master:
-            self.set_logger_level("console_hdlr", logging.WARN)
+        if not mpi.is_master:
+            self.set_logger_level("StreamHandler", logging.WARNING)
 
     def run(self, **kwargs):
         """
@@ -178,13 +180,13 @@ class MicroKineticModel(km.KineticModel):
             if self.log_allowed:
                 self._logger.info('use user-defined coverages as initial guess...')
 
-        elif os.path.exists("./data.pkl"):
-            with open('data.pkl', 'rb') as f:
+        elif os.path.exists(self.data_file):
+            with open(self.data_file, 'rb') as f:
                 data = cpkl.load(f)
             init_guess = 'steady_state_coverage'
             if init_guess in data:
                 if self.log_allowed:
-                    self._logger.info('use coverages in data.pkl as initial guess...')
+                    self._logger.info('use coverages in {} as initial guess...'.format(self.data_file))
                 init_cvgs = data[init_guess]
                 coarse_guess = False
             else:
@@ -202,7 +204,7 @@ class MicroKineticModel(km.KineticModel):
         if fsolve:
             if self.log_allowed:
                 self._logger.info('using fsolve to get steady state coverages...')
-            ss_cvgs = solver.fsolve_steady_state_cvgs(init_cvgs)
+            self.__ss_cvgs = solver.fsolve_steady_state_cvgs(init_cvgs)
         else:
             if coarse_guess:
                 if self.log_allowed:
@@ -210,13 +212,13 @@ class MicroKineticModel(km.KineticModel):
                 init_cvgs = solver.coarse_steady_state_cvgs(init_cvgs)  # coarse root
             if self.log_allowed:
                 self._logger.info('getting precise steady state coverages...')
-            ss_cvgs = solver.get_steady_state_cvgs(init_cvgs)
+            self.__ss_cvgs = solver.get_steady_state_cvgs(init_cvgs)
 
         # Get TOFs for gases.
-        tofs = solver.get_tof(ss_cvgs)
+        self.__tofs = solver.get_tof(self.__ss_cvgs)
 
         # Get reversibilities.
-        rf, rr = solver.get_rates(ss_cvgs)
+        rf, rr = solver.get_rates(self.__ss_cvgs)
         reversibilities = solver.get_reversibilities(rf, rr)
 
         # Calculate XRC.
@@ -229,10 +231,38 @@ class MicroKineticModel(km.KineticModel):
         # }}}
 
     @dc.Property
+    def data_file(self):
+        if mpi.size == 1:
+            return "data.pkl"
+        else:
+            return "./data/data_{}.pkl".format(mpi.rank)
+
+    @dc.Property
     def log_allowed(self):
         """
         Flag for if log output is allowed.
         """
         # All processors can output log information.
         return True
+
+    @dc.Property
+    def steady_state_coverages(self):
+        try:
+            return self.__ss_cvgs
+        except AttributeError:
+            raise AttributeError("Unsolved model has no steady state coverages.")
+
+    @dc.Property
+    def TOFs(self):
+        try:
+            return self.__tofs
+        except AttributeError:
+            raise AttributeError("Unsolved model has no turnover frequencies.")
+
+    @dc.Property
+    def reversibilities(self):
+        try:
+            return self.__reversibilities
+        except AttributeError:
+            raise AttributeError("Unsolved model has no reversibilities.")
 

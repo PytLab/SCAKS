@@ -12,7 +12,7 @@ except ImportError:
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
 from kynetix import file_header
-from kynetix import mpi_master
+from kynetix.mpicommons import mpi
 from kynetix.utilities.format_utilities import get_list_string, get_dict_string
 
 
@@ -48,7 +48,7 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
         self.__steady_process_occurencies = [0]*nprocess
 
         # Set logger.
-        if mpi_master:
+        if mpi.is_master:
             self.__logger = logging.getLogger("model.solvers.KMCSolver.FrequencyAnalysis")
 
         # TOF start step.
@@ -79,7 +79,7 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
 
             if not self.__tof_start_time:
                 self.__tof_start_time = time
-                if mpi_master:
+                if mpi.is_master:
                     self.__logger.info("TOF analysis start at time = {:e}".format(time))
 
         self.__tof_end_time = time
@@ -129,7 +129,7 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
             reaction_rates.setdefault(reaction, rate)
         reaction_rates_str = get_dict_string("reaction_rates", reaction_rates)
 
-        if mpi_master:
+        if mpi.is_master:
             with open(self.__filename, "a") as f:
                 all_content = (occurencies_str + reaction_occurencies_str +
                                steady_reaction_occurencies_str + reaction_rates_str)

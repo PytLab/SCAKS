@@ -10,7 +10,6 @@ from scipy.linalg import norm
 from scipy.optimize import fsolve
 
 import kynetix.descriptors.descriptors as dc
-from kynetix import mpi_master
 from kynetix import file_header
 from kynetix.errors.error import *
 from kynetix.utilities.format_utilities import get_list_string
@@ -725,57 +724,11 @@ class SteadyStateSolver(MeanFieldSolver):
 
         return converged_cvgs
 
-    def data_archive(func):
-        '''
-        Decorator for **_steady_state_coverages,
-        archive data when getting converged converages.
-        '''
-        def wrapped_func(*args, **kwargs):
-            '''
-            Use scipy.optimize.fsolve to solve non-linear equations.
-
-            Parameters:
-            -----------
-            c0: initial coverages, a list or tuple of float
-
-            Return:
-            -------
-            steady_state_coverages: in the order of self._owner.adsorbate_names,
-                                    tuple of float
-            '''
-            converged_cvgs = func(*args, **kwargs)
-            # Archive data.
-            # Get error.
-            self = args[0]
-            errors = self.steady_state_function(converged_cvgs, kwargs["relative_energies"])
-            error = norm(errors)
-            self._error = error
-
-            self._coverage = converged_cvgs
-            # log steady state coverages.
-            self.__log_sscvg(converged_cvgs, self._owner.adsorbate_names)
-            if self._owner.log_allowed:
-                self.__logger.info('error = %e', error)
-
-            # Archive converged root and error.
-            self.archive_data('steady_state_coverage', converged_cvgs)
-            self.archive_data('steady_state_error', error)
-            self._good_guess = args[1]
-            # Archive initial guess.
-            self.archive_data('initial_guess', args[1])
-
-            return converged_cvgs
-
-        return wrapped_func
-
-    @data_archive
     def fsolve_steady_state_cvgs(self, c0, relative_energies=None):
         """
         Use scipy.optimize.fsolve to get steady state coverages.
         """
         return self.coarse_steady_state_cvgs(c0, relative_energies)
-
-    # -- fsolve END --
 
     def get_steady_state_cvgs(self, c0, single_pt=False, relative_energies=None):
         """
@@ -796,6 +749,7 @@ class SteadyStateSolver(MeanFieldSolver):
             NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
 
         """
+        # {{{
         # Intial coverage must have physical meaning.
         c0 = self.__constrain_coverages(c0)
         self.__initial_guess = c0
@@ -855,7 +809,8 @@ class SteadyStateSolver(MeanFieldSolver):
                     raise ParameterError(msg)
 
                 if self._owner.log_allowed:
-                    self.__logger.info('{} Iterator instantiation - success!'.format(self._owner.rootfinding))
+                    msg = "{} Iterator instantiation - success!".format(self._owner.rootfinding)
+                    self.__logger.info(msg)
 
                 x = c0
                 old_error = 1e99
@@ -945,9 +900,9 @@ class SteadyStateSolver(MeanFieldSolver):
                     #self._error = error
 
                     # archive data every 100 steps
-                    if nt_counter % 100 == 0:
-                        self.archive_data('iter_coverage', x)
-                        self.archive_data('iter_error', error)
+#                    if nt_counter % 100 == 0:
+#                        self.archive_data('iter_coverage', x)
+#                        self.archive_data('iter_error', error)
                 #####    Sub loop for a c0 END    #####
 
                 # Change the initial guess(c0).
@@ -973,6 +928,7 @@ class SteadyStateSolver(MeanFieldSolver):
             self.archive_data('initial_guess', c0)
 
             return self._coverage
+    # }}}
 
     def __log_sscvg(self, cvgs_tuple, ads_names):
         """

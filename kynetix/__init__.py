@@ -4,23 +4,9 @@ try:
 except ImportError:
     import picke
 
-try:
-    from mpi4py import MPI
-    mpi_installed = True
-    mpi_comm = MPI.COMM_WORLD
-    mpi_rank = mpi_comm.Get_rank()
-    mpi_size = mpi_comm.Get_size()
-except ImportError:
-    mpi_installed = False
-    mpi_rank = 0
-    mpi_size = 1
-
 from kynetix.functions import *
 from kynetix.errors.error import *
 
-
-# Condition for info output or not.
-mpi_master = (mpi_rank == 0)
 
 __version__ = '1.0.0'
 
@@ -45,24 +31,6 @@ class ModelShell(object):
     def __init__(self, owner):
         self._owner = owner
         self._archived_data_dict = {}
-
-    def update_parameters(self, defaults):
-        """
-        Update attributes of components according to parameters in setup file.
-
-        Parameters:
-        -----------
-        default: default attributes dict, dict.
-        """
-        for parameter_name in defaults:
-            attribute_name = mangled_name(self._owner, parameter_name)
-            if hasattr(self._owner, attribute_name):
-                defaults[parameter_name] = getattr(self._owner, attribute_name)
-
-        # Set varibles in defaults protected attributes of solver.
-        protected_defaults = {"_{}".format(key): value
-                              for key, value in defaults.iteritems()}
-        self.__dict__.update(protected_defaults)
 
     def archive_data(self, data_name, data):
         """

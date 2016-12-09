@@ -3,7 +3,6 @@ import logging
 import os
 import string
 
-from kynetix import mpi_master
 from kynetix.functions import string2symbols
 from kynetix.parsers.rxn_parser import *
 from kynetix.table_makers.table_maker_base import *

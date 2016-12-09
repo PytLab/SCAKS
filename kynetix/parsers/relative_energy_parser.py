@@ -4,7 +4,6 @@ import logging
 from scipy.linalg import solve
 
 import kynetix.descriptors.descriptors as dc
-from kynetix import mpi_master
 from kynetix.parsers.parser_base import *
 from kynetix.functions import *
 

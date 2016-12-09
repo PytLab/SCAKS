@@ -5,7 +5,7 @@ import mpmath as mp
 import numpy as np
 import gmpy2
 import sympy as sym
-#import sympy.mpmath as symp
+
 try:
     import matplotlib.pyplot as plt
 except ImportError:
@@ -17,7 +17,6 @@ except ImportError:
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
 import kynetix.descriptors.descriptors as dc
-from kynetix import mpi_master
 from kynetix.functions import *
 from kynetix.parsers.rxn_parser import *
 from kynetix.solvers.solver_base import *
@@ -41,7 +40,8 @@ class MeanFieldSolver(SolverBase):
         # Set flags.
         self._has_absolute_energy = False
         self._has_relative_energy = False
-        self._has_energy_correction = False
+        self._abs_corrected = False
+        self._rel_corrected = False
         self._has_symbols = False
 
         # Set essential attrs for solver
@@ -217,7 +217,7 @@ class MeanFieldSolver(SolverBase):
             self._G = G_dict
 
             # Set flags.
-            self._has_energy_correction = False
+            self._abs_corrected = False
             self._has_absolute_energy = True
 
     def _get_state_energy(self, state):
@@ -694,10 +694,18 @@ class MeanFieldSolver(SolverBase):
                 J[i, j] = Jj[i]
         return J
 
-    def correct_energies(self, method="shomate"):
+    def correct_absolute_energies(self, method="shomate"):
         """
         Function to correct free energies of solver.
         """
+        if not self._has_absolute_energy:
+            raise AttributeError("No absolute energies in solver.")
+
+        if self._abs_corrected:
+            # Avoid correction twice.
+            self.__logger.warning("absolute energies can not be corrected twice")
+            return
+
         corrector = self._owner.corrector
 
         # Get correction function.
@@ -705,10 +713,104 @@ class MeanFieldSolver(SolverBase):
             correct_func = corrector.shomate_correction
         elif method == "entropy":
             correct_func = corrector.entropy_correction
+        else:
+            raise ValueError("Unknown method: '{}'".format(method))
 
         for gas_name in self._owner.gas_names:
             correction_energy = correct_func(gas_name)
             self._G[gas_name] += correction_energy
+
+        # Set flag.
+        self._abs_corrected = True
+
+    def __correct_single_relative_energies(self, rxn_idx, correct_func):
+        """
+        Private helper function to correct relative energies for a single elementary reaction.
+
+        Parameters:
+        -----------
+        rxn_idx     : The index of the reaction expression, int.
+        correct_func: The function object to correct energy.
+        """
+        formula_lists = self._owner.elementary_rxns_list[rxn_idx]
+        deltas = [] # energy changes for IS, TS, FS
+        for formula_list in formula_lists:
+            delta = 0.0
+            for formula in formula_list:
+                delta += correct_func(formula.formula())
+            deltas.append(delta)
+
+        self.__change_relative_energies(rxn_idx, deltas)
+
+    def __change_relative_energies(self, rxn_idx, deltas):
+        """
+        Change the relative energies of solver from the enegies changes of
+        a single elementary reaction.
+
+        Parameters:
+        -----------
+        rxn_idx: The index of the reaction expression, int.
+        deltas : The energy change vector for the corresponding elementary reaction,
+                 float list.
+        """
+        Gaf = self._relative_energies["Gaf"][rxn_idx]
+        Gar = self._relative_energies["Gar"][rxn_idx]
+        dG = self._relative_energies["dG"][rxn_idx]
+
+        # We have to treat adsorption and desorption particularly.
+        if len(deltas) == 2:
+            E_IS = 0.0
+            E_FS = E_IS + dG
+            delta_is, delta_fs = deltas
+            E_IS += delta_is
+            E_FS += delta_fs
+            E_TS = max(E_IS, E_FS)
+            # Calculate relative energies again.
+            Gaf = E_TS - E_IS
+            Gar = E_TS - E_FS
+            dG = E_FS - E_IS
+        elif len(deltas) == 3:
+            # Correct relative energies.
+            d_is, d_ts, d_fs = deltas
+            d_Gaf = d_ts - d_is
+            d_Gar = d_ts - d_fs
+            d_dG = d_fs - d_is
+            Gaf += d_Gaf
+            Gar += d_Gar
+            dG += d_dG
+
+        # Update relative energies.
+        self._relative_energies["Gaf"][rxn_idx] = Gaf
+        self._relative_energies["Gar"][rxn_idx] = Gar
+        self._relative_energies["dG"][rxn_idx] = dG
+
+    def correct_relative_energies(self, method="shomate"):
+        """
+        Function to correct relative energies.
+        """
+        if not self._has_relative_energy:
+            raise AttributeError("No relative energies in solver.")
+
+        if self._rel_corrected:
+            # Avoid correction twice.
+            self.__logger.warning("relative energies can not be corrected twice")
+            return
+
+        corrector = self._owner.corrector
+
+        if method == "shomate":
+            correct_func = corrector.shomate_correction
+        elif method == "entropy":
+            correct_func = corrector.entropy_correction
+        else:
+            raise ValueError("Unknown method: '{}'".format(method))
+
+        # Loop over all elementary reactions.
+        for idx in xrange(len(self._owner.rxn_expressions)):
+            self.__correct_single_relative_energies(idx, correct_func)
+
+        self._rel_corrected = True
+
 
     ######################################################
     ######                                          ######
@@ -1280,65 +1382,77 @@ class MeanFieldSolver(SolverBase):
 
     ###### calculate micro kinetic model with Sympy END ######
 
+    @dc.Property
     def has_absolute_energy(self):
         """
         Query function for has_absolute_energy flag.
         """
         return self._has_absolute_energy
 
+    @dc.Property
     def has_relative_energy(self):
         """
         Query function for has_relative_energy flag.
         """
         return self._has_relative_energy
 
-    def has_energy_correction(self):
+    @dc.Property
+    def absolute_corrected(self):
         """
         Query function for has energy correction flag.
         """
-        return self._has_energy_correction
+        return self._abs_corrected
 
+    @dc.Property
+    def relative_corrected(self):
+        """
+        Query function for has energy correction flag.
+        """
+        return self._rel_corrected
+
+    @dc.Property
     def has_symbols(self):
         """
         Query function for has symbol flag.
         """
         return self._has_symbols
 
-    @return_deepcopy
+    @dc.Property
     def classified_adsorbates(self):
         """
         Query function for classified adsorbates.
         """
         return self._classified_adsorbates
 
-    @return_deepcopy
+    @dc.Property
     def pressures(self):
         """
         Query function for gas pressures.
         """
         return self._p
 
-    @return_deepcopy
+    @dc.Property
     def concentrations(self):
         """
         Query function for liquid concentrations.
         """
         return self._c
 
-    @return_deepcopy
-    def formation_energies(self):
+    @dc.Property
+    def absolute_energies(self):
         """
         Query function for formation energies.
         """
         return self._G
 
-    @return_deepcopy
+    @dc.Property
     def relative_energies(self):
         """
         Query function for relative energies.
         """
         return self._relative_energies
 
+    @dc.Property
     def rate_expressions(self):
         """
         Query functions for rate expressions for all elementary reactions.

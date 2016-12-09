@@ -12,7 +12,7 @@ except ImportError:
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
 from kynetix import file_header
-from kynetix import mpi_master
+from kynetix.mpicommons import mpi
 from kynetix.utilities.format_utilities import get_list_string
 
 
@@ -55,7 +55,7 @@ class TOFAnalysis(KMCAnalysisPlugin):
         self.__tof_interval = self.__kmc_model.tof_interval
 
         # Set logger.
-        if mpi_master:
+        if mpi.is_master:
             self.__logger = logging.getLogger("model.solvers.KMCSolver.TOFAnalysis")
 
         # Max length of recorder variables.
@@ -102,14 +102,14 @@ class TOFAnalysis(KMCAnalysisPlugin):
 
             # Flush buffer.
             buffer_full = (len(self.__times) >= self.__buffer_size)
-            if buffer_full and mpi_master:
+            if buffer_full and mpi.is_master:
                 self.__flush()
 
     def finalize(self):
         """
         Write all data to files.
         """
-        if mpi_master and (len(self.__times) > 0):
+        if mpi.is_master and (len(self.__times) > 0):
             self.__flush()
 
             # Info output.

@@ -2,7 +2,7 @@ import commands
 import unittest
 
 from correctors import correctors_tests
-from model import models_tests
+from models import models_tests
 from plotters import plotters_tests
 from parsers import parsers_tests
 from solvers import solvers_tests

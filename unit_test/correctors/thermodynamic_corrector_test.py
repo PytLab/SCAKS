@@ -53,7 +53,7 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
     def test_shomate_correction(self):
         " Test we can get correct energy correction by Shomate equation. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.ERROR)
         corrector = model.corrector
         # Check.
         gas = "CO_g"
@@ -66,10 +66,17 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
         ref_delta = -0.87627116516400394
         self.assertEqual(ret_delta, ref_delta)
 
+        gas = "O4_g"
+        # A warning would be expected.
+        self.assertEqual(corrector.shomate_correction(gas), 0.0)
+
+        species = "O-O_s"
+        self.assertEqual(corrector.shomate_correction(species), 0.0)
+
     def test_entropy_correction(self):
         " Make sure we can get correct entropy correction. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.ERROR)
         corrector = model.corrector
 
         # Check.
@@ -82,6 +89,13 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
         ret_delta = corrector.entropy_correction(gas)
         ref_delta = -1.2250150716175705
         self.assertEqual(ref_delta, ret_delta)
+
+        gas = "O4_g"
+        # A warning would be expected.
+        self.assertEqual(corrector.entropy_correction(gas), 0.0)
+
+        species = "O-O_s"
+        self.assertEqual(corrector.entropy_correction(species), 0.0)
 
     def test_solvers_correction_energy(self):
         " Test solver's correction energy function. "
@@ -103,7 +117,7 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
         self.assertDictEqual(ref_e, ret_e)
 
         # Correction.
-        solver.correct_energies()
+        solver.correct_absolute_energies()
         ref_e = {'*_s': mpf('0.0'),
                  'CO-O_2s': mpf('0.9259999999999999342747969421907328069210052490234375'),
                  'CO2_g': mpf('-0.89590348800350272373549387339153327047824859619140625'),
@@ -114,6 +128,25 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
         ret_e = solver._G
 
         self.assertDictEqual(ref_e, ret_e)
+        self.assertTrue(solver.absolute_corrected)
+
+    def test_relative_energies_correction(self):
+        " Test solver can correct its relative energies with help of corrector. "
+        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        parser = model.parser
+        parser.parse_data(filename=mkm_energy, relative=True)
+        solver = model.solver
+        solver.get_data()
+
+        solver.correct_relative_energies()
+
+        ref_energies = {'Gaf': [0.083909901320271651, 0.0, 1.25],
+                        'Gar': [0.0, 1.7637288348359963, 1.8219034880035028],
+                        'dG': [0.083909901320271651, -1.7637288348359963, -0.57190348800350277]}
+        ret_energies = solver.relative_energies
+
+        self.assertDictEqual(ref_energies, ret_energies)
+        self.assertTrue(solver.relative_corrected)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(ThermodynamicCorrectorTest)
