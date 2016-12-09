@@ -117,7 +117,7 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
         self.assertDictEqual(ref_e, ret_e)
 
         # Correction.
-        solver.correct_energies()
+        solver.correct_absolute_energies()
         ref_e = {'*_s': mpf('0.0'),
                  'CO-O_2s': mpf('0.9259999999999999342747969421907328069210052490234375'),
                  'CO2_g': mpf('-0.89590348800350272373549387339153327047824859619140625'),

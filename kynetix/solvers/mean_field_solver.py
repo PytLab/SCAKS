@@ -693,10 +693,13 @@ class MeanFieldSolver(SolverBase):
                 J[i, j] = Jj[i]
         return J
 
-    def correct_energies(self, method="shomate"):
+    def correct_absolute_energies(self, method="shomate"):
         """
         Function to correct free energies of solver.
         """
+        if not self._has_absolute_energy:
+            raise AttributeError("No absolute energies in solver.")
+
         corrector = self._owner.corrector
 
         # Get correction function.
