@@ -703,6 +703,7 @@ class MeanFieldSolver(SolverBase):
 
         if self._abs_corrected:
             # Avoid correction twice.
+            self.__logger.warning("absolute energies can not be corrected twice")
             return
 
         corrector = self._owner.corrector
@@ -722,16 +723,12 @@ class MeanFieldSolver(SolverBase):
         # Set flag.
         self._abs_corrected = True
 
-    def __correct_single_relative_energies(self,
-                                           rxn_expression,
-                                           idx,
-                                           correct_func):
+    def __correct_single_relative_energies(self, idx, correct_func):
         """
-        Correct relative energies for a single elementary reaction.
+        Private helper function to correct relative energies for a single elementary reaction.
 
         Parameters:
         -----------
-        rxn_expression: The expression for the elementary reaction, str.
         idx: The index of the reaction expression, int.
         correct_func: The function object to correct energy.
         """
@@ -739,9 +736,7 @@ class MeanFieldSolver(SolverBase):
         Gar = self._relative_energies["Gar"][idx]
         dG = self._relative_energies["dG"][idx]
 
-        rxn = RxnEquation(rxn_expression)
-
-        formula_lists = rxn.to_formula_list()
+        formula_lists = self._owner.elementary_rxns_list[idx]
         deltas = [] # energy changes for IS, TS, FS
         for formula_list in formula_lists:
             delta = 0.0
@@ -777,11 +772,15 @@ class MeanFieldSolver(SolverBase):
         self._relative_energies["dG"][idx] = dG
 
     def correct_relative_energies(self, method="shomate"):
+        """
+        Function to correct relative energies.
+        """
         if not self._has_relative_energy:
             raise AttributeError("No relative energies in solver.")
 
         if self._rel_corrected:
             # Avoid correction twice.
+            self.__logger.warning("relative energies can not be corrected twice")
             return
 
         corrector = self._owner.corrector
@@ -794,8 +793,8 @@ class MeanFieldSolver(SolverBase):
             raise ValueError("Unknown method: '{}'".format(method))
 
         # Loop over all elementary reactions.
-        for idx, rxn_expression in enumerate(self._owner.rxn_expressions):
-            self.__correct_single_relative_energies(rxn_expression, idx, correct_func)
+        for idx in xrange(len(self._owner.rxn_expressions)):
+            self.__correct_single_relative_energies(idx, correct_func)
 
         self._rel_corrected = True
 
