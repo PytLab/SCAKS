@@ -40,7 +40,8 @@ class MeanFieldSolver(SolverBase):
         # Set flags.
         self._has_absolute_energy = False
         self._has_relative_energy = False
-        self._has_energy_correction = False
+        self._abs_corrected = False
+        self._rel_corrected = False
         self._has_symbols = False
 
         # Set essential attrs for solver
@@ -216,7 +217,7 @@ class MeanFieldSolver(SolverBase):
             self._G = G_dict
 
             # Set flags.
-            self._has_energy_correction = False
+            self._abs_corrected = False
             self._has_absolute_energy = True
 
     def _get_state_energy(self, state):
@@ -700,6 +701,10 @@ class MeanFieldSolver(SolverBase):
         if not self._has_absolute_energy:
             raise AttributeError("No absolute energies in solver.")
 
+        if self._abs_corrected:
+            # Avoid correction twice.
+            return
+
         corrector = self._owner.corrector
 
         # Get correction function.
@@ -711,6 +716,9 @@ class MeanFieldSolver(SolverBase):
         for gas_name in self._owner.gas_names:
             correction_energy = correct_func(gas_name)
             self._G[gas_name] += correction_energy
+
+        # Set flag.
+        self._abs_corrected = True
 
     ######################################################
     ######                                          ######
@@ -1297,11 +1305,18 @@ class MeanFieldSolver(SolverBase):
         return self._has_relative_energy
 
     @dc.Property
-    def has_energy_correction(self):
+    def absolute_corrected(self):
         """
         Query function for has energy correction flag.
         """
-        return self._has_energy_correction
+        return self._abs_corrected
+
+    @dc.Property
+    def relative_corrected(self):
+        """
+        Query function for has energy correction flag.
+        """
+        return self._rel_corrected
 
     @dc.Property
     def has_symbols(self):
