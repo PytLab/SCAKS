@@ -37,7 +37,12 @@ class AttrDescriptor(object):
 
     def __set__(self, instance, value):
         private_name = "_{}__{}".format(instance.__class__.__name__, self.name)
-        instance.__dict__[private_name] = value
+        if private_name not in instance.__dict__:
+            instance.__dict__[private_name] = value
+        else:
+            msg ="Changing value of {}.{} is not allowed".format(instance.__class__.__name__,
+                                                                 self.name)
+            raise AttributeError(msg)
 
 
 class Type(AttrDescriptor):
