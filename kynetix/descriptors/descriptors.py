@@ -61,18 +61,19 @@ class Type(AttrDescriptor):
         self.candidates = candidates
         self.type = type
 
-    def __set__(self, instance, value):
+    def _check(self, value):
         # Check type.
         if type(value) is not self.type:
             msg = "{} ({}) is not a {}".format(self.name, value, self.type)
             raise ValueError(msg)
         # Check if in possible values.
         if self.candidates is not None and value not in self.candidates:
-            msg = "{} ({}) is not one of {}".format(self.ori_name, value, self.candidates)
+            msg = "{} ({}) is not one of {}".format(self.name, value, self.candidates)
             raise ValueError(msg)
-        # Set it.
-        private_name = "_{}__{}".format(instance.__class__.__name__, self.name)
-        instance.__dict__[private_name] = value
+
+    def __set__(self, instance, value):
+        self._check(value)
+        super(Type, self).__set__(instance, value)
 
 
 class Integer(Type):
@@ -84,7 +85,7 @@ class Float(Type):
     def __init__(self, name, default, deepcopy=False, candidates=None):
         super(Float, self).__init__(name, float, default, deepcopy, candidates)
 
-    def __set__(self, instance, value):
+    def _check(self, value):
         # Overwrite father method.
         if type(value) not in (float, int):
             msg = "{} ({}) is not a {}".format(self.name, value, self.type)
@@ -93,9 +94,7 @@ class Float(Type):
         if self.candidates is not None and value not in self.candidates:
             msg = "{} ({}) is not one of {}".format(self.name, value, self.candidates)
             raise ValueError(msg)
-        # Set it.
-        private_name = "_{}__{}".format(instance.__class__.__name__, self.name)
-        instance.__dict__[private_name] = value
+
 
 class String(Type):
     def __init__(self, name, default, deepcopy=False, candidates=None):
