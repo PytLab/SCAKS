@@ -75,6 +75,26 @@ class RxnEquation(object):
 
         return tex_str
 
+    def revert(self):
+        """
+        Revert the reaction to its reverse RxnEquation object.
+        """
+        state_list = self.tolist()
+
+        # Get rxn_expression template.
+        if len(state_list) == 2:
+            expression_template = "{} -> {}"
+        elif len(state_list) == 3:
+            expression_template = "{} <-> {} -> {}"
+
+        # Revert.
+        chem_states = [state.chem_state() for state in state_list]
+        chem_states.reverse()
+
+        rxn_expression = expression_template.format(*chem_states)
+
+        return RxnEquation(rxn_expression)
+
     # ----------------------------------------
     # Query functions.
 
