@@ -807,6 +807,7 @@ class MeanFieldSolver(SolverBase):
 
         # Loop over all elementary reactions.
         self.__logger.info("Use {} method to correct relative energies".format(method))
+        self.__logger.info("------------------------------------------")
         for idx, rxn_expression in enumerate(self._owner.rxn_expressions):
             # Data used for info output.
             Gaf = self._relative_energies["Gaf"][idx]
@@ -826,6 +827,7 @@ class MeanFieldSolver(SolverBase):
                                                                   dG, dG_prime)
             self.__logger.info(msg)
 
+        self.__logger.info("------------------------------------------\n")
         self._rel_corrected = True
 
 
