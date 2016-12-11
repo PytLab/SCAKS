@@ -95,6 +95,18 @@ class RxnEquation(object):
 
         return RxnEquation(rxn_expression)
 
+    def has_adsorption(self):
+        formula_lists = self.to_formula_list()
+        is_types = [formula.type() for formula in formula_lists[0]]
+
+        return "gas" in is_types
+
+    def has_desorption(self):
+        formula_lists = self.to_formula_list()
+        fs_types = [formula.type() for formula in formula_lists[-1]]
+
+        return "gas" in fs_types
+
     # ----------------------------------------
     # Query functions.
 
