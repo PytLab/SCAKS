@@ -35,7 +35,14 @@ class AttrDescriptor(object):
         else:
             return instance.__dict__[private_name]
 
+    def _check(self, value):
+        # Placeholder for data set checking.
+        pass
+
     def __set__(self, instance, value):
+        # Check the value validity.
+        self._check(value)
+        # Data assignment.
         private_name = "_{}__{}".format(instance.__class__.__name__, self.name)
         if private_name not in instance.__dict__:
             instance.__dict__[private_name] = value
@@ -70,10 +77,6 @@ class Type(AttrDescriptor):
         if self.candidates is not None and value not in self.candidates:
             msg = "{} ({}) is not one of {}".format(self.name, value, self.candidates)
             raise ValueError(msg)
-
-    def __set__(self, instance, value):
-        self._check(value)
-        super(Type, self).__set__(instance, value)
 
 
 class Integer(Type):
@@ -124,18 +127,16 @@ class RefEnergies(AttrDescriptor):
     def __init__(self, name, default, deepcopy=False):
         super(RefEnergies, self).__init__(name, default, deepcopy)
 
-    def __set__(self, instance, value):
+    def _check(self, value):
         check_ref_energies(value)
-        super(RefEnergies, self).__set__(instance, value)
 
 
 class AnalysisInterval(AttrDescriptor):
     def __init__(self, name, default, deepcopy=False):
         super(AnalysisInterval, self).__init__(name, default, deepcopy)
 
-    def __set__(self, instance, value):
+    def _check(self, value):
         check_analysis_interval(value)
-        super(AnalysisInterval, self).__set__(instance, value)
 
 
 class Sequence(AttrDescriptor):
@@ -147,7 +148,7 @@ class Sequence(AttrDescriptor):
         self.candidates = candidates
         self.entry_type = entry_type
 
-    def __check(self, value):
+    def _check(self, value):
         if type(value) not in (list, tuple):
             raise ValueError("{} ({}) is not a sequence".format(self.name, value))
         if self.entry_type is not None:
@@ -162,12 +163,6 @@ class Sequence(AttrDescriptor):
                                                              self.name,
                                                              self.candidates)
                     raise ValueError(msg)
-
-    def __set__(self, instance, value):
-        self.__check(value)
-        # After check, set it.
-        private_name = "_{}__{}".format(instance.__class__.__name__, self.name)
-        instance.__dict__[private_name] = value
 
 
 class FloatList2D(AttrDescriptor):
@@ -186,11 +181,6 @@ class FloatList2D(AttrDescriptor):
         if len(data_array.shape) != 2:
             raise ValueError("{} ({}) is not a 2d float list".format(self.name, value))
 
-    def __set__(self, instance, value):
-        self.__check(value)
-        private_name = "_{}__{}".format(instance.__class__.__name__, self.name)
-        instance.__dict__[private_name] = value
-
 
 class SpaceVectors(FloatList2D):
     def __init__(self, name, default, deepcopy=False):
@@ -199,14 +189,12 @@ class SpaceVectors(FloatList2D):
         """
         super(SpaceVectors, self).__init__(name, default, deepcopy)
 
-    def __set__(self, instance, value):
-        self._check(value)
+    def _check(self, value):
+        super(SpaceVectors, self)._check(value)
         data_array = np.array(value)
         if data_array.shape[1] != 3:
             msg = "shape of {} ({}) is not (-1, 3)".format(self.name, value)
             raise ValueError(msg)
-        private_name = "_{}__{}".format(instance.__class__.__name__, self.name)
-        instance.__dict__[private_name] = value
 
 
 class Property(object):
