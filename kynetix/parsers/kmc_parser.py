@@ -364,11 +364,12 @@ class KMCParser(RelativeEnergyParser):
                 # Correction energy.
                 idx = fs_types.index("gas")
                 formula = fstate[idx]
-                gas_name = formula.formula()
+                gas_name = formula.species_site()
                 p = self._owner.species_definitions[gas_name]["pressure"]
                 m = self.get_molecular_mass(formula.species(), absolute=True)
                 correction_energy = corrector.entropy_correction(gas_name, m, p, T)
-                Gaf += correction_energy
+                stoichiometry = formula.stoichiometry()
+                Gaf += stoichiometry*correction_energy
 
                 # Info output.
                 msg = "Correct forward barrier: {} -> {}".format(Gaf-correction_energy, Gaf)
@@ -402,11 +403,12 @@ class KMCParser(RelativeEnergyParser):
                 # Correction energy.
                 idx = is_types.index("gas")
                 formula = istate[idx]
-                gas_name = formula.formula()
+                gas_name = formula.species_site()
                 p = self._owner.species_definitions[gas_name]["pressure"]
                 m = self.get_molecular_mass(formula.species(), absolute=True)
                 correction_energy = corrector.entropy_correction(gas_name, m, p, T)
-                dG -= correction_energy
+                stoichiometry = formula.stoichiometry()
+                dG -= stoichiometry*correction_energy
 
                 # Info output.
                 if self._owner.log_allowed:
