@@ -80,32 +80,6 @@ class KMCSolverTest(unittest.TestCase):
         self.assertEqual(13996, control_parameters.seed())
         self.assertEqual(False, control_parameters.timeSeed())
 
-    def test_get_relative_energies(self):
-        " Make sure we can get correct relative energies. "
-        # Construction.
-        model = KMCModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
-        model.parser.parse_data(relative=True,
-                                energy_file=kmc_energy,
-                                processes_file=kmc_processes,
-                                configuration_file=kmc_config,
-                                sitesmap_file=kmc_sites)
-
-        ref_e = (0.0, 1.92, -1.92)
-        ret_e = model.solver._KMCSolver__get_relative_energies('CO_g + *_t -> CO_t')
-        self.assertTupleEqual(ref_e, ret_e)
-
-        ref_e = (0.0, 2.09, -2.09)
-        ret_e = model.solver._KMCSolver__get_relative_energies('CO_g + *_b -> CO_b')
-        self.assertTupleEqual(ref_e, ret_e)
-
-        ref_e = (0.0, 3.48, -3.48)
-        ret_e = model.solver._KMCSolver__get_relative_energies('O2_g + 2*_b -> 2O_b')
-        self.assertTupleEqual(ref_e, ret_e)
-
-        ref_e = (0.39, 0.8500000000000001, -0.46)
-        ret_e = model.solver._KMCSolver__get_relative_energies('CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b')
-        self.assertTupleEqual(ref_e, ret_e)
-
     def test_get_rxn_rates(self):
         " Make sure we can get correct forward and reverse rates for a reaction. "
         # Construction.
@@ -117,15 +91,15 @@ class KMCSolverTest(unittest.TestCase):
                                 sitesmap_file=kmc_sites)
 
         ref_r = (1575287.974387463, 3.8789566422291146e-14)
-        ret_r = model.solver._get_rxn_rates('CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b')
+        ret_r = model.solver.get_rxn_rates('CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b')
         self.assertTupleEqual(ref_r, ret_r)
 
         ref_r = (215.85343473385328, 1.7062993852898129e-44)
-        ret_r = model.solver._get_rxn_rates('O2_g + 2*_b -> 2O_b')
+        ret_r = model.solver.get_rxn_rates('O2_g + 2*_b -> 2O_b')
         self.assertTupleEqual(ref_r, ret_r)
 
         ref_r = (11.535554738754854, 1.3130247359797898e-18)
-        ret_r = model.solver._get_rxn_rates('CO_g + *_t -> CO_t')
+        ret_r = model.solver.get_rxn_rates('CO_g + *_t -> CO_t')
         self.assertTupleEqual(ref_r, ret_r)
 
     def test_get_single_process(self):

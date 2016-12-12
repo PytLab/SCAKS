@@ -142,7 +142,7 @@ class KMCSolver(SolverBase):
                 raise SetupError(msg)
 
         # Get rate constants.
-        rf, rr = self._get_rxn_rates(process_dict["reaction"])
+        rf, rr = self.get_rxn_rates(process_dict["reaction"])
 
         # Get process fast flag, False by default.
         fast = process_dict.get("fast", False)
@@ -217,13 +217,13 @@ class KMCSolver(SolverBase):
         return processes
         # }}}
 
-    def _get_rxn_rates(self, rxn_expression):
+    def get_rxn_rates(self, rxn_expression):
         """
         Private helper function to get rate constants for an elementary reaction.
         """
         # {{{
         # Get raw relative energies.
-        Gaf, Gar, dG = self.__get_relative_energies(rxn_expression)
+        Gaf, Gar, dG = self._get_relative_energies(rxn_expression)
         if self._owner.log_allowed:
             self.__logger.info("{} (Gaf={}, Gar={}, dG={})".format(rxn_expression, Gaf, Gar, dG))
 
@@ -337,7 +337,7 @@ class KMCSolver(SolverBase):
         return rf, rr
         # }}}
 
-    def __get_relative_energies(self, rxn_expression):
+    def _get_relative_energies(self, rxn_expression):
         """
         Private helper function to get relative energies for an elementary reaction.
         """
