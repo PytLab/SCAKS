@@ -41,7 +41,6 @@ class MeanFieldSolver(SolverBase):
         self._has_absolute_energy = False
         self._has_relative_energy = False
         self._abs_corrected = False
-        self._rel_corrected = False
         self._has_symbols = False
 
         # Set essential attrs for solver
@@ -723,7 +722,7 @@ class MeanFieldSolver(SolverBase):
         # Set flag.
         self._abs_corrected = True
 
-    def __correct_single_relative_energies(self, rxn_idx, correct_func):
+    def __correct_single_relative_energies(self, relative_energies, rxn_idx, correct_func):
         """
         Private helper function to correct relative energies for a single elementary reaction.
 
@@ -740,9 +739,9 @@ class MeanFieldSolver(SolverBase):
                 delta += correct_func(formula.formula())
             deltas.append(delta)
 
-        self.__change_relative_energies(rxn_idx, deltas)
+        self.__change_relative_energies(relative_energies, rxn_idx, deltas)
 
-    def __change_relative_energies(self, rxn_idx, deltas):
+    def __change_relative_energies(self, relative_energies, rxn_idx, deltas):
         """
         Change the relative energies of solver from the enegies changes of
         a single elementary reaction.
@@ -753,9 +752,9 @@ class MeanFieldSolver(SolverBase):
         deltas : The energy change vector for the corresponding elementary reaction,
                  float list.
         """
-        Gaf = self._relative_energies["Gaf"][rxn_idx]
-        Gar = self._relative_energies["Gar"][rxn_idx]
-        dG = self._relative_energies["dG"][rxn_idx]
+        Gaf = relative_energies["Gaf"][rxn_idx]
+        Gar = relative_energies["Gar"][rxn_idx]
+        dG = relative_energies["dG"][rxn_idx]
 
         # We have to treat adsorption and desorption particularly.
         if len(deltas) == 2:
@@ -780,22 +779,14 @@ class MeanFieldSolver(SolverBase):
             dG += d_dG
 
         # Update relative energies.
-        self._relative_energies["Gaf"][rxn_idx] = Gaf
-        self._relative_energies["Gar"][rxn_idx] = Gar
-        self._relative_energies["dG"][rxn_idx] = dG
+        relative_energies["Gaf"][rxn_idx] = Gaf
+        relative_energies["Gar"][rxn_idx] = Gar
+        relative_energies["dG"][rxn_idx] = dG
 
-    def correct_relative_energies(self, method="shomate"):
+    def correct_relative_energies(self, relative_energies, method="shomate"):
         """
         Function to correct relative energies.
         """
-        if not self._has_relative_energy:
-            raise AttributeError("No relative energies in solver.")
-
-        if self._rel_corrected:
-            # Avoid correction twice.
-            self.__logger.warning("relative energies can not be corrected twice")
-            return
-
         corrector = self._owner.corrector
 
         if method == "shomate":
@@ -810,16 +801,16 @@ class MeanFieldSolver(SolverBase):
         self.__logger.info("------------------------------------------")
         for idx, rxn_expression in enumerate(self._owner.rxn_expressions):
             # Data used for info output.
-            Gaf = self._relative_energies["Gaf"][idx]
-            Gar = self._relative_energies["Gar"][idx]
-            dG = self._relative_energies["dG"][idx]
+            Gaf = relative_energies["Gaf"][idx]
+            Gar = relative_energies["Gar"][idx]
+            dG = relative_energies["dG"][idx]
 
-            self.__correct_single_relative_energies(idx, correct_func)
+            self.__correct_single_relative_energies(relative_energies, idx, correct_func)
 
             # Data used for info output.
-            Gaf_prime = self._relative_energies["Gaf"][idx]
-            Gar_prime = self._relative_energies["Gar"][idx]
-            dG_prime = self._relative_energies["dG"][idx]
+            Gaf_prime = relative_energies["Gaf"][idx]
+            Gar_prime = relative_energies["Gar"][idx]
+            dG_prime = relative_energies["dG"][idx]
 
             msg = ("{}: Gaf({:.2f} -> {:.2f}), Gar({:.2f} -> {:.2f}), " +
                    "dG({:.2f} -> {:.2f})").format(rxn_expression, Gaf, Gaf_prime,
@@ -828,7 +819,8 @@ class MeanFieldSolver(SolverBase):
             self.__logger.info(msg)
 
         self.__logger.info("------------------------------------------\n")
-        self._rel_corrected = True
+
+        return relative_energies
 
 
     ######################################################
@@ -1421,13 +1413,6 @@ class MeanFieldSolver(SolverBase):
         Query function for has energy correction flag.
         """
         return self._abs_corrected
-
-    @dc.Property
-    def relative_corrected(self):
-        """
-        Query function for has energy correction flag.
-        """
-        return self._rel_corrected
 
     @dc.Property
     def has_symbols(self):
