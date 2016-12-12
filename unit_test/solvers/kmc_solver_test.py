@@ -80,7 +80,7 @@ class KMCSolverTest(unittest.TestCase):
         self.assertEqual(13996, control_parameters.seed())
         self.assertEqual(False, control_parameters.timeSeed())
 
-    def test_get_rxn_rates(self):
+    def test_get_rxn_rates_CT(self):
         " Make sure we can get correct forward and reverse rates for a reaction. "
         # Construction.
         model = KMCModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
@@ -91,15 +91,15 @@ class KMCSolverTest(unittest.TestCase):
                                 sitesmap_file=kmc_sites)
 
         ref_r = (1575287.974387463, 3.8789566422291146e-14)
-        ret_r = model.solver.get_rxn_rates('CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b')
+        ret_r = model.solver.get_rxn_rates_CT('CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b', model.relative_energies)
         self.assertTupleEqual(ref_r, ret_r)
 
         ref_r = (215.85343473385328, 1.7062993852898129e-44)
-        ret_r = model.solver.get_rxn_rates('O2_g + 2*_b -> 2O_b')
+        ret_r = model.solver.get_rxn_rates_CT('O2_g + 2*_b -> 2O_b', model.relative_energies)
         self.assertTupleEqual(ref_r, ret_r)
 
         ref_r = (11.535554738754854, 1.3130247359797898e-18)
-        ret_r = model.solver.get_rxn_rates('CO_g + *_t -> CO_t')
+        ret_r = model.solver.get_rxn_rates_CT('CO_g + *_t -> CO_t', model.relative_energies)
         self.assertTupleEqual(ref_r, ret_r)
 
     def test_get_single_process(self):

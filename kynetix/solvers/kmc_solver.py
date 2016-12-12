@@ -140,7 +140,7 @@ class KMCSolver(SolverBase):
                 raise SetupError(msg)
 
         # Get rate constants.
-        rf, rr = self.get_rxn_rates(process_dict["reaction"])
+        rf, rr = self.get_rxn_rates_CT(process_dict["reaction"], self._owner.relative_energies)
 
         # Get process fast flag, False by default.
         fast = process_dict.get("fast", False)

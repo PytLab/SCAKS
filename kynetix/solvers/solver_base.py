@@ -76,7 +76,7 @@ class SolverBase(ModelShell):
 
         return kCT
 
-    def get_rxn_rates(self, rxn_expression):
+    def get_rxn_rates_CT(self, rxn_expression, relative_energies):
         """
         Function to get rate constants for an elementary reaction.
 
@@ -86,7 +86,7 @@ class SolverBase(ModelShell):
         """
         # {{{
         # Get raw relative energies.
-        Gaf, Gar, dG = self._get_relative_energies(rxn_expression)
+        Gaf, Gar, dG = self._get_relative_energies(rxn_expression, relative_energies)
         if self._owner.log_allowed:
             self.__logger.info("{} (Gaf={}, Gar={}, dG={})".format(rxn_expression, Gaf, Gar, dG))
 
@@ -200,22 +200,17 @@ class SolverBase(ModelShell):
         return rf, rr
         # }}}
 
-    def _get_relative_energies(self, rxn_expression):
+    def _get_relative_energies(self, rxn_expression, relative_energies):
         """
         Private helper function to get relative energies for an elementary reaction.
         """
-        # Check if parser has relative energies.
-        if not self._owner.has_relative_energy:
-            msg = "Model has no relative energies, try to use parser to parse data"
-            raise AttributeError(msg)
-
         # Get raw relative energies.
         rxn_expressions = self._owner.rxn_expressions
         idx = rxn_expressions.index(rxn_expression)
 
-        Gaf = self._owner.relative_energies["Gaf"][idx]
-        Gar = self._owner.relative_energies["Gar"][idx]
-        dG = self._owner.relative_energies["dG"][idx]
+        Gaf = relative_energies["Gaf"][idx]
+        Gar = relative_energies["Gar"][idx]
+        dG = relative_energies["dG"][idx]
 
         return Gaf, Gar, dG
 
