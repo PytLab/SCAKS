@@ -61,13 +61,14 @@ class KMCTOFPluginTest(unittest.TestCase):
     def test_run_with_tof(self):
         " Make sure KMCSolver object can be constructed correctly. "
         model = KMCModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
-        parser = model.parser
-        parser.parse_data(filename=kmc_energy, relative=True)
+        model.parser.parse_data(relative=True,
+                                energy_file=kmc_energy,
+                                processes_file=kmc_processes,
+                                configuration_file=kmc_config,
+                                sitesmap_file=kmc_sites)
         
         # Run the model with analysis.
-        model.run(processes_file=kmc_processes,
-                  configuration_file=kmc_config,
-                  sitesmap_file=kmc_sites)
+        model.run()
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(KMCTOFPluginTest)
