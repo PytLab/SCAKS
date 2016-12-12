@@ -39,7 +39,6 @@ class MeanFieldSolver(SolverBase):
 
         # Set flags.
         self._has_absolute_energy = False
-        self._has_relative_energy = False
         self._abs_corrected = False
         self._has_symbols = False
 
@@ -193,15 +192,6 @@ class MeanFieldSolver(SolverBase):
             c_dict.setdefault(liquid_name, self._mpf(concentration))
         self._c = c_dict
 
-        # Get energy data(relative or absolute)
-        if self._owner.has_relative_energy:
-            self._relative_energies = self._owner.relative_energies
-            # Set flag.
-            self._has_relative_energy = True
-        else:
-            raise IOError('No relative energies was read, try parser.parse_data() ' +
-                          'or add data in data table.')
-
         # get energy for each species
         if self._owner.has_absolute_energy:
             G_dict = {}
@@ -325,8 +315,8 @@ class MeanFieldSolver(SolverBase):
         """
         # Get relative energies.
         if not relative_energies:
-            if self._has_relative_energy:
-                relative_energies = self._relative_energies
+            if self._owner.has_relative_energy:
+                relative_energies = self._owner.relative_energies
             else:
                 msg = "Solver must have relative energies to get rate constants."
                 raise AttributeError(msg)
@@ -993,7 +983,7 @@ class MeanFieldSolver(SolverBase):
         elif len(state_energy_sym_list) == 2:
             # Get TS symbol.
             rxn_idx = self._owner.rxn_expressions.index(rxn_expression)
-            dG = self._relative_energies['dG'][rxn_idx]
+            dG = self._owner.relative_energies['dG'][rxn_idx]
             ts_idx = 0 if dG < 0 else -1
             ts_energy_sym = state_energy_sym_list[ts_idx]
 
@@ -1401,13 +1391,6 @@ class MeanFieldSolver(SolverBase):
         return self._has_absolute_energy
 
     @dc.Property
-    def has_relative_energy(self):
-        """
-        Query function for has_relative_energy flag.
-        """
-        return self._has_relative_energy
-
-    @dc.Property
     def absolute_corrected(self):
         """
         Query function for has energy correction flag.
@@ -1448,13 +1431,6 @@ class MeanFieldSolver(SolverBase):
         Query function for formation energies.
         """
         return self._G
-
-    @dc.Property
-    def relative_energies(self):
-        """
-        Query function for relative energies.
-        """
-        return self._relative_energies
 
     @dc.Property
     def rate_expressions(self):

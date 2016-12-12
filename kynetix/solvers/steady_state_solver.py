@@ -1228,7 +1228,7 @@ class SteadyStateSolver(MeanFieldSolver):
             Nested function to calculate XRC for a single elementary reaction.
             """
             # Add epsilon to relative energies.
-            relative_energies = copy.deepcopy(self._relative_energies)
+            relative_energies = self._owner.relative_energies
             relative_energies["Gaf"][idx] += epsilon
             relative_energies["Gar"][idx] += epsilon
 

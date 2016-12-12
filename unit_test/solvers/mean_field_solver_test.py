@@ -66,7 +66,6 @@ class MeanFieldSolverTest(unittest.TestCase):
 
         # Flags.
         self.assertFalse(solver.has_absolute_energy)
-        self.assertFalse(solver.has_relative_energy)
         self.assertFalse(solver.absolute_corrected)
         self.assertFalse(solver.has_symbols)
 
@@ -82,14 +81,9 @@ class MeanFieldSolverTest(unittest.TestCase):
         parser = model.parser
         solver = model.solver
 
-        # Get data before parsing data, an exception would be expected.
-        self.assertRaises(IOError, solver.get_data)
-
         # Parse data.
         parser.parse_data(relative=True, filename=mkm_energy)
         solver.get_data()
-
-        self.assertTrue(solver.has_relative_energy)
 
         # Check pressure.
         ref_pressures = {'CO2_g': mpf('0.0'), 'CO_g': mpf('1.0'), 'O2_g': mpf(1./3.)}
@@ -98,12 +92,6 @@ class MeanFieldSolverTest(unittest.TestCase):
         # Check concentrations.
         ref_concentrations = {}
         self.assertDictEqual(ref_concentrations, solver.concentrations)
-
-        # Relative energies.
-        ref_relative_energies = {'Gaf': [0.0, 0.0, 1.25],
-                                 'Gar': [0.758, 2.64, 0.9259999999999999],
-                                 'dG': [-0.758, -2.64, 0.324]}
-        self.assertDictEqual(ref_relative_energies, solver.relative_energies)
 
         # Formation energies.
         self.assertFalse(hasattr(solver, "_G"))

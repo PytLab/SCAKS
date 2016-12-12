@@ -66,7 +66,6 @@ class SteadyStateSolverTest(unittest.TestCase):
 
         # Flags.
         self.assertFalse(solver.has_absolute_energy)
-        self.assertFalse(solver.has_relative_energy)
         self.assertFalse(solver.absolute_corrected)
         self.assertFalse(solver.has_symbols)
 
