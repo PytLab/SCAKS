@@ -134,41 +134,21 @@ class KMCModel(km.KineticModel):
     def _set_logger(self, filename="out.log"):
         super(KMCModel, self)._set_logger(filename)
 
-    def run(self,
-            processes_file=None,
-            configuration_file=None,
-            sitesmap_file=None,
-            scripting=True,
-            trajectory_type="lattice"):
+    def run(self, scripting=True, trajectory_type="lattice"):
         """
         Function to do kinetic Monte Carlo simulation.
 
         Parameters:
         -----------
-        processes_file: The name of processes definition file, str.
-                        the default name is "kmc_processes.py".
-
-        configuration_file: The name of configuration definition file, str.
-                            the default name is "kmc_processes.py".
-
-        sitesmap_file: The name of sitesmap definition file, str.
-                       the default name is "kmc_processes.py".
-
         scripting: generate lattice script or not, True by default, bool.
 
         trajectory_type: The type of trajectory to use, the default type is "lattice", str.
                          "xyz" | "lattice". 
 
         """
-        parser = self.__parser
-
-        # Parse processes, configuration, sitesmap.
-        self.__processes = parser.parse_processes(filename=processes_file)
-        self.__configuration = parser.parse_configuration(filename=configuration_file)
-        self.__sitesmap = parser.construct_sitesmap(filename=sitesmap_file)
-
-        # Set process reaction mapping.
-        self.__process_mapping = parser.process_mapping()
+        # Get processes.
+        self.__processes = self.solver.processes
+        self.__process_mapping = self.solver.process_mapping
 
         # Run the lattice model.
         self.__solver.run(scripting=scripting, trajectory_type=trajectory_type)
@@ -180,6 +160,13 @@ class KMCModel(km.KineticModel):
         """
         # Only master processor can output log.
         return True if mpi.is_master else False
+
+    @dc.Property
+    def process_dicts(self):
+        """
+        Query function for process dicts list.
+        """
+        return self.__process_dicts
 
     @dc.Property
     def processes(self):
