@@ -140,7 +140,7 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
 
         ret_energies = model.relative_energies
 
-        solver.correct_relative_energies(ret_energies)
+        model.corrector.correct_relative_energies(ret_energies)
 
         ref_energies = {'Gaf': [0.083909901320271651, 0.0, 1.25],
                         'Gar': [0.0, 1.7637288348359963, 1.8219034880035028],
