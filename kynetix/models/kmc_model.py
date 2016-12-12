@@ -20,12 +20,6 @@ class KMCModel(km.KineticModel):
     basis_sites = dc.SpaceVectors("basis_sites",
                                   default=[[0.0, 0.0, 0.0]])
 
-    # Area of unit cell (m^2).
-    unitcell_area = dc.Float("unitcell_area", default=0.0)
-
-    # Ratio of active area.
-    active_ratio = dc.Float("active_ratio", default=1.0)
-
     # Supercell repetitions.
     repetitions = dc.Sequence("repetitions",
                               default=(1, 1, 1),

@@ -50,6 +50,12 @@ class KineticModel(object):
     # Model core components.
     components = dc.Sequence("components", default=["parser"], entry_type=str)
 
+    # Area of unit cell (m^2).
+    unitcell_area = dc.Float("unitcell_area", default=0.0)
+
+    # Ratio of active area.
+    active_ratio = dc.Float("active_ratio", default=1.0)
+
     # }}}
 
     def __init__(self, setup_file=None,
@@ -353,4 +359,5 @@ class KineticModel(object):
         Query function for relative energy in data file.
         """
         return self._relative_energies
+
 
