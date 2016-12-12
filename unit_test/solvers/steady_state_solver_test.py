@@ -68,7 +68,6 @@ class SteadyStateSolverTest(unittest.TestCase):
         self.assertFalse(solver.has_absolute_energy)
         self.assertFalse(solver.has_relative_energy)
         self.assertFalse(solver.absolute_corrected)
-        self.assertFalse(solver.relative_corrected)
         self.assertFalse(solver.has_symbols)
 
         ref_classified_adsorbates = {'s': ['CO_s', 'O_s']}

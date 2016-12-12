@@ -138,15 +138,15 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
         solver = model.solver
         solver.get_data()
 
-        solver.correct_relative_energies()
+        ret_energies = model.relative_energies
+
+        solver.correct_relative_energies(ret_energies)
 
         ref_energies = {'Gaf': [0.083909901320271651, 0.0, 1.25],
                         'Gar': [0.0, 1.7637288348359963, 1.8219034880035028],
                         'dG': [0.083909901320271651, -1.7637288348359963, -0.57190348800350277]}
-        ret_energies = solver.relative_energies
 
         self.assertDictEqual(ref_energies, ret_energies)
-        self.assertTrue(solver.relative_corrected)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(ThermodynamicCorrectorTest)
