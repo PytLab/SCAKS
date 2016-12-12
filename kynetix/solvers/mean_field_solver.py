@@ -326,14 +326,9 @@ class MeanFieldSolver(SolverBase):
             msg = "'Gaf' and 'Gar' must be in relative_energies."
             raise ParameterError(msg)
 
-        # Calculate rate constants.
-        T = self._owner.temperature
         kfs, krs = [], []
-        Gafs, Gars = relative_energies["Gaf"], relative_energies["Gar"]
-
-        for Gaf, Gar in zip(Gafs, Gars):
-            kf = self._mpf(self.get_kTST(Gaf, T))
-            kr = self._mpf(self.get_kTST(Gar, T))
+        for rxn_expression in self._owner.rxn_expressions:
+            kf, kr = self.get_rxn_rates_TST(rxn_expression, relative_energies)
             kfs.append(kf)
             krs.append(kr)
 

@@ -76,13 +76,31 @@ class SolverBase(ModelShell):
 
         return kCT
 
-    def get_rxn_rates_CT(self, rxn_expression, relative_energies):
+    def get_rxn_rates_TST(self, rxn_expression, relative_energies):
         """
-        Function to get rate constants for an elementary reaction.
+        Function to get rate constants for an elementary reaction
+        using Transition State Theory.
 
         Parameters:
         -----------
         rxn_expression: The expression of an elementary reaction, str.
+        relative_energies: The relative energies for all elementary reactions.
+        """
+        Gaf, Gar, dG = self._get_relative_energies(rxn_expression, relative_energies)
+        T = self._owner.temperature
+        kf, kr = [self._mpf(self.get_kTST(Ga, T)) for Ga in [Gaf, Gar]]
+
+        return kf, kr
+
+    def get_rxn_rates_CT(self, rxn_expression, relative_energies):
+        """
+        Function to get rate constants for an elementary reaction
+        using Collision Theory wrt adsorption process.
+
+        Parameters:
+        -----------
+        rxn_expression: The expression of an elementary reaction, str.
+        relative_energies: The relative energies for all elementary reactions.
         """
         # {{{
         # Get raw relative energies.
