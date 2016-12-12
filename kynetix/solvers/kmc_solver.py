@@ -523,7 +523,11 @@ class KMCSolver(SolverBase):
         """
         Query function for processes list.
         """
-        return self.get_processes()
+        try:
+            return self.__processes
+        except AttributeError:
+            self.__processes = self.get_processes()
+            return self.__processes
 
     @dc.Property
     def process_mapping(self):
