@@ -23,6 +23,8 @@ class MicroKineticModel(km.KineticModel):
                                        candidates=["right", "left"])
 
     # Archived variables.
+    # Candidates: 'initial_guess', 'steady_state_coverages', 'steady_state_error',
+    #             'rates', 'net_rates', 'reversibilities', 'tofs'
     archived_variables = dc.Sequence("archive_data",
                                      default=["steady_state_coverages"],
                                      entry_type=str)
