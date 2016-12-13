@@ -8,9 +8,9 @@ rxn_expressions = [
 
 # Gas pressure.
 species_definitions = {}
-species_definitions['CO_g'] = {'pressure': 0.01}
+species_definitions['CO_g'] = {'pressure': 0.158}
 species_definitions['O2_g'] = {'pressure': 0.2}
-species_definitions['CO2_g'] = {'pressure': 0.028}
+species_definitions['CO2_g'] = {'pressure': 0.0288}
 
 # Site info.
 species_definitions['s'] = {'site_name': 'top', 'type': 'site', 'total': 1.0}
@@ -18,11 +18,15 @@ species_definitions['s'] = {'site_name': 'top', 'type': 'site', 'total': 1.0}
 # Temperature.
 temperature = 500  # K
 
+unitcell_area = 9.0e-20
+active_ratio = 4./9.
+
 parser = "RelativeEnergyParser"
 solver = "SteadyStateSolver"
 corrector = "ThermodynamicCorrector"
 plotter = "EnergyProfilePlotter"
 
+rate_algo = "CT"
 rootfinding = "MDNewton"
 tolerance = 1e-15
 max_rootfinding_iterations = 100
