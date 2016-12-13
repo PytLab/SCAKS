@@ -195,11 +195,11 @@ class SteadyStateSolverTest(unittest.TestCase):
 
         # Check.
         coverages = (0.2, 0.5)
-        ref_dtheta_dt = (mpf('2812943317895.314696341954248072244057093672649102054657986641525702269301823174878392219699918541664374'),
-                         mpf('562588664794.8844816900751974899822236555742319376607896488580965637603379490166467802314542723252088763'))
+        ref_dtheta_dt = (2812943317895.31469634,562588664794.88448169)
         ret_dtheta_dt = solver.steady_state_function(coverages)
 
-        self.assertTupleEqual(ref_dtheta_dt, ret_dtheta_dt)
+        for ref, ret in ref_dtheta_dt, ret_dtheta_dt:
+            self.assertAlmostEqual(ret, ret)
 
     def test_term_adsorbate_derivation(self):
         " Test private function __term_adsorbate_derivation(). "
@@ -281,13 +281,12 @@ class SteadyStateSolverTest(unittest.TestCase):
 
         # Check.
         coverages = (0.2, 0.4)
-        ref_jacobian = \
-        [[mpf('-9376477776977.325460526815116254348794135605545524270101419146551990140566123176340401768058541165373754'),
-          mpf('-9376477746581.581279519417568267191072063225136043385050709573275995070283061588170200884029270582686877')],
-         [mpf('-5000788131510.204225705501803201033400924944119994425853606776028424154830007847261086340040492359548807'),
-          mpf('-5000788131510.18544618608423497452955329311275738716732389010571374197652467107703380508721422584175113')]]    
+        ref_jacobian = [[-9376477776977.32, -9376477746581.58],
+                        [-5000788131510.20, -5000788131510.186]]    
         ret_jacobian = solver.analytical_jacobian(coverages).tolist()
-        self.assertListEqual(ref_jacobian, ret_jacobian)
+        for m in range(2):
+            for n in range(2):
+                self.assertAlmostEqual(ref_jacobian[m][n], float(ret_jacobian[m][n]), places=2)
 
     def test_get_residual(self):
         " Test we can get correct residual. "
@@ -300,10 +299,10 @@ class SteadyStateSolverTest(unittest.TestCase):
         solver.get_data()
 
         coverages = (0.99, 0.01)
-        ref_residual = mpf('30091.76907705931107958367882296829850017413372279726741798085781696430451251481888596068989202277621021')
-        ret_residual = solver.get_residual(coverages)
+        ref_residual = 30091.76907705
+        ret_residual = float(solver.get_residual(coverages))
 
-        self.assertEqual(ref_residual, ret_residual)
+        self.assertAlmostEqual(ref_residual, ret_residual)
 
     def test_coarse_steady_state_cvgs(self):
         " Make sure we can get a coarse coverages. "
@@ -319,7 +318,8 @@ class SteadyStateSolverTest(unittest.TestCase):
         ref_coarse_cvgs = [0.9993009034360529, 0.0006990933245135515]
         ret_coarse_cvgs = solver.coarse_steady_state_cvgs(coverages).tolist()
 
-        self.assertListEqual(ref_coarse_cvgs, ret_coarse_cvgs)
+        for ref, ret in zip(ref_coarse_cvgs, ret_coarse_cvgs):
+            self.assertAlmostEqual(ref, ret)
 
     def test_get_steady_state_coverages(self):
         " Test we can get correct steady state coverages. "

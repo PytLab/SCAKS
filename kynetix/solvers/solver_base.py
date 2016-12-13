@@ -88,7 +88,7 @@ class SolverBase(ModelShell):
         """
         Gaf, Gar, dG = self._get_relative_energies(rxn_expression, relative_energies)
         T = self._owner.temperature
-        kf, kr = [self._mpf(self.get_kTST(Ga, T)) for Ga in [Gaf, Gar]]
+        kf, kr = [self.get_kTST(Ga, T) for Ga in [Gaf, Gar]]
 
         return kf, kr
 
