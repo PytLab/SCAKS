@@ -299,19 +299,25 @@ class MeanFieldSolver(SolverBase):
 
         return relative_energies
 
-    def get_rate_constants(self, relative_energies=None):
+    def get_rate_constants(self, relative_energies=None, method="TST"):
         """
         Function to get rate constants for all elementary reactions
         using Transition State Theory.
 
         Parameters:
         -----------
-        relative_energies: A dict of relative eneriges of elementary reactions.
+        relative_energies : A dict of relative eneriges of elementary reactions.
             NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
+
+        method : The algorithm for calculating rate, str.
+            possible values: 1. 'TST' for Transition State Theory
+                             2. 'CT' for Collision Theory
+            If not provide, default to 'TST'.
 
         Returns:
         --------
         Forward rate constants, Reverse rate constants
+        relative_energies: The relative energies for all elementary reactions.
         """
         # Get relative energies.
         if not relative_energies:
@@ -326,9 +332,17 @@ class MeanFieldSolver(SolverBase):
             msg = "'Gaf' and 'Gar' must be in relative_energies."
             raise ParameterError(msg)
 
+        if method == "TST":
+            rate_func = self.get_rxn_rates_TST
+        elif method == "CT":
+            rate_func = self.get_rxn_rates_CT
+        else:
+            msg = "Unknown method type '{}'".format(method)
+            raise ValueError(msg)
+
         kfs, krs = [], []
         for rxn_expression in self._owner.rxn_expressions:
-            kf, kr = self.get_rxn_rates_TST(rxn_expression, relative_energies)
+            kf, kr = rate_func(rxn_expression, relative_energies)
             kfs.append(kf)
             krs.append(kr)
 
