@@ -172,9 +172,9 @@ class MicroKineticModel(km.KineticModel):
                 raise ParameterError(msg)
 
             # Check coverages length.
-            if len(init_cvgs) != len(self.__adsorbate_names):
+            if len(init_cvgs) != len(self.adsorbate_names):
                 msg = "init_cvgs must have {} elements, but {} is supplied"
-                msg = msg.format(len(self.__adsorbate_names), len(init_cvgs))
+                msg = msg.format(len(self.adsorbate_names), len(init_cvgs))
                 raise ParameterError(msg)
 
             if self.log_allowed:
