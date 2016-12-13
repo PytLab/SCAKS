@@ -106,10 +106,9 @@ class SolverBase(ModelShell):
         relative_energies: The relative energies for all elementary reactions.
         """
         # {{{
-        # Counter for this function called.
-        call_counter = SolverBase.CT_counter
-
-        log_allowed = (self._owner.log_allowed and call_counter == 0)
+        # Get the condition for log info output.
+        cls_name = self.__class__.__name__
+        log_allowed = (self._owner.log_allowed and cls_name == "KMCSolver")
 
         # Get raw relative energies.
         Gaf, Gar, dG = self._get_relative_energies(rxn_expression, relative_energies)
@@ -222,8 +221,6 @@ class SolverBase(ModelShell):
                 rr = SolverBase.get_kTST(Gar, T)
                 if log_allowed:
                     self.__logger.info("R(reverse) = {} s^-1 (Transition State Theory)".format(rr))
-
-        SolverBase.CT_counter += 1
 
         return rf, rr
         # }}}
