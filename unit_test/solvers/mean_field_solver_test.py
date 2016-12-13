@@ -66,9 +66,7 @@ class MeanFieldSolverTest(unittest.TestCase):
 
         # Flags.
         self.assertFalse(solver.has_absolute_energy)
-        self.assertFalse(solver.has_relative_energy)
         self.assertFalse(solver.absolute_corrected)
-        self.assertFalse(solver.relative_corrected)
         self.assertFalse(solver.has_symbols)
 
         ref_classified_adsorbates = {'s': ['CO_s', 'O_s']}
@@ -83,14 +81,9 @@ class MeanFieldSolverTest(unittest.TestCase):
         parser = model.parser
         solver = model.solver
 
-        # Get data before parsing data, an exception would be expected.
-        self.assertRaises(IOError, solver.get_data)
-
         # Parse data.
         parser.parse_data(relative=True, filename=mkm_energy)
         solver.get_data()
-
-        self.assertTrue(solver.has_relative_energy)
 
         # Check pressure.
         ref_pressures = {'CO2_g': mpf('0.0'), 'CO_g': mpf('1.0'), 'O2_g': mpf(1./3.)}
@@ -99,12 +92,6 @@ class MeanFieldSolverTest(unittest.TestCase):
         # Check concentrations.
         ref_concentrations = {}
         self.assertDictEqual(ref_concentrations, solver.concentrations)
-
-        # Relative energies.
-        ref_relative_energies = {'Gaf': [0.0, 0.0, 1.25],
-                                 'Gar': [0.758, 2.64, 0.9259999999999999],
-                                 'dG': [-0.758, -2.64, 0.324]}
-        self.assertDictEqual(ref_relative_energies, solver.relative_energies)
 
         # Formation energies.
         self.assertFalse(hasattr(solver, "_G"))
@@ -202,12 +189,8 @@ class MeanFieldSolverTest(unittest.TestCase):
         solver.get_data()
 
         # Check rate constants.
-        ref_forward_rate_constants = (mpf('9376477746560.0'),
-                                      mpf('9376477746560.0'),
-                                      mpf('0.09389759708756'))
-        ref_reverse_rate_constants = (mpf('30395.7254014'),
-                                      mpf('2.542951526972e-17'),
-                                      mpf('399.296161212'))
+        ref_forward_rate_constants = (9376477746581.562, 9376477746581.562, 0.09389759708784133)
+        ref_reverse_rate_constants = (30395.72540148798, 2.5429515269621107e-17, 399.2961612111053)
         ret_forward_rate_constants, ret_reverse_rate_constants = solver.get_rate_constants()
         self.assertTupleEqual(ref_forward_rate_constants, ret_forward_rate_constants)
         self.assertTupleEqual(ref_reverse_rate_constants, ret_reverse_rate_constants)
@@ -304,16 +287,17 @@ class MeanFieldSolverTest(unittest.TestCase):
         # Check.
         coverages = (0.5, 0.5)
         ret_rates = solver.get_rates(coverages)
-        ref_rates = ((mpf('0.0'), mpf('0.0'), mpf('0.02347439927189')),
-                     (mpf('15197.8627007'), mpf('6.357378817428e-18'), mpf('0.0')))
-        self.assertTupleEqual(ref_rates, ret_rates)
+        ref_rates = ((0.0, 0.0, 0.02347439927189),
+                     (15197.8627007, 6.357378817428e-18, 0.0))
+        for m in range(2):
+            for n in range(3):
+                self.assertAlmostEqual(ref_rates[m][n], ret_rates[m][n])
 
         # Check net rates.
-        ref_net_rates = (mpf('-15197.8627007'),
-                         mpf('-6.357378817429e-18'),
-                         mpf('0.02347439927189'))
+        ref_net_rates = (-15197.8627007, -6.357378817429e-18, 0.02347439927189)
         ret_net_rates = solver.get_net_rates(coverages)
-        self.assertTupleEqual(ref_net_rates, ret_net_rates)
+        for ref, ret in zip(ref_net_rates, ret_net_rates):
+            self.assertAlmostEqual(ref, ret)
         # }}}
 
     def test_get_reversibilities(self):
@@ -331,7 +315,8 @@ class MeanFieldSolverTest(unittest.TestCase):
         ref_reversibilities = [2.1611331548919335e-09, 2.260045114764006e-29, 0.0]
         ret_reversibilities = solver.get_reversibilities(rfs, rrs)
 
-        self.assertListEqual(ref_reversibilities, ret_reversibilities)
+        for ref, ret in zip(ref_reversibilities, ret_reversibilities):
+            self.assertAlmostEqual(ref, ret)
         # }}}
 
     def test_get_tof(self):
@@ -346,12 +331,13 @@ class MeanFieldSolverTest(unittest.TestCase):
         solver.get_data()
 
         coverages = (0.2, 0.4)
-        ref_tof = [mpf('0.007511807766946'),
-                   mpf('-3750591092544.0'),
-                   mpf('-500078813148.0')]
+        ref_tof = [0.007511807766946,
+                   -3750591092544.0,
+                   -500078813148.0]
         ret_tof = solver.get_tof(coverages)
 
-        self.assertListEqual(ref_tof, ret_tof)
+        for ref, ret in zip(ref_tof, ret_tof):
+            self.assertAlmostEqual(ref, float(ret))
 
         # Test gas tof.
         ref_tof = mpf('-3750591092544.0')

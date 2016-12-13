@@ -83,27 +83,25 @@ class KMCModelTest(unittest.TestCase):
         " Make sure KMC model can run properly. "
         # Construction.
         model = KMCModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
-        parser = model.parser
-        solver = model.solver
 
         # Parse data.
-        parser.parse_data(filename=kmc_energy, relative=True)
+        model.parser.parse_data(relative=True,
+                                energy_file=kmc_energy,
+                                processes_file=kmc_processes,
+                                configuration_file=kmc_config,
+                                sitesmap_file=kmc_sites)
 
         # Run the model.
-        model.run(processes_file=kmc_processes,
-                  configuration_file=kmc_config,
-                  sitesmap_file=kmc_sites)
+        model.run()
 
         # Run the model with default sites types.
-        model.run(processes_file=kmc_processes,
-                  configuration_file=kmc_config)
+        model.run()
 
         # Run with default configuration.
-        model.run(processes_file=kmc_processes,
-                  sitesmap_file=kmc_sites)
+        model.run()
 
         # Run with default configuration and sitemap.
-        model.run(processes_file=kmc_processes)
+        model.run()
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(KMCModelTest)

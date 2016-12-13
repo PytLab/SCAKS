@@ -46,6 +46,16 @@ class RxnEquationTest(unittest.TestCase):
         equation = RxnEquation("CO_s + O_t <-> CO-O_2s -> CO2_g + 2*_s")
         self.assertRaisesRegexp(ValueError, r"^Site", equation.check_conservation)
 
+    def test_revert(self):
+        " Test the reaction can revert correctly. "
+        equation = RxnEquation("CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s")
+        ref_reverse = "CO2_g + 2*_s <-> CO-O_2s -> CO_s + O_s"
+        ret_reverse = equation.revert().rxn_equation()
+
+        equation = RxnEquation("CO_s + O_s -> CO2_g + 2*_s")
+        ref_reverse = "CO2_g + 2*_s -> CO_s + O_s"
+        ret_reverse = equation.revert().rxn_equation()
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(RxnEquationTest)
     unittest.TextTestRunner(verbosity=2).run(suite)

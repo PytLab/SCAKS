@@ -63,13 +63,14 @@ class KMCRedistributionTest(unittest.TestCase):
             nsplits = (2, 2, 1),
         )
         model = KMCModel(setup_dict=setup_dict, verbosity=logging.WARNING)
-        parser = model.parser
-        parser.parse_data(filename=kmc_energy, relative=True)
+        model.parser.parse_data(relative=True,
+                                energy_file=kmc_energy,
+                                processes_file=kmc_processes,
+                                configuration_file=kmc_config,
+                                sitesmap_file=kmc_sites)
 
         # Run the model with redistribution.
-        model.run(processes_file=kmc_processes,
-                  configuration_file=kmc_config,
-                  sitesmap_file=kmc_sites)
+        model.run()
 
     def test_run_with_process_redistribution(self):
         " Make sure the model can run with process redistribution operation. "
@@ -117,13 +118,14 @@ class KMCRedistributionTest(unittest.TestCase):
             distributor_type = "ProcessRandomDistributor",
         )
         model = KMCModel(setup_dict=setup_dict, verbosity=logging.WARNING)
-        parser = model.parser
-        parser.parse_data(filename=kmc_energy, relative=True)
+        model.parser.parse_data(relative=True,
+                                energy_file=kmc_energy,
+                                processes_file=kmc_processes,
+                                configuration_file=kmc_config,
+                                sitesmap_file=kmc_sites)
 
         # Run the model with redistribution.
-        model.run(processes_file=kmc_processes,
-                  configuration_file=kmc_config,
-                  sitesmap_file=kmc_sites)
+        model.run()
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(KMCRedistributionTest)

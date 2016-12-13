@@ -2,25 +2,31 @@
 # -*- coding: utf-8 -*-
 
 import commands
+import os
+
 import matplotlib.pyplot as plt
 
 if "__main__" == __name__:
     status, output = commands.getstatusoutput("ls")
-    dirs = [d for d in output.split("\n") if d.startswith("1.")]
+    dirs = [d for d in output.split("\n") if d.startswith("0.")]
 
     TONs = []
     pressures = []
     for d in dirs:
-        pressures.append(float(d) - 1)
         filename = "{}/auto_frequency.py".format(d)
-        globs, locs = {}, {}
-        execfile(filename, globs, locs)
-        reaction_rates = locs["reaction_rates"]
-        TON = 0.0
-        reactions = sorted(reaction_rates.keys())
-        for idx in [0, 2, 8, 12]:
-            TON += reaction_rates[reactions[idx]]
-        TONs.append(TON)
+        if os.path.exists(filename):
+            globs, locs = {}, {}
+            execfile(filename, globs, locs)
+            try:
+                reaction_rates = locs["reaction_rates"]
+            except KeyError:
+                continue
+            TON = 0.0
+            reactions = sorted(reaction_rates.keys())
+            for idx in [0, 2, 8, 12]:
+                TON += reaction_rates[reactions[idx]]
+            TONs.append(TON)
+            pressures.append(float(d))
 
     # Plot
     fig = plt.figure()

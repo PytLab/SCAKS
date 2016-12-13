@@ -47,8 +47,17 @@ class KineticModel(object):
     # Definition dict of species.
     species_definitions = dc.SpeciesDefinitions("species_definitions", default={}, deepcopy=True)
 
+    # Algorithm for rate calculation.
+    rate_algo = dc.String("rate_algo", default="TST")
+
     # Model core components.
     components = dc.Sequence("components", default=["parser"], entry_type=str)
+
+    # Area of unit cell (m^2).
+    unitcell_area = dc.Float("unitcell_area", default=0.0)
+
+    # Ratio of active area.
+    active_ratio = dc.Float("active_ratio", default=1.0)
 
     # }}}
 
@@ -353,4 +362,5 @@ class KineticModel(object):
         Query function for relative energy in data file.
         """
         return self._relative_energies
+
 

@@ -39,9 +39,7 @@ class MeanFieldSolver(SolverBase):
 
         # Set flags.
         self._has_absolute_energy = False
-        self._has_relative_energy = False
         self._abs_corrected = False
-        self._rel_corrected = False
         self._has_symbols = False
 
         # Set essential attrs for solver
@@ -194,15 +192,6 @@ class MeanFieldSolver(SolverBase):
             c_dict.setdefault(liquid_name, self._mpf(concentration))
         self._c = c_dict
 
-        # Get energy data(relative or absolute)
-        if self._owner.has_relative_energy:
-            self._relative_energies = self._owner.relative_energies
-            # Set flag.
-            self._has_relative_energy = True
-        else:
-            raise IOError('No relative energies was read, try parser.parse_data() ' +
-                          'or add data in data table.')
-
         # get energy for each species
         if self._owner.has_absolute_energy:
             G_dict = {}
@@ -317,17 +306,18 @@ class MeanFieldSolver(SolverBase):
 
         Parameters:
         -----------
-        relative_energies: A dict of relative eneriges of elementary reactions.
+        relative_energies : A dict of relative eneriges of elementary reactions.
             NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
 
         Returns:
         --------
         Forward rate constants, Reverse rate constants
+        relative_energies: The relative energies for all elementary reactions.
         """
         # Get relative energies.
         if not relative_energies:
-            if self._has_relative_energy:
-                relative_energies = self._relative_energies
+            if self._owner.has_relative_energy:
+                relative_energies = self._owner.relative_energies
             else:
                 msg = "Solver must have relative energies to get rate constants."
                 raise AttributeError(msg)
@@ -337,14 +327,17 @@ class MeanFieldSolver(SolverBase):
             msg = "'Gaf' and 'Gar' must be in relative_energies."
             raise ParameterError(msg)
 
-        # Calculate rate constants.
-        T = self._owner.temperature
-        kfs, krs = [], []
-        Gafs, Gars = relative_energies["Gaf"], relative_energies["Gar"]
+        if self._owner.rate_algo == "TST":
+            rate_func = self.get_rxn_rates_TST
+        elif self._owner.rate_algo == "CT":
+            rate_func = self.get_rxn_rates_CT
+        else:
+            msg = "Unknown method type '{}'".format(method)
+            raise ValueError(msg)
 
-        for Gaf, Gar in zip(Gafs, Gars):
-            kf = self._mpf(self.get_kTST(Gaf, T))
-            kr = self._mpf(self.get_kTST(Gar, T))
+        kfs, krs = [], []
+        for rxn_expression in self._owner.rxn_expressions:
+            kf, kr = rate_func(rxn_expression, relative_energies)
             kfs.append(kf)
             krs.append(kr)
 
@@ -723,94 +716,6 @@ class MeanFieldSolver(SolverBase):
         # Set flag.
         self._abs_corrected = True
 
-    def __correct_single_relative_energies(self, rxn_idx, correct_func):
-        """
-        Private helper function to correct relative energies for a single elementary reaction.
-
-        Parameters:
-        -----------
-        rxn_idx     : The index of the reaction expression, int.
-        correct_func: The function object to correct energy.
-        """
-        formula_lists = self._owner.elementary_rxns_list[rxn_idx]
-        deltas = [] # energy changes for IS, TS, FS
-        for formula_list in formula_lists:
-            delta = 0.0
-            for formula in formula_list:
-                delta += correct_func(formula.formula())
-            deltas.append(delta)
-
-        self.__change_relative_energies(rxn_idx, deltas)
-
-    def __change_relative_energies(self, rxn_idx, deltas):
-        """
-        Change the relative energies of solver from the enegies changes of
-        a single elementary reaction.
-
-        Parameters:
-        -----------
-        rxn_idx: The index of the reaction expression, int.
-        deltas : The energy change vector for the corresponding elementary reaction,
-                 float list.
-        """
-        Gaf = self._relative_energies["Gaf"][rxn_idx]
-        Gar = self._relative_energies["Gar"][rxn_idx]
-        dG = self._relative_energies["dG"][rxn_idx]
-
-        # We have to treat adsorption and desorption particularly.
-        if len(deltas) == 2:
-            E_IS = 0.0
-            E_FS = E_IS + dG
-            delta_is, delta_fs = deltas
-            E_IS += delta_is
-            E_FS += delta_fs
-            E_TS = max(E_IS, E_FS)
-            # Calculate relative energies again.
-            Gaf = E_TS - E_IS
-            Gar = E_TS - E_FS
-            dG = E_FS - E_IS
-        elif len(deltas) == 3:
-            # Correct relative energies.
-            d_is, d_ts, d_fs = deltas
-            d_Gaf = d_ts - d_is
-            d_Gar = d_ts - d_fs
-            d_dG = d_fs - d_is
-            Gaf += d_Gaf
-            Gar += d_Gar
-            dG += d_dG
-
-        # Update relative energies.
-        self._relative_energies["Gaf"][rxn_idx] = Gaf
-        self._relative_energies["Gar"][rxn_idx] = Gar
-        self._relative_energies["dG"][rxn_idx] = dG
-
-    def correct_relative_energies(self, method="shomate"):
-        """
-        Function to correct relative energies.
-        """
-        if not self._has_relative_energy:
-            raise AttributeError("No relative energies in solver.")
-
-        if self._rel_corrected:
-            # Avoid correction twice.
-            self.__logger.warning("relative energies can not be corrected twice")
-            return
-
-        corrector = self._owner.corrector
-
-        if method == "shomate":
-            correct_func = corrector.shomate_correction
-        elif method == "entropy":
-            correct_func = corrector.entropy_correction
-        else:
-            raise ValueError("Unknown method: '{}'".format(method))
-
-        # Loop over all elementary reactions.
-        for idx in xrange(len(self._owner.rxn_expressions)):
-            self.__correct_single_relative_energies(idx, correct_func)
-
-        self._rel_corrected = True
-
 
     ######################################################
     ######                                          ######
@@ -982,7 +887,7 @@ class MeanFieldSolver(SolverBase):
         elif len(state_energy_sym_list) == 2:
             # Get TS symbol.
             rxn_idx = self._owner.rxn_expressions.index(rxn_expression)
-            dG = self._relative_energies['dG'][rxn_idx]
+            dG = self._owner.relative_energies['dG'][rxn_idx]
             ts_idx = 0 if dG < 0 else -1
             ts_energy_sym = state_energy_sym_list[ts_idx]
 
@@ -1390,25 +1295,11 @@ class MeanFieldSolver(SolverBase):
         return self._has_absolute_energy
 
     @dc.Property
-    def has_relative_energy(self):
-        """
-        Query function for has_relative_energy flag.
-        """
-        return self._has_relative_energy
-
-    @dc.Property
     def absolute_corrected(self):
         """
         Query function for has energy correction flag.
         """
         return self._abs_corrected
-
-    @dc.Property
-    def relative_corrected(self):
-        """
-        Query function for has energy correction flag.
-        """
-        return self._rel_corrected
 
     @dc.Property
     def has_symbols(self):
@@ -1444,13 +1335,6 @@ class MeanFieldSolver(SolverBase):
         Query function for formation energies.
         """
         return self._G
-
-    @dc.Property
-    def relative_energies(self):
-        """
-        Query function for relative energies.
-        """
-        return self._relative_energies
 
     @dc.Property
     def rate_expressions(self):

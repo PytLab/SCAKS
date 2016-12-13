@@ -12,12 +12,14 @@ except ImportError:
     print "!!!                                                   !!!"
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
+import kynetix.descriptors.descriptors as dc
 from kynetix import __version__
 from kynetix.errors.error import *
 from kynetix.database.thermo_data import kB_eV
 from kynetix.database.lattice_data import *
 from kynetix.solvers.solver_base import SolverBase
 from kynetix.utilities.profiling_utitlities import do_cprofile
+from kynetix.utilities.check_utilities import check_process_dict
 
 
 class KMCSolver(SolverBase):
@@ -37,6 +39,9 @@ class KMCSolver(SolverBase):
             '# Version {}\n# Date: {} \n#\n' +
             '# Do not make changes to this file ' +
             'unless you know what you are doing\n\n').format(__version__, time.asctime())
+
+        # Set process reaction mapping.
+        self.__process_mapping = []
 
     def run(self,
             scripting=True,
@@ -65,8 +70,7 @@ class KMCSolver(SolverBase):
             analysis = None
 
         # Get interactions.
-        processes = self._owner.processes
-        interactions = KMCInteractions(processes=processes,
+        interactions = KMCInteractions(processes=self.processes,
                                        implicit_wildcards=True)
 
         # Get configuration.
@@ -100,6 +104,115 @@ class KMCSolver(SolverBase):
                   trajectory_filename=trajectory_filename,
                   trajectory_type=trajectory_type,
                   analysis=analysis)
+        # }}}
+
+    def get_processes(self):
+        all_processes = []
+        process_dicts = self._owner.process_dicts
+        for process_dict in process_dicts:
+            processes = self.__get_single_process(process_dict)
+            all_processes.extend(processes)
+
+        return all_processes
+
+    def __get_single_process(self, process_dict):
+        """
+        Private helper function to convert a process dict to KMCLibProcess object.
+        """
+        # {{{
+        # Check process dict.
+        process_dict = check_process_dict(process_dict)
+
+        # Check if reaction in rxn_expressions.
+        rxn_expressions = self._owner.rxn_expressions
+
+        if process_dict["reaction"] not in rxn_expressions:
+            msg = "'{}' is not in model's rxn_expressions.".format(process_dict["reaction"])
+            raise SetupError(msg)
+
+        # Check if the elements are in possible elements.
+        all_elements = process_dict["elements_before"] + process_dict["elements_after"]
+        possible_elements = self._owner.possible_element_types
+        for element in all_elements:
+            if element not in possible_elements:
+                msg = "Element '{}' in process not in possible types {}"
+                msg = msg.format(element, possible_elements)
+                raise SetupError(msg)
+
+        # Get rate constants.
+        rf, rr = self.get_rxn_rates_CT(process_dict["reaction"], self._owner.relative_energies)
+
+        # Get process fast flag, False by default.
+        fast = process_dict.get("fast", False)
+
+        # Get process redist flag, Falst by default.
+        redist = process_dict.get("redist", False)
+
+        # Get process redist species.
+        redist_species = process_dict.get("redist_species", None)
+
+        # Get KMCLibProcess objects.
+        processes = []
+
+        for basis_site in process_dict["basis_sites"]:
+            for coordinates in process_dict["coordinates_group"]:
+                if self._owner.log_allowed:
+                    self.__logger.info("Coordinates = {}".format(coordinates))
+                    self.__logger.info("Basis site = {}".format(basis_site))
+
+                # Forward process.
+                fprocess = KMCProcess(coordinates=coordinates,
+                                      elements_before=process_dict["elements_before"],
+                                      elements_after=process_dict["elements_after"],
+                                      basis_sites=[basis_site],
+                                      rate_constant=rf,
+                                      fast=fast,
+                                      redist=redist,
+                                      redist_species=redist_species)
+                processes.append(fprocess)
+
+                # Add process reaction mapping.
+                if not fast:
+                    process_mapping = "{}(->)".format(process_dict["reaction"])
+                    self.__process_mapping.append(process_mapping)
+
+                # Info output.
+                if self._owner.log_allowed:
+                    self.__logger.info("Forward elements changes:")
+                    self.__logger.info("    /{}".format(process_dict["elements_before"]))
+                    self.__logger.info("    \{}".format(process_dict["elements_after"]))
+
+                # --------------------------------------------------------------
+                # NOTE: If the proess is a redistribution process which is only
+                #       used to re-scatter the fast species, its reverse process
+                #       would not be parsed.
+                # --------------------------------------------------------------
+
+                # Reverse process.
+                if not redist:
+                    rprocess = KMCProcess(coordinates=coordinates,
+                                          elements_before=process_dict["elements_after"],
+                                          elements_after=process_dict["elements_before"],
+                                          basis_sites=[basis_site],
+                                          rate_constant=rr,
+                                          fast=fast)
+                    processes.append(rprocess)
+
+                # Add process reaction mapping.
+                if not fast:
+                    process_mapping = "{}(<-)".format(process_dict["reaction"])
+                    self.__process_mapping.append(process_mapping)
+
+                # Info output.
+                if not redist and self._owner.log_allowed:
+                    self.__logger.info("Reverse elements changes:")
+                    self.__logger.info("    /{}".format(process_dict["elements_after"]))
+                    self.__logger.info("    \{}".format(process_dict["elements_before"]))
+
+        if self._owner.log_allowed:
+            self.__logger.info("\n")
+
+        return processes
         # }}}
 
     def get_control_parameters(self):
@@ -263,4 +376,22 @@ class KMCSolver(SolverBase):
         content += proc_str
 
         return content
+
+    @dc.Property
+    def processes(self):
+        """
+        Query function for processes list.
+        """
+        try:
+            return self.__processes
+        except AttributeError:
+            self.__processes = self.get_processes()
+            return self.__processes
+
+    @dc.Property
+    def process_mapping(self):
+        """
+        Query function for process reaction type mapping.
+        """
+        return self.__process_mapping
 

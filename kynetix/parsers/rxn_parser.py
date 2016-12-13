@@ -75,6 +75,38 @@ class RxnEquation(object):
 
         return tex_str
 
+    def revert(self):
+        """
+        Revert the reaction to its reverse RxnEquation object.
+        """
+        state_list = self.tolist()
+
+        # Get rxn_expression template.
+        if len(state_list) == 2:
+            expression_template = "{} -> {}"
+        elif len(state_list) == 3:
+            expression_template = "{} <-> {} -> {}"
+
+        # Revert.
+        chem_states = [state.chem_state() for state in state_list]
+        chem_states.reverse()
+
+        rxn_expression = expression_template.format(*chem_states)
+
+        return RxnEquation(rxn_expression)
+
+    def has_adsorption(self):
+        formula_lists = self.to_formula_list()
+        is_types = [formula.type() for formula in formula_lists[0]]
+
+        return "gas" in is_types
+
+    def has_desorption(self):
+        formula_lists = self.to_formula_list()
+        fs_types = [formula.type() for formula in formula_lists[-1]]
+
+        return "gas" in fs_types
+
     # ----------------------------------------
     # Query functions.
 
