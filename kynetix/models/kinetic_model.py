@@ -47,6 +47,9 @@ class KineticModel(object):
     # Definition dict of species.
     species_definitions = dc.SpeciesDefinitions("species_definitions", default={}, deepcopy=True)
 
+    # Algorithm for rate calculation.
+    rate_algo = dc.String("rate_algo", default="TST")
+
     # Model core components.
     components = dc.Sequence("components", default=["parser"], entry_type=str)
 
