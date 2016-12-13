@@ -920,7 +920,7 @@ class SteadyStateSolver(MeanFieldSolver):
 
         if converged:
             # Archive converged root and error.
-            self.archive_data('steady_state_coverage', self._coverage)
+            self.archive_data('steady_state_coverages', self._coverage)
             self.archive_data('steady_state_error', self._error)
             self._good_guess = c0
 
