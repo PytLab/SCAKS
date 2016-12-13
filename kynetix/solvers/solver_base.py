@@ -13,6 +13,9 @@ class SolverBase(ModelShell):
     Abstract base class to be herited by other solver classes.
     """
 
+    # The counter for get_rxn_rates_CT calling.
+    CT_counter = 0
+
     def __init__(self, owner):
         super(SolverBase, self).__init__(owner)
 
@@ -103,9 +106,14 @@ class SolverBase(ModelShell):
         relative_energies: The relative energies for all elementary reactions.
         """
         # {{{
+        # Counter for this function called.
+        call_counter = SolverBase.CT_counter
+
+        log_allowed = (self._owner.log_allowed and call_counter == 0)
+
         # Get raw relative energies.
         Gaf, Gar, dG = self._get_relative_energies(rxn_expression, relative_energies)
-        if self._owner.log_allowed:
+        if log_allowed:
             self.__logger.info("{} (Gaf={}, Gar={}, dG={})".format(rxn_expression, Gaf, Gar, dG))
 
         # Get reactants and product types.
@@ -114,7 +122,7 @@ class SolverBase(ModelShell):
         istate, fstate = formula_list[0], formula_list[-1]
         is_types = [formula.type() for formula in istate]
         fs_types = [formula.type() for formula in fstate]
-        if self._owner.log_allowed:
+        if log_allowed:
             self.__logger.info("species type: {} -> {}".format(is_types, fs_types))
 
         # Get rate constant.
@@ -143,8 +151,8 @@ class SolverBase(ModelShell):
             # Use Collision Theory.
             Ea = Gaf
             m = ParserBase.get_molecular_mass(formula.species(), absolute=True)
-            rf = SolverBase.get_kCT(Ea, Auc, act_ratio, p, m, T)
-            if self._owner.log_allowed:
+            rf = self.get_kCT(Ea, Auc, act_ratio, p, m, T)
+            if log_allowed:
                 self.__logger.info("R(forward) = {} s^-1 (Collision Theory)".format(rf))
         # No gas participating.
         else:
@@ -162,11 +170,11 @@ class SolverBase(ModelShell):
 
                 # Info output.
                 msg = "Correct forward barrier: {} -> {}".format(Gaf-correction_energy, Gaf)
-                if self._owner.log_allowed:
+                if log_allowed:
                     self.__logger.info(msg)
 
             rf = SolverBase.get_kTST(Gaf, T)
-            if self._owner.log_allowed:
+            if log_allowed:
                 self.__logger.info("R(forward) = {} s^-1 (Transition State Theory)".format(rf))
 
         # Reverse rate.
@@ -182,8 +190,8 @@ class SolverBase(ModelShell):
             # Use Collision Theory.
             Ea = Gar
             m = ParserBase.get_molecular_mass(formula.species(), absolute=True)
-            rr = SolverBase.get_kCT(Ea, Auc, act_ratio, p, m, T)
-            if self._owner.log_allowed:
+            rr = self.get_kCT(Ea, Auc, act_ratio, p, m, T)
+            if log_allowed:
                 self.__logger.info("R(reverse) = {} s^-1 (Collision Theory)".format(rr))
         # No gas participating.
         else:
@@ -200,20 +208,22 @@ class SolverBase(ModelShell):
                 dG -= stoichiometry*correction_energy
 
                 # Info output.
-                if self._owner.log_allowed:
+                if log_allowed:
                     msg = "Correct dG: {} -> {}".format(dG+correction_energy, dG)
                     self.__logger.info(msg)
 
                 # Use Equilibrium condition to get reverse rate.
                 K = exp(-dG/(kB_eV*T))
                 rr = rf/K
-                if self._owner.log_allowed:
+                if log_allowed:
                     self.__logger.info("R(reverse) = {} s^-1 (Equilibrium Condition)".format(rr))
             else:
                 # Use Transition State Theory.
                 rr = SolverBase.get_kTST(Gar, T)
-                if self._owner.log_allowed:
+                if log_allowed:
                     self.__logger.info("R(reverse) = {} s^-1 (Transition State Theory)".format(rr))
+
+        SolverBase.CT_counter += 1
 
         return rf, rr
         # }}}
