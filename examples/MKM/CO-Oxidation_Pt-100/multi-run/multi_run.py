@@ -43,8 +43,6 @@ setup_dict = dict(
 pCOs = np.arange(0.01, 0.2, 0.001)
 
 if "__main__" == __name__:
-    logger = logging.getLogger("model.MultiRun")
-
     ss_cvgs = []
     tofs = []
     for i, pCO in enumerate(pCOs):
@@ -52,7 +50,7 @@ if "__main__" == __name__:
         setup_dict['species_definitions']['CO_g']['pressure'] = pCO
 
         # Construct model.
-        model = MicroKineticModel(setup_dict=setup_dict, verbosity=logging.INFO)
+        model = MicroKineticModel(setup_dict=setup_dict, console_handler_level=logging.WARNING)
 
         # Read data.
         model.parser.parse_data(relative=True)
@@ -68,7 +66,7 @@ if "__main__" == __name__:
             init_guess = ss_cvgs[-1]
 
         # Run.
-        logger.info("Running pressure CO_g: {}".format(pCO))
+        print("Running pressure CO_g: {}".format(pCO))
         model.run(init_cvgs=init_guess,
                   solve_ode=False,
                   relative=True,
