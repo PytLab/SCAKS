@@ -381,7 +381,6 @@ class KineticModel(object):
         return self._has_absolute_energy
 
     @dc.Property
-    @return_deepcopy
     def relative_energies(self):
         """
         Query function for relative energy in data file.
