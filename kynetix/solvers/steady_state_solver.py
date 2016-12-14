@@ -242,7 +242,7 @@ class SteadyStateSolver(MeanFieldSolver):
         dtheta_dt = [0.0]*len(self._owner.adsorbate_names)
 
         dtheta_dt_expressions = '\n'.join(self.get_dtheta_dt_expressions())
-        exec dtheta_dt_expressions in locals()
+        exec(dtheta_dt_expressions, globals(), locals())
 
         return tuple(dtheta_dt)
         # }}}
