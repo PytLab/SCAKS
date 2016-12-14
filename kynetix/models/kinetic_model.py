@@ -191,6 +191,12 @@ class KineticModel(object):
 
         return old_level
 
+    def clear_handlers(self):
+        """
+        Clear all handlers in logger.
+        """
+        self._logger.handlers = []
+
     def __mro_class_attrs(self):
         """
         Private helper function to get all class attribute names(include father classes) .
