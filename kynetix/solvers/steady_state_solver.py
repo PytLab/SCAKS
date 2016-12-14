@@ -205,15 +205,18 @@ class SteadyStateSolver(MeanFieldSolver):
         Function to get dtheta/dt expression strings for all adsorbatets.
         """
         # {{{
-        dtheta_dt_expressions_list = []
-        for idx, adsorbate_name in enumerate(self._owner.adsorbate_names):
-            dtheta_dt_expression = "dtheta_dt[" + str(idx) + "] = "
-            dtheta_dt_expression += self.get_adsorbate_dtheta_dt_expression(adsorbate_name)
-            dtheta_dt_expressions_list.append(dtheta_dt_expression)
+        try:
+            return self.__dtheta_dt_expressions
+        except AttributeError:
+            dtheta_dt_expressions = []
+            for idx, adsorbate_name in enumerate(self._owner.adsorbate_names):
+                dtheta_dt_expression = "dtheta_dt[" + str(idx) + "] = "
+                dtheta_dt_expression += self.get_adsorbate_dtheta_dt_expression(adsorbate_name)
+                dtheta_dt_expressions.append(dtheta_dt_expression)
 
-        dtheta_dt_expressions_tup = tuple(dtheta_dt_expressions_list)
+            self.__dtheta_dt_expressions = dtheta_dt_expressions
 
-        return dtheta_dt_expressions_tup
+            return dtheta_dt_expressions
         # }}}
 
     def steady_state_function(self, cvgs_tuple, relative_energies=None):
