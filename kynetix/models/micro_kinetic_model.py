@@ -59,9 +59,7 @@ class MicroKineticModel(km.KineticModel):
     ref_energies = dc.RefEnergies("ref_energies", default={})
     # }}}
 
-    def __init__(self, setup_file=None,
-                       setup_dict=None,
-                       verbosity=logging.INFO):
+    def __init__(self, **kwargs):
         """
         Parameters:
         -----------
@@ -71,13 +69,17 @@ class MicroKineticModel(km.KineticModel):
         
         verbosity: logging level, int.
 
+        file_handler_level: logging level for file handler, int.
+
+        console_handler_level: logging level for console handler, int.
+
         Example:
         --------
         >>> from kynetix.models.kinetic_model import MicroKineticModel
         >>> model = MicroKineticModel(setup_file="setup.mkm",
                                       verbosity=logging.WARNING)
         """
-        super(MicroKineticModel, self).__init__(setup_file, setup_dict, verbosity)
+        super(MicroKineticModel, self).__init__(**kwargs)
 
         # Create data directory if need.
         if mpi.size != 1 and not os.path.exists("./data"):

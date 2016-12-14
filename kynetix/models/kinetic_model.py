@@ -21,9 +21,20 @@ class KineticModel(object):
     # {{{
     setup_file = dc.String("setup_file", default="")
     setup_dict = dc.Dict("setup_dict", default={})
+
     verbosity = dc.Integer("verbosity",
                            default=logging.INFO,
                            candidates=range(0, 60, 10))
+
+    # Logging level for file handler.
+    file_handler_level = dc.Integer("file_handler_level",
+                                    default=logging.DEBUG,
+                                    candidates=range(0, 60, 10))
+
+    # Logging level for console handler.
+    console_handler_level = dc.Integer("console_handler_level",
+                                       default=logging.INFO,
+                                       candidates=range(0, 60, 10))
 
     parser = cpdc.Component("parser", default=None, candidates=["RelativeEnergyParser",
                                                                 "CsvParser",
@@ -61,9 +72,7 @@ class KineticModel(object):
 
     # }}}
 
-    def __init__(self, setup_file=None,
-                       setup_dict=None,
-                       verbosity=logging.INFO):
+    def __init__(self, **kwargs):
         """
         Parameters:
         -----------
@@ -73,6 +82,10 @@ class KineticModel(object):
         
         verbosity: logging level, int.
 
+        file_handler_level: logging level for file handler, int.
+
+        console_handler_level: logging level for console handler, int.
+
         Example:
         --------
         >>> from kynetix.model import KineticModel
@@ -81,6 +94,13 @@ class KineticModel(object):
         """
 
         # {{{
+
+        # Get all kwargs.
+        setup_file = kwargs.pop("setup_file", None)
+        setup_dict = kwargs.pop("setup_dict", None)
+        self.verbosity = kwargs.pop("verbosity", logging.INFO)
+        self.file_handler_level = kwargs.pop("file_handler_level", logging.DEBUG)
+        self.console_handler_level = kwargs.pop("console_handler_level", logging.INFO)
 
         # Physical constants.
         self._kB = kB_eV
@@ -99,8 +119,6 @@ class KineticModel(object):
             globs, locs = {}, {}
             execfile(self.setup_file, globs, locs)
             self.setup_dict = locs
-
-        self.verbosity = verbosity
 
         # Set logger.
         self._set_logger()
@@ -145,9 +163,9 @@ class KineticModel(object):
 
         # Create handlers.
         std_hdlr = logging.FileHandler(filename)
-        std_hdlr.setLevel(logging.DEBUG)
+        std_hdlr.setLevel(self.file_handler_level)
         console_hdlr = logging.StreamHandler()
-        console_hdlr.setLevel(logging.INFO)
+        console_hdlr.setLevel(self.console_handler_level)
 
         # Create formatter and add it to the handlers.
         formatter = logging.Formatter('%(name)s   %(levelname)-8s %(message)s')
