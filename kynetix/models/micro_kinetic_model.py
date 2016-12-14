@@ -6,6 +6,7 @@ from kynetix.mpicommons import mpi
 import kynetix.models.kinetic_model as km
 import kynetix.descriptors.descriptors as dc
 import kynetix.descriptors.component_descriptors as cpdc
+from kynetix.utilities.profiling_utitlities import do_cprofile
 
 
 class MicroKineticModel(km.KineticModel):
@@ -93,6 +94,7 @@ class MicroKineticModel(km.KineticModel):
         if not mpi.is_master:
             self.set_logger_level("StreamHandler", logging.WARNING)
 
+    @do_cprofile("./MicroKineticModel_run.prof")
     def run(self, **kwargs):
         """
         Function to solve Micro-kinetic model using Steady State Approxmiation
