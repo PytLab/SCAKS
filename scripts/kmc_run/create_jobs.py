@@ -3,6 +3,7 @@
 
 import os
 import commands
+import shutil
 
 import numpy as np
 
@@ -16,7 +17,7 @@ def dict2setup(d):
 
 filename = "pt-100.mkm"
 
-species_pressures = {"CO_g": np.arange(0.01, 0.1, 0.001)}
+species_pressures = {"CO_g": np.arange(0.039, 0.1, 0.001)}
 
 species_name = "CO_g"
 
@@ -26,9 +27,14 @@ if "__main__" == __name__:
         globs, locs = {}, {}
         execfile(setup_file, globs, locs)
 
+    job_dirs = ""
     for p in species_pressures[species_name]:
         dest = str(p)
         print("Create job {}".format(p))
+        job_dirs += "{} ".format(p)
+
+        if os.path.exists(dest):
+            shutil.rmtree(dest)
 
         os.mkdir(dest)
         commands.getstatusoutput("cp -r ./template/* {}".format(dest))
@@ -38,4 +44,8 @@ if "__main__" == __name__:
         with open("./{}/{}".format(dest, filename), "w") as f:
             content = dict2setup(locs)
             f.write(content)
+
+    # Write job dirs to job_dir.txt
+    with open("job_dirs.txt", "w") as f:
+        f.write(job_dirs)
 
