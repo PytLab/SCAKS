@@ -40,7 +40,7 @@ setup_dict = dict(
     max_rootfinding_iterations = 100,
 )
 
-pCOs = np.arange(0.01, 0.2, 0.001)
+pCOs = np.arange(0.01, 0.2, 0.002)
 
 if "__main__" == __name__:
     ss_cvgs = []
