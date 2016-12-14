@@ -20,7 +20,7 @@ if "__main__" == __name__:
     TON_range = max(TONs) - min(TONs)
     ax.set_ylim(min(TONs)-TON_range*0.1, max(TONs)+TON_range*0.1)
     ax.set_xlabel(r"$\bf{P(CO_g)/bar}$")
-    ax.set_ylabel(r"$\bf{TON/s^-1}$")
+    ax.set_ylabel(r"$\bf{TOF/s^-1}$")
     ax.plot(pressures, TONs, color="#7D9EC0",
                              linewidth=2.0,
                              marker='o',
