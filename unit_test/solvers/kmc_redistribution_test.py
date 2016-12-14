@@ -62,7 +62,7 @@ class KMCRedistributionTest(unittest.TestCase):
             fast_species = ["V"],
             nsplits = (2, 2, 1),
         )
-        model = KMCModel(setup_dict=setup_dict, verbosity=logging.WARNING)
+        model = KMCModel(setup_dict=setup_dict, logger_level=logging.WARNING)
         model.parser.parse_data(relative=True,
                                 energy_file=kmc_energy,
                                 processes_file=kmc_processes,
@@ -117,7 +117,7 @@ class KMCRedistributionTest(unittest.TestCase):
             redistribution_interval = 5,
             distributor_type = "ProcessRandomDistributor",
         )
-        model = KMCModel(setup_dict=setup_dict, verbosity=logging.WARNING)
+        model = KMCModel(setup_dict=setup_dict, logger_level=logging.WARNING)
         model.parser.parse_data(relative=True,
                                 energy_file=kmc_energy,
                                 processes_file=kmc_processes,

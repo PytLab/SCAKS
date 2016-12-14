@@ -57,7 +57,7 @@ class KMCParserTest(unittest.TestCase):
     def test_kmc_parser_construction(self):
         " Test kmc parser can be constructed correctly. "
         # Construction.
-        model = KMCModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = KMCModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
 
         # Check the parser class and base class type.
@@ -68,7 +68,7 @@ class KMCParserTest(unittest.TestCase):
     def test_parse_processes(self):
         " Make sure we can parse all processes in kmc_processes.py correctly. "
         # Construction.
-        model = KMCModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = KMCModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
         p = parser.parse_processes(filename=kmc_processes)
 
@@ -79,7 +79,7 @@ class KMCParserTest(unittest.TestCase):
     def test_construct_lattice(self):
         " Test we can construct lattice object correctly. "
         # {{{
-        model = KMCModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = KMCModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
         lattice = parser.construct_lattice()
 
@@ -146,7 +146,7 @@ class KMCParserTest(unittest.TestCase):
     def test_parse_configuration(self):
         " Make sure we can parse the configuration correctly. "
         # {{{
-        model = KMCModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = KMCModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
         config = parser.parse_configuration(filename=kmc_config)
 
@@ -204,7 +204,7 @@ class KMCParserTest(unittest.TestCase):
     def test_construct_sitesmap(self):
         " Make sure we can construct sitesmap correctly. "
         # {{{
-        model = KMCModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = KMCModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
         sitesmap = parser.construct_sitesmap(filename=kmc_sites)
 
@@ -272,7 +272,7 @@ class KMCParserTest(unittest.TestCase):
     def test_parse_data(self):
         " Make sure the kMC data can be parsed in correctly. "
         # Construction.
-        model = KMCModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = KMCModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         model.parser.parse_data(relative=True,
                                 energy_file=kmc_energy,
                                 processes_file=kmc_processes,

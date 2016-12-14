@@ -67,7 +67,7 @@ class MicroKineticModel(km.KineticModel):
 
         setup_dict: A dictionary contains essential setup parameters for kinetic model.
         
-        verbosity: logging level, int.
+        logger_level: logging level, int.
 
         file_handler_level: logging level for file handler, int.
 
@@ -77,7 +77,7 @@ class MicroKineticModel(km.KineticModel):
         --------
         >>> from kynetix.models.kinetic_model import MicroKineticModel
         >>> model = MicroKineticModel(setup_file="setup.mkm",
-                                      verbosity=logging.WARNING)
+                                      logger_level=logging.WARNING)
         """
         super(MicroKineticModel, self).__init__(**kwargs)
 

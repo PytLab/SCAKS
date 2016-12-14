@@ -47,7 +47,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_solver_construction_query(self):
         " Test solver can be constructed in kinetic model. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         solver = model.solver
 
         # Check the parser class and base class type.
@@ -76,7 +76,7 @@ class SteadyStateSolverTest(unittest.TestCase):
 #        " Test solver can get data correctly. "
 #        # Construction.
 #        model = MicroKineticModel(setup_file="input_files/steady_state_solver.mkm",
-#                             verbosity=logging.WARNING)
+#                             logger_level=logging.WARNING)
 #        parser = model.parser()
 #        solver = model.solver()
 #
@@ -125,7 +125,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_elementary_dtheta_dt_expression(self):
         " Test get_elementary_dtheta_dt_expression() function. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         solver = model.solver
 
         # Check.
@@ -150,7 +150,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_adsorbate_dtheta_dt_expression(self):
         " Test get_adsorbate_dtheta_dt_expression() function. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         solver = model.solver
 
         ref_dtheta_dt = ("kf[0]*p['CO_g']*theta['*_s'] - kr[0]*theta['CO_s'] + " +
@@ -167,7 +167,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_dtheta_dt_expression(self):
         " Make sure we can get dtheta/dt expression correctly. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         solver = model.solver
 
         # Check.
@@ -185,7 +185,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_steady_state_function(self):
         " Test steady_state_function(). "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
         solver = model.solver
 
@@ -204,7 +204,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_term_adsorbate_derivation(self):
         " Test private function __term_adsorbate_derivation(). "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         solver = model.solver
 
         # Check.
@@ -223,7 +223,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_total_term_adsorbate_derivation(self):
         " Test private function __total_term_adsorbate_derivation(). "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         solver = model.solver
 
         # Check.
@@ -245,7 +245,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_poly_adsorbate_derivation(self):
         " Test we can derive dtheta/dt expression correctly. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         solver = model.solver
 
         adsorbate = "CO_s"
@@ -272,7 +272,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_analytical_jacobian(self):
         " Make sure we can get analytical Jacobian matrix correctly. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
         solver = model.solver
 
@@ -291,7 +291,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_get_residual(self):
         " Test we can get correct residual. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
         solver = model.solver
 
@@ -307,7 +307,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_coarse_steady_state_cvgs(self):
         " Make sure we can get a coarse coverages. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
         solver = model.solver
 
@@ -324,7 +324,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_get_steady_state_coverages(self):
         " Test we can get correct steady state coverages. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
         solver = model.solver
 
@@ -341,7 +341,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_get_intermediates_Gs(self):
         " Test private function __get_intermediates_Gs(). "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
         solver = model.solver
 
@@ -359,7 +359,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_get_Gs_tof(self):
         " Test private function __get_Gs_tof(). "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
         solver = model.solver
 
@@ -381,7 +381,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_get_Gs_gas_tof(self):
         " Test private function __get_Gs_tof(). "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
         solver = model.solver
 
@@ -401,7 +401,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_get_single_XTRC(self):
         " Test function get_single_XTRC(). "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
         solver = model.solver
 
@@ -426,7 +426,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_get_single_XRC(self):
         " Test function get_single_XRC(). "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
         solver = model.solver
 
@@ -448,7 +448,7 @@ class SteadyStateSolverTest(unittest.TestCase):
 #        " Test function get_single_XRC() in multi-threads. "
 #        # Construction.
 #        model = MicroKineticModel(setup_file="input_files/steady_state_solver.mkm",
-#                             verbosity=logging.WARNING)
+#                             logger_level=logging.WARNING)
 #        parser = model.parser()
 #        solver = model.solver()
 #
@@ -471,7 +471,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_get_elementary_dtheta_dt_sym(self):
         " Test we can get correct dtheta/dt expression for an elementary reaction. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
         solver = model.solver
 
@@ -526,7 +526,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_steady_state_function_by_sym(self):
         " Test function steady_state_function(). "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
         solver = model.solver
 
@@ -549,7 +549,7 @@ class SteadyStateSolverTest(unittest.TestCase):
     def test_analytical_jacobian_by_sym(self):
         " Test we can get correct jacobian matrix by symbol derivation. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
         solver = model.solver
 

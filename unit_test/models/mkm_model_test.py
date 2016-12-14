@@ -37,7 +37,7 @@ class MicroKineticModelTest(unittest.TestCase):
     def test_mkm_construction_query(self):
         " Test micro kinetic model can be constructed with parser. "
         # Test construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
 
         # Load data in setup file.
         self.assertEqual(model.corrector.__class__.__name__, self.setup_dict["corrector"])
@@ -45,14 +45,14 @@ class MicroKineticModelTest(unittest.TestCase):
         self.assertListEqual(model.rxn_expressions, self.setup_dict["rxn_expressions"])
         self.assertEqual(model.temperature, self.setup_dict["temperature"])
         self.assertListEqual(model.ref_species, self.setup_dict["ref_species"])
-        self.assertEqual(model.verbosity, logging.WARNING)
+        self.assertEqual(model.logger_level, logging.WARNING)
         self.assertEqual(model.decimal_precision, 100)
 
         self.assertTrue(isinstance(model.parser, RelativeEnergyParser))
 
     def test_run(self):
         " Test micro kinetic model can run correctly. "
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         model.run(data_file=mkm_energy)
 
 if __name__ == '__main__':

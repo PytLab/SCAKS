@@ -22,9 +22,9 @@ class KineticModel(object):
     setup_file = dc.String("setup_file", default="")
     setup_dict = dc.Dict("setup_dict", default={})
 
-    verbosity = dc.Integer("verbosity",
-                           default=logging.INFO,
-                           candidates=range(0, 60, 10))
+    logger_level = dc.Integer("logger_level",
+                              default=logging.INFO,
+                              candidates=range(0, 60, 10))
 
     # Logging level for file handler.
     file_handler_level = dc.Integer("file_handler_level",
@@ -80,7 +80,7 @@ class KineticModel(object):
 
         setup_dict: A dictionary contains essential setup parameters for kinetic model.
         
-        verbosity: logging level, int.
+        logger_level: logging level for logger, int.
 
         file_handler_level: logging level for file handler, int.
 
@@ -90,7 +90,7 @@ class KineticModel(object):
         --------
         >>> from kynetix.model import KineticModel
         >>> model = KineticModel(setup_file="setup.mkm",
-                                 verbosity=logging.WARNING)
+                                 logger_level=logging.WARNING)
         """
 
         # {{{
@@ -98,7 +98,8 @@ class KineticModel(object):
         # Get all kwargs.
         setup_file = kwargs.pop("setup_file", None)
         setup_dict = kwargs.pop("setup_dict", None)
-        self.verbosity = kwargs.pop("verbosity", logging.INFO)
+
+        self.logger_level = kwargs.pop("logger_level", logging.INFO)
         self.file_handler_level = kwargs.pop("file_handler_level", logging.DEBUG)
         self.console_handler_level = kwargs.pop("console_handler_level", logging.INFO)
 
@@ -149,7 +150,7 @@ class KineticModel(object):
         # {{{
         # Create logger.
         logger = logging.getLogger('model')
-        logger.setLevel(self.verbosity)
+        logger.setLevel(self.logger_level)
 
         # Set log file name.
         if filename is None:

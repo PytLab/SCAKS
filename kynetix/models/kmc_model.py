@@ -118,7 +118,7 @@ class KMCModel(km.KineticModel):
 
         setup_dict: A dictionary contains essential setup parameters for kinetic model.
         
-        verbosity: logging level, int.
+        logger_level: logging level, int.
 
         file_handler_level: logging level for file handler, int.
 
@@ -128,7 +128,7 @@ class KMCModel(km.KineticModel):
         --------
         >>> from kynetix.models.kinetic_model import MicroKineticModel
         >>> model = KMCModel(setup_file="setup.mkm",
-                             verbosity=logging.WARNING)
+                             logger_level=logging.WARNING)
         """
         super(KMCModel, self).__init__(**kwargs)
 

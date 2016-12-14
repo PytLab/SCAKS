@@ -43,7 +43,7 @@ class CsvMakerTest(unittest.TestCase):
 
     def test_construction(self):
         " Test table maker can be constructed correctly. "
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         table_maker = model.table_maker
 
         # Check.
@@ -51,7 +51,7 @@ class CsvMakerTest(unittest.TestCase):
 
     def test_init_table(self):
         " Test we can initialize table correctly. "
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         table_maker = model.table_maker
 
         # Init a table.
@@ -60,7 +60,7 @@ class CsvMakerTest(unittest.TestCase):
     def test_get_formation_energy(self):
         " Test private function __get_formation_energy(). "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         table_maker = model.table_maker
 
         # Check.
