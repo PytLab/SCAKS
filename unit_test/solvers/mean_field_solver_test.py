@@ -189,11 +189,11 @@ class MeanFieldSolverTest(unittest.TestCase):
         solver.get_data()
 
         # Check rate constants.
-        ref_forward_rate_constants = (9376477746581.562, 9376477746581.562, 0.09389759708784133)
-        ref_reverse_rate_constants = (30395.72540148798, 2.5429515269621107e-17, 399.2961612111053)
+        ref_forward_rate_constants = [9376477746581.562, 9376477746581.562, 0.09389759708784133]
+        ref_reverse_rate_constants = [30395.72540148798, 2.5429515269621107e-17, 399.2961612111053]
         ret_forward_rate_constants, ret_reverse_rate_constants = solver.get_rate_constants()
-        self.assertTupleEqual(ref_forward_rate_constants, ret_forward_rate_constants)
-        self.assertTupleEqual(ref_reverse_rate_constants, ret_reverse_rate_constants)
+        self.assertListEqual(ref_forward_rate_constants, ret_forward_rate_constants)
+        self.assertListEqual(ref_reverse_rate_constants, ret_reverse_rate_constants)
         # }}}
 
     def test_boltzmann_coverages(self):

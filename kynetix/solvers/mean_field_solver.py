@@ -357,7 +357,7 @@ class MeanFieldSolver(SolverBase):
 
         MeanFieldSolver.call_counter += 1
 
-        return tuple(kfs), tuple(krs)
+        return kfs, krs
 
     def boltzmann_coverages(self, include_empty_site=True):
         """
