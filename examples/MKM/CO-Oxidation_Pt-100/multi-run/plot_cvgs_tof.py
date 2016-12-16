@@ -40,7 +40,7 @@ if "__main__" == __name__:
                                            marker='o',
                                            markerfacecolor=colors[idx],
                                            markeredgecolor=colors[idx],
-                                           markersize=7.0,
+                                           markersize=14.0,
                                            alpha=0.7,
                                            label=sp)
 
@@ -55,7 +55,7 @@ if "__main__" == __name__:
                               marker='o',
                               markerfacecolor="#0F0F0F",
                               markeredgecolor="#0F0F0F",
-                              markersize=7.0,
+                              markersize=14.0,
                               alpha=0.3,
                               label='TOF')
 
@@ -65,7 +65,7 @@ if "__main__" == __name__:
                    marker='o',
                    markerfacecolor="#0F0F0F",
                    markeredgecolor="#0F0F0F",
-                   markersize=7.0,
+                   markersize=14.0,
                    alpha=0.3,
                    label='TOF')
     ax1.grid(True)
