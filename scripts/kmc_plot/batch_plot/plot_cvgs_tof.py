@@ -46,7 +46,7 @@ if "__main__" == __name__:
                                                marker='o',
                                                markerfacecolor=colors[idx],
                                                markeredgecolor=colors[idx],
-                                               markersize=7.0,
+                                               markersize=14.0,
                                                label=species,
                                                alpha=0.7)
 
@@ -74,19 +74,19 @@ if "__main__" == __name__:
     ax2.set_ylabel(r"$\bf{TON/s^-1}$")
     ax2.plot(pressures, TONs, color="#0F0F0F",
                               linewidth=2.0,
-                              marker='o',
+                              marker='^',
                               markerfacecolor="#0F0F0F",
                               markeredgecolor="#0F0F0F",
-                              markersize=7.0,
+                              markersize=14.0,
                               alpha=0.3,
                               label="TOF")
     # Trick for labels.
     ax.plot(0, 0, color="#0F0F0F",
                   linewidth=2.0,
-                  marker='o',
+                  marker='^',
                   markerfacecolor="#0F0F0F",
                   markeredgecolor="#0F0F0F",
-                  markersize=7.0,
+                  markersize=14.0,
                   alpha=0.3,
                   label='TOF')
     ax.legend(loc=0)  
