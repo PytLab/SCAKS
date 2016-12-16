@@ -10,7 +10,7 @@ rxn_expressions = [
 species_definitions = {}
 species_definitions['CO_g'] = {'pressure': 0.10}
 species_definitions['O2_g'] = {'pressure': 0.2}
-species_definitions['CO2_g'] = {'pressure': 0.0288}
+species_definitions['CO2_g'] = {'pressure': 0.01}
 
 # Site info.
 species_definitions['s'] = {'site_name': 'top', 'type': 'site', 'total': 1.0}
