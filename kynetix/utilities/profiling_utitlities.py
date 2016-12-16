@@ -25,10 +25,8 @@ def do_cprofile(filename):
                 sortby = "tottime"
                 ps = pstats.Stats(profile).sort_stats(sortby)
                 ps.dump_stats(filename)
-                ps.print_stats()
             else:
                 result = func(*args, **kwargs)
-
             return result
         return profiled_func
     return wrapper

@@ -56,7 +56,7 @@ class KineticModel(object):
     rxn_expressions = dc.Sequence("rxn_expressions", default=[], entry_type=str)
 
     # Definition dict of species.
-    species_definitions = dc.SpeciesDefinitions("species_definitions", default={}, deepcopy=True)
+    species_definitions = dc.SpeciesDefinitions("species_definitions", default={})
 
     # Algorithm for rate calculation.
     rate_algo = dc.String("rate_algo", default="TST")
@@ -381,7 +381,6 @@ class KineticModel(object):
         return self._has_absolute_energy
 
     @dc.Property
-    @return_deepcopy
     def relative_energies(self):
         """
         Query function for relative energy in data file.

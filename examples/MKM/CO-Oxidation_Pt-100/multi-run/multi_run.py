@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import commands
 import logging
 import os
 
@@ -43,6 +44,9 @@ setup_dict = dict(
 pCOs = np.arange(0.01, 0.2, 0.002)
 
 if "__main__" == __name__:
+    # Clean up current dir.
+    commands.getstatusoutput("rm -rf out.log auto_*")
+
     ss_cvgs = []
     tofs = []
     for i, pCO in enumerate(pCOs):
@@ -79,11 +83,17 @@ if "__main__" == __name__:
         tofs.append(float(model.TOFs[tof_idx]))
 
         # Collect steady state coverages.
-        ss_cvgs.append(model.steady_state_coverages)
+        cvgs = [float(cvg) for cvg in model.steady_state_coverages]
+        ss_cvgs.append(cvgs)
 
     # Write tofs to file.
     tof_str = "tofs = {}\n".format(tofs)
     p_str = "pCO = {}\n".format(pCOs.tolist())
     with open("auto_tofs.py", "w") as f:
         f.write(tof_str + p_str)
+
+    cvgs_str = "cvgs = {}\n".format(ss_cvgs)
+    adsorbates_str = "adsorbates = {}\n".format(model.adsorbate_names)
+    with open("auto_cvgs.py", "w") as f:
+        f.write(cvgs_str + adsorbates_str + p_str)
 

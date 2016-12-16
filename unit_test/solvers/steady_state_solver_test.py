@@ -177,10 +177,10 @@ class SteadyStateSolverTest(unittest.TestCase):
         dtheta_dt_O_s = ("dtheta_dt[1] = 2*kf[1]*p['O2_g']*theta['*_s']**2 - " +
                          "2*kr[1]*theta['O_s']**2 + kr[2]*p['CO2_g']*theta['*_s']**2 - " +
                          "kf[2]*theta['CO_s']*theta['O_s']")
-        ret_dtheta_dt = (dtheta_dt_CO_s, dtheta_dt_O_s)
+        ret_dtheta_dt = [dtheta_dt_CO_s, dtheta_dt_O_s]
         ref_dtheta_dt = solver.get_dtheta_dt_expressions()
 
-        self.assertTupleEqual(ret_dtheta_dt, ref_dtheta_dt)
+        self.assertListEqual(ret_dtheta_dt, ref_dtheta_dt)
 
     def test_steady_state_function(self):
         " Test steady_state_function(). "

@@ -28,6 +28,6 @@ plotter = "EnergyProfilePlotter"
 
 rate_algo = "CT"
 rootfinding = "MDNewton"
-tolerance = 1e-15
+tolerance = 1e-100
 max_rootfinding_iterations = 100
 
