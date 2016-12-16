@@ -21,9 +21,20 @@ class KineticModel(object):
     # {{{
     setup_file = dc.String("setup_file", default="")
     setup_dict = dc.Dict("setup_dict", default={})
-    verbosity = dc.Integer("verbosity",
-                           default=logging.INFO,
-                           candidates=range(0, 60, 10))
+
+    logger_level = dc.Integer("logger_level",
+                              default=logging.INFO,
+                              candidates=range(0, 60, 10))
+
+    # Logging level for file handler.
+    file_handler_level = dc.Integer("file_handler_level",
+                                    default=logging.DEBUG,
+                                    candidates=range(0, 60, 10))
+
+    # Logging level for console handler.
+    console_handler_level = dc.Integer("console_handler_level",
+                                       default=logging.INFO,
+                                       candidates=range(0, 60, 10))
 
     parser = cpdc.Component("parser", default=None, candidates=["RelativeEnergyParser",
                                                                 "CsvParser",
@@ -45,7 +56,7 @@ class KineticModel(object):
     rxn_expressions = dc.Sequence("rxn_expressions", default=[], entry_type=str)
 
     # Definition dict of species.
-    species_definitions = dc.SpeciesDefinitions("species_definitions", default={}, deepcopy=True)
+    species_definitions = dc.SpeciesDefinitions("species_definitions", default={})
 
     # Algorithm for rate calculation.
     rate_algo = dc.String("rate_algo", default="TST")
@@ -61,9 +72,7 @@ class KineticModel(object):
 
     # }}}
 
-    def __init__(self, setup_file=None,
-                       setup_dict=None,
-                       verbosity=logging.INFO):
+    def __init__(self, **kwargs):
         """
         Parameters:
         -----------
@@ -71,16 +80,28 @@ class KineticModel(object):
 
         setup_dict: A dictionary contains essential setup parameters for kinetic model.
         
-        verbosity: logging level, int.
+        logger_level: logging level for logger, int.
+
+        file_handler_level: logging level for file handler, int.
+
+        console_handler_level: logging level for console handler, int.
 
         Example:
         --------
         >>> from kynetix.model import KineticModel
         >>> model = KineticModel(setup_file="setup.mkm",
-                                 verbosity=logging.WARNING)
+                                 logger_level=logging.WARNING)
         """
 
         # {{{
+
+        # Get all kwargs.
+        setup_file = kwargs.pop("setup_file", None)
+        setup_dict = kwargs.pop("setup_dict", None)
+
+        self.logger_level = kwargs.pop("logger_level", logging.INFO)
+        self.file_handler_level = kwargs.pop("file_handler_level", logging.DEBUG)
+        self.console_handler_level = kwargs.pop("console_handler_level", logging.INFO)
 
         # Physical constants.
         self._kB = kB_eV
@@ -99,8 +120,6 @@ class KineticModel(object):
             globs, locs = {}, {}
             execfile(self.setup_file, globs, locs)
             self.setup_dict = locs
-
-        self.verbosity = verbosity
 
         # Set logger.
         self._set_logger()
@@ -131,7 +150,7 @@ class KineticModel(object):
         # {{{
         # Create logger.
         logger = logging.getLogger('model')
-        logger.setLevel(self.verbosity)
+        logger.setLevel(self.logger_level)
 
         # Set log file name.
         if filename is None:
@@ -145,9 +164,9 @@ class KineticModel(object):
 
         # Create handlers.
         std_hdlr = logging.FileHandler(filename)
-        std_hdlr.setLevel(logging.DEBUG)
+        std_hdlr.setLevel(self.file_handler_level)
         console_hdlr = logging.StreamHandler()
-        console_hdlr.setLevel(logging.INFO)
+        console_hdlr.setLevel(self.console_handler_level)
 
         # Create formatter and add it to the handlers.
         formatter = logging.Formatter('%(name)s   %(levelname)-8s %(message)s')
@@ -190,6 +209,12 @@ class KineticModel(object):
         handler.setLevel(level)
 
         return old_level
+
+    def clear_handlers(self):
+        """
+        Clear all handlers in logger.
+        """
+        self._logger.handlers = []
 
     def __mro_class_attrs(self):
         """
@@ -356,7 +381,6 @@ class KineticModel(object):
         return self._has_absolute_energy
 
     @dc.Property
-    @return_deepcopy
     def relative_energies(self):
         """
         Query function for relative energy in data file.

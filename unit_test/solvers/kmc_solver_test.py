@@ -60,14 +60,14 @@ class KMCSolverTest(unittest.TestCase):
 
     def test_construction(self):
         " Make sure KMCSolver object can be constructed correctly. "
-        model = KMCModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = KMCModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         solver = model.solver
 
         self.assertTrue(isinstance(solver, KMCSolver))
 
     def test_get_control_parameter(self):
         " Make sure we can get KMCControlParameter object. "
-        model = KMCModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = KMCModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         solver = model.solver
 
         control_parameters = solver.get_control_parameters()
@@ -83,7 +83,7 @@ class KMCSolverTest(unittest.TestCase):
     def test_get_rxn_rates_CT(self):
         " Make sure we can get correct forward and reverse rates for a reaction. "
         # Construction.
-        model = KMCModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = KMCModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         model.parser.parse_data(relative=True,
                                 energy_file=kmc_energy,
                                 processes_file=kmc_processes,
@@ -106,7 +106,7 @@ class KMCSolverTest(unittest.TestCase):
         " Make sure we can parse a process dict correctly. "
         # {{{
         # Construction.
-        model = KMCModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = KMCModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         model.parser.parse_data(relative=True,
                                 energy_file=kmc_energy,
                                 processes_file=kmc_processes,
@@ -158,7 +158,7 @@ class KMCSolverTest(unittest.TestCase):
 
     def test_run(self):
         " Test the we can run the kmc model correctly. "
-        model = KMCModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = KMCModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         model.parser.parse_data(energy_file=kmc_energy,
                                 relative=True,
                                 processes_file=kmc_processes,
@@ -171,7 +171,7 @@ class KMCSolverTest(unittest.TestCase):
     def test_process_reactions_mapping(self):
         " Test process mapping query function. "
         # {{{
-        model = KMCModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = KMCModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         model.parser.parse_data(energy_file=kmc_energy,
                                 relative=True,
                                 processes_file=kmc_processes,

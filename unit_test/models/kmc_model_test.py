@@ -60,7 +60,7 @@ class KMCModelTest(unittest.TestCase):
     def test_kmc_model_construction_query(self):
         " Test kmc model can be constructed with relative energy parser. "
         # Test construction.
-        model = KMCModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = KMCModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
 
         # Test parameters in setup file have been parsed.
         self.assertTrue(hasattr(model, "_KMCModel__cell_vectors"))
@@ -82,7 +82,7 @@ class KMCModelTest(unittest.TestCase):
     def test_kmc_model_run(self):
         " Make sure KMC model can run properly. "
         # Construction.
-        model = KMCModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = KMCModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
 
         # Parse data.
         model.parser.parse_data(relative=True,

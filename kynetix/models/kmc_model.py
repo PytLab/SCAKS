@@ -110,9 +110,7 @@ class KMCModel(km.KineticModel):
                                  candidates=["RandomDistributor", "ProcessRandomDistributor"])
     # }}}
 
-    def __init__(self, setup_file=None,
-                       setup_dict=None,
-                       verbosity=logging.INFO):
+    def __init__(self, **kwargs):
         """
         Parameters:
         -----------
@@ -120,15 +118,19 @@ class KMCModel(km.KineticModel):
 
         setup_dict: A dictionary contains essential setup parameters for kinetic model.
         
-        verbosity: logging level, int.
+        logger_level: logging level, int.
+
+        file_handler_level: logging level for file handler, int.
+
+        console_handler_level: logging level for console handler, int.
 
         Example:
         --------
         >>> from kynetix.models.kinetic_model import MicroKineticModel
         >>> model = KMCModel(setup_file="setup.mkm",
-                             verbosity=logging.WARNING)
+                             logger_level=logging.WARNING)
         """
-        super(KMCModel, self).__init__(setup_file, setup_dict, verbosity)
+        super(KMCModel, self).__init__(**kwargs)
 
     # Overwrite father's function.
     def _set_logger(self, filename="out.log"):

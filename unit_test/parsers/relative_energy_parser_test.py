@@ -41,7 +41,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
     def test_relative_energy_parser_construction(self):
         " Test relative energy parser can be constructed. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
 
         # Check the parser class and base class type.
@@ -52,7 +52,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
         " Make sure we can get unknown species correctly. "
 
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
 
         ref_unknown_species = ['O2_g', 'CO_s', 'O_s', 'CO-O_2s']
@@ -73,7 +73,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
     def test_unknown_coeff_vector(self):
         " Make sure we can get unknown species vector and energy value. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
 
         # Read relative energy data file.
@@ -125,7 +125,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
     def test_data_conversion(self):
         " Test relative energy can be converted to absolute energy. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
 
         # Check G dict before conversion.
@@ -159,7 +159,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
         " Test data in relative energy file can be parsed correctly. "
 
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
 
         # Check before parse.
@@ -194,7 +194,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
 
         # Check if relative == true.
         # Construct again.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
 
         # Check.

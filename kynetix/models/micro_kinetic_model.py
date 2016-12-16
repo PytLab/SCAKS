@@ -6,6 +6,7 @@ from kynetix.mpicommons import mpi
 import kynetix.models.kinetic_model as km
 import kynetix.descriptors.descriptors as dc
 import kynetix.descriptors.component_descriptors as cpdc
+from kynetix.utilities.profiling_utitlities import do_cprofile
 
 
 class MicroKineticModel(km.KineticModel):
@@ -23,6 +24,8 @@ class MicroKineticModel(km.KineticModel):
                                        candidates=["right", "left"])
 
     # Archived variables.
+    # Candidates: 'initial_guess', 'steady_state_coverages', 'steady_state_error',
+    #             'rates', 'net_rates', 'reversibilities', 'tofs'
     archived_variables = dc.Sequence("archive_data",
                                      default=["steady_state_coverages"],
                                      entry_type=str)
@@ -57,9 +60,7 @@ class MicroKineticModel(km.KineticModel):
     ref_energies = dc.RefEnergies("ref_energies", default={})
     # }}}
 
-    def __init__(self, setup_file=None,
-                       setup_dict=None,
-                       verbosity=logging.INFO):
+    def __init__(self, **kwargs):
         """
         Parameters:
         -----------
@@ -67,15 +68,19 @@ class MicroKineticModel(km.KineticModel):
 
         setup_dict: A dictionary contains essential setup parameters for kinetic model.
         
-        verbosity: logging level, int.
+        logger_level: logging level, int.
+
+        file_handler_level: logging level for file handler, int.
+
+        console_handler_level: logging level for console handler, int.
 
         Example:
         --------
         >>> from kynetix.models.kinetic_model import MicroKineticModel
         >>> model = MicroKineticModel(setup_file="setup.mkm",
-                                      verbosity=logging.WARNING)
+                                      logger_level=logging.WARNING)
         """
-        super(MicroKineticModel, self).__init__(setup_file, setup_dict, verbosity)
+        super(MicroKineticModel, self).__init__(**kwargs)
 
         # Create data directory if need.
         if mpi.size != 1 and not os.path.exists("./data"):
@@ -89,6 +94,7 @@ class MicroKineticModel(km.KineticModel):
         if not mpi.is_master:
             self.set_logger_level("StreamHandler", logging.WARNING)
 
+    @do_cprofile("./MicroKineticModel_run.prof")
     def run(self, **kwargs):
         """
         Function to solve Micro-kinetic model using Steady State Approxmiation

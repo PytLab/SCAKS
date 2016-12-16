@@ -44,7 +44,7 @@ class ParserBaseTest(unittest.TestCase):
     def test_parser_construction(self):
         " Test parser can be constructed in kinetic model. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
 
         # Check the parser class and base class type.
@@ -55,7 +55,7 @@ class ParserBaseTest(unittest.TestCase):
 #        " Test parser base query functions. "
 #        # Construction.
 #        model = MicroKineticModel(setup_file="input_files/parser_base.mkm",
-#                             verbosity=logging.WARNING)
+#                             logger_level=logging.WARNING)
 #        parser = model.parser
 #
 #        # Test species definitions.
@@ -94,7 +94,7 @@ class ParserBaseTest(unittest.TestCase):
     def test_stoichiometry_matrices(self):
         " Make sure we can get the reactant product matrix and intermediate matrix correctly."
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
 
         ref_reapro_matrix = np.matrix([[1.0, -1.0, 0.0],
@@ -112,7 +112,7 @@ class ParserBaseTest(unittest.TestCase):
         " Test all elementary reaction equations can be parsed correctly. "
 
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
 
         elementary_rxns = ['CO_g + *_s -> CO_s',
@@ -143,7 +143,7 @@ class ParserBaseTest(unittest.TestCase):
         " Test we can get the total reaction equation from elementary reactions. "
 
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
 
         ref_total_rxn_equation = "2CO_g + O2_g -> 2CO2_g"

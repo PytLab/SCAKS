@@ -1,5 +1,5 @@
 #!/bin/bash 
-#PBS -N batch_run
+#PBS -N superpostion
 #PBS -r n 
 #PBS -j oe 
 #PBS -l nodes=1:ppn=12
@@ -46,17 +46,15 @@ source /data/apps/intel/impi/5.0.3.048/intel64/bin/mpivars.sh
 PY=/data/apps/python/Python-2.7.5/bin/python
 
 # Create job dirs.
-$PY ./create_jobs.py
+#$PY ./create_jobs.py
 
 # Run jobs.
-for i in $(ls)
+for i in $(cat job_dirs.txt)
 do
-    if [ ${i:0:2} == "0." ]; then
-        echo "Running job in $i ..." >> job_status
-        cd $i
-        mpirun -r ssh -genv I_MPI_FABRICS shm:dapl -np $NP $PY ./run.py 1>/dev/null 2>error
-        cd - 2>&1 > /dev/null
-        echo "job $i done." >> job_status
-    fi
+    echo "Running job in $i ..." >> job_status
+    cd $i
+    mpirun -r ssh -genv I_MPI_FABRICS shm:dapl -np $NP $PY ./run.py 1>/dev/null 2>error
+    cd - 2>&1 > /dev/null
+    echo "job $i done." >> job_status
 done
 

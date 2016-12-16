@@ -45,7 +45,7 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
     def test_construction_and_query(self):
         " Test plotter construction and query. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         corrector = model.corrector
 
         self.assertTrue(isinstance(corrector, ThermodynamicCorrector))
@@ -53,7 +53,7 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
     def test_shomate_correction(self):
         " Test we can get correct energy correction by Shomate equation. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.ERROR)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.ERROR)
         corrector = model.corrector
         # Check.
         gas = "CO_g"
@@ -76,7 +76,7 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
     def test_entropy_correction(self):
         " Make sure we can get correct entropy correction. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.ERROR)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.ERROR)
         corrector = model.corrector
 
         # Check.
@@ -99,7 +99,7 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
 
     def test_solvers_correction_energy(self):
         " Test solver's correction energy function. "
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
         parser.parse_data(filename=mkm_energy)
         solver = model.solver
@@ -132,7 +132,7 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
 
     def test_relative_energies_correction(self):
         " Test solver can correct its relative energies with help of corrector. "
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
         parser.parse_data(filename=mkm_energy, relative=True)
         solver = model.solver

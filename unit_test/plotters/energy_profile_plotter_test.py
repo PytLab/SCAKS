@@ -45,7 +45,7 @@ class EnergyProfilePlotterTest(unittest.TestCase):
     def test_construction_and_query(self):
         " Test plotter construction and query. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
         plotter = model.plotter
 

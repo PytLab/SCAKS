@@ -38,7 +38,7 @@ class CsvParserTest(unittest.TestCase):
     def test_csv_parser_construction(self):
         " Test csv parser can be constructed. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
 
         # Check the parser class and base class type.
@@ -48,7 +48,7 @@ class CsvParserTest(unittest.TestCase):
     def test_get_single_relative_energies(self):
         " Test parsers can calculate reaction barriers correctly. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
 
         # Before get absolute data.
@@ -78,7 +78,7 @@ class CsvParserTest(unittest.TestCase):
     def test_data_parse(self):
         " Test data in csv file can be read correctly. "
         # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, verbosity=logging.WARNING)
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
 
         ref_species_definitions = {'CO2_g': {'pressure': 0.0},
