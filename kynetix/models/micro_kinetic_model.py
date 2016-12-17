@@ -104,8 +104,6 @@ class MicroKineticModel(km.KineticModel):
         -----------
         init_cvgs: Initial guess for coverages, tuple of floats.
 
-        correct_energy: add free energy corrections to energy data or not, bool
-
         solve_ode: solve ODE only or not, bool
 
         fsolve: use scipy.optimize.fsolve to get low-precision root or not, bool
@@ -123,7 +121,6 @@ class MicroKineticModel(km.KineticModel):
         # Setup default parameters.
         init_cvgs = kwargs.pop("init_cvgs", None)
         relative = kwargs.pop("relative", False)
-        correct_energy = kwargs.pop("correct_energy", False)
         solve_ode = kwargs.pop("solve_ode", False)
         fsolve = kwargs.pop("fsolve", False)
         coarse_guess = kwargs.pop("coarse_guess", True)
