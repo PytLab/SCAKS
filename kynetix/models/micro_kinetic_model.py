@@ -149,7 +149,7 @@ class MicroKineticModel(km.KineticModel):
         else:
             if self.log_allowed:
                 self._logger.info('convert relative to absolute energy...')
-        parser.parse_data(filename=data_file, relative=relative)
+        parser.parse_data(filename=data_file)
 
         # -- solve steady state coverages --
         if self.log_allowed:
