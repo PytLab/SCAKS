@@ -31,7 +31,6 @@ class MicroKineticModelTest(unittest.TestCase):
             solver = "SteadyStateSolver",
             corrector = "ThermodynamicCorrector",
             plotter = "EnergyProfilePlotter",
-            ref_species = ['CO_g', 'CO2_g', 's']
         )
 
     def test_mkm_construction_query(self):
@@ -44,7 +43,6 @@ class MicroKineticModelTest(unittest.TestCase):
         self.assertEqual(model.plotter.__class__.__name__, self.setup_dict["plotter"])
         self.assertListEqual(model.rxn_expressions, self.setup_dict["rxn_expressions"])
         self.assertEqual(model.temperature, self.setup_dict["temperature"])
-        self.assertListEqual(model.ref_species, self.setup_dict["ref_species"])
         self.assertEqual(model.logger_level, logging.WARNING)
         self.assertEqual(model.decimal_precision, 100)
 

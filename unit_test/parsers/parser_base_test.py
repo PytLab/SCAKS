@@ -34,7 +34,6 @@ class ParserBaseTest(unittest.TestCase):
             solver = "SteadyStateSolver",
             corrector = "ThermodynamicCorrector",
             plotter = "EnergyProfilePlotter",
-            ref_species = ['CO_g', 'CO2_g', 's'],
             rootfinding = 'ConstrainedNewton',
             tolerance = 1e-20,
             max_rootfinding_iterations = 100,

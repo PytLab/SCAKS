@@ -19,7 +19,6 @@ parser = "RelativeEnergyParser"
 solver = "SteadyStateSolver"
 corrector = "ThermodynamicCorrector"
 plotter = "EnergyProfilePlotter"
-ref_species = ['CO_g', 'CO2_g', 's']
 rootfinding = 'ConstrainedNewton'
 decimal_precision = 100
 tolerance = 1e-20

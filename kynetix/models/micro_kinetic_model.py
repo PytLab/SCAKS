@@ -53,9 +53,6 @@ class MicroKineticModel(km.KineticModel):
     # Ode ouptut interval.
     ode_output_interval = dc.Integer("ode_output_interval", default=200)
 
-    # Species used for conversion from relative energy to absolute eneergy.
-    ref_species = dc.Sequence("ref_species", default=[], entry_type=str)
-
     # Reference energies used to calculate formation energy.
     ref_energies = dc.RefEnergies("ref_energies", default={})
     # }}}
