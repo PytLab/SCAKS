@@ -57,7 +57,7 @@ if "__main__" == __name__:
         model = MicroKineticModel(setup_dict=setup_dict, console_handler_level=logging.WARNING)
 
         # Read data.
-        model.parser.parse_data(relative=True)
+        model.parser.parse_data()
         model.solver.get_data()
 
         # Initial coverage guess.
@@ -73,7 +73,6 @@ if "__main__" == __name__:
         print("Running pressure CO_g: {}".format(pCO))
         model.run(init_cvgs=init_guess,
                   solve_ode=False,
-                  relative=True,
                   XRC=False,
                   product_name="CO2_g")
         model.clear_handlers()

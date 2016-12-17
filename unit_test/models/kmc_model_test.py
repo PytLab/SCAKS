@@ -85,8 +85,7 @@ class KMCModelTest(unittest.TestCase):
         model = KMCModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
 
         # Parse data.
-        model.parser.parse_data(relative=True,
-                                energy_file=kmc_energy,
+        model.parser.parse_data(energy_file=kmc_energy,
                                 processes_file=kmc_processes,
                                 configuration_file=kmc_config,
                                 sitesmap_file=kmc_sites)

@@ -84,8 +84,7 @@ class KMCSolverTest(unittest.TestCase):
         " Make sure we can get correct forward and reverse rates for a reaction. "
         # Construction.
         model = KMCModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-        model.parser.parse_data(relative=True,
-                                energy_file=kmc_energy,
+        model.parser.parse_data(energy_file=kmc_energy,
                                 processes_file=kmc_processes,
                                 configuration_file=kmc_config,
                                 sitesmap_file=kmc_sites)
@@ -107,8 +106,7 @@ class KMCSolverTest(unittest.TestCase):
         # {{{
         # Construction.
         model = KMCModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-        model.parser.parse_data(relative=True,
-                                energy_file=kmc_energy,
+        model.parser.parse_data(energy_file=kmc_energy,
                                 processes_file=kmc_processes,
                                 configuration_file=kmc_config,
                                 sitesmap_file=kmc_sites)
@@ -160,7 +158,6 @@ class KMCSolverTest(unittest.TestCase):
         " Test the we can run the kmc model correctly. "
         model = KMCModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         model.parser.parse_data(energy_file=kmc_energy,
-                                relative=True,
                                 processes_file=kmc_processes,
                                 configuration_file=kmc_config,
                                 sitesmap_file=kmc_sites)
@@ -173,7 +170,6 @@ class KMCSolverTest(unittest.TestCase):
         # {{{
         model = KMCModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         model.parser.parse_data(energy_file=kmc_energy,
-                                relative=True,
                                 processes_file=kmc_processes,
                                 configuration_file=kmc_config,
                                 sitesmap_file=kmc_sites)

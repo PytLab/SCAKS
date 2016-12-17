@@ -12,7 +12,6 @@ from kynetix.models.micro_kinetic_model import MicroKineticModel
 from kynetix.utilities.format_utilities import convert_time
 
 # Custom parameters.
-UseRelativeEnergy = True    # Use only relative energies.
 OdeInterval = 0.0001          # ODE integration time interval.
 OdeEnd = 10          # ODE integration time limit.
 OdeOutput = False           # Output ODE integration data or not.
@@ -43,7 +42,7 @@ if "__main__" == __name__:
         # Read data.
         parser = model.parser
         solver = model.solver
-        parser.parse_data(relative=UseRelativeEnergy)
+        parser.parse_data()
         solver.get_data()
 
         # Initial coverages guess.
@@ -56,7 +55,6 @@ if "__main__" == __name__:
         model.run(init_cvgs=init_guess,
                   solve_ode=OdeOnly,
                   coarse_guess=False,
-                  relative=True,
                   XRC=CalcXRC,
                   product_name=ProductionName)
     except Exception as e:
