@@ -37,7 +37,6 @@ class KMCParser(RelativeEnergyParser):
         self.__logger = logging.getLogger('model.parsers.KMCParser')
 
     def parse_data(self,
-                   relative=False,
                    energy_file="./rel_energy.py",
                    processes_file=None,
                    configuration_file=None,
@@ -57,7 +56,7 @@ class KMCParser(RelativeEnergyParser):
                        the default name is "kmc_processes.py".
         """
         # Basic parsing.
-        super(KMCParser, self).parse_data(relative, energy_file)
+        super(KMCParser, self).parse_data(energy_file)
 
         # kMC parsing.
         process_dicts = self.parse_processes(filename=processes_file)
