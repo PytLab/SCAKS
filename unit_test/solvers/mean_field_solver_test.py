@@ -348,510 +348,510 @@ class MeanFieldSolverTest(unittest.TestCase):
     # ----------------------------------------------------------------
     # Symbol tests.
 
-    def test_get_data_symbols(self):
-        # {{{
-        " Make sure we can get all correct symbols. "
-        # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-        solver = model.solver
-
-        solver.get_data_symbols()
-
-        # Check P symbols.
-        ref_p_symbols = ('p_CO2_g', 'p_CO_g', 'p_O2_g')
-        ret_p_symbols = solver._p_sym
-
-        for p, p_str in zip(ret_p_symbols, ref_p_symbols):
-            self.assertEqual(p.name, p_str)
-
-        # Check concentration symbols.
-        ref_c_symbols = ()
-        ret_c_symbols = solver._c_sym
-
-        for p, p_str in zip(ret_p_symbols, ref_p_symbols):
-            self.assertEqual(p.name, p_str)
-
-        # Check adsorbate coverage symbols.
-        ref_ads_theta_symbols = ()
-        ret_ads_theta_symbols = solver._ads_theta_sym
-
-        for ads_theta, ads_theta_str in zip(ret_ads_theta_symbols, ref_ads_theta_symbols):
-            self.assertEqual(ads_theta.name, ads_theta_str)
-
-        # Check free site coverage symbols.
-        ref_fsite_theta_symbols = ()
-        ret_fsite_theta_symbols = solver._fsite_theta_sym
-
-        for fsite_theta, fsite_theta_str in zip(ret_fsite_theta_symbols, ref_fsite_theta_symbols):
-            self.assertEqual(fsite_theta.name, fsite_theta_str)
-
-        # Check free energy coverage symbols.
-        ref_G_symbols = ()
-        ret_G_symbols = solver._G_sym
-
-        for G, G_str in zip(ret_G_symbols, ref_G_symbols):
-            self.assertEqual(G.name, G_str)
-
-        # Check K coverage symbols.
-        ref_K_symbols = ()
-        ret_K_symbols = solver._K_sym
-
-        for K, K_str in zip(ret_K_symbols, ref_K_symbols):
-            self.assertEqual(K.name, K_str)
-        # }}}
-
-    def test_extract_symbol(self):
-        # {{{
-        " Test protected function _extract_symbol(). "
-        # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-        solver = model.solver
-
-        solver.get_data_symbols()
-
-        # Pressure symbol.
-        ref_pressure = 'p_CO2_g'
-        ret_pressure = solver._extract_symbol('CO2_g', 'pressure')
-        self.assertEqual(ret_pressure.name, ref_pressure)
-
-        # Adsorbate symbol.
-        ref_cvg = 'theta_CO_s'
-        ret_cvg = solver._extract_symbol('CO_s', 'ads_cvg')
-        self.assertEqual(ret_cvg.name, ref_cvg)
-
-        # Empty site symbol.
-        ret_cvg = solver._extract_symbol('s', 'free_site_cvg')
-        CO = solver._extract_symbol('CO_s', 'ads_cvg')
-        O = solver._extract_symbol('O_s', 'ads_cvg')
-        ref_cvg = 1.0 - CO - O
-        self.assertEqual(ret_cvg, ref_cvg)
-
-        # Free energy symbol.
-        ref_G = 'G_CO_g'
-        ret_G = solver._extract_symbol('CO_g', 'free_energy')
-        self.assertEqual(ret_G.name, ref_G)
-        # }}}
-
-    def test_get_single_barrier_symbols(self):
-        # {{{
-        " Make sure we can get correct barrier expression for an elementary reaction. "
-        # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-        parser = model.parser
-        solver = model.solver
-
-        parser.parse_data(filename=mkm_energy)
-        solver.get_data()
-        solver.get_data_symbols()
-
-        rxn_expression = 'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s'
-        ret_barrier_symbols = solver.get_single_barrier_symbols(rxn_expression)
-        COO_2s = solver._extract_symbol("CO-O_2s","free_energy")
-        CO_s = solver._extract_symbol("CO_s","free_energy")
-        O_s = solver._extract_symbol("O_s","free_energy")
-        CO2_g = solver._extract_symbol("CO2_g","free_energy")
-        s = solver._extract_symbol("s","free_energy")
-        ref_barrier_symbols = (COO_2s - CO_s - O_s, -2*s + COO_2s - CO2_g)
-
-        self.assertTupleEqual(ref_barrier_symbols, ret_barrier_symbols)
-        # }}}
-
-    def test_get_barrier_symbols(self):
-        # {{{
-        " Make sure we can get all barrier expressions correctly. "
-        # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-        parser = model.parser
-        solver = model.solver
-
-        parser.parse_data(filename=mkm_energy)
-        solver.get_data()
-        solver.get_data_symbols()
-
-        # Check.
-        ret_Gaf_symbols, ret_Gar_symbols = solver.get_barrier_symbols()
-
-        # Get references.
-        COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
-        CO_s = solver._extract_symbol("CO_s", "free_energy")
-        O_s = solver._extract_symbol("O_s", "free_energy")
-        CO2_g = solver._extract_symbol("CO2_g", "free_energy")
-        O2_g = solver._extract_symbol("O2_g", "free_energy")
-        CO_g = solver._extract_symbol("CO_g", "free_energy")
-        s = solver._extract_symbol("s", "free_energy")
-
-        ref_Gaf_symbols = [0, 0, COO_2s - CO_s - O_s]
-        ref_Gar_symbols = [CO_g + s - CO_s,
-                           O2_g + 2*s - 2*O_s,
-                           COO_2s - CO2_g - 2*s]
-
-        self.assertListEqual(ret_Gaf_symbols, ref_Gaf_symbols)
-        self.assertListEqual(ret_Gar_symbols, ref_Gar_symbols)
-        # }}}
-
-    def test_get_rate_constant_symbols(self):
-        # {{{
-        " Test we can get get correct rate constants symbols. "
-        # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-        parser = model.parser
-        solver = model.solver
-
-        parser.parse_data(filename=mkm_energy)
-        solver.get_data()
-        solver.get_data_symbols()
-
-        # Get symbols.
-        COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
-        CO_s = solver._extract_symbol("CO_s", "free_energy")
-        O_s = solver._extract_symbol("O_s", "free_energy")
-        CO2_g = solver._extract_symbol("CO2_g", "free_energy")
-        O2_g = solver._extract_symbol("O2_g", "free_energy")
-        CO_g = solver._extract_symbol("CO_g", "free_energy")
-        s = solver._extract_symbol("s", "free_energy")
-        kB = solver._kB_sym
-        T = solver._T_sym
-        h = solver._h_sym
-        from sympy import E
-
-        ref_kf_syms = [T*kB/h, T*kB/h, T*kB*E**((-COO_2s + CO_s + O_s)/(T*kB))/h]
-        ref_kr_syms = [T*kB*E**((-s - CO_g + CO_s)/(T*kB))/h,
-                       T*kB*E**((-2*s - O2_g + 2*O_s)/(T*kB))/h,
-                       T*kB*E**((2*s - COO_2s + CO2_g)/(T*kB))/h]
-
-        ret_kf_syms, ret_kr_syms = solver.get_rate_constant_syms()
-
-        self.assertListEqual(ref_kf_syms, ret_kf_syms)
-        self.assertListEqual(ref_kr_syms, ret_kr_syms)
-        # }}}
-
-    def test_get_equilibrium_constant_symbols(self):
-        # {{{
-        " Test we can get get correct equilibrium constants symbols. "
-        # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-        parser = model.parser
-        solver = model.solver
-
-        parser.parse_data(filename=mkm_energy)
-        solver.get_data()
-        solver.get_data_symbols()
-
-        # Get symbols.
-        COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
-        CO_s = solver._extract_symbol("CO_s", "free_energy")
-        O_s = solver._extract_symbol("O_s", "free_energy")
-        CO2_g = solver._extract_symbol("CO2_g", "free_energy")
-        O2_g = solver._extract_symbol("O2_g", "free_energy")
-        CO_g = solver._extract_symbol("CO_g", "free_energy")
-        s = solver._extract_symbol("s", "free_energy")
-        kB = solver._kB_sym
-        T = solver._T_sym
-        h = solver._h_sym
-        from sympy import E
-
-        kf_syms = [T*kB/h, T*kB/h, T*kB*E**((-COO_2s + CO_s + O_s)/(T*kB))/h]
-        kr_syms = [T*kB*E**((-s - CO_g + CO_s)/(T*kB))/h,
-                   T*kB*E**((-2*s - O2_g + 2*O_s)/(T*kB))/h,
-                   T*kB*E**((2*s - COO_2s + CO2_g)/(T*kB))/h]
-
-        ref_K = tuple([kf/kr for kf, kr in zip(kf_syms, kr_syms)])
-        ret_K = solver.get_equilibrium_constant_syms()
-
-        self.assertTupleEqual(ref_K, ret_K)
-        # }}}
-
-    def test_get_single_rate_sym(self):
-        # {{{
-        " Make sure we can get correct rate expression for an elementary reaction. "
-        # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-        parser = model.parser
-        solver = model.solver
-
-        parser.parse_data(filename=mkm_energy)
-        solver.get_data()
-        solver.get_data_symbols()
-
-        # Get symbols.
-
-        # Free energy.
-        G_COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
-        G_CO_s = solver._extract_symbol("CO_s", "free_energy")
-        G_O_s = solver._extract_symbol("O_s", "free_energy")
-        G_CO2_g = solver._extract_symbol("CO2_g", "free_energy")
-        G_O2_g = solver._extract_symbol("O2_g", "free_energy")
-        G_CO_g = solver._extract_symbol("CO_g", "free_energy")
-        G_s = solver._extract_symbol("s", "free_energy")
-
-        # Coverage.
-        c_CO_s = solver._extract_symbol("CO_s", "ads_cvg")
-        c_O_s = solver._extract_symbol("O_s", "ads_cvg")
-        c_s = solver._extract_symbol("s", "free_site_cvg")
-
-        # Pressure.
-        p_CO2_g = solver._extract_symbol("CO2_g", "pressure")
-        p_O2_g = solver._extract_symbol("O2_g", "pressure")
-        p_CO_g = solver._extract_symbol("CO_g", "pressure")
-
-        # Constants.
-        kB = solver._kB_sym
-        T = solver._T_sym
-        h = solver._h_sym
-        from sympy import E
-
-        kf = T*kB*E**((-G_COO_2s + G_CO_s + G_O_s)/(T*kB))/h
-        kr = T*kB*E**((2*G_s - G_COO_2s + G_CO2_g)/(T*kB))/h
-
-        rxn_expression = 'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s'
-        ref_rf = kf*c_CO_s*c_O_s
-        ref_rr = kr*p_CO2_g*c_s**2
-
-        ret_rf, ret_rr = solver.get_single_rate_sym(rxn_expression)
-
-        self.assertEqual(ref_rf, ret_rf)
-        self.assertEqual(ref_rr, ret_rr)
-        # }}}
-
-    def test_get_rate_syms(self):
-        " Test we can get rate expressions correctly. "
-        # Need Implimentation.
-
-    def test_get_G_sub_dict(self):
-        # {{{
-        " Test private function _get_G_sub_dict(). "
-        # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-        parser = model.parser
-        solver = model.solver
-
-        parser.parse_data(filename=mkm_energy)
-        solver.get_data()
-        solver.get_data_symbols()
-
-        # Check.
-        G_COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
-        G_CO_s = solver._extract_symbol("CO_s", "free_energy")
-        G_O_s = solver._extract_symbol("O_s", "free_energy")
-        G_CO2_g = solver._extract_symbol("CO2_g", "free_energy")
-        G_O2_g = solver._extract_symbol("O2_g", "free_energy")
-        G_CO_g = solver._extract_symbol("CO_g", "free_energy")
-        G_s = solver._extract_symbol("s", "free_energy")
-
-        ref_dict = {G_O2_g: mpf('3.508000000002'),
-                    G_CO2_g: mpf('0.0'),
-                    G_CO_g: mpf('0.0'),
-                    G_COO_2s: mpf('0.9259999999995'),
-                    G_s: mpf('0.0'),
-                    G_CO_s: mpf('-0.7580000000016'),
-                    G_O_s: mpf('0.4340000000011')}
-
-        ret_dict = solver._get_G_subs_dict()
-
-        self.assertDictEqual(ref_dict, ret_dict)
-
-    def test_get_theta_subs_dict(self):
-        " Test protected function _get_theta_subs_dict(). "
-        # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-        parser = model.parser
-        solver = model.solver
-
-        parser.parse_data(filename=mkm_energy)
-        solver.get_data()
-        solver.get_data_symbols()
-
-        coverages = (0.5, 0.3)
-
-        c_CO_s = solver._extract_symbol("CO_s", "ads_cvg")
-        c_O_s = solver._extract_symbol("O_s", "ads_cvg")
-        c_s = solver._extract_symbol("s", "free_site_cvg")
-
-        ref_dict = {c_CO_s: 0.5, c_O_s: 0.3}
-        ret_dict = solver._get_theta_subs_dict(coverages)
-        
-        self.assertDictEqual(ref_dict, ret_dict)
-        # }}}
-
-    def test_get_p_subs_dict(self):
-        # {{{
-        " Test protected function _get_p_subs_dict(). "
-        # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-        parser = model.parser
-        solver = model.solver
-
-        parser.parse_data(filename=mkm_energy)
-        solver.get_data()
-        solver.get_data_symbols()
-
-        p_CO2_g = solver._extract_symbol("CO2_g", "pressure")
-        p_O2_g = solver._extract_symbol("O2_g", "pressure")
-        p_CO_g = solver._extract_symbol("CO_g", "pressure")
-
-        ref_dict = {p_O2_g: mpf('0.3333333333321'),
-                    p_CO_g: mpf('1.0'),
-                    p_CO2_g: mpf('0.0')}
-        ret_dict = solver._get_p_subs_dict()
-
-        self.assertDictEqual(ref_dict, ret_dict)
-        # }}}
-
-    def test_get_c_sub_dict(self):
-        " Test protected function _get_c_sub_dict(). "
-        # Need Implimentation.
-
-    def test_get_subs_dict(self):
-        # {{{
-        " Make sure we can get correct substitution dict for all symbols. "
-        # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-        parser = model.parser
-        solver = model.solver
-
-        parser.parse_data(filename=mkm_energy)
-        solver.get_data()
-        solver.get_data_symbols()
-
-        # Get symbols.
-
-        # Free energy.
-        G_COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
-        G_CO_s = solver._extract_symbol("CO_s", "free_energy")
-        G_O_s = solver._extract_symbol("O_s", "free_energy")
-        G_CO2_g = solver._extract_symbol("CO2_g", "free_energy")
-        G_O2_g = solver._extract_symbol("O2_g", "free_energy")
-        G_CO_g = solver._extract_symbol("CO_g", "free_energy")
-        G_s = solver._extract_symbol("s", "free_energy")
-
-        # Coverage.
-        c_CO_s = solver._extract_symbol("CO_s", "ads_cvg")
-        c_O_s = solver._extract_symbol("O_s", "ads_cvg")
-        c_s = solver._extract_symbol("s", "free_site_cvg")
-
-        # Pressure.
-        p_CO2_g = solver._extract_symbol("CO2_g", "pressure")
-        p_O2_g = solver._extract_symbol("O2_g", "pressure")
-        p_CO_g = solver._extract_symbol("CO_g", "pressure")
-
-        # Constants.
-        kB = solver._kB_sym
-        T = solver._T_sym
-        h = solver._h_sym
-        
-        coverages = (0.5, 0.4)
-
-        ref_dict = {G_O2_g: mpf('3.508000000002'),
-                    c_CO_s: 0.5,
-                    T: mpf('450.0'),
-                    G_CO2_g: mpf('0.0'),
-                    G_CO_g: mpf('0.0'),
-                    G_COO_2s: mpf('0.9259999999995'),
-                    p_O2_g: mpf('0.3333333333321'),
-                    c_O_s: 0.4,
-                    kB: mpf('8.617332400007e-5'),
-                    h: mpf('4.135667662e-15'),
-                    G_s: mpf('0.0'),
-                    G_CO_s: mpf('-0.7580000000016'),
-                    p_CO_g: mpf('1.0'),
-                    G_O_s: mpf('0.4340000000011'),
-                    p_CO2_g: mpf('0.0')}
-        ret_dict = solver.get_subs_dict(coverages)
-
-        self.assertDictEqual(ref_dict, ret_dict)
-        # }}}
-
-    def test_get_rate_constants_by_sym(self):
-        " Make sure we can get rate constant correctly by symbols derivation. "
-        # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-        parser = model.parser
-        solver = model.solver
-
-        parser.parse_data(filename=mkm_energy)
-        solver.get_data()
-        solver.get_data_symbols()
-
-        # Check.
-        ref_kfs = [mpf('9376477746560.0'), mpf('9376477746560.0'), mpf('0.09389759709029')]
-        ref_krs = [mpf('30395.72540069'), mpf('2.542951527153e-17'), mpf('399.2961612232')]
-
-        ret_kfs, ret_krs = solver.get_rate_constants_by_sym()
-
-        self.assertListEqual(ref_kfs, ret_kfs)
-        self.assertListEqual(ref_krs, ret_krs)
-
-    def test_get_rates_by_syms(self):
-        " Make sure we can get correct rates values by symbol derivation. "
-        # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-        parser = model.parser
-        solver = model.solver
-
-        parser.parse_data(filename=mkm_energy)
-        solver.get_data()
-        solver.get_data_symbols()
-
-        # Check.
-        coverages = (0.5, 0.3)
-
-        ref_rfs = (mpf('1875295549312.0'), mpf('125019703287.0'), mpf('0.01408463956352'))
-        ref_rrs = (mpf('15197.86270034'), mpf('2.288656374422e-18'), mpf('0.0'))
-
-        ret_rfs, ret_rrs = solver.get_rates_by_sym(cvgs_tuple=coverages)
-
-        self.assertTupleEqual(ref_rfs, ret_rfs)
-        self.assertTupleEqual(ref_rrs, ret_rrs)
-
-    def test_get_net_rate_syms(self):
-        " Make sure we can get correct net rate symbols for all elementary reactions. "
-        # Need Implimentation.
-
-    def test_get_net_rates_by_sym(self):
-        " Test net rates calculating by symbol derivation. "
-        # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-        parser = model.parser
-        solver = model.solver
-
-        parser.parse_data(filename=mkm_energy)
-        solver.get_data()
-        solver.get_data_symbols()
-
-        # Check.
-        coverages = (0.5, 0.3)
-
-        ref_net_rates = (mpf('1875295534112.0'),
-                         mpf('125019703287.0'),
-                         mpf('0.01408463956352'))
-        ret_net_rates = solver.get_net_rates_by_sym(coverages)
-
-        self.assertTupleEqual(ref_net_rates, ret_net_rates)
-
-    def test_get_tof_syms(self):
-        " Test we can get TOF symbols correctly. "
-        # NEED IMPLIMENTATION.
-
-    def test_get_tof_by_sym(self):
-        " Make sure we can get correct TOF value by symbols derivation. "
-        # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-        parser = model.parser
-        solver = model.solver
-
-        parser.parse_data(filename=mkm_energy)
-        solver.get_data()
-        solver.get_data_symbols()
-
-        # Check.
-        coverages = (0.5, 0.3)
-
-        ref_tof = (mpf('0.01408463956352'),
-                   mpf('-1875295534112.0'),
-                   mpf('-125019703287.0'))
-        ret_tof = solver.get_tof_by_sym(coverages)
-
-        self.assertTupleEqual(ref_tof, ret_tof)
+#    def test_get_data_symbols(self):
+#        # {{{
+#        " Make sure we can get all correct symbols. "
+#        # Construction.
+#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+#        solver = model.solver
+#
+#        solver.get_data_symbols()
+#
+#        # Check P symbols.
+#        ref_p_symbols = ('p_CO2_g', 'p_CO_g', 'p_O2_g')
+#        ret_p_symbols = solver._p_sym
+#
+#        for p, p_str in zip(ret_p_symbols, ref_p_symbols):
+#            self.assertEqual(p.name, p_str)
+#
+#        # Check concentration symbols.
+#        ref_c_symbols = ()
+#        ret_c_symbols = solver._c_sym
+#
+#        for p, p_str in zip(ret_p_symbols, ref_p_symbols):
+#            self.assertEqual(p.name, p_str)
+#
+#        # Check adsorbate coverage symbols.
+#        ref_ads_theta_symbols = ()
+#        ret_ads_theta_symbols = solver._ads_theta_sym
+#
+#        for ads_theta, ads_theta_str in zip(ret_ads_theta_symbols, ref_ads_theta_symbols):
+#            self.assertEqual(ads_theta.name, ads_theta_str)
+#
+#        # Check free site coverage symbols.
+#        ref_fsite_theta_symbols = ()
+#        ret_fsite_theta_symbols = solver._fsite_theta_sym
+#
+#        for fsite_theta, fsite_theta_str in zip(ret_fsite_theta_symbols, ref_fsite_theta_symbols):
+#            self.assertEqual(fsite_theta.name, fsite_theta_str)
+#
+#        # Check free energy coverage symbols.
+#        ref_G_symbols = ()
+#        ret_G_symbols = solver._G_sym
+#
+#        for G, G_str in zip(ret_G_symbols, ref_G_symbols):
+#            self.assertEqual(G.name, G_str)
+#
+#        # Check K coverage symbols.
+#        ref_K_symbols = ()
+#        ret_K_symbols = solver._K_sym
+#
+#        for K, K_str in zip(ret_K_symbols, ref_K_symbols):
+#            self.assertEqual(K.name, K_str)
+#        # }}}
+#
+#    def test_extract_symbol(self):
+#        # {{{
+#        " Test protected function _extract_symbol(). "
+#        # Construction.
+#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+#        solver = model.solver
+#
+#        solver.get_data_symbols()
+#
+#        # Pressure symbol.
+#        ref_pressure = 'p_CO2_g'
+#        ret_pressure = solver._extract_symbol('CO2_g', 'pressure')
+#        self.assertEqual(ret_pressure.name, ref_pressure)
+#
+#        # Adsorbate symbol.
+#        ref_cvg = 'theta_CO_s'
+#        ret_cvg = solver._extract_symbol('CO_s', 'ads_cvg')
+#        self.assertEqual(ret_cvg.name, ref_cvg)
+#
+#        # Empty site symbol.
+#        ret_cvg = solver._extract_symbol('s', 'free_site_cvg')
+#        CO = solver._extract_symbol('CO_s', 'ads_cvg')
+#        O = solver._extract_symbol('O_s', 'ads_cvg')
+#        ref_cvg = 1.0 - CO - O
+#        self.assertEqual(ret_cvg, ref_cvg)
+#
+#        # Free energy symbol.
+#        ref_G = 'G_CO_g'
+#        ret_G = solver._extract_symbol('CO_g', 'free_energy')
+#        self.assertEqual(ret_G.name, ref_G)
+#        # }}}
+#
+#    def test_get_single_barrier_symbols(self):
+#        # {{{
+#        " Make sure we can get correct barrier expression for an elementary reaction. "
+#        # Construction.
+#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+#        parser = model.parser
+#        solver = model.solver
+#
+#        parser.parse_data(filename=mkm_energy)
+#        solver.get_data()
+#        solver.get_data_symbols()
+#
+#        rxn_expression = 'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s'
+#        ret_barrier_symbols = solver.get_single_barrier_symbols(rxn_expression)
+#        COO_2s = solver._extract_symbol("CO-O_2s","free_energy")
+#        CO_s = solver._extract_symbol("CO_s","free_energy")
+#        O_s = solver._extract_symbol("O_s","free_energy")
+#        CO2_g = solver._extract_symbol("CO2_g","free_energy")
+#        s = solver._extract_symbol("s","free_energy")
+#        ref_barrier_symbols = (COO_2s - CO_s - O_s, -2*s + COO_2s - CO2_g)
+#
+#        self.assertTupleEqual(ref_barrier_symbols, ret_barrier_symbols)
+#        # }}}
+#
+#    def test_get_barrier_symbols(self):
+#        # {{{
+#        " Make sure we can get all barrier expressions correctly. "
+#        # Construction.
+#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+#        parser = model.parser
+#        solver = model.solver
+#
+#        parser.parse_data(filename=mkm_energy)
+#        solver.get_data()
+#        solver.get_data_symbols()
+#
+#        # Check.
+#        ret_Gaf_symbols, ret_Gar_symbols = solver.get_barrier_symbols()
+#
+#        # Get references.
+#        COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
+#        CO_s = solver._extract_symbol("CO_s", "free_energy")
+#        O_s = solver._extract_symbol("O_s", "free_energy")
+#        CO2_g = solver._extract_symbol("CO2_g", "free_energy")
+#        O2_g = solver._extract_symbol("O2_g", "free_energy")
+#        CO_g = solver._extract_symbol("CO_g", "free_energy")
+#        s = solver._extract_symbol("s", "free_energy")
+#
+#        ref_Gaf_symbols = [0, 0, COO_2s - CO_s - O_s]
+#        ref_Gar_symbols = [CO_g + s - CO_s,
+#                           O2_g + 2*s - 2*O_s,
+#                           COO_2s - CO2_g - 2*s]
+#
+#        self.assertListEqual(ret_Gaf_symbols, ref_Gaf_symbols)
+#        self.assertListEqual(ret_Gar_symbols, ref_Gar_symbols)
+#        # }}}
+#
+#    def test_get_rate_constant_symbols(self):
+#        # {{{
+#        " Test we can get get correct rate constants symbols. "
+#        # Construction.
+#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+#        parser = model.parser
+#        solver = model.solver
+#
+#        parser.parse_data(filename=mkm_energy)
+#        solver.get_data()
+#        solver.get_data_symbols()
+#
+#        # Get symbols.
+#        COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
+#        CO_s = solver._extract_symbol("CO_s", "free_energy")
+#        O_s = solver._extract_symbol("O_s", "free_energy")
+#        CO2_g = solver._extract_symbol("CO2_g", "free_energy")
+#        O2_g = solver._extract_symbol("O2_g", "free_energy")
+#        CO_g = solver._extract_symbol("CO_g", "free_energy")
+#        s = solver._extract_symbol("s", "free_energy")
+#        kB = solver._kB_sym
+#        T = solver._T_sym
+#        h = solver._h_sym
+#        from sympy import E
+#
+#        ref_kf_syms = [T*kB/h, T*kB/h, T*kB*E**((-COO_2s + CO_s + O_s)/(T*kB))/h]
+#        ref_kr_syms = [T*kB*E**((-s - CO_g + CO_s)/(T*kB))/h,
+#                       T*kB*E**((-2*s - O2_g + 2*O_s)/(T*kB))/h,
+#                       T*kB*E**((2*s - COO_2s + CO2_g)/(T*kB))/h]
+#
+#        ret_kf_syms, ret_kr_syms = solver.get_rate_constant_syms()
+#
+#        self.assertListEqual(ref_kf_syms, ret_kf_syms)
+#        self.assertListEqual(ref_kr_syms, ret_kr_syms)
+#        # }}}
+#
+#    def test_get_equilibrium_constant_symbols(self):
+#        # {{{
+#        " Test we can get get correct equilibrium constants symbols. "
+#        # Construction.
+#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+#        parser = model.parser
+#        solver = model.solver
+#
+#        parser.parse_data(filename=mkm_energy)
+#        solver.get_data()
+#        solver.get_data_symbols()
+#
+#        # Get symbols.
+#        COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
+#        CO_s = solver._extract_symbol("CO_s", "free_energy")
+#        O_s = solver._extract_symbol("O_s", "free_energy")
+#        CO2_g = solver._extract_symbol("CO2_g", "free_energy")
+#        O2_g = solver._extract_symbol("O2_g", "free_energy")
+#        CO_g = solver._extract_symbol("CO_g", "free_energy")
+#        s = solver._extract_symbol("s", "free_energy")
+#        kB = solver._kB_sym
+#        T = solver._T_sym
+#        h = solver._h_sym
+#        from sympy import E
+#
+#        kf_syms = [T*kB/h, T*kB/h, T*kB*E**((-COO_2s + CO_s + O_s)/(T*kB))/h]
+#        kr_syms = [T*kB*E**((-s - CO_g + CO_s)/(T*kB))/h,
+#                   T*kB*E**((-2*s - O2_g + 2*O_s)/(T*kB))/h,
+#                   T*kB*E**((2*s - COO_2s + CO2_g)/(T*kB))/h]
+#
+#        ref_K = tuple([kf/kr for kf, kr in zip(kf_syms, kr_syms)])
+#        ret_K = solver.get_equilibrium_constant_syms()
+#
+#        self.assertTupleEqual(ref_K, ret_K)
+#        # }}}
+#
+#    def test_get_single_rate_sym(self):
+#        # {{{
+#        " Make sure we can get correct rate expression for an elementary reaction. "
+#        # Construction.
+#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+#        parser = model.parser
+#        solver = model.solver
+#
+#        parser.parse_data(filename=mkm_energy)
+#        solver.get_data()
+#        solver.get_data_symbols()
+#
+#        # Get symbols.
+#
+#        # Free energy.
+#        G_COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
+#        G_CO_s = solver._extract_symbol("CO_s", "free_energy")
+#        G_O_s = solver._extract_symbol("O_s", "free_energy")
+#        G_CO2_g = solver._extract_symbol("CO2_g", "free_energy")
+#        G_O2_g = solver._extract_symbol("O2_g", "free_energy")
+#        G_CO_g = solver._extract_symbol("CO_g", "free_energy")
+#        G_s = solver._extract_symbol("s", "free_energy")
+#
+#        # Coverage.
+#        c_CO_s = solver._extract_symbol("CO_s", "ads_cvg")
+#        c_O_s = solver._extract_symbol("O_s", "ads_cvg")
+#        c_s = solver._extract_symbol("s", "free_site_cvg")
+#
+#        # Pressure.
+#        p_CO2_g = solver._extract_symbol("CO2_g", "pressure")
+#        p_O2_g = solver._extract_symbol("O2_g", "pressure")
+#        p_CO_g = solver._extract_symbol("CO_g", "pressure")
+#
+#        # Constants.
+#        kB = solver._kB_sym
+#        T = solver._T_sym
+#        h = solver._h_sym
+#        from sympy import E
+#
+#        kf = T*kB*E**((-G_COO_2s + G_CO_s + G_O_s)/(T*kB))/h
+#        kr = T*kB*E**((2*G_s - G_COO_2s + G_CO2_g)/(T*kB))/h
+#
+#        rxn_expression = 'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s'
+#        ref_rf = kf*c_CO_s*c_O_s
+#        ref_rr = kr*p_CO2_g*c_s**2
+#
+#        ret_rf, ret_rr = solver.get_single_rate_sym(rxn_expression)
+#
+#        self.assertEqual(ref_rf, ret_rf)
+#        self.assertEqual(ref_rr, ret_rr)
+#        # }}}
+#
+#    def test_get_rate_syms(self):
+#        " Test we can get rate expressions correctly. "
+#        # Need Implimentation.
+#
+#    def test_get_G_sub_dict(self):
+#        # {{{
+#        " Test private function _get_G_sub_dict(). "
+#        # Construction.
+#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+#        parser = model.parser
+#        solver = model.solver
+#
+#        parser.parse_data(filename=mkm_energy)
+#        solver.get_data()
+#        solver.get_data_symbols()
+#
+#        # Check.
+#        G_COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
+#        G_CO_s = solver._extract_symbol("CO_s", "free_energy")
+#        G_O_s = solver._extract_symbol("O_s", "free_energy")
+#        G_CO2_g = solver._extract_symbol("CO2_g", "free_energy")
+#        G_O2_g = solver._extract_symbol("O2_g", "free_energy")
+#        G_CO_g = solver._extract_symbol("CO_g", "free_energy")
+#        G_s = solver._extract_symbol("s", "free_energy")
+#
+#        ref_dict = {G_O2_g: mpf('3.508000000002'),
+#                    G_CO2_g: mpf('0.0'),
+#                    G_CO_g: mpf('0.0'),
+#                    G_COO_2s: mpf('0.9259999999995'),
+#                    G_s: mpf('0.0'),
+#                    G_CO_s: mpf('-0.7580000000016'),
+#                    G_O_s: mpf('0.4340000000011')}
+#
+#        ret_dict = solver._get_G_subs_dict()
+#
+#        self.assertDictEqual(ref_dict, ret_dict)
+#
+#    def test_get_theta_subs_dict(self):
+#        " Test protected function _get_theta_subs_dict(). "
+#        # Construction.
+#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+#        parser = model.parser
+#        solver = model.solver
+#
+#        parser.parse_data(filename=mkm_energy)
+#        solver.get_data()
+#        solver.get_data_symbols()
+#
+#        coverages = (0.5, 0.3)
+#
+#        c_CO_s = solver._extract_symbol("CO_s", "ads_cvg")
+#        c_O_s = solver._extract_symbol("O_s", "ads_cvg")
+#        c_s = solver._extract_symbol("s", "free_site_cvg")
+#
+#        ref_dict = {c_CO_s: 0.5, c_O_s: 0.3}
+#        ret_dict = solver._get_theta_subs_dict(coverages)
+#        
+#        self.assertDictEqual(ref_dict, ret_dict)
+#        # }}}
+#
+#    def test_get_p_subs_dict(self):
+#        # {{{
+#        " Test protected function _get_p_subs_dict(). "
+#        # Construction.
+#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+#        parser = model.parser
+#        solver = model.solver
+#
+#        parser.parse_data(filename=mkm_energy)
+#        solver.get_data()
+#        solver.get_data_symbols()
+#
+#        p_CO2_g = solver._extract_symbol("CO2_g", "pressure")
+#        p_O2_g = solver._extract_symbol("O2_g", "pressure")
+#        p_CO_g = solver._extract_symbol("CO_g", "pressure")
+#
+#        ref_dict = {p_O2_g: mpf('0.3333333333321'),
+#                    p_CO_g: mpf('1.0'),
+#                    p_CO2_g: mpf('0.0')}
+#        ret_dict = solver._get_p_subs_dict()
+#
+#        self.assertDictEqual(ref_dict, ret_dict)
+#        # }}}
+#
+#    def test_get_c_sub_dict(self):
+#        " Test protected function _get_c_sub_dict(). "
+#        # Need Implimentation.
+#
+#    def test_get_subs_dict(self):
+#        # {{{
+#        " Make sure we can get correct substitution dict for all symbols. "
+#        # Construction.
+#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+#        parser = model.parser
+#        solver = model.solver
+#
+#        parser.parse_data(filename=mkm_energy)
+#        solver.get_data()
+#        solver.get_data_symbols()
+#
+#        # Get symbols.
+#
+#        # Free energy.
+#        G_COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
+#        G_CO_s = solver._extract_symbol("CO_s", "free_energy")
+#        G_O_s = solver._extract_symbol("O_s", "free_energy")
+#        G_CO2_g = solver._extract_symbol("CO2_g", "free_energy")
+#        G_O2_g = solver._extract_symbol("O2_g", "free_energy")
+#        G_CO_g = solver._extract_symbol("CO_g", "free_energy")
+#        G_s = solver._extract_symbol("s", "free_energy")
+#
+#        # Coverage.
+#        c_CO_s = solver._extract_symbol("CO_s", "ads_cvg")
+#        c_O_s = solver._extract_symbol("O_s", "ads_cvg")
+#        c_s = solver._extract_symbol("s", "free_site_cvg")
+#
+#        # Pressure.
+#        p_CO2_g = solver._extract_symbol("CO2_g", "pressure")
+#        p_O2_g = solver._extract_symbol("O2_g", "pressure")
+#        p_CO_g = solver._extract_symbol("CO_g", "pressure")
+#
+#        # Constants.
+#        kB = solver._kB_sym
+#        T = solver._T_sym
+#        h = solver._h_sym
+#        
+#        coverages = (0.5, 0.4)
+#
+#        ref_dict = {G_O2_g: mpf('3.508000000002'),
+#                    c_CO_s: 0.5,
+#                    T: mpf('450.0'),
+#                    G_CO2_g: mpf('0.0'),
+#                    G_CO_g: mpf('0.0'),
+#                    G_COO_2s: mpf('0.9259999999995'),
+#                    p_O2_g: mpf('0.3333333333321'),
+#                    c_O_s: 0.4,
+#                    kB: mpf('8.617332400007e-5'),
+#                    h: mpf('4.135667662e-15'),
+#                    G_s: mpf('0.0'),
+#                    G_CO_s: mpf('-0.7580000000016'),
+#                    p_CO_g: mpf('1.0'),
+#                    G_O_s: mpf('0.4340000000011'),
+#                    p_CO2_g: mpf('0.0')}
+#        ret_dict = solver.get_subs_dict(coverages)
+#
+#        self.assertDictEqual(ref_dict, ret_dict)
+#        # }}}
+#
+#    def test_get_rate_constants_by_sym(self):
+#        " Make sure we can get rate constant correctly by symbols derivation. "
+#        # Construction.
+#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+#        parser = model.parser
+#        solver = model.solver
+#
+#        parser.parse_data(filename=mkm_energy)
+#        solver.get_data()
+#        solver.get_data_symbols()
+#
+#        # Check.
+#        ref_kfs = [mpf('9376477746560.0'), mpf('9376477746560.0'), mpf('0.09389759709029')]
+#        ref_krs = [mpf('30395.72540069'), mpf('2.542951527153e-17'), mpf('399.2961612232')]
+#
+#        ret_kfs, ret_krs = solver.get_rate_constants_by_sym()
+#
+#        self.assertListEqual(ref_kfs, ret_kfs)
+#        self.assertListEqual(ref_krs, ret_krs)
+#
+#    def test_get_rates_by_syms(self):
+#        " Make sure we can get correct rates values by symbol derivation. "
+#        # Construction.
+#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+#        parser = model.parser
+#        solver = model.solver
+#
+#        parser.parse_data(filename=mkm_energy)
+#        solver.get_data()
+#        solver.get_data_symbols()
+#
+#        # Check.
+#        coverages = (0.5, 0.3)
+#
+#        ref_rfs = (mpf('1875295549312.0'), mpf('125019703287.0'), mpf('0.01408463956352'))
+#        ref_rrs = (mpf('15197.86270034'), mpf('2.288656374422e-18'), mpf('0.0'))
+#
+#        ret_rfs, ret_rrs = solver.get_rates_by_sym(cvgs_tuple=coverages)
+#
+#        self.assertTupleEqual(ref_rfs, ret_rfs)
+#        self.assertTupleEqual(ref_rrs, ret_rrs)
+#
+#    def test_get_net_rate_syms(self):
+#        " Make sure we can get correct net rate symbols for all elementary reactions. "
+#        # Need Implimentation.
+#
+#    def test_get_net_rates_by_sym(self):
+#        " Test net rates calculating by symbol derivation. "
+#        # Construction.
+#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+#        parser = model.parser
+#        solver = model.solver
+#
+#        parser.parse_data(filename=mkm_energy)
+#        solver.get_data()
+#        solver.get_data_symbols()
+#
+#        # Check.
+#        coverages = (0.5, 0.3)
+#
+#        ref_net_rates = (mpf('1875295534112.0'),
+#                         mpf('125019703287.0'),
+#                         mpf('0.01408463956352'))
+#        ret_net_rates = solver.get_net_rates_by_sym(coverages)
+#
+#        self.assertTupleEqual(ref_net_rates, ret_net_rates)
+#
+#    def test_get_tof_syms(self):
+#        " Test we can get TOF symbols correctly. "
+#        # NEED IMPLIMENTATION.
+#
+#    def test_get_tof_by_sym(self):
+#        " Make sure we can get correct TOF value by symbols derivation. "
+#        # Construction.
+#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+#        parser = model.parser
+#        solver = model.solver
+#
+#        parser.parse_data(filename=mkm_energy)
+#        solver.get_data()
+#        solver.get_data_symbols()
+#
+#        # Check.
+#        coverages = (0.5, 0.3)
+#
+#        ref_tof = (mpf('0.01408463956352'),
+#                   mpf('-1875295534112.0'),
+#                   mpf('-125019703287.0'))
+#        ret_tof = solver.get_tof_by_sym(coverages)
+#
+#        self.assertTupleEqual(ref_tof, ret_tof)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(MeanFieldSolverTest)

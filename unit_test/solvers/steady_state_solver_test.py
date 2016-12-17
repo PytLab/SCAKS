@@ -468,103 +468,103 @@ class SteadyStateSolverTest(unittest.TestCase):
 #        for ref, ret in zip(ref_XRC, ret_XRC):
 #            self.assertAlmostEqual(ref, ret)
 
-    def test_get_elementary_dtheta_dt_sym(self):
-        " Test we can get correct dtheta/dt expression for an elementary reaction. "
-        # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-        parser = model.parser
-        solver = model.solver
-
-        parser.parse_data(filename=mkm_energy)
-        solver.get_data()
-        solver.get_data_symbols()
-
-        # Get symbols.
-
-        # Free energy.
-        G_COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
-        G_CO_s = solver._extract_symbol("CO_s", "free_energy")
-        G_O_s = solver._extract_symbol("O_s", "free_energy")
-        G_CO2_g = solver._extract_symbol("CO2_g", "free_energy")
-        G_O2_g = solver._extract_symbol("O2_g", "free_energy")
-        G_CO_g = solver._extract_symbol("CO_g", "free_energy")
-        G_s = solver._extract_symbol("s", "free_energy")
-
-        # Coverage.
-        c_CO_s = solver._extract_symbol("CO_s", "ads_cvg")
-        c_O_s = solver._extract_symbol("O_s", "ads_cvg")
-        c_s = solver._extract_symbol("s", "free_site_cvg")
-
-        # Pressure.
-        p_CO2_g = solver._extract_symbol("CO2_g", "pressure")
-        p_O2_g = solver._extract_symbol("O2_g", "pressure")
-        p_CO_g = solver._extract_symbol("CO_g", "pressure")
-
-        # Constants.
-        kB = solver._kB_sym
-        T = solver._T_sym
-        h = solver._h_sym
-        from sympy import E
-
-        kf = T*kB*E**((-G_COO_2s + G_CO_s + G_O_s)/(T*kB))/h
-        kr = T*kB*E**((2*G_s - G_COO_2s + G_CO2_g)/(T*kB))/h
-
-        rxn_expression = 'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s'
-        rf = kf*c_CO_s*c_O_s
-        rr = kr*p_CO2_g*c_s**2
-
-        ref_dtheta_dt = rr - rf
-        adsorbate = "CO_s"
-        ret_dtheta_dt = solver.get_elementary_dtheta_dt_sym(adsorbate, rxn_expression)
-
-        self.assertEqual(ref_dtheta_dt, ret_dtheta_dt)
-
-    def test_get_adsorbate_dtheta_dt_sym(self):
-        " Test we can get correct dtheta/dt for an adsorbate. "
-        # NEED IMPLIMENTATION.
-
-    def test_steady_state_function_by_sym(self):
-        " Test function steady_state_function(). "
-        # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-        parser = model.parser
-        solver = model.solver
-
-        parser.parse_data(filename=mkm_energy)
-        solver.get_data()
-        solver.get_data_symbols()
-
-        # Check.
-        coverages = (0.5, 0.3)
-        ref_dtheta_dt = (mpf('1875295534118.435791015625'),
-                         mpf('125019703287.740081787109375'))
-        ret_dtheta_dt = solver.steady_state_function_by_sym(coverages)
-
-        self.assertTupleEqual(ref_dtheta_dt, ret_dtheta_dt)
-
-    def test_analytical_jacobian_sym(self):
-        " Make sure we can get anlytical jacobian matrix correctly. "
-        # NEED IMPLIMENTATION.
-
-    def test_analytical_jacobian_by_sym(self):
-        " Test we can get correct jacobian matrix by symbol derivation. "
-        # Construction.
-        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-        parser = model.parser
-        solver = model.solver
-
-        parser.parse_data(filename=mkm_energy)
-        solver.get_data()
-        solver.get_data_symbols()
-
-        # Check.
-        coverages = (0.5, 0.3)
-
-        ref_jacobian = [[mpf('-9376477776977.31640625'), mpf('-9376477746581.609375')],
-                        [mpf('-1250197032877.56982421875'), mpf('-1250197032877.588623046875')]]
-        ret_jacobian = solver.analytical_jacobian_by_sym(coverages).tolist()
-
-        self.assertListEqual(ref_jacobian, ret_jacobian)
+#    def test_get_elementary_dtheta_dt_sym(self):
+#        " Test we can get correct dtheta/dt expression for an elementary reaction. "
+#        # Construction.
+#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+#        parser = model.parser
+#        solver = model.solver
+#
+#        parser.parse_data(filename=mkm_energy)
+#        solver.get_data()
+#        solver.get_data_symbols()
+#
+#        # Get symbols.
+#
+#        # Free energy.
+#        G_COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
+#        G_CO_s = solver._extract_symbol("CO_s", "free_energy")
+#        G_O_s = solver._extract_symbol("O_s", "free_energy")
+#        G_CO2_g = solver._extract_symbol("CO2_g", "free_energy")
+#        G_O2_g = solver._extract_symbol("O2_g", "free_energy")
+#        G_CO_g = solver._extract_symbol("CO_g", "free_energy")
+#        G_s = solver._extract_symbol("s", "free_energy")
+#
+#        # Coverage.
+#        c_CO_s = solver._extract_symbol("CO_s", "ads_cvg")
+#        c_O_s = solver._extract_symbol("O_s", "ads_cvg")
+#        c_s = solver._extract_symbol("s", "free_site_cvg")
+#
+#        # Pressure.
+#        p_CO2_g = solver._extract_symbol("CO2_g", "pressure")
+#        p_O2_g = solver._extract_symbol("O2_g", "pressure")
+#        p_CO_g = solver._extract_symbol("CO_g", "pressure")
+#
+#        # Constants.
+#        kB = solver._kB_sym
+#        T = solver._T_sym
+#        h = solver._h_sym
+#        from sympy import E
+#
+#        kf = T*kB*E**((-G_COO_2s + G_CO_s + G_O_s)/(T*kB))/h
+#        kr = T*kB*E**((2*G_s - G_COO_2s + G_CO2_g)/(T*kB))/h
+#
+#        rxn_expression = 'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s'
+#        rf = kf*c_CO_s*c_O_s
+#        rr = kr*p_CO2_g*c_s**2
+#
+#        ref_dtheta_dt = rr - rf
+#        adsorbate = "CO_s"
+#        ret_dtheta_dt = solver.get_elementary_dtheta_dt_sym(adsorbate, rxn_expression)
+#
+#        self.assertEqual(ref_dtheta_dt, ret_dtheta_dt)
+#
+#    def test_get_adsorbate_dtheta_dt_sym(self):
+#        " Test we can get correct dtheta/dt for an adsorbate. "
+#        # NEED IMPLIMENTATION.
+#
+#    def test_steady_state_function_by_sym(self):
+#        " Test function steady_state_function(). "
+#        # Construction.
+#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+#        parser = model.parser
+#        solver = model.solver
+#
+#        parser.parse_data(filename=mkm_energy)
+#        solver.get_data()
+#        solver.get_data_symbols()
+#
+#        # Check.
+#        coverages = (0.5, 0.3)
+#        ref_dtheta_dt = (mpf('1875295534118.435791015625'),
+#                         mpf('125019703287.740081787109375'))
+#        ret_dtheta_dt = solver.steady_state_function_by_sym(coverages)
+#
+#        self.assertTupleEqual(ref_dtheta_dt, ret_dtheta_dt)
+#
+#    def test_analytical_jacobian_sym(self):
+#        " Make sure we can get anlytical jacobian matrix correctly. "
+#        # NEED IMPLIMENTATION.
+#
+#    def test_analytical_jacobian_by_sym(self):
+#        " Test we can get correct jacobian matrix by symbol derivation. "
+#        # Construction.
+#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+#        parser = model.parser
+#        solver = model.solver
+#
+#        parser.parse_data(filename=mkm_energy)
+#        solver.get_data()
+#        solver.get_data_symbols()
+#
+#        # Check.
+#        coverages = (0.5, 0.3)
+#
+#        ref_jacobian = [[mpf('-9376477776977.31640625'), mpf('-9376477746581.609375')],
+#                        [mpf('-1250197032877.56982421875'), mpf('-1250197032877.588623046875')]]
+#        ret_jacobian = solver.analytical_jacobian_by_sym(coverages).tolist()
+#
+#        self.assertListEqual(ref_jacobian, ret_jacobian)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(SteadyStateSolverTest)
