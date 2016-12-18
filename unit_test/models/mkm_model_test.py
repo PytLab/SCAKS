@@ -72,6 +72,29 @@ class MicroKineticModelTest(unittest.TestCase):
 
         os.remove(filename)
 
+    def test_generate_absolute_energies_file(self):
+        " Test we can generate absolute energies input file correctly. "
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+
+        abs_path = os.getcwd()
+        filename = "{}/abs_energy.py".format(abs_path)
+        model.generate_absolute_energies_file(filename)
+
+        ref_content = ("# Absolute energies for all species.\n" +
+                       "CO2_g = 0.0 # eV\n\n" +
+                       "CO_g = 0.0 # eV\n\n" +
+                       "O2_g = 0.0 # eV\n\n" +
+                       "CO_s = 0.0 # eV\n\n" +
+                       "O_s = 0.0 # eV\n\n" +
+                       "CO-O_2s = 0.0 # eV\n\n" +
+                       "s = 0.0 # eV\n\n")
+
+        with open(filename, "r") as f:
+            ret_content = f.read()
+        self.assertEqual(ref_content, ret_content)
+
+        os.remove(filename)
+
     def test_run(self):
         " Test micro kinetic model can run correctly. "
         model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
