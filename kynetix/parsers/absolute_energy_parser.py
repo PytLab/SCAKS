@@ -33,7 +33,7 @@ class AbsoluteEnergyParser(ParserBase):
         globs, locs = {}, {}
         execfile(filename, globs, locs)
 
-        self._owenr._absolute_energy = locs["absolute_energies"]
+        self._owner._absolute_energies = locs["absolute_energies"]
 
         # Set flag.
         self._owner._has_absolute_energy = True
