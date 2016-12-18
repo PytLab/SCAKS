@@ -38,7 +38,7 @@ class KineticModel(object):
                                        candidates=range(0, 60, 10))
 
     parser = cpdc.Component("parser", default=None, candidates=["RelativeEnergyParser",
-                                                                "CsvParser",
+                                                                "AbsoluteEnergyParser",
                                                                 "KMCParser"])
 
     solver = cpdc.Component("solver", default=None, candidates=["KMCSolver",
@@ -339,7 +339,7 @@ class KineticModel(object):
                                    self.site_names])
 
         for sp in all_species:
-            content += "    '{}': 0.0 # eV\n\n".format(sp)
+            content += "    '{}': 0.0, # eV\n\n".format(sp)
 
         content += "}\n\n"
 

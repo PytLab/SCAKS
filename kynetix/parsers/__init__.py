@@ -1,3 +1,4 @@
 from kynetix.parsers.relative_energy_parser import RelativeEnergyParser
+from kynetix.parsers.absolute_energy_parser import AbsoluteEnergyParser
 from kynetix.parsers.kmc_parser import KMCParser
 

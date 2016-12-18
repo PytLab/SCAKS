@@ -15,7 +15,7 @@ species_definitions = {
 }
 
 temperature = 450.0
-parser = "RelativeEnergyParser"
+parser = "AbsoluteEnergyParser"
 solver = "SteadyStateSolver"
 corrector = "ThermodynamicCorrector"
 plotter = "EnergyProfilePlotter"

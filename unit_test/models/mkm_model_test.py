@@ -82,13 +82,13 @@ class MicroKineticModelTest(unittest.TestCase):
 
         ref_content = ("# Absolute energies for all species.\n" +
                        "absolute_energies = {\n\n" +
-                       "    'CO2_g': 0.0 # eV\n\n" +
-                       "    'CO_g': 0.0 # eV\n\n" +
-                       "    'O2_g': 0.0 # eV\n\n" +
-                       "    'CO_s': 0.0 # eV\n\n" +
-                       "    'O_s': 0.0 # eV\n\n" +
-                       "    'CO-O_2s': 0.0 # eV\n\n" +
-                       "    '*_s': 0.0 # eV\n\n" +
+                       "    'CO2_g': 0.0, # eV\n\n" +
+                       "    'CO_g': 0.0, # eV\n\n" +
+                       "    'O2_g': 0.0, # eV\n\n" +
+                       "    'CO_s': 0.0, # eV\n\n" +
+                       "    'O_s': 0.0, # eV\n\n" +
+                       "    'CO-O_2s': 0.0, # eV\n\n" +
+                       "    '*_s': 0.0, # eV\n\n" +
                        "}\n\n")
 
         with open(filename, "r") as f:
