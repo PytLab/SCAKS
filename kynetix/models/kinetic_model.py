@@ -329,7 +329,8 @@ class KineticModel(object):
         filename: The name of absolute energy input file, str.
                   Default value is 'abs_energy.py'.
         """
-        content = "# Absolute energies for all species.\n"
+        content = ("# Absolute energies for all species.\n" +
+                   "absolute_energies = {\n\n")
 
         all_species = reduce(add, [self.gas_names,
                                    self.liquid_names,
@@ -338,7 +339,9 @@ class KineticModel(object):
                                    self.site_names])
 
         for sp in all_species:
-            content += "{} = 0.0 # eV\n\n".format(sp)
+            content += "    '{}': 0.0 # eV\n\n".format(sp)
+
+        content += "}\n\n"
 
         with open(filename, "w") as f:
             f.write(content)
@@ -432,4 +435,10 @@ class KineticModel(object):
         """
         return self._relative_energies
 
+    @dc.Property
+    def absolute_energies(self):
+        """
+        Query function for absolute energy in data file.
+        """
+        return self._absolute_energies
 

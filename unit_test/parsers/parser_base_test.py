@@ -100,8 +100,8 @@ class ParserBaseTest(unittest.TestCase):
                                        [2.0, 0.0, -2.0],
                                        [-2.0, 1.0, 1.0]])
         ref_site_matrix = np.matrix([[0.0, 1.0, 0.0],
-                                    [0.0, 0.0, 1.0],
-                                    [-1.0, 0.0, 0.0]])
+                                     [0.0, 0.0, 1.0],
+                                     [-1.0, 0.0, 0.0]])
         ret_reapro_matrix, ret_site_matrix = parser.get_stoichiometry_matrices()
 
         self.assertTrue(np.allclose(ref_reapro_matrix, ret_reapro_matrix))

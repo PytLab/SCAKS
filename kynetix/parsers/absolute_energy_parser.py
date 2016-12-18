@@ -23,7 +23,6 @@ class AbsoluteEnergyParser(ParserBase):
         self.__logger = logging.getLogger('model.parser.AbsoluteEnergyParser')
 
     def parse_data(self, filename="./abs_energy.py"):
-        # {{{
         """
         Read data in absolute energy file.
 
@@ -33,6 +32,8 @@ class AbsoluteEnergyParser(ParserBase):
         """
         globs, locs = {}, {}
         execfile(filename, globs, locs)
+
+        self._owenr._absolute_energy = locs["absolute_energies"]
 
         # Set flag.
         self._owner._has_absolute_energy = True
@@ -45,5 +46,4 @@ class AbsoluteEnergyParser(ParserBase):
         self._owner._has_relative_energy = True
 
         return
-        # }}}
 

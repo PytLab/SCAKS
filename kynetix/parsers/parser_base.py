@@ -309,7 +309,7 @@ class ParserBase(ModelShell):
         site_dict = state.get_sites_dict()
         formula_list = state.tolist()
 
-        species_definitions = self._owner.species_definitions
+        abs_energies = self._owner.absolute_energies
         energy = 0.0
 
         for formula in formula_list:
@@ -319,10 +319,10 @@ class ParserBase(ModelShell):
 
             # Adsorbate.
             if "*" not in species_site:
-                energy += n*species_definitions[species_site]["formation_energy"]
+                energy += n*abs_energies[species_site]
             # Site.
             else:
-                energy += n*species_definitions[site]["formation_energy"]
+                energy += n*abs_energies["*_" + site]
 
         return energy
         # }}}
