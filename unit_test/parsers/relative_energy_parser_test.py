@@ -24,7 +24,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
                 'CO_g': {'pressure': 1.0},
                 'O2_g': {'pressure': 1./3.},
                 'CO2_g': {'pressure': 0.00},
-                's': {'site_name': '111', 'type': 'site', 'total': 1.0},
+                '*_s': {'site_name': '111', 'type': 'site', 'total': 1.0},
             },
 
             temperature = 450.0,
@@ -58,7 +58,7 @@ class RelativeEnergyParserTest(unittest.TestCase):
         ref_species_definitions = {'CO2_g': {'pressure': 0.0},
                                    'CO_g': {'pressure': 1.0},
                                    'O2_g': {'pressure': 0.3333333333333333},
-                                   's': {'site_name': '111', 'total': 1.0, 'type': 'site'}}
+                                   '*_s': {'site_name': '111', 'total': 1.0, 'type': 'site'}}
         self.assertDictEqual(ref_species_definitions, model.species_definitions)
 
         self.assertFalse(model.has_absolute_energy)

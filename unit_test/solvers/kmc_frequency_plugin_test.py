@@ -28,8 +28,8 @@ class KMCFrequencyPluginTest(unittest.TestCase):
                 'CO_g': {'pressure': 0.01},
                 'O2_g': {'pressure': 0.2},
                 'CO2_g': {'pressure': 0.01},
-                'b': {'site_name': 'bridge', 'type': 'site', 'total': 0.5},
-                't': {'site_name': 'top', 'type': 'site', 'total': 0.5},
+                '*_b': {'site_name': 'bridge', 'type': 'site', 'total': 0.5},
+                '*_t': {'site_name': 'top', 'type': 'site', 'total': 0.5},
             },
 
             temperature = 298.,

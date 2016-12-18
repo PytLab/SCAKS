@@ -27,7 +27,7 @@ class EnergyProfilePlotterTest(unittest.TestCase):
                 'CO_g': {'pressure': 1.0},
                 'O2_g': {'pressure': 1./3.},
                 'CO2_g': {'pressure': 0.00},
-                's': {'site_name': '111', 'type': 'site', 'total': 1.0},
+                '*_s': {'site_name': '111', 'type': 'site', 'total': 1.0},
             },
 
             temperature = 450.0,
