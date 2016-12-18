@@ -298,6 +298,26 @@ class KineticModel(object):
             self.solver = setup_dict["solver"]
         # }}}
 
+    def generate_relative_energies_file(self, filename="rel_energy.py"):
+        """
+        Generate a energy input file containing relative energies
+        for all elementary reactions.
+
+        Parameters:
+        -----------
+        filename: The name of relative input file, str.
+                  Default value is 'rel_energy.py'.
+        """
+        content = ("# Relative Energies for all elementary reactions.\n" +
+                   "Ga, dG = [], []\n\n")
+
+        for rxn_expression in self.rxn_expressions:
+            rxn_content = "# {}\nGa.append()\ndG.append()\n\n".format(rxn_expression)
+            content += rxn_content
+
+        with open(filename, "w") as f:
+            f.write(content)
+
     def run(self, *kwargs):
         pass
 

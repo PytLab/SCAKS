@@ -1,5 +1,6 @@
 import logging
 import unittest
+import os
 
 from kynetix.models.micro_kinetic_model import MicroKineticModel
 from kynetix.parsers import *
@@ -47,6 +48,29 @@ class MicroKineticModelTest(unittest.TestCase):
         self.assertEqual(model.decimal_precision, 100)
 
         self.assertTrue(isinstance(model.parser, RelativeEnergyParser))
+
+    def test_generate_relative_energies_file(self):
+        " Test we can generate relative energies input file correctly. "
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+
+        abs_path = os.getcwd()
+        filename = "{}/rel_energy.py".format(abs_path)
+        model.generate_relative_energies_file(filename)
+
+        ref_content = ("# Relative Energies for all elementary reactions.\n" +
+                       "Ga, dG = [], []\n\n" +
+                       "# CO_g + *_s -> CO_s\n" +
+                       "Ga.append()\ndG.append()\n\n" +
+                       "# O2_g + 2*_s -> 2O_s\n" +
+                       "Ga.append()\ndG.append()\n\n" +
+                       "# CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s\n" +
+                       "Ga.append()\ndG.append()\n\n")
+
+        with open(filename, "r") as f:
+            ret_content = f.read()
+        self.assertEqual(ref_content, ret_content)
+
+        os.remove(filename)
 
     def test_run(self):
         " Test micro kinetic model can run correctly. "
