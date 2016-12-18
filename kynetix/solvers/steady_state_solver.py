@@ -326,18 +326,18 @@ class SteadyStateSolver(MeanFieldSolver):
             return "theta['{}']".format(sp_name)
 
         # Get all sites in term_expression.
-        site_cvg_regex = r"theta\['\*_(\w*)'\]"
+        site_cvg_regex = r"theta\['(\*_\w*)'\]"
         sites_list = re.findall(site_cvg_regex, term_expression)
 
         # Get site info of adsorbate.
         formula = ChemFormula(adsorbate_name)
-        site_name = formula.site()
-        site_cvg_expr = theta('*_' + site_name)
+        site_name = "*_{}".format(formula.site())
+        site_cvg_expr = theta(site_name)
         site_total = self._owner.species_definitions[site_name]['total']
 
         # Get derivation expression wrt free site.
         def deriv_site_part(site_name, term_expression):
-            initial_expr = self.__term_adsorbate_derivation('*_'+site_name, term_expression)
+            initial_expr = self.__term_adsorbate_derivation(site_name, term_expression)
 
             # Convert site expression to adsobate expression.
             if site_cvg_expr in initial_expr:

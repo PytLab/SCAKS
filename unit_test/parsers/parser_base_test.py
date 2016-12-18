@@ -121,7 +121,7 @@ class ParserBaseTest(unittest.TestCase):
         ref_adsorbate_names = ('CO_s', 'O_s')
         ref_gas_names = ('CO2_g', 'CO_g', 'O2_g')
         ref_liquid_names = ()
-        ref_site_names = ('s', )
+        ref_site_names = ('*_s', )
         ref_transition_state_names = ('CO-O_2s', )
 
         (ret_adsorbate_names,

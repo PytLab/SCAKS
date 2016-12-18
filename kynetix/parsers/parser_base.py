@@ -105,7 +105,8 @@ class ParserBase(ModelShell):
                         adsorbate_names.append(species_site)
 
                     # Site names.
-                    site_names.extend([s for s in site_dict.keys() if s not in ("g", "l")])
+                    site_names.extend(["*_{}".format(s)
+                                       for s in site_dict if s not in ("g", "l")])
 
             # Append reaction list.
             elementary_rxns_list.append(rxn_list)
@@ -144,8 +145,7 @@ class ParserBase(ModelShell):
         """
         # {{{
         # Site and adsorbate names.
-        sites_names = (['*_'+site_name for site_name in self._owner.site_names] +
-                       list(self._owner.adsorbate_names))
+        sites_names = list(self._owner.site_names + self._owner.adsorbate_names)
 
         # Reactant and product names.
         reapro_names = list(self._owner.gas_names + self._owner.liquid_names)

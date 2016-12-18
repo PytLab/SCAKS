@@ -29,7 +29,7 @@ class SteadyStateSolverTest(unittest.TestCase):
                 'CO_g': {'pressure': 1.0},
                 'O2_g': {'pressure': 1./3.},
                 'CO2_g': {'pressure': 0.00},
-                's': {'site_name': '111', 'type': 'site', 'total': 1.0},
+                '*_s': {'site_name': '111', 'type': 'site', 'total': 1.0},
             },
 
             temperature = 450.0,
@@ -68,7 +68,7 @@ class SteadyStateSolverTest(unittest.TestCase):
         self.assertFalse(solver.absolute_corrected)
         self.assertFalse(solver.has_symbols)
 
-        ref_classified_adsorbates = {'s': ['CO_s', 'O_s']}
+        ref_classified_adsorbates = {'*_s': ['CO_s', 'O_s']}
         self.assertDictEqual(ref_classified_adsorbates, solver.classified_adsorbates)
 
 #    def test_get_data(self):

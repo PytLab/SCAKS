@@ -134,7 +134,7 @@ class MeanFieldSolver(SolverBase):
         species_definitions = self._owner.species_definitions
         for adsorbate_name in self._owner.adsorbate_names:
             formula = ChemFormula(adsorbate_name)
-            site_name = formula.site()
+            site_name = "*_{}".format(formula.site())
             classified_adsorbates[site_name].append(adsorbate_name)
 
         return classified_adsorbates
@@ -162,7 +162,7 @@ class MeanFieldSolver(SolverBase):
             for sp in self._classified_adsorbates[site_name]:
                 sum_cvg += cvgs_dict[sp]
             free_site_cvg = total_cvg - sum_cvg
-            cvgs_dict.setdefault('*_' + site_name, free_site_cvg)
+            cvgs_dict.setdefault(site_name, free_site_cvg)
 
         return cvgs_dict
 
