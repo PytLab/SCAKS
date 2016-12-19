@@ -39,7 +39,7 @@ class AbsoluteEnergyParser(ParserBase):
         self._owner._has_absolute_energy = True
 
         # Get relative energies from absolute energies.
-        relative_energies = self.get_relative_from_absolute()
+        relative_energies = self._get_relative_from_absolute()
         self._owner._relative_energies = relative_energies
 
         # Set flag.

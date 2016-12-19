@@ -327,7 +327,7 @@ class ParserBase(ModelShell):
         return energy
         # }}}
 
-    def get_single_relative_energies(self, rxn_expression):
+    def _get_single_relative_energies(self, rxn_expression):
         """
         Function to get relative energies for an elementary reaction:
             forward barrier,
@@ -380,7 +380,7 @@ class ParserBase(ModelShell):
         return f_barrier, r_barrier, reaction_energy
         # }}}
 
-    def get_relative_from_absolute(self):
+    def _get_relative_from_absolute(self):
         """
         Function to set relative energies from absolute energies.
         """
@@ -388,7 +388,7 @@ class ParserBase(ModelShell):
         Gafs, Gars, dGs = [], [], []
 
         for rxn_expression in self._owner.rxn_expressions:
-            Gaf, Gar, dG = self.get_single_relative_energies(rxn_expression)
+            Gaf, Gar, dG = self._get_single_relative_energies(rxn_expression)
             Gafs.append(Gaf)
             Gars.append(Gar)
             dGs.append(dG)
