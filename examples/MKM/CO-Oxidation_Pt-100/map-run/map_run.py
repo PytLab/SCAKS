@@ -52,66 +52,69 @@ if "__main__" == __name__:
     cvgs_CO_2d = []
     cvgs_O_2d = []
     tofs_2d = []
-    for i, pO2 in enumerate(pO2s):
-        # Construct setup dict.
-        setup_dict['species_definitions']['O2_g']['pressure'] = pO2
+    try:
+        for i, pO2 in enumerate(pO2s):
+            # Construct setup dict.
+            setup_dict['species_definitions']['O2_g']['pressure'] = pO2
 
-        cvgs_CO_1d = []
-        cvgs_O_1d = []
-        tofs_1d = []
-        for j, pCO in enumerate(pCOs):
-            print "INFO: runing pO2: {} pCO: {}".format(pO2, pCO)
-            setup_dict['species_definitions']['CO_g']['pressure'] = pCO
+            cvgs_CO_1d = []
+            cvgs_O_1d = []
+            tofs_1d = []
+            for j, pCO in enumerate(pCOs):
+                print "INFO: runing pO2: {} pCO: {}".format(pO2, pCO)
+                setup_dict['species_definitions']['CO_g']['pressure'] = pCO
 
-            # Construct model.
-            model = MicroKineticModel(setup_dict=setup_dict, console_handler_level=logging.WARNING)
+                # Construct model.
+                model = MicroKineticModel(setup_dict=setup_dict,
+                                          console_handler_level=logging.WARNING)
 
-            # Read data.
-            model.parser.parse_data()
-            model.solver.get_data()
+                # Read data.
+                model.parser.parse_data()
+                model.solver.get_data()
 
-            # Initial coverage guess.
-            trajectory = model.solver.solve_ode(time_span=0.0001,
-                                                time_end=10,
-                                                traj_output=False)
-            init_guess = trajectory[-1]
+                # Initial coverage guess.
+                trajectory = model.solver.solve_ode(time_span=0.0001,
+                                                    time_end=10,
+                                                    traj_output=False)
+                init_guess = trajectory[-1]
 
-            # Run.
-            model.run(init_cvgs=init_guess,
-                      solve_ode=False,
-                      XRC=False,
-                      product_name="CO2_g")
-            model.clear_handlers()
+                # Run.
+                model.run(init_cvgs=init_guess,
+                          solve_ode=False,
+                          XRC=False,
+                          product_name="CO2_g")
+                model.clear_handlers()
 
-            # Collect TOF.
-            tof_idx = model.gas_names.index("CO2_g")
-            tofs_1d.append(float(model.TOFs[tof_idx]))
+                # Collect TOF.
+                tof_idx = model.gas_names.index("CO2_g")
+                tofs_1d.append(float(model.TOFs[tof_idx]))
 
-            # Collect CO_s coverage.
-            cvg_CO = float(model.steady_state_coverages[0])
-            cvgs_CO_1d.append(cvg_CO)
+                # Collect CO_s coverage.
+                cvg_CO = float(model.steady_state_coverages[0])
+                cvgs_CO_1d.append(cvg_CO)
 
-            # Collect O_s coverage.
-            cvg_O = (float(model.steady_state_coverages[1]) +
-                     float(model.steady_state_coverages[2]))
-            cvgs_O_1d.append(cvg_O)
+                # Collect O_s coverage.
+                cvg_O = (float(model.steady_state_coverages[1]) +
+                         float(model.steady_state_coverages[2]))
+                cvgs_O_1d.append(cvg_O)
 
-        tofs_2d.append(tofs_1d)
-        cvgs_CO_2d.append(cvgs_CO_1d)
-        cvgs_O_2d.append(cvgs_O_1d)
-        print " "
+            tofs_2d.append(tofs_1d)
+            cvgs_CO_2d.append(cvgs_CO_1d)
+            cvgs_O_2d.append(cvgs_O_1d)
+            print " "
 
-    # Write tofs to file.
-    p_str = "pCO = {}\n\npO2 = {}\n\n".format(pCOs.tolist(), pO2s.tolist())
-    adsorbates_str = "adsorbates = {}\n\n".format(model.adsorbate_names)
-    essential_str = p_str + adsorbates_str
+    finally:
+        # Write tofs to file.
+        p_str = "pCO = {}\n\npO2 = {}\n\n".format(pCOs.tolist(), pO2s.tolist())
+        adsorbates_str = "adsorbates = {}\n\n".format(model.adsorbate_names)
+        essential_str = p_str + adsorbates_str
 
-    tof_str = "tofs = {}\n\n".format(tofs_2d)
-    with open("auto_tofs.py", "w") as f:
-        f.write(essential_str + tof_str)
+        tof_str = "tofs = {}\n\n".format(tofs_2d)
+        with open("auto_tofs.py", "w") as f:
+            f.write(essential_str + tof_str)
 
-    cvgs_O_str = "cvgs_O = {}\n\n".format(cvgs_O_2d)
-    cvgs_CO_str = "cvgs_CO = {}\n\n".format(cvgs_CO_2d)
-    with open("auto_cvgs.py", "w") as f:
-        f.write(essential_str + cvgs_O_str + cvgs_CO_str)
+        cvgs_O_str = "cvgs_O = {}\n\n".format(cvgs_O_2d)
+        cvgs_CO_str = "cvgs_CO = {}\n\n".format(cvgs_CO_2d)
+        with open("auto_cvgs.py", "w") as f:
+            f.write(essential_str + cvgs_O_str + cvgs_CO_str)
 
