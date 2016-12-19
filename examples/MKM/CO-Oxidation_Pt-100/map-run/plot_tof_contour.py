@@ -13,14 +13,32 @@ tofs = np.array(tofs)
 
 # 2D interpolate.
 pO2.shape = (-1, 1)
-interp_func = interp2d(pCO, pO2, tofs, kind="cubic")
+interp_func = interp2d(pCO, pO2, tofs, kind="linear")
 
 # Plot 3D contour.
-y, x = np.ogrid[0:1:100j, 0:1:100j]
-z = interp_func(x, y)
+#y, x = np.mgrid[0:1:100j, 0:1:100j]
+ynew = np.linspace(0.01, 1, 100)
+xnew = np.linspace(0.01, 1, 100)
+z = interp_func(xnew, ynew)
 
-extent = [np.min(x), np.max(x), np.min(y), np.max(y)]
+extent = [np.min(xnew), np.max(xnew), np.min(ynew), np.max(ynew)]
 
-plt.contourf(x.reshape(-1), y.reshape(-1), z, 20)
-plot.show()
+CS = plt.contourf(xnew.reshape(-1), ynew.reshape(-1),
+                  z, 20, cmap=plt.cm.coolwarm)
+
+CS2 = plt.contour(CS, levels=CS.levels[::2],
+                  colors='#838B8B',
+                  hold='on')
+plt.clabel(CS2, colors='grey', inline=1, fontsize=12, fmt="%.2f")
+
+plt.xlabel("P(CO_g)/bar")
+plt.ylabel(r"P(O_2_g)/bar")
+
+# Make a colorbar.
+cbar = plt.colorbar(CS)
+cbar.ax.set_ylabel("TOF/s^-1")
+
+cbar.add_lines(CS2)
+
+plt.show()
 
