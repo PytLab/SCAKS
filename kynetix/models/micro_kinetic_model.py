@@ -140,12 +140,6 @@ class MicroKineticModel(km.KineticModel):
         # Parse data.
         if self.log_allowed:
             self._logger.info('reading data...')
-        if relative:
-            if self.log_allowed:
-                self._logger.info('use relative energy directly...')
-        else:
-            if self.log_allowed:
-                self._logger.info('convert relative to absolute energy...')
         parser.parse_data(filename=data_file)
 
         # -- solve steady state coverages --
