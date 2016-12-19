@@ -35,7 +35,7 @@ class MeanFieldSolver(SolverBase):
         super(MeanFieldSolver, self).__init__(owner)
 
         # Set logger.
-        self.__logger = logging.getLogger("model.solvers.SolverBase")
+        self.__logger = logging.getLogger("model.solvers.MeanFieldSolver")
 
         # Set numerical representation.
         self.__set_numerical_representation()
