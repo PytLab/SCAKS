@@ -61,13 +61,18 @@ if "__main__" == __name__:
         model.solver.get_data()
 
         # Initial coverage guess.
-        if i == 0:
-            trajectory = model.solver.solve_ode(time_span=0.0001,
-                                                time_end=10,
-                                                traj_output=False)
-            init_guess = trajectory[-1]
-        else:
-            init_guess = ss_cvgs[-1]
+#        if i == 0:
+#            trajectory = model.solver.solve_ode(time_span=0.0001,
+#                                                time_end=10,
+#                                                traj_output=False)
+#            init_guess = trajectory[-1]
+#        else:
+#            init_guess = ss_cvgs[-1]
+
+        trajectory = model.solver.solve_ode(time_span=0.0001,
+                                            time_end=10,
+                                            traj_output=False)
+        init_guess = trajectory[-1]
 
         # Run.
         print("Running pressure CO_g: {}".format(pCO))
