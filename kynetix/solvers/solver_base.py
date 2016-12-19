@@ -137,6 +137,133 @@ class SolverBase(ModelShell):
             msg = msg.format(self._owner.setup_file)
             raise SetupError(msg)
 
+        # Adsorption process.
+        if "gas" in is_types:
+            # Get gas pressure.
+            idx = is_types.index("gas")
+            formula = istate[idx]
+            gas_name = formula.formula()
+            p = self._owner.species_definitions[gas_name]["pressure"]
+            m = ParserBase.get_molecular_mass(formula.species(), absolute=True)
+
+            # Use Collision Theory to get forward rate.
+            Ea = Gaf
+            rf = self.get_kCT(Ea, Auc, act_ratio, p, m, T)
+            if log_allowed:
+                self.__logger.info("R(forward) = {} s^-1 (Collision Theory)".format(rf))
+
+            # Use equilibrium condition to get reverse rate.
+            correction_energy = corrector.entropy_correction(gas_name, m, p, T)
+            stoichiometry = formula.stoichiometry()
+            dG -= stoichiometry*correction_energy
+
+            # Info output.
+            if log_allowed:
+                msg = "Correct dG: {} -> {}".format(dG+correction_energy, dG)
+                self.__logger.info(msg)
+
+            # Use Equilibrium condition to get reverse rate.
+            K = exp(-dG/(kB_eV*T))
+            rr = rf/K
+            if log_allowed:
+                self.__logger.info("R(reverse) = {} s^-1 (Equilibrium Condition)".format(rr))
+
+        # Desorption process.
+        elif "gas" in fs_types:
+            # Get gas pressure.
+            idx = fs_types.index("gas")
+            formula = fstate[idx]
+            gas_name = formula.formula()
+            p = self._owner.species_definitions[gas_name]["pressure"]
+
+            # Use Collision Theory to get reverse rate.
+            Ea = Gar
+            m = ParserBase.get_molecular_mass(formula.species(), absolute=True)
+            rr = self.get_kCT(Ea, Auc, act_ratio, p, m, T)
+            if log_allowed:
+                self.__logger.info("R(reverse) = {} s^-1 (Collision Theory)".format(rr))
+
+            # Use Transition State theory to get forward rate.
+            if Gar < 1.0e-10:
+                # NOTE: If the reverse barrier is 0, that means the
+                #       forward barrier depends on the final state energy.
+                correction_energy = corrector.entropy_correction(gas_name, m, p, T)
+                stoichiometry = formula.stoichiometry()
+                Gaf += stoichiometry*correction_energy
+            rf = self.get_kTST(Gaf, T)
+
+            if log_allowed:
+                self.__logger.info("R(forward) = {} s^-1 (Transition State Theory)".format(rf))
+#            # Use equilibrium condition to get forward rate.
+#            correction_energy = corrector.entropy_correction(gas_name, m, p, T)
+#            stoichiometry = formula.stoichiometry()
+#            dG -= stoichiometry*correction_energy
+#
+#            # Info output.
+#            if log_allowed:
+#                msg = "Correct dG: {} -> {}".format(dG+correction_energy, dG)
+#                self.__logger.info(msg)
+#
+#            K = exp(dG/(kB_eV*T))
+#            rf = rr/K
+#
+#            if log_allowed:
+#                self.__logger.info("R(forward) = {} s^-1 (Equilibrium Condition)".format(rf))
+
+        # Reaction of intermediates.
+        else:
+            # Use Transition State Theory.
+            rf = self.get_kTST(Gaf, T)
+            rr = self.get_kTST(Gar, T)
+            if log_allowed:
+                self.__logger.info("R(forward) = {} s^-1 (Transition State Theory)".format(rf))
+                self.__logger.info("R(reverse) = {} s^-1 (Transition State Theory)".format(rr))
+
+        return rf, rr
+        # }}}
+
+    def get_rxn_rates_CT_bak(self, rxn_expression, relative_energies):
+        """
+        Function to get rate constants for an elementary reaction
+        using Collision Theory wrt adsorption process.
+
+        Parameters:
+        -----------
+        rxn_expression: The expression of an elementary reaction, str.
+        relative_energies: The relative energies for all elementary reactions.
+        """
+        # {{{
+        # Get the condition for log info output.
+        cls_name = self.__class__.__name__
+        log_allowed = (self._owner.log_allowed and cls_name == "KMCSolver")
+
+        # Get raw relative energies.
+        Gaf, Gar, dG = self._get_relative_energies(rxn_expression, relative_energies)
+        if log_allowed:
+            self.__logger.info("{} (Gaf={}, Gar={}, dG={})".format(rxn_expression, Gaf, Gar, dG))
+
+        # Get reactants and product types.
+        rxn_equation = RxnEquation(rxn_expression)
+        formula_list = rxn_equation.to_formula_list()
+        istate, fstate = formula_list[0], formula_list[-1]
+        is_types = [formula.type() for formula in istate]
+        fs_types = [formula.type() for formula in fstate]
+        if log_allowed:
+            self.__logger.info("species type: {} -> {}".format(is_types, fs_types))
+
+        # Get rate constant.
+        T = self._owner.temperature
+        Auc = self._owner.unitcell_area
+        act_ratio = self._owner.active_ratio
+
+        # Get model corrector.
+        corrector = self._owner.corrector
+        # Check.
+        if type(corrector) == str:
+            msg = "No instantialized corrector, try to modify '{}'"
+            msg = msg.format(self._owner.setup_file)
+            raise SetupError(msg)
+
         # Forward rate.
 
         # Gas participating.
@@ -146,13 +273,14 @@ class SolverBase(ModelShell):
             formula = istate[idx]
             gas_name = formula.formula()
             p = self._owner.species_definitions[gas_name]["pressure"]
-
-            # Use Collision Theory.
-            Ea = Gaf
             m = ParserBase.get_molecular_mass(formula.species(), absolute=True)
+
+            # Use Collision Theory to get forward rate.
+            Ea = Gaf
             rf = self.get_kCT(Ea, Auc, act_ratio, p, m, T)
             if log_allowed:
                 self.__logger.info("R(forward) = {} s^-1 (Collision Theory)".format(rf))
+
         # No gas participating.
         else:
             # ThermoEquilibrium and gas species in final state.
