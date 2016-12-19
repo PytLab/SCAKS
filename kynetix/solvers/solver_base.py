@@ -191,6 +191,7 @@ class SolverBase(ModelShell):
 
             if log_allowed:
                 self.__logger.info("R(forward) = {} s^-1 (Transition State Theory)".format(rf))
+
 #            # Use equilibrium condition to get forward rate.
 #            correction_energy = corrector.entropy_correction(gas_name, m, p, T)
 #            stoichiometry = formula.stoichiometry()
