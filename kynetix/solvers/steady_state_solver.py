@@ -15,7 +15,7 @@ from kynetix.errors.error import *
 from kynetix.utilities.format_utilities import get_list_string
 from kynetix.parsers.rxn_parser import *
 from kynetix.solvers.rootfinding_iterators import *
-from kynetix.solvers.mean_field_solver import *
+from kynetix.solvers.mean_field_solver import MeanFieldSolver
 
 
 class SteadyStateSolver(MeanFieldSolver):
@@ -1318,9 +1318,11 @@ class SteadyStateSolver(MeanFieldSolver):
         """
         if self._owner.log_allowed:
             self.__logger.info("Use ODE integration to get new initial coverages...")
-        end_time = random.randint(0, 10**5)
+        end_time = random.randint(0, 10)
 
-        new_cvgs = self.solve_ode(time_end=end_time)[-1]
+        time_span = 10**(-random.randint(0, 5))
+
+        new_cvgs = self.solve_ode(time_end=end_time, time_span=time_span)[-1]
 
         if self._owner.log_allowed:
             self.__logger.info('modify initial coverage - success')
@@ -1342,6 +1344,9 @@ class SteadyStateSolver(MeanFieldSolver):
         -----------
         algo: algorithm for ODE solving, optional, str.
               'vode' | 'zvode' | 'lsoda' | 'dopri5' | 'dop853'
+
+              for more details of integration algorithm, see:
+              https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.ode.html
 
         time_span: time span for each step, float, default to be 0.1
 
