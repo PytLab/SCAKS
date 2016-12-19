@@ -22,7 +22,7 @@ setup_dict = dict(
         'CO_g': {'pressure': 0.10},
         'O2_g': {'pressure': 0.2},
         'CO2_g': {'pressure': 0.01},
-        's': {'site_name': 'top', 'type': 'site', 'total': 1.0},
+        '*_s': {'site_name': 'top', 'type': 'site', 'total': 1.0},
     },
 
     temperature = 500,
