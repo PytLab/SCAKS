@@ -31,3 +31,11 @@ def do_cprofile(filename):
         return profiled_func
     return wrapper
 
+
+def print_pstats(filename, sortby='cumtime'):
+    """
+    Function to print profiling stats results.
+    """
+    p = pstats.Stats(filename)
+    p.sort_stats(sortby).print_stats(10, 1.0, '.*')
+
