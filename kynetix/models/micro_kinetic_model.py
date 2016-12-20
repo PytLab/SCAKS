@@ -91,7 +91,6 @@ class MicroKineticModel(km.KineticModel):
         if not mpi.is_master:
             self.set_logger_level("StreamHandler", logging.WARNING)
 
-    @do_cprofile("./MicroKineticModel_run.prof")
     def run(self, **kwargs):
         """
         Function to solve Micro-kinetic model using Steady State Approxmiation
