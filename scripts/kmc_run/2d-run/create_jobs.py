@@ -36,7 +36,7 @@ if "__main__" == __name__:
         for pCO in pCOs:
             job_dir = "{}/pCO-{}".format(out_dir, pCO)
             print("INFO: create job {}".format(job_dir))
-            job_dirs += "{} ".format(job_dir)
+            job_dirs += "{}\n".format(job_dir)
 
             if os.path.exists(job_dir):
                 shutil.rmtree(job_dir)
