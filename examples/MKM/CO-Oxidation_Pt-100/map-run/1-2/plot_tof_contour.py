@@ -31,6 +31,11 @@ CS2 = plt.contour(CS, levels=CS.levels[::2],
                   hold='on')
 plt.clabel(CS2, colors='grey', inline=1, fontsize=12, fmt="%.2f")
 
+# Add orthogonal lines.
+# horizontal_line
+plt.plot([0.01, 1.0], [1.0, 1.0], color='#000000', linewidth=1.0)
+plt.plot([0.6, 0.6], [0.01, 2.0], color='#000000', linewidth=1.0)
+
 plt.xlabel("P(CO_g)/bar")
 plt.ylabel(r"P(O_2_g)/bar")
 

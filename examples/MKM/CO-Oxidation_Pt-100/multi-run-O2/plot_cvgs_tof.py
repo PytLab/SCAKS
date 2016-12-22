@@ -25,7 +25,7 @@ if "__main__" == __name__:
     pressure_range = max(pressures) - min(pressures)
     ax1.set_ylim(-0.1, 1.1)
     ax1.set_xlim(min(pressures)-pressure_range*0.1, max(pressures)+pressure_range*0.1)
-    ax1.set_xlabel(r"$\bf{P(CO_g)/bar}$")
+    ax1.set_xlabel(r"$\bf{P(O2_g)/bar}$")
     ax1.set_ylabel(r"$\bf{Coverages}$")
 
 
