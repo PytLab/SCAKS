@@ -755,51 +755,53 @@ class MeanFieldSolverTest(unittest.TestCase):
         for ref, ret in zip(ref_net_rates, ret_net_rates):
             self.assertEqual(ref.simplify(), ret.simplify())
 
-#    def test_get_net_rates_by_sym(self):
-#        " Test net rates calculating by symbol derivation. "
-#        # Construction.
-#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-#        parser = model.parser
-#        solver = model.solver
-#
-#        parser.parse_data(filename=mkm_energy)
-#        solver.get_data()
-#        solver.get_data_symbols()
-#
-#        # Check.
-#        coverages = (0.5, 0.3)
-#
-#        ref_net_rates = (mpf('1875295534112.0'),
-#                         mpf('125019703287.0'),
-#                         mpf('0.01408463956352'))
-#        ret_net_rates = solver.get_net_rates_by_sym(coverages)
-#
-#        self.assertTupleEqual(ref_net_rates, ret_net_rates)
-#
-#    def test_get_tof_syms(self):
-#        " Test we can get TOF symbols correctly. "
-#        # NEED IMPLIMENTATION.
-#
-#    def test_get_tof_by_sym(self):
-#        " Make sure we can get correct TOF value by symbols derivation. "
-#        # Construction.
-#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-#        parser = model.parser
-#        solver = model.solver
-#
-#        parser.parse_data(filename=mkm_energy)
-#        solver.get_data()
-#        solver.get_data_symbols()
-#
-#        # Check.
-#        coverages = (0.5, 0.3)
-#
-#        ref_tof = (mpf('0.01408463956352'),
-#                   mpf('-1875295534112.0'),
-#                   mpf('-125019703287.0'))
-#        ret_tof = solver.get_tof_by_sym(coverages)
-#
-#        self.assertTupleEqual(ref_tof, ret_tof)
+    def test_get_net_rates_by_sym(self):
+        " Test net rates calculating by symbol derivation. "
+        # Construction.
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
+
+        parser.parse_data(filename=mkm_energy)
+        solver.get_data()
+        solver.get_data_symbols()
+
+        # Check.
+        coverages = (0.5, 0.3)
+
+        ref_net_rates = (mpf('1875295534112.0'),
+                         mpf('125019703287.0'),
+                         mpf('0.01408463956352'))
+        ret_net_rates = solver.get_net_rates_by_sym(coverages)
+
+        for ref, ret in zip(ref_net_rates, ret_net_rates):
+            self.assertAlmostEqual(ref, ret)
+
+    def test_get_tof_syms(self):
+        " Test we can get TOF symbols correctly. "
+        # NEED IMPLIMENTATION.
+
+    def test_get_tof_by_sym(self):
+        " Make sure we can get correct TOF value by symbols derivation. "
+        # Construction.
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
+
+        parser.parse_data(filename=mkm_energy)
+        solver.get_data()
+        solver.get_data_symbols()
+
+        # Check.
+        coverages = (0.5, 0.3)
+
+        ref_tof = (mpf('0.01408463956352'),
+                   mpf('-1875295534112.0'),
+                   mpf('-125019703287.0'))
+        ret_tof = solver.get_tof_by_sym(coverages)
+
+        for ref, ret in zip(ref_tof, ret_tof):
+            self.assertAlmostEqual(ref, ret)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(MeanFieldSolverTest)
