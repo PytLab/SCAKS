@@ -335,91 +335,6 @@ class SteadyStateSolverTest(unittest.TestCase):
         for ref, ret in zip(ref_sscvg, ret_sscvg):
             self.assertAlmostEqual(ref, float(ret))
 
-#    def test_get_intermediates_Gs(self):
-#        " Test private function __get_intermediates_Gs(). "
-#        # Construction.
-#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-#        parser = model.parser
-#        solver = model.solver
-#
-#        parser.parse_data(filename=mkm_energy)
-#        solver.get_data()
-#
-#        # Check.
-#        ref_Gs = [mpf('-0.75800000000000000710542735760100185871124267578125'),
-#                  mpf('0.4339999999999999413802242997917346656322479248046875'),
-#                  mpf('0.9259999999999999342747969421907328069210052490234375')]
-#        ret_Gs = solver._SteadyStateSolver__get_intermediates_Gs()
-#
-#        self.assertListEqual(ref_Gs, ret_Gs)
-#
-#    def test_get_Gs_tof(self):
-#        " Test private function __get_Gs_tof(). "
-#        # Construction.
-#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-#        parser = model.parser
-#        solver = model.solver
-#
-#        parser.parse_data(filename=mkm_energy)
-#        solver.get_data()
-#
-#        # Get steady state converages first.
-#        coverages = solver.boltzmann_coverages()
-#        solver.get_steady_state_cvgs(coverages)
-#
-#        # Check.
-#        Gs = solver._SteadyStateSolver__get_intermediates_Gs()
-#        ref_tof = [0.000065597,-0.000065597,-0.000032798]
-#        ret_tof = solver._SteadyStateSolver__get_Gs_tof(Gs)
-#
-#        for ref, ret in zip(ref_tof, ret_tof):
-#            self.assertAlmostEqual(ref, float(ret))
-#
-#    def test_get_Gs_gas_tof(self):
-#        " Test private function __get_Gs_tof(). "
-#        # Construction.
-#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-#        parser = model.parser
-#        solver = model.solver
-#
-#        parser.parse_data(filename=mkm_energy)
-#        solver.get_data()
-#
-#        # Get steady state converages first.
-#        coverages = solver.boltzmann_coverages()
-#        solver.get_steady_state_cvgs(coverages)
-#
-#        # Check gas tof.
-#        Gs = solver._SteadyStateSolver__get_intermediates_Gs()
-#        ref_tof = 0.000065597
-#        ret_tof = solver._SteadyStateSolver__get_Gs_tof(Gs, gas_name="CO2_g")
-#        self.assertAlmostEqual(ref_tof, float(ret_tof))
-#
-#    def test_get_single_XTRC(self):
-#        " Test function get_single_XTRC(). "
-#        # Construction.
-#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-#        parser = model.parser
-#        solver = model.solver
-#
-#        parser.parse_data(filename=mkm_energy)
-#        solver.get_data()
-#
-#        # Get steady state converages first.
-#        coverages = solver.boltzmann_coverages()
-#        solver.get_steady_state_cvgs(coverages)
-#
-#        # Check.
-#        gas_name = "CO2_g"
-#        ref_XTRC = [-1.140775679060,-1.1407756790, 0.8814652009]
-#        ret_XTRC = solver.get_single_XTRC(gas_name)
-#        for ref, ret in zip(ref_XTRC, ret_XTRC):
-#            self.assertAlmostEqual(ref, float(ret))
-#
-#    def test_get_XTRC(self):
-#        " Test function get_XTRC(). "
-#        # NEED IMPLIMENTATION.
-#
     def test_get_single_XRC(self):
         " Test function get_single_XRC(). "
         # Construction.
@@ -440,30 +355,6 @@ class SteadyStateSolverTest(unittest.TestCase):
         ret_XRC = solver.get_single_XRC(gas_name, epsilon=1e-5)
         for ref, ret in zip(ref_XRC, ret_XRC):
             self.assertAlmostEqual(ref, float(ret), places=4)
-
-#    def test_get_single_XRC_multi_thread(self):
-#        " Test function get_single_XRC() in multi-threads. "
-#        # Construction.
-#        model = MicroKineticModel(setup_file="input_files/steady_state_solver.mkm",
-#                             logger_level=logging.WARNING)
-#        parser = model.parser()
-#        solver = model.solver()
-#
-#        parser.parse_data(filename=mkm_energy)
-#        solver.get_data()
-#
-#        # Get steady state converages first.
-#        coverages = solver.boltzmann_coverages()
-#        solver.get_steady_state_cvgs(coverages)
-#
-#        # Check.
-#        gas_name = "CO2_g"
-#        ref_XRC = [mpf('-0.000000004330301262036152923211709673711721112213085538797673380141841669630093740288896353967710982069299592622'),
-#                   mpf('0.9986021755886114784434712184789699872827416819468954527192794077349320805208548704540326869330347344589'),
-#                   mpf('0.001398549092163431169588440111213386822318548225009429894534084532021244154191984863118384815049813695996')]
-#        ret_XRC = solver.get_single_XRC(gas_name, epsilon=1e-5, parallel=True)
-#        for ref, ret in zip(ref_XRC, ret_XRC):
-#            self.assertAlmostEqual(ref, ret)
 
 #    def test_get_elementary_dtheta_dt_sym(self):
 #        " Test we can get correct dtheta/dt expression for an elementary reaction. "
