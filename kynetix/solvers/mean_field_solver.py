@@ -769,6 +769,7 @@ class MeanFieldSolver(SolverBase):
         --------
         Forward and reverse rate expression symbols.
         """
+        # {{{
         # Get expression index.
         rxn_idx = self._owner.rxn_expressions.index(rxn_expression)
 
