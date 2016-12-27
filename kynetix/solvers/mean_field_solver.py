@@ -839,15 +839,13 @@ class MeanFieldSolver(SolverBase):
         kB, h, T = self._kB_sym, self._h_sym, self._T_sym
         kf_syms, kr_syms = [], []
 
-        for idx, rxn_expression in enumerate(self._owner.rxn_expressions):
-            Gaf_syms, Gar_syms = self.get_barrier_symbols()
+        for Gaf_sym, dG_sym in zip(self._Ga_sym, self._dG_sym):
+            Gar_sym = Gaf_sym - dG_sym
 
-            Gaf = Gaf_syms[idx]
-            kf_sym = kB*T/h*sym.E**(-Gaf/(kB*T))
+            kf_sym = kB*T/h*sym.E**(-Gaf_sym/(kB*T))
             kf_syms.append(kf_sym)
 
-            Gar = Gar_syms[idx]
-            kr_sym = kB*T/h*sym.E**(-Gar/(kB*T))
+            kr_sym = kB*T/h*sym.E**(-Gar_sym/(kB*T))
             kr_syms.append(kr_sym)
 
         return kf_syms, kr_syms
