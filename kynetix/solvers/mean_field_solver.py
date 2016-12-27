@@ -944,18 +944,14 @@ class MeanFieldSolver(SolverBase):
         """
         Protected function to get free energies symbols substitution dict.
         """
-        # Get value dict for solver.
-        if not self._has_absolute_energy:
-            msg = "Solver has no absolute energy, try get_data(relative=False)."
-            raise AttributeError(msg)
-
-        # Free energy value dict.
         G_dict = {}
-        sp_list = self._owner.species_definitions.keys()
-        for G_sym, sp_name in zip(self._G_sym, sp_list):
-            if sp_name in self._owner.site_names:
-                sp_name = "*_" + sp_name
-            G_dict.setdefault(G_sym, self._G[sp_name])
+        # Ga subsitution dict.
+        for Ga_sym, Ga in zip(self._Ga_sym, self._owner.relative_energies["Gaf"]):
+            G_dict.setdefault(Ga_sym, Ga)
+
+        # dG subsitution dict.
+        for dG_sym, dG in zip(self._dG_sym, self._owner.relative_energies["dG"]):
+            G_dict.setdefault(dG_sym, dG)
 
         return G_dict
 
