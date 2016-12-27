@@ -269,7 +269,7 @@ class MeanFieldSolver(SolverBase):
         """
         # {{{
         free_site_names = self._owner.site_names
-        self._cvg_types = self._owner.adsorbate_names + free_site_names
+        cvg_types = self._owner.adsorbate_names + free_site_names
         kB, h, T = [self._mpf(constant) for constant in
                     [self._owner.kB, self._owner.h, self._owner.temperature]]
 
@@ -281,7 +281,7 @@ class MeanFieldSolver(SolverBase):
 
         if include_empty_site:
             boltz_sum = sum([mp.exp(-self._owner.absolute_energies[adsorbate]/(kB*T))
-                             for adsorbate in self._cvg_types])
+                             for adsorbate in cvg_types])
         else:
             boltz_sum = sum([self._math.exp(-self._owner.absolute_energies[adsorbate]/(kB*T))
                              for adsorbate in self._owner.adsorbate_names])
