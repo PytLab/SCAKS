@@ -1011,7 +1011,7 @@ class SteadyStateSolver(MeanFieldSolver):
             self._G[intermediate] = G
 
         # Get new relative energies.
-        relative_energies = self.get_relative_from_absolute()
+        relative_energies = self._owner.relative_energies
 
         # Calculate the new steady state coverages.
         steady_state_cvg = self.get_steady_state_cvgs(init_guess, relative_energies)
