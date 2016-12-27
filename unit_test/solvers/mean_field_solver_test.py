@@ -704,10 +704,57 @@ class MeanFieldSolverTest(unittest.TestCase):
 #        self.assertTupleEqual(ref_rfs, ret_rfs)
 #        self.assertTupleEqual(ref_rrs, ret_rrs)
 #
-#    def test_get_net_rate_syms(self):
-#        " Make sure we can get correct net rate symbols for all elementary reactions. "
-#        # Need Implimentation.
-#
+    def test_get_net_rate_syms(self):
+        " Make sure we can get correct net rate symbols for all elementary reactions. "
+        # Construction.
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
+
+        parser.parse_data(filename=mkm_energy)
+        solver.get_data()
+        solver.get_data_symbols()
+
+        # Free energy.
+        Ga_0, Ga_1, Ga_2 = solver._Ga_sym
+        dG_0, dG_1, dG_2 = solver._dG_sym
+
+        G_dict = {Ga_0: 0.0,
+                  dG_1: -2.64,
+                  Ga_1: 0.0,
+                  dG_0: -0.758,
+                  Ga_2: 1.25,
+                  dG_2: 0.324}
+
+        # Coverage.
+        theta_CO_s = solver._extract_symbol("CO_s", "ads_cvg")
+        theta_O_s = solver._extract_symbol("O_s", "ads_cvg")
+        theta_s = solver._extract_symbol("*_s", "free_site_cvg")
+
+        # Pressure.
+        p_CO2_g = solver._extract_symbol("CO2_g", "pressure")
+        p_O2_g = solver._extract_symbol("O2_g", "pressure")
+        p_CO_g = solver._extract_symbol("CO_g", "pressure")
+
+        # Constants.
+        kB = solver._kB_sym
+        T = solver._T_sym
+        h = solver._h_sym
+        from sympy import E
+
+        ref_net_rates = [
+            (T*kB*p_CO_g*(-theta_CO_s - theta_O_s + 1.0)*E**(-Ga_0/(T*kB))/h - 
+             T*kB*theta_CO_s*E**((-Ga_0 + dG_0)/(T*kB))/h),
+            (T*kB*p_O2_g*(-theta_CO_s - theta_O_s + 1.0)**2*E**(-Ga_1/(T*kB))/h -
+             T*kB*theta_O_s**2*E**((-Ga_1 + dG_1)/(T*kB))/h),
+            (-T*kB*p_CO2_g*(-theta_CO_s - theta_O_s + 1.0)**2*E**((-Ga_2 + dG_2)/(T*kB))/h +
+             T*kB*theta_CO_s*theta_O_s*E**(-Ga_2/(T*kB))/h)
+        ]
+        ret_net_rates = solver.get_net_rate_syms()
+
+        for ref, ret in zip(ref_net_rates, ret_net_rates):
+            self.assertEqual(ref.simplify(), ret.simplify())
+
 #    def test_get_net_rates_by_sym(self):
 #        " Test net rates calculating by symbol derivation. "
 #        # Construction.
