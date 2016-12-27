@@ -42,6 +42,31 @@ class MeanFieldSolverTest(unittest.TestCase):
             max_rootfinding_iterations = 100,
         )
 
+        self.abs_setup_dict = dict(
+            rxn_expressions = [
+                'CO_g + *_s -> CO_s',
+                'O2_g + 2*_s -> 2O_s',
+                'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s',
+            ],
+
+            species_definitions = {
+                'CO_g': {'pressure': 1.0},
+                'O2_g': {'pressure': 1./3.},
+                'CO2_g': {'pressure': 0.00},
+                '*_s': {'site_name': '111', 'type': 'site', 'total': 1.0},
+            },
+
+            temperature = 450.0,
+            parser = "AbsoluteEnergyParser",
+            solver = "SteadyStateSolver",
+            corrector = "ThermodynamicCorrector",
+            plotter = "EnergyProfilePlotter",
+            rootfinding = 'ConstrainedNewton',
+            decimal_precision = 10,
+            tolerance = 1e-20,
+            max_rootfinding_iterations = 100,
+        )
+
     def test_solver_construction_query(self):
         # {{{
         " Test solver can be constructed in kinetic model. "
@@ -64,8 +89,6 @@ class MeanFieldSolverTest(unittest.TestCase):
         self.assertTrue(hasattr(solver, "_norm"))
 
         # Flags.
-        self.assertFalse(solver.has_absolute_energy)
-        self.assertFalse(solver.absolute_corrected)
         self.assertFalse(solver.has_symbols)
 
         ref_classified_adsorbates = {'*_s': ['CO_s', 'O_s']}
@@ -93,21 +116,22 @@ class MeanFieldSolverTest(unittest.TestCase):
         self.assertDictEqual(ref_concentrations, solver.concentrations)
         # }}}
 
-#    def test_get_state_energy(self):
-#        " Test we can get correct state energy. "
-#        # Construction.
-#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-#        parser = model.parser
-#        parser.parse_data(filename=mkm_energy)
-#        solver = model.solver
-#        solver.get_data()
-#
-#        # Check.
-#        state = ChemState('CO_s + O_s')
-#        ref_G = solver._G['CO_s'] + solver._G['O_s']
-#        ret_G = solver._get_state_energy(state)
-#
-#        self.assertEqual(ref_G, ret_G)
+    def test_get_state_energy(self):
+        " Test we can get correct state energy. "
+        # Construction.
+        model = MicroKineticModel(setup_dict=self.abs_setup_dict,
+                                  logger_level=logging.WARNING)
+        parser = model.parser
+        parser.parse_data(filename=mkm_abs_energy)
+        solver = model.solver
+        solver.get_data()
+
+        # Check.
+        state = ChemState('CO_s + O_s')
+        ref_G = model.absolute_energies['CO_s'] + model.absolute_energies['O_s']
+        ret_G = solver._get_state_energy(state)
+
+        self.assertEqual(ref_G, ret_G)
 
 #    def test_get_single_relative_energies(self):
 #        " Make sure we can get correct relative energy for an elementary reaction. "

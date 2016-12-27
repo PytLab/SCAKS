@@ -41,8 +41,6 @@ class MeanFieldSolver(SolverBase):
         self.__set_numerical_representation()
 
         # Set flags.
-        self._has_absolute_energy = False
-        self._abs_corrected = False
         self._has_symbols = False
 
         # Set essential attrs for solver
@@ -195,23 +193,6 @@ class MeanFieldSolver(SolverBase):
             c_dict.setdefault(liquid_name, self._mpf(concentration))
         self._c = c_dict
 
-        # get energy for each species
-        if self._owner.has_absolute_energy:
-            G_dict = {}
-            for species in species_definitions:
-                if ("type" in species_definitions[species] and
-                        species_definitions[species]["type"] == "site"):
-                    key = '*_' + species
-                else:
-                    key = species
-                energy = self._mpf(species_definitions[species]['formation_energy'])
-                G_dict.setdefault(key, energy)
-            self._G = G_dict
-
-            # Set flags.
-            self._abs_corrected = False
-            self._has_absolute_energy = True
-
     def _get_state_energy(self, state):
         """
         Protected helper function to get state energy.
@@ -228,7 +209,7 @@ class MeanFieldSolver(SolverBase):
         energy = 0.0
 
         for species_site, n in species_site_dict.iteritems():
-            energy += n*self._G[species_site]
+            energy += n*self._owner.absolute_energies[species_site]
 
         return energy
 
@@ -384,16 +365,16 @@ class MeanFieldSolver(SolverBase):
             raise IOError('No absolute energies read, could not get Boltzmann coverages.')
 
         if include_empty_site:
-            boltz_sum = sum([mp.exp(-self._G[adsorbate]/(kB*T))
+            boltz_sum = sum([mp.exp(-self._owner.absolute_energiesG[adsorbate]/(kB*T))
                              for adsorbate in self._cvg_types])
         else:
-            boltz_sum = sum([self._math.exp(-self._G[adsorbate]/(kB*T))
+            boltz_sum = sum([self._math.exp(-self._owner.absolute_energiesG[adsorbate]/(kB*T))
                              for adsorbate in self._owner.adsorbate_names])
 
         # Get coverages list
         cvgs = []
         for adsorbate in self._owner.adsorbate_names:
-            cvg = self._math.exp(-self._G[adsorbate]/(kB*T))/boltz_sum
+            cvg = self._math.exp(-self._owner.absolute_energiesG[adsorbate]/(kB*T))/boltz_sum
             cvgs.append(cvg)
 
         return tuple(cvgs)
@@ -702,36 +683,6 @@ class MeanFieldSolver(SolverBase):
             for i in xrange(m):
                 J[i, j] = Jj[i]
         return J
-
-    def correct_absolute_energies(self, method="shomate"):
-        """
-        Function to correct free energies of solver.
-        """
-        if not self._has_absolute_energy:
-            raise AttributeError("No absolute energies in solver.")
-
-        if self._abs_corrected:
-            # Avoid correction twice.
-            self.__logger.warning("absolute energies can not be corrected twice")
-            return
-
-        corrector = self._owner.corrector
-
-        # Get correction function.
-        if method == "shomate":
-            correct_func = corrector.shomate_correction
-        elif method == "entropy":
-            correct_func = corrector.entropy_correction
-        else:
-            raise ValueError("Unknown method: '{}'".format(method))
-
-        for gas_name in self._owner.gas_names:
-            correction_energy = correct_func(gas_name)
-            self._G[gas_name] += correction_energy
-
-        # Set flag.
-        self._abs_corrected = True
-
 
     ######################################################
     ######                                          ######
