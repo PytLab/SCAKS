@@ -662,50 +662,51 @@ class MeanFieldSolverTest(unittest.TestCase):
             self.assertAlmostEqual(float(ref_dict[key]), float(ret_dict[key]))
         # }}}
 
-#    def test_get_rate_constants_by_sym(self):
-#        " Make sure we can get rate constant correctly by symbols derivation. "
-#        # Construction.
-#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-#        parser = model.parser
-#        solver = model.solver
-#
-#        parser.parse_data(filename=mkm_energy)
-#        solver.get_data()
-#        solver.get_data_symbols()
-#
-#        # Check.
-#        ref_kfs = [mpf('9376477746560.0'), mpf('9376477746560.0'), mpf('0.09389759709029')]
-#        ref_krs = [mpf('30395.72540069'), mpf('2.542951527153e-17'), mpf('399.2961612232')]
-#
-#        ret_kfs, ret_krs = solver.get_rate_constants_by_sym()
-#
-#        self.assertListEqual(ref_kfs, ret_kfs)
-#        self.assertListEqual(ref_krs, ret_krs)
-#
-#    def test_get_rates_by_syms(self):
-#        " Make sure we can get correct rates values by symbol derivation. "
-#        # Construction.
-#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-#        parser = model.parser
-#        solver = model.solver
-#
-#        parser.parse_data(filename=mkm_energy)
-#        solver.get_data()
-#        solver.get_data_symbols()
-#
-#        # Check.
-#        coverages = (0.5, 0.3)
-#
-#        ref_rfs = (mpf('1875295549312.0'), mpf('125019703287.0'), mpf('0.01408463956352'))
-#        ref_rrs = (mpf('15197.86270034'), mpf('2.288656374422e-18'), mpf('0.0'))
-#
-#        ret_rfs, ret_rrs = solver.get_rates_by_sym(cvgs_tuple=coverages)
-#
-#        self.assertTupleEqual(ref_rfs, ret_rfs)
-#        self.assertTupleEqual(ref_rrs, ret_rrs)
-#
+    def test_get_rate_constants_by_sym(self):
+        " Make sure we can get rate constant correctly by symbols derivation. "
+        # Construction.
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
+
+        parser.parse_data(filename=mkm_energy)
+        solver.get_data()
+        solver.get_data_symbols()
+
+        # Check.
+        ref_kfs = [mpf('9376477746560.0'), mpf('9376477746560.0'), mpf('0.09389759709029')]
+        ref_krs = [mpf('30395.72540212'), mpf('2.542951527113e-17'), mpf('399.2961612195')]
+
+        ret_kfs, ret_krs = solver.get_rate_constants_by_sym()
+
+        self.assertListEqual(ref_kfs, ret_kfs)
+        self.assertListEqual(ref_krs, ret_krs)
+
+    def test_get_rates_by_syms(self):
+        " Make sure we can get correct rates values by symbol derivation. "
+        # Construction.
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
+
+        parser.parse_data(filename=mkm_energy)
+        solver.get_data()
+        solver.get_data_symbols()
+
+        # Check.
+        coverages = (0.5, 0.3)
+
+        ref_rfs = (mpf('1875295549312.0'), mpf('125019703287.0'), mpf('0.01408463956352'))
+        ref_rrs = (mpf('15197.86270106'), mpf('2.288656374397e-18'), mpf('0.0'))
+
+        ret_rfs, ret_rrs = solver.get_rates_by_sym(cvgs_tuple=coverages)
+
+        self.assertTupleEqual(ref_rfs, ret_rfs)
+        self.assertTupleEqual(ref_rrs, ret_rrs)
+
     def test_get_net_rate_syms(self):
         " Make sure we can get correct net rate symbols for all elementary reactions. "
+        # {{{
         # Construction.
         model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
@@ -747,6 +748,7 @@ class MeanFieldSolverTest(unittest.TestCase):
 
         for ref, ret in zip(ref_net_rates, ret_net_rates):
             self.assertEqual(ref.simplify(), ret.simplify())
+        # }}}
 
     def test_get_net_rates_by_sym(self):
         " Test net rates calculating by symbol derivation. "
@@ -772,6 +774,7 @@ class MeanFieldSolverTest(unittest.TestCase):
 
     def test_get_tof_syms(self):
         " Test we can get TOF symbols correctly. "
+        # {{{
         # Construction.
         model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
@@ -814,6 +817,7 @@ class MeanFieldSolverTest(unittest.TestCase):
 
         for ref, ret in zip(ref_tofs, ret_tofs):
             self.assertEqual(ref.simplify(), ret.simplify())
+        # }}}
 
     def test_get_tof_by_sym(self):
         " Make sure we can get correct TOF value by symbols derivation. "
