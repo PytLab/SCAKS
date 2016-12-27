@@ -793,12 +793,8 @@ class MeanFieldSolver(SolverBase):
                 species_site = formula.species_site()
 
                 # Get species name and type.
-                if '*' in species_site:
-                    species_name = formula.site()
-                    sp_type = 'site'
-                else:
-                    species_name = species_site
-                    sp_type = formula.type()
+                species_name = species_site
+                sp_type = formula.type()
 
                 # Set symbol_type.
                 if sp_type == 'gas':

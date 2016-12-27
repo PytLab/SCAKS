@@ -427,58 +427,49 @@ class MeanFieldSolverTest(unittest.TestCase):
             self.assertEqual(ref.simplify(), ret.simplify())
         # }}}
 
-#    def test_get_single_rate_sym(self):
-#        # {{{
-#        " Make sure we can get correct rate expression for an elementary reaction. "
-#        # Construction.
-#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-#        parser = model.parser
-#        solver = model.solver
-#
-#        parser.parse_data(filename=mkm_energy)
-#        solver.get_data()
-#        solver.get_data_symbols()
-#
-#        # Get symbols.
-#
-#        # Free energy.
-#        G_COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
-#        G_CO_s = solver._extract_symbol("CO_s", "free_energy")
-#        G_O_s = solver._extract_symbol("O_s", "free_energy")
-#        G_CO2_g = solver._extract_symbol("CO2_g", "free_energy")
-#        G_O2_g = solver._extract_symbol("O2_g", "free_energy")
-#        G_CO_g = solver._extract_symbol("CO_g", "free_energy")
-#        G_s = solver._extract_symbol("s", "free_energy")
-#
-#        # Coverage.
-#        c_CO_s = solver._extract_symbol("CO_s", "ads_cvg")
-#        c_O_s = solver._extract_symbol("O_s", "ads_cvg")
-#        c_s = solver._extract_symbol("s", "free_site_cvg")
-#
-#        # Pressure.
-#        p_CO2_g = solver._extract_symbol("CO2_g", "pressure")
-#        p_O2_g = solver._extract_symbol("O2_g", "pressure")
-#        p_CO_g = solver._extract_symbol("CO_g", "pressure")
-#
-#        # Constants.
-#        kB = solver._kB_sym
-#        T = solver._T_sym
-#        h = solver._h_sym
-#        from sympy import E
-#
-#        kf = T*kB*E**((-G_COO_2s + G_CO_s + G_O_s)/(T*kB))/h
-#        kr = T*kB*E**((2*G_s - G_COO_2s + G_CO2_g)/(T*kB))/h
-#
-#        rxn_expression = 'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s'
-#        ref_rf = kf*c_CO_s*c_O_s
-#        ref_rr = kr*p_CO2_g*c_s**2
-#
-#        ret_rf, ret_rr = solver.get_single_rate_sym(rxn_expression)
-#
-#        self.assertEqual(ref_rf, ret_rf)
-#        self.assertEqual(ref_rr, ret_rr)
-#        # }}}
-#
+    def test_get_single_rate_sym(self):
+        # {{{
+        " Make sure we can get correct rate expression for an elementary reaction. "
+        # Construction.
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
+
+        parser.parse_data(filename=mkm_energy)
+        solver.get_data()
+        solver.get_data_symbols()
+
+        # Get symbols.
+
+        # Coverage.
+        theta_CO_s = solver._extract_symbol("CO_s", "ads_cvg")
+        theta_O_s = solver._extract_symbol("O_s", "ads_cvg")
+        theta_s = solver._extract_symbol("*_s", "free_site_cvg")
+
+        # Pressure.
+        p_CO2_g = solver._extract_symbol("CO2_g", "pressure")
+        p_O2_g = solver._extract_symbol("O2_g", "pressure")
+        p_CO_g = solver._extract_symbol("CO_g", "pressure")
+
+        Ga_0, Ga_1, Ga_2 = solver._Ga_sym
+        dG_0, dG_1, dG_2 = solver._dG_sym
+
+        # Constants.
+        kB = solver._kB_sym
+        T = solver._T_sym
+        h = solver._h_sym
+        from sympy import E
+
+        rxn_expression = 'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s'
+        ref_rf = T*kB*theta_CO_s*theta_O_s*E**(-Ga_2/(T*kB))/h
+        ref_rr = T*kB*p_CO2_g*(-theta_CO_s - theta_O_s + 1.0)**2*E**((-Ga_2 + dG_2)/(T*kB))/h
+
+        ret_rf, ret_rr = solver.get_single_rate_sym(rxn_expression)
+
+        self.assertEqual(ref_rf.simplify(), ret_rf.simplify())
+        self.assertEqual(ref_rr.simplify(), ret_rr.simplify())
+        # }}}
+
 #    def test_get_rate_syms(self):
 #        " Test we can get rate expressions correctly. "
 #        # Need Implimentation.
