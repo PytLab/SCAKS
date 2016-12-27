@@ -336,38 +336,34 @@ class MeanFieldSolverTest(unittest.TestCase):
             self.assertEqual(K.name, K_str)
         # }}}
 
-#    def test_extract_symbol(self):
-#        # {{{
-#        " Test protected function _extract_symbol(). "
-#        # Construction.
-#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-#        solver = model.solver
-#
-#        solver.get_data_symbols()
-#
-#        # Pressure symbol.
-#        ref_pressure = 'p_CO2_g'
-#        ret_pressure = solver._extract_symbol('CO2_g', 'pressure')
-#        self.assertEqual(ret_pressure.name, ref_pressure)
-#
-#        # Adsorbate symbol.
-#        ref_cvg = 'theta_CO_s'
-#        ret_cvg = solver._extract_symbol('CO_s', 'ads_cvg')
-#        self.assertEqual(ret_cvg.name, ref_cvg)
-#
-#        # Empty site symbol.
-#        ret_cvg = solver._extract_symbol('s', 'free_site_cvg')
-#        CO = solver._extract_symbol('CO_s', 'ads_cvg')
-#        O = solver._extract_symbol('O_s', 'ads_cvg')
-#        ref_cvg = 1.0 - CO - O
-#        self.assertEqual(ret_cvg, ref_cvg)
-#
-#        # Free energy symbol.
-#        ref_G = 'G_CO_g'
-#        ret_G = solver._extract_symbol('CO_g', 'free_energy')
-#        self.assertEqual(ret_G.name, ref_G)
-#        # }}}
-#
+    def test_extract_symbol(self):
+        # {{{
+        " Test protected function _extract_symbol(). "
+        # Construction.
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+        solver = model.solver
+
+        solver.get_data_symbols()
+
+        # Pressure symbol.
+        ref_pressure = 'p_CO2_g'
+        ret_pressure = solver._extract_symbol('CO2_g', 'pressure')
+        self.assertEqual(ret_pressure.name, ref_pressure)
+
+        # Adsorbate symbol.
+        ref_cvg = 'theta_CO_s'
+        ret_cvg = solver._extract_symbol('CO_s', 'ads_cvg')
+        self.assertEqual(ret_cvg.name, ref_cvg)
+
+        # Empty site symbol.
+        ret_cvg = solver._extract_symbol('*_s', 'free_site_cvg')
+        CO = solver._extract_symbol('CO_s', 'ads_cvg')
+        O = solver._extract_symbol('O_s', 'ads_cvg')
+        ref_cvg = 1.0 - CO - O
+        self.assertEqual(ret_cvg, ref_cvg)
+
+        # }}}
+
 #    def test_get_single_barrier_symbols(self):
 #        # {{{
 #        " Make sure we can get correct barrier expression for an elementary reaction. "
