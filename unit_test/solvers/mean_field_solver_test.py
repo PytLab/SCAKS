@@ -137,37 +137,31 @@ class MeanFieldSolverTest(unittest.TestCase):
         self.assertListEqual(ref_reverse_rate_constants, ret_reverse_rate_constants)
         # }}}
 
-#    def test_boltzmann_coverages(self):
-#        # {{{
-#        " Test we can get the Boltzmann converages. "
-#        # Construction.
-#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-#        parser = model.parser
-#        solver = model.solver
-#
-#        # Check Boltzmann before parsing absolute energies.
-#        parser.parse_data(filename=mkm_energy)
-#        solver.get_data()
-#
-#        # An exception would be expected.
-#        self.assertRaises(IOError, solver.boltzmann_coverages)
-#
-#        # Parse absolute energies.
-#        parser.parse_data(filename=mkm_energy)
-#        solver.get_data()
-#
-#        # Check boltzmann coverages.
-#        ref_coverages = (mpf('0.9999999967549'), mpf('4.468751710442e-14'))
-#        ret_coverages = solver.boltzmann_coverages()
-#
-#        self.assertTupleEqual(ref_coverages, ret_coverages)
-#
-#        # Without empty sites.
-#        ref_coverages = (mpf('1.0'), mpf('4.468751724917e-14'))
-#        ret_coverages = solver.boltzmann_coverages(include_empty_site=False)
-#
-#        self.assertTupleEqual(ref_coverages, ret_coverages)
-#        # }}}
+    def test_boltzmann_coverages(self):
+        # {{{
+        " Test we can get the Boltzmann converages. "
+        # Construction.
+        model = MicroKineticModel(setup_dict=self.abs_setup_dict,
+                                  logger_level=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
+
+        # Parse absolute energies.
+        parser.parse_data(filename=mkm_abs_energy)
+        solver.get_data()
+
+        # Check boltzmann coverages.
+        ref_coverages = (mpf('0.9999999967549'), mpf('4.468751710442e-14'))
+        ret_coverages = solver.boltzmann_coverages()
+
+        self.assertTupleEqual(ref_coverages, ret_coverages)
+
+        # Without empty sites.
+        ref_coverages = (mpf('1.0'), mpf('4.468751724917e-14'))
+        ret_coverages = solver.boltzmann_coverages(include_empty_site=False)
+
+        self.assertTupleEqual(ref_coverages, ret_coverages)
+        # }}}
 
     def test_elementary_rate_expression(self):
         # {{{

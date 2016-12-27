@@ -28,10 +28,11 @@ class MeanFieldSolver(SolverBase):
     call_counter = 0
 
     def __init__(self, owner):
-        '''
+        """
         A class acts as a base class to be inherited by other
         solver classes, it is not functional on its own.
-        '''
+        """
+        # {{{
         super(MeanFieldSolver, self).__init__(owner)
 
         # Set logger.
@@ -59,6 +60,7 @@ class MeanFieldSolver(SolverBase):
 
         # classify adsorbates according to site type
         self._classified_adsorbates = self.__classify_adsorbates()
+        # }}}
 
     def __set_numerical_representation(self):
         # {{{
@@ -266,28 +268,28 @@ class MeanFieldSolver(SolverBase):
         cvgs: A tuple of coverages in order of adsorbates names.
         """
         # {{{
-        free_site_names = tuple(['*_' + site for site in self._owner.site_names])
+        free_site_names = self._owner.site_names
         self._cvg_types = self._owner.adsorbate_names + free_site_names
         kB, h, T = [self._mpf(constant) for constant in
                     [self._owner.kB, self._owner.h, self._owner.temperature]]
 
         # Check whether solver has load data from species_definition
-        if not self._has_absolute_energy:
+        if not self._owner.has_absolute_energy:
             self.get_data()
-        if not self._has_absolute_energy:  # if no absolute again, raise exception
+        if not self._owner.has_absolute_energy:  # if no absolute again, raise exception
             raise IOError('No absolute energies read, could not get Boltzmann coverages.')
 
         if include_empty_site:
-            boltz_sum = sum([mp.exp(-self._owner.absolute_energiesG[adsorbate]/(kB*T))
+            boltz_sum = sum([mp.exp(-self._owner.absolute_energies[adsorbate]/(kB*T))
                              for adsorbate in self._cvg_types])
         else:
-            boltz_sum = sum([self._math.exp(-self._owner.absolute_energiesG[adsorbate]/(kB*T))
+            boltz_sum = sum([self._math.exp(-self._owner.absolute_energies[adsorbate]/(kB*T))
                              for adsorbate in self._owner.adsorbate_names])
 
         # Get coverages list
         cvgs = []
         for adsorbate in self._owner.adsorbate_names:
-            cvg = self._math.exp(-self._owner.absolute_energiesG[adsorbate]/(kB*T))/boltz_sum
+            cvg = self._math.exp(-self._owner.absolute_energies[adsorbate]/(kB*T))/boltz_sum
             cvgs.append(cvg)
 
         return tuple(cvgs)
