@@ -37,7 +37,7 @@ plt.plot([0.01, 1.0], [1.0, 1.0], color='#000000', linewidth=1.0)
 plt.plot([0.6, 0.6], [0.01, 2.0], color='#000000', linewidth=1.0)
 
 plt.xlabel("P(CO_g)/bar")
-plt.ylabel(r"P(O_2_g)/bar")
+plt.ylabel("P(O_2_g)/bar")
 
 # Make a colorbar.
 cbar = plt.colorbar(CS)
