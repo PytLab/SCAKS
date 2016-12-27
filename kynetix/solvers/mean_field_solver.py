@@ -706,76 +706,6 @@ class MeanFieldSolver(SolverBase):
         return symbol_tup[idx]
         # }}}
 
-    def get_single_barrier_symbols(self, rxn_expression):
-        # {{{
-        """
-        Function to get forward and reverse barrier expression symbols
-        for an elementary reaction expression.
-
-        Paramters:
-        ----------
-        rxn_expression: An elementary reaction expression, str.
-
-        Returns:
-        --------
-        Barrier expression symbols, tuple of Add objects of Sympy.
-
-        Example:
-        --------
-        >>> rxn_expression = 'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s'
-        >>> solver.get_single_barrier_symbols(rxn_expression)
-        """
-        if not self._has_symbols:
-            msg = "Solver has no data symbol, try get_data_symbols() first."
-            raise AttributeError(msg)
-
-        # Get formula list.
-        rxn_equation = RxnEquation(rxn_expression)
-        elementary_rxn_list = rxn_equation.to_formula_list()
-
-        # Get symbols of state energy.
-        state_energy_sym_list = []  # list to gather state energy symbols
-
-        for formula_list in elementary_rxn_list:
-            state_energy_sym = sym.Symbol('0', is_real=True)
-            for formula in formula_list:
-                # Split.
-                stoichiometry = formula.stoichiometry()
-                species = formula.species_site()
-
-                # Empty site.
-                if "*" in species:
-                    species = formula.site()
-
-                sp_sym = self._extract_symbol(sp_name=species, symbol_type='free_energy')
-                if stoichiometry == 1:
-                    sp_energy_sym = sp_sym
-                else:
-                    sp_energy_sym = stoichiometry*sp_sym
-
-                state_energy_sym += sp_energy_sym
-
-            state_energy_sym_list.append(state_energy_sym)
-
-        # Get relative energy expressions.
-        is_energy_sym = state_energy_sym_list[0]
-        fs_energy_sym = state_energy_sym_list[-1]
-
-        if len(state_energy_sym_list) == 3:
-            ts_energy_sym = state_energy_sym_list[1]
-        elif len(state_energy_sym_list) == 2:
-            # Get TS symbol.
-            rxn_idx = self._owner.rxn_expressions.index(rxn_expression)
-            dG = self._owner.relative_energies['dG'][rxn_idx]
-            ts_idx = 0 if dG < 0 else -1
-            ts_energy_sym = state_energy_sym_list[ts_idx]
-
-        Gaf_sym = ts_energy_sym - is_energy_sym
-        Gar_sym = ts_energy_sym - fs_energy_sym
-
-        return Gaf_sym, Gar_sym
-        # }}}
-
     @staticmethod
     def get_latex_strs(part1, part2, symbols):
         """
@@ -790,30 +720,6 @@ class MeanFieldSolver(SolverBase):
             latex_strs.append(latex_str)
 
         return tuple(latex_strs)
-
-    def get_barrier_symbols(self, log_latex=False):
-        """
-        Function to get all barrier expression symbols.
-        """
-        # Go through all reaction expressions to get symbols of barriers.
-        Gaf_syms, Gar_syms = [], []
-        for rxn_expression in self._owner.rxn_expressions:
-            Gaf_sym, Gar_sym = self.get_single_barrier_symbols(rxn_expression)
-            Gaf_syms.append(Gaf_sym)
-            Gar_syms.append(Gar_sym)
-
-        # latex strings.
-        f_latexs = self.get_latex_strs(part1=r'\Delta G_{', part2=r'+}',
-                                       symbols=Gaf_syms)
-        r_latexs = self.get_latex_strs(part1=r'\Delta G_{', part2=r'-}',
-                                       symbols=Gar_syms)
-
-        if log_latex:
-            # Log it.
-            self.log_latex(f_latexs)
-            self.log_latex(r_latexs)
-
-        return Gaf_syms, Gar_syms
 
     def get_equilibrium_constant_syms(self):
         """

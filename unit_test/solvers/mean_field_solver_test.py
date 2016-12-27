@@ -364,63 +364,6 @@ class MeanFieldSolverTest(unittest.TestCase):
 
         # }}}
 
-#    def test_get_single_barrier_symbols(self):
-#        # {{{
-#        " Make sure we can get correct barrier expression for an elementary reaction. "
-#        # Construction.
-#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-#        parser = model.parser
-#        solver = model.solver
-#
-#        parser.parse_data(filename=mkm_energy)
-#        solver.get_data()
-#        solver.get_data_symbols()
-#
-#        rxn_expression = 'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s'
-#        ret_barrier_symbols = solver.get_single_barrier_symbols(rxn_expression)
-#        COO_2s = solver._extract_symbol("CO-O_2s","free_energy")
-#        CO_s = solver._extract_symbol("CO_s","free_energy")
-#        O_s = solver._extract_symbol("O_s","free_energy")
-#        CO2_g = solver._extract_symbol("CO2_g","free_energy")
-#        s = solver._extract_symbol("s","free_energy")
-#        ref_barrier_symbols = (COO_2s - CO_s - O_s, -2*s + COO_2s - CO2_g)
-#
-#        self.assertTupleEqual(ref_barrier_symbols, ret_barrier_symbols)
-#        # }}}
-#
-#    def test_get_barrier_symbols(self):
-#        # {{{
-#        " Make sure we can get all barrier expressions correctly. "
-#        # Construction.
-#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-#        parser = model.parser
-#        solver = model.solver
-#
-#        parser.parse_data(filename=mkm_energy)
-#        solver.get_data()
-#        solver.get_data_symbols()
-#
-#        # Check.
-#        ret_Gaf_symbols, ret_Gar_symbols = solver.get_barrier_symbols()
-#
-#        # Get references.
-#        COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
-#        CO_s = solver._extract_symbol("CO_s", "free_energy")
-#        O_s = solver._extract_symbol("O_s", "free_energy")
-#        CO2_g = solver._extract_symbol("CO2_g", "free_energy")
-#        O2_g = solver._extract_symbol("O2_g", "free_energy")
-#        CO_g = solver._extract_symbol("CO_g", "free_energy")
-#        s = solver._extract_symbol("s", "free_energy")
-#
-#        ref_Gaf_symbols = [0, 0, COO_2s - CO_s - O_s]
-#        ref_Gar_symbols = [CO_g + s - CO_s,
-#                           O2_g + 2*s - 2*O_s,
-#                           COO_2s - CO2_g - 2*s]
-#
-#        self.assertListEqual(ret_Gaf_symbols, ref_Gaf_symbols)
-#        self.assertListEqual(ret_Gar_symbols, ref_Gar_symbols)
-#        # }}}
-#
     def test_get_rate_constant_symbols(self):
         # {{{
         " Test we can get get correct rate constants symbols. "
