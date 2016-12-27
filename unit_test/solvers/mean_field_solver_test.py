@@ -472,6 +472,7 @@ class MeanFieldSolverTest(unittest.TestCase):
 
     def test_get_rate_syms(self):
         " Test we can get rate expressions correctly. "
+        # {{{
         model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         parser = model.parser
         solver = model.solver
@@ -520,151 +521,147 @@ class MeanFieldSolverTest(unittest.TestCase):
 
         for ref, ret in zip(ref_reverses, ret_reverses):
             self.assertEqual(ref.simplify(), ret.simplify())
+        # }}}
 
-#    def test_get_G_sub_dict(self):
-#        # {{{
-#        " Test private function _get_G_sub_dict(). "
-#        # Construction.
-#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-#        parser = model.parser
-#        solver = model.solver
-#
-#        parser.parse_data(filename=mkm_energy)
-#        solver.get_data()
-#        solver.get_data_symbols()
-#
-#        # Check.
-#        G_COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
-#        G_CO_s = solver._extract_symbol("CO_s", "free_energy")
-#        G_O_s = solver._extract_symbol("O_s", "free_energy")
-#        G_CO2_g = solver._extract_symbol("CO2_g", "free_energy")
-#        G_O2_g = solver._extract_symbol("O2_g", "free_energy")
-#        G_CO_g = solver._extract_symbol("CO_g", "free_energy")
-#        G_s = solver._extract_symbol("s", "free_energy")
-#
-#        ref_dict = {G_O2_g: mpf('3.508000000002'),
-#                    G_CO2_g: mpf('0.0'),
-#                    G_CO_g: mpf('0.0'),
-#                    G_COO_2s: mpf('0.9259999999995'),
-#                    G_s: mpf('0.0'),
-#                    G_CO_s: mpf('-0.7580000000016'),
-#                    G_O_s: mpf('0.4340000000011')}
-#
-#        ret_dict = solver._get_G_subs_dict()
-#
-#        self.assertDictEqual(ref_dict, ret_dict)
-#
-#    def test_get_theta_subs_dict(self):
-#        " Test protected function _get_theta_subs_dict(). "
-#        # Construction.
-#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-#        parser = model.parser
-#        solver = model.solver
-#
-#        parser.parse_data(filename=mkm_energy)
-#        solver.get_data()
-#        solver.get_data_symbols()
-#
-#        coverages = (0.5, 0.3)
-#
-#        c_CO_s = solver._extract_symbol("CO_s", "ads_cvg")
-#        c_O_s = solver._extract_symbol("O_s", "ads_cvg")
-#        c_s = solver._extract_symbol("s", "free_site_cvg")
-#
-#        ref_dict = {c_CO_s: 0.5, c_O_s: 0.3}
-#        ret_dict = solver._get_theta_subs_dict(coverages)
-#        
-#        self.assertDictEqual(ref_dict, ret_dict)
-#        # }}}
-#
-#    def test_get_p_subs_dict(self):
-#        # {{{
-#        " Test protected function _get_p_subs_dict(). "
-#        # Construction.
-#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-#        parser = model.parser
-#        solver = model.solver
-#
-#        parser.parse_data(filename=mkm_energy)
-#        solver.get_data()
-#        solver.get_data_symbols()
-#
-#        p_CO2_g = solver._extract_symbol("CO2_g", "pressure")
-#        p_O2_g = solver._extract_symbol("O2_g", "pressure")
-#        p_CO_g = solver._extract_symbol("CO_g", "pressure")
-#
-#        ref_dict = {p_O2_g: mpf('0.3333333333321'),
-#                    p_CO_g: mpf('1.0'),
-#                    p_CO2_g: mpf('0.0')}
-#        ret_dict = solver._get_p_subs_dict()
-#
-#        self.assertDictEqual(ref_dict, ret_dict)
-#        # }}}
-#
-#    def test_get_c_sub_dict(self):
-#        " Test protected function _get_c_sub_dict(). "
-#        # Need Implimentation.
-#
-#    def test_get_subs_dict(self):
-#        # {{{
-#        " Make sure we can get correct substitution dict for all symbols. "
-#        # Construction.
-#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-#        parser = model.parser
-#        solver = model.solver
-#
-#        parser.parse_data(filename=mkm_energy)
-#        solver.get_data()
-#        solver.get_data_symbols()
-#
-#        # Get symbols.
-#
-#        # Free energy.
-#        G_COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
-#        G_CO_s = solver._extract_symbol("CO_s", "free_energy")
-#        G_O_s = solver._extract_symbol("O_s", "free_energy")
-#        G_CO2_g = solver._extract_symbol("CO2_g", "free_energy")
-#        G_O2_g = solver._extract_symbol("O2_g", "free_energy")
-#        G_CO_g = solver._extract_symbol("CO_g", "free_energy")
-#        G_s = solver._extract_symbol("s", "free_energy")
-#
-#        # Coverage.
-#        c_CO_s = solver._extract_symbol("CO_s", "ads_cvg")
-#        c_O_s = solver._extract_symbol("O_s", "ads_cvg")
-#        c_s = solver._extract_symbol("s", "free_site_cvg")
-#
-#        # Pressure.
-#        p_CO2_g = solver._extract_symbol("CO2_g", "pressure")
-#        p_O2_g = solver._extract_symbol("O2_g", "pressure")
-#        p_CO_g = solver._extract_symbol("CO_g", "pressure")
-#
-#        # Constants.
-#        kB = solver._kB_sym
-#        T = solver._T_sym
-#        h = solver._h_sym
-#        
-#        coverages = (0.5, 0.4)
-#
-#        ref_dict = {G_O2_g: mpf('3.508000000002'),
-#                    c_CO_s: 0.5,
-#                    T: mpf('450.0'),
-#                    G_CO2_g: mpf('0.0'),
-#                    G_CO_g: mpf('0.0'),
-#                    G_COO_2s: mpf('0.9259999999995'),
-#                    p_O2_g: mpf('0.3333333333321'),
-#                    c_O_s: 0.4,
-#                    kB: mpf('8.617332400007e-5'),
-#                    h: mpf('4.135667662e-15'),
-#                    G_s: mpf('0.0'),
-#                    G_CO_s: mpf('-0.7580000000016'),
-#                    p_CO_g: mpf('1.0'),
-#                    G_O_s: mpf('0.4340000000011'),
-#                    p_CO2_g: mpf('0.0')}
-#        ret_dict = solver.get_subs_dict(coverages)
-#
-#        self.assertDictEqual(ref_dict, ret_dict)
-#        # }}}
-#
+    def test_get_G_sub_dict(self):
+        # {{{
+        " Test private function _get_G_sub_dict(). "
+        # Construction.
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
+
+        parser.parse_data(filename=mkm_energy)
+        solver.get_data()
+        solver.get_data_symbols()
+
+        # Check.
+        Ga_0, Ga_1, Ga_2 = solver._Ga_sym
+        dG_0, dG_1, dG_2 = solver._dG_sym
+
+        ref_dict = {Ga_0: 0.0,
+                    dG_1: -2.64,
+                    Ga_1: 0.0,
+                    dG_0: -0.758,
+                    Ga_2: 1.25,
+                    dG_2: 0.324}
+
+        ret_dict = solver._get_G_subs_dict()
+
+        for key in ref_dict:
+            self.assertEqual(ref_dict[key], ret_dict[key])
+
+    def test_get_theta_subs_dict(self):
+        " Test protected function _get_theta_subs_dict(). "
+        # Construction.
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
+
+        parser.parse_data(filename=mkm_energy)
+        solver.get_data()
+        solver.get_data_symbols()
+
+        coverages = (0.5, 0.3)
+
+        c_CO_s = solver._extract_symbol("CO_s", "ads_cvg")
+        c_O_s = solver._extract_symbol("O_s", "ads_cvg")
+        c_s = solver._extract_symbol("*_s", "free_site_cvg")
+
+        ref_dict = {c_CO_s: 0.5, c_O_s: 0.3}
+        ret_dict = solver._get_theta_subs_dict(coverages)
+        
+        self.assertDictEqual(ref_dict, ret_dict)
+        # }}}
+
+    def test_get_p_subs_dict(self):
+        # {{{
+        " Test protected function _get_p_subs_dict(). "
+        # Construction.
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
+
+        parser.parse_data(filename=mkm_energy)
+        solver.get_data()
+        solver.get_data_symbols()
+
+        p_CO2_g = solver._extract_symbol("CO2_g", "pressure")
+        p_O2_g = solver._extract_symbol("O2_g", "pressure")
+        p_CO_g = solver._extract_symbol("CO_g", "pressure")
+
+        ref_dict = {p_O2_g: mpf('0.3333333333321'),
+                    p_CO_g: mpf('1.0'),
+                    p_CO2_g: mpf('0.0')}
+        ret_dict = solver._get_p_subs_dict()
+
+        self.assertDictEqual(ref_dict, ret_dict)
+        # }}}
+
+    def test_get_c_sub_dict(self):
+        " Test protected function _get_c_sub_dict(). "
+        # Need Implimentation.
+
+    def test_get_subs_dict(self):
+        # {{{
+        " Make sure we can get correct substitution dict for all symbols. "
+        # Construction.
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
+
+        parser.parse_data(filename=mkm_energy)
+        solver.get_data()
+        solver.get_data_symbols()
+
+        # Get symbols.
+
+        # Free energy.
+        Ga_0, Ga_1, Ga_2 = solver._Ga_sym
+        dG_0, dG_1, dG_2 = solver._dG_sym
+
+        G_dict = {Ga_0: 0.0,
+                  dG_1: -2.64,
+                  Ga_1: 0.0,
+                  dG_0: -0.758,
+                  Ga_2: 1.25,
+                  dG_2: 0.324}
+
+        # Coverage.
+        c_CO_s = solver._extract_symbol("CO_s", "ads_cvg")
+        c_O_s = solver._extract_symbol("O_s", "ads_cvg")
+        c_s = solver._extract_symbol("*_s", "free_site_cvg")
+
+        # Pressure.
+        p_CO2_g = solver._extract_symbol("CO2_g", "pressure")
+        p_O2_g = solver._extract_symbol("O2_g", "pressure")
+        p_CO_g = solver._extract_symbol("CO_g", "pressure")
+
+        # Constants.
+        kB = solver._kB_sym
+        T = solver._T_sym
+        h = solver._h_sym
+        
+        coverages = (0.5, 0.4)
+
+        ref_dict = {c_CO_s: 0.5,
+                    T: mpf('450.0'),
+                    p_O2_g: mpf('0.3333333333321'),
+                    c_O_s: 0.4,
+                    kB: mpf('8.617332400007e-5'),
+                    h: mpf('4.135667662e-15'),
+                    Ga_0: 0.0,
+                    dG_1: -2.64,
+                    Ga_1: 0.0,
+                    dG_0: -0.758,
+                    Ga_2: 1.25,
+                    dG_2: 0.324}
+        ret_dict = solver.get_subs_dict(coverages)
+
+        for key in ref_dict:
+            self.assertAlmostEqual(float(ref_dict[key]), float(ret_dict[key]))
+        # }}}
+
 #    def test_get_rate_constants_by_sym(self):
 #        " Make sure we can get rate constant correctly by symbols derivation. "
 #        # Construction.
