@@ -283,58 +283,59 @@ class MeanFieldSolverTest(unittest.TestCase):
     # ----------------------------------------------------------------
     # Symbol tests.
 
-#    def test_get_data_symbols(self):
-#        # {{{
-#        " Make sure we can get all correct symbols. "
-#        # Construction.
-#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-#        solver = model.solver
-#
-#        solver.get_data_symbols()
-#
-#        # Check P symbols.
-#        ref_p_symbols = ('p_CO2_g', 'p_CO_g', 'p_O2_g')
-#        ret_p_symbols = solver._p_sym
-#
-#        for p, p_str in zip(ret_p_symbols, ref_p_symbols):
-#            self.assertEqual(p.name, p_str)
-#
-#        # Check concentration symbols.
-#        ref_c_symbols = ()
-#        ret_c_symbols = solver._c_sym
-#
-#        for p, p_str in zip(ret_p_symbols, ref_p_symbols):
-#            self.assertEqual(p.name, p_str)
-#
-#        # Check adsorbate coverage symbols.
-#        ref_ads_theta_symbols = ()
-#        ret_ads_theta_symbols = solver._ads_theta_sym
-#
-#        for ads_theta, ads_theta_str in zip(ret_ads_theta_symbols, ref_ads_theta_symbols):
-#            self.assertEqual(ads_theta.name, ads_theta_str)
-#
-#        # Check free site coverage symbols.
-#        ref_fsite_theta_symbols = ()
-#        ret_fsite_theta_symbols = solver._fsite_theta_sym
-#
-#        for fsite_theta, fsite_theta_str in zip(ret_fsite_theta_symbols, ref_fsite_theta_symbols):
-#            self.assertEqual(fsite_theta.name, fsite_theta_str)
-#
-#        # Check free energy coverage symbols.
-#        ref_G_symbols = ()
-#        ret_G_symbols = solver._G_sym
-#
-#        for G, G_str in zip(ret_G_symbols, ref_G_symbols):
-#            self.assertEqual(G.name, G_str)
-#
-#        # Check K coverage symbols.
-#        ref_K_symbols = ()
-#        ret_K_symbols = solver._K_sym
-#
-#        for K, K_str in zip(ret_K_symbols, ref_K_symbols):
-#            self.assertEqual(K.name, K_str)
-#        # }}}
-#
+    def test_get_data_symbols(self):
+        # {{{
+        " Make sure we can get all correct symbols. "
+        # Construction.
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+        solver = model.solver
+
+        solver.get_data_symbols()
+
+        # Check P symbols.
+        ref_p_symbols = ('p_CO2_g', 'p_CO_g', 'p_O2_g')
+        ret_p_symbols = solver._p_sym
+
+        for p, p_str in zip(ret_p_symbols, ref_p_symbols):
+            self.assertEqual(p.name, p_str)
+
+        # Check concentration symbols.
+        ref_c_symbols = ()
+        ret_c_symbols = solver._c_sym
+
+        for c, c_str in zip(ret_p_symbols, ref_p_symbols):
+            self.assertEqual(c.name, c_str)
+
+        # Check adsorbate coverage symbols.
+        ref_ads_theta_symbols = ("theta_CO_s", "theta_O_s")
+        ret_ads_theta_symbols = solver._ads_theta_sym
+
+        for ads_theta, ads_theta_str in zip(ret_ads_theta_symbols, ref_ads_theta_symbols):
+            self.assertEqual(ads_theta.name, ads_theta_str)
+
+        # Check free site coverage symbols.
+        self.assertEqual(1.0, solver._fsite_theta_sym[0] + sum(solver._ads_theta_sym))
+
+        # Check free energy coverage symbols.
+        ref_Ga_symbols = ("Ga_0", "Ga_1", "Ga_2")
+        ret_Ga_symbols = solver._Ga_sym
+
+        for Ga, Ga_str in zip(ret_Ga_symbols, ref_Ga_symbols):
+            self.assertEqual(Ga.name, Ga_str)
+
+        ref_dG_symbols = ("dG_0", "dG_1", "dG_2")
+        ret_dG_symbols = solver._dG_sym
+        for dG, dG_str in zip(ret_dG_symbols, ref_dG_symbols):
+            self.assertEqual(dG.name, dG_str)
+
+        # Check K coverage symbols.
+        ref_K_symbols = ("K_0", "K_1", "K_2")
+        ret_K_symbols = solver._K_sym
+
+        for K, K_str in zip(ret_K_symbols, ref_K_symbols):
+            self.assertEqual(K.name, K_str)
+        # }}}
+
 #    def test_extract_symbol(self):
 #        # {{{
 #        " Test protected function _extract_symbol(). "

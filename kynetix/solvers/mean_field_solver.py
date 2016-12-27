@@ -637,17 +637,14 @@ class MeanFieldSolver(SolverBase):
             fsite_theta_sym.append(free_site_cvg)
         self._fsite_theta_sym = tuple(fsite_theta_sym)
 
-        # Free energies symbols for each species.
-        sp_list = self._owner.species_definitions.keys()
-        G_sym_list = []
-        for idx, sp_name in enumerate(sp_list):
-            # Add star symbol.
-            if sp_name in self._owner.site_names:
-                sp_name = '*_' + sp_name
-                sp_list[idx] = sp_name
-
-            G_sym_list.append(sym.Symbol('G_' + sp_name, real=True, positive=True))
-        self._G_sym = tuple(G_sym_list)
+        # Relative energies symbols for each reaction.
+        Ga_sym_list = []
+        dG_sym_list = []
+        for idx in range(len(self._owner.rxn_expressions)):
+            Ga_sym_list.append(sym.Symbol("Ga_{}".format(idx), real=True))
+            dG_sym_list.append(sym.Symbol("dG_{}".format(idx), real=True))
+        self._Ga_sym = tuple(Ga_sym_list)
+        self._dG_sym = tuple(dG_sym_list)
 
         # Equilibrium constants(K) symbols for each elementary rxn.
         K_sym_list = []
@@ -692,12 +689,9 @@ class MeanFieldSolver(SolverBase):
         elif symbol_type == 'free_site_cvg':
             sp_list = self._owner.site_names
             symbol_tup = self._fsite_theta_sym
-        elif symbol_type == 'free_energy':
-            sp_list = self._owner.species_definitions.keys()
-            symbol_tup = self._G_sym
         else:
             msg_template = ("illegal symbol_type. symbol_type must be in {}")
-            type_list = ['pressure', 'concentration', 'ads_cvg', 'free_site_cvg', 'free_energy']
+            type_list = ['pressure', 'concentration', 'ads_cvg', 'free_site_cvg']
             msg = msg_template.format(type_list)
             raise ValueError(msg)
 
