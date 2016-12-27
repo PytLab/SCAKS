@@ -16,6 +16,7 @@ class MeanFieldSolverTest(unittest.TestCase):
 
     def setUp(self):
         # Test case setting.
+        # {{{
         self.maxDiff = None
         self.setup_dict = dict(
             rxn_expressions = [
@@ -66,6 +67,7 @@ class MeanFieldSolverTest(unittest.TestCase):
             tolerance = 1e-20,
             max_rootfinding_iterations = 100,
         )
+        # }}}
 
     def test_solver_construction_query(self):
         # {{{

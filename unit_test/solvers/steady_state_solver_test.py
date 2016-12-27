@@ -411,48 +411,48 @@ class SteadyStateSolverTest(unittest.TestCase):
 #        " Test we can get correct dtheta/dt for an adsorbate. "
 #        # NEED IMPLIMENTATION.
 #
-#    def test_steady_state_function_by_sym(self):
-#        " Test function steady_state_function(). "
-#        # Construction.
-#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-#        parser = model.parser
-#        solver = model.solver
-#
-#        parser.parse_data(filename=mkm_energy)
-#        solver.get_data()
-#        solver.get_data_symbols()
-#
-#        # Check.
-#        coverages = (0.5, 0.3)
-#        ref_dtheta_dt = (mpf('1875295534118.435791015625'),
-#                         mpf('125019703287.740081787109375'))
-#        ret_dtheta_dt = solver.steady_state_function_by_sym(coverages)
-#
-#        self.assertTupleEqual(ref_dtheta_dt, ret_dtheta_dt)
-#
-#    def test_analytical_jacobian_sym(self):
-#        " Make sure we can get anlytical jacobian matrix correctly. "
-#        # NEED IMPLIMENTATION.
-#
-#    def test_analytical_jacobian_by_sym(self):
-#        " Test we can get correct jacobian matrix by symbol derivation. "
-#        # Construction.
-#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-#        parser = model.parser
-#        solver = model.solver
-#
-#        parser.parse_data(filename=mkm_energy)
-#        solver.get_data()
-#        solver.get_data_symbols()
-#
-#        # Check.
-#        coverages = (0.5, 0.3)
-#
-#        ref_jacobian = [[mpf('-9376477776977.31640625'), mpf('-9376477746581.609375')],
-#                        [mpf('-1250197032877.56982421875'), mpf('-1250197032877.588623046875')]]
-#        ret_jacobian = solver.analytical_jacobian_by_sym(coverages).tolist()
-#
-#        self.assertListEqual(ref_jacobian, ret_jacobian)
+    def test_steady_state_function_by_sym(self):
+        " Test function steady_state_function(). "
+        # Construction.
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
+
+        parser.parse_data(filename=mkm_energy)
+        solver.get_data()
+        solver.get_data_symbols()
+
+        # Check.
+        coverages = (0.5, 0.3)
+        ref_dtheta_dt = (mpf('1875295534118.435791015625'),
+                         mpf('125019703287.740081787109375'))
+        ret_dtheta_dt = solver.steady_state_function_by_sym(coverages)
+
+        self.assertTupleEqual(ref_dtheta_dt, ret_dtheta_dt)
+
+    def test_analytical_jacobian_sym(self):
+        " Make sure we can get anlytical jacobian matrix correctly. "
+        # NEED IMPLIMENTATION.
+
+    def test_analytical_jacobian_by_sym(self):
+        " Test we can get correct jacobian matrix by symbol derivation. "
+        # Construction.
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
+
+        parser.parse_data(filename=mkm_energy)
+        solver.get_data()
+        solver.get_data_symbols()
+
+        # Check.
+        coverages = (0.5, 0.3)
+
+        ref_jacobian = [[mpf('-9376477776977.31640625'), mpf('-9376477746581.609375')],
+                        [mpf('-1250197032877.56982421875'), mpf('-1250197032877.588623046875')]]
+        ret_jacobian = solver.analytical_jacobian_by_sym(coverages).tolist()
+
+        self.assertListEqual(ref_jacobian, ret_jacobian)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(SteadyStateSolverTest)
