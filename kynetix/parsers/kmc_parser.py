@@ -22,7 +22,6 @@ from kynetix.database.lattice_data import grid_neighbor_offsets
 from kynetix.functions import mangled_name
 from kynetix.parsers.rxn_parser import *
 from kynetix.parsers.relative_energy_parser import RelativeEnergyParser
-from kynetix.solvers.solver_base import SolverBase
 from kynetix.utilities.check_utilities import *
 
 

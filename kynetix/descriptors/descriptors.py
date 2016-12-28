@@ -209,3 +209,24 @@ class Property(object):
                                                              self.func.__name__)
         raise AttributeError(msg)
 
+
+class Memoized(object):
+    """
+    Descriptor for returned value memoization.
+    """
+    def __init__(self, func):
+        self.func = func
+        self.results = {}
+
+    def __get__(self, instance, cls):
+        self.instance = instance
+        return self
+
+    def __call__(self, *args):
+        key = args
+        try:
+            return self.results[key]
+        except KeyError:
+            self.results[key] = self.func(self.instance, *args)
+            return self.results[key]
+

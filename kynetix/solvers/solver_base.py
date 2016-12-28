@@ -36,7 +36,7 @@ class SolverBase(ModelShell):
         return kTST
 
     @staticmethod
-    def get_kCT(Ea, Auc, act_ratio, p, m, T, f=1.0):
+    def get_kCT(Ea, Auc, act_ratio, m, T, p=101325.0, f=1.0):
         """
         Static function to get rate constant/collision rate
         according to Collision Theory.
@@ -49,7 +49,7 @@ class SolverBase(ModelShell):
 
         act_ratio: area of active sites/area of unitcell, float(<= 1.0).
 
-        p: partial pressure of gas, float.
+        p: pressure of gas, float, default value is 101325 Pa (atm).
 
         m: absolute mass of molecule (kg), float.
 
@@ -92,7 +92,7 @@ class SolverBase(ModelShell):
 
         return kf, kr
 
-    def get_rxn_rates_CT(self, rxn_expression, relative_energies):
+    def get_rxn_rates_CT(self, rxn_expression, relative_energies, include_pressure=False):
         """
         Function to get rate constants for an elementary reaction
         using Collision Theory wrt adsorption process.
@@ -100,7 +100,13 @@ class SolverBase(ModelShell):
         Parameters:
         -----------
         rxn_expression: The expression of an elementary reaction, str.
+
         relative_energies: The relative energies for all elementary reactions.
+
+        include_pressure: The flag for whether to include the actual gas pressure
+                          (not the pressure of standard condition, 101325.0 Pa).
+                          The default value is False, meaning that we calculate the
+                          rate constant by default.
         """
         # {{{
         # Get the condition for log info output.
@@ -140,12 +146,16 @@ class SolverBase(ModelShell):
             idx = is_types.index("gas")
             formula = istate[idx]
             gas_name = formula.formula()
-            p = self._owner.species_definitions[gas_name]["pressure"]
             m = ParserBase.get_molecular_mass(formula.species(), absolute=True)
+
+            if include_pressure:
+                p = 101325.0*self._owner.species_definitions[gas_name]["pressure"]
+            else:
+                p = 101325.0
 
             # Use Collision Theory to get forward rate.
             Ea = Gaf
-            rf = self.get_kCT(Ea, Auc, act_ratio, p, m, T)
+            rf = self.get_kCT(Ea=Ea, Auc=Auc, act_ratio=act_ratio, p=p, m=m, T=T)
             if log_allowed:
                 self.__logger.info("R(forward) = {} s^-1 (Collision Theory)".format(rf))
 
@@ -171,12 +181,16 @@ class SolverBase(ModelShell):
             idx = fs_types.index("gas")
             formula = fstate[idx]
             gas_name = formula.formula()
-            p = self._owner.species_definitions[gas_name]["pressure"]
+
+            if include_pressure:
+                p = 101325.0*self._owner.species_definitions[gas_name]["pressure"]
+            else:
+                p = 101325.0
 
             # Use Collision Theory to get reverse rate.
             Ea = Gar
             m = ParserBase.get_molecular_mass(formula.species(), absolute=True)
-            rr = self.get_kCT(Ea, Auc, act_ratio, p, m, T)
+            rr = self.get_kCT(Ea=Ea, Auc=Auc, act_ratio=act_ratio, p=p, m=m, T=T)
             if log_allowed:
                 self.__logger.info("R(reverse) = {} s^-1 (Collision Theory)".format(rr))
 

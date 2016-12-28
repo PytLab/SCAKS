@@ -18,24 +18,6 @@ from kynetix.solvers.rootfinding_iterators import *
 from kynetix.solvers.mean_field_solver import MeanFieldSolver
 
 
-class Memoized(object):
-    def __init__(self, func):
-        self.func = func
-        self.results = {}
-
-    def __get__(self, instance, cls):
-        self.instance = instance
-        return self
-
-    def __call__(self, *args):
-        key = args
-        try:
-            return self.results[key]
-        except KeyError:
-            self.results[key] = self.func(self.instance, *args)
-            return self.results[key]
-
-
 class SteadyStateSolver(MeanFieldSolver):
     def __init__(self, owner):
         # {{{
@@ -408,7 +390,7 @@ class SteadyStateSolver(MeanFieldSolver):
         return derivation_expression
         # }}}
 
-    @Memoized
+    @dc.Memoized
     def poly_adsorbate_derivation(self, adsorbate_name, poly_expression):
         """
         Expect a polynomial expression of dtheta_dt and an adsorbate_name,
