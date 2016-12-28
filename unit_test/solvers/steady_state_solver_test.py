@@ -69,56 +69,6 @@ class SteadyStateSolverTest(unittest.TestCase):
         ref_classified_adsorbates = {'*_s': ['CO_s', 'O_s']}
         self.assertDictEqual(ref_classified_adsorbates, solver.classified_adsorbates)
 
-#    def test_get_data(self):
-#        " Test solver can get data correctly. "
-#        # Construction.
-#        model = MicroKineticModel(setup_file="input_files/steady_state_solver.mkm",
-#                             logger_level=logging.WARNING)
-#        parser = model.parser()
-#        solver = model.solver()
-#
-#        # Get data before parsing data, an exception would be expected.
-#        self.assertRaises(IOError, solver.get_data)
-#
-#        # Parse data.
-#        parser.parse_data(filename=mkm_energy)
-#        solver.get_data()
-#
-#        self.assertTrue(solver.has_relative_energy())
-#
-#        # Check pressure.
-#        ref_pressures = {'CO2_g': mpf('0.0'), 'CO_g': mpf('1.0'), 'O2_g': mpf(1./3.)}
-#        self.assertDictEqual(ref_pressures, solver.pressures())
-#
-#        # Check concentrations.
-#        ref_concentrations = {}
-#        self.assertDictEqual(ref_concentrations, solver.concentrations())
-#
-#        # Relative energies.
-#        ref_relative_energies = {'Gaf': [0.0, 0.0, 1.25],
-#                                 'Gar': [0.758, 2.64, 0.9259999999999999],
-#                                 'dG': [-0.758, -2.64, 0.324]}
-#        self.assertDictEqual(ref_relative_energies, solver.relative_energies())
-#
-#        # Formation energies.
-#        self.assertRaises(AttributeError, solver.formation_energies)
-#
-#        # Parse absolute energies.
-#        parser.parse_data(filename=mkm_energy)
-#        solver.get_data()
-#
-#        self.assertTrue(solver.has_absolute_energy())
-#
-#        # Check formation energies.
-#        ref_formation_energies = {'*_s': mpf('0.0'),
-#                                  'CO-O_2s': mpf('0.9259999999999999342747969421907328069210052490234375'),
-#                                  'CO2_g': mpf('0.0'),
-#                                  'CO_g': mpf('0.0'),
-#                                  'CO_s': mpf('-0.75800000000000000710542735760100185871124267578125'),
-#                                  'O2_g': mpf('3.50800000000000000710542735760100185871124267578125'),
-#                                  'O_s': mpf('0.4339999999999999413802242997917346656322479248046875')}
-#        self.assertDictEqual(ref_formation_energies, solver.formation_energies())
-
     def test_elementary_dtheta_dt_expression(self):
         " Test get_elementary_dtheta_dt_expression() function. "
         # Construction.
@@ -356,61 +306,53 @@ class SteadyStateSolverTest(unittest.TestCase):
         for ref, ret in zip(ref_XRC, ret_XRC):
             self.assertAlmostEqual(ref, float(ret), places=4)
 
-#    def test_get_elementary_dtheta_dt_sym(self):
-#        " Test we can get correct dtheta/dt expression for an elementary reaction. "
-#        # Construction.
-#        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-#        parser = model.parser
-#        solver = model.solver
-#
-#        parser.parse_data(filename=mkm_energy)
-#        solver.get_data()
-#        solver.get_data_symbols()
-#
-#        # Get symbols.
-#
-#        # Free energy.
-#        G_COO_2s = solver._extract_symbol("CO-O_2s", "free_energy")
-#        G_CO_s = solver._extract_symbol("CO_s", "free_energy")
-#        G_O_s = solver._extract_symbol("O_s", "free_energy")
-#        G_CO2_g = solver._extract_symbol("CO2_g", "free_energy")
-#        G_O2_g = solver._extract_symbol("O2_g", "free_energy")
-#        G_CO_g = solver._extract_symbol("CO_g", "free_energy")
-#        G_s = solver._extract_symbol("s", "free_energy")
-#
-#        # Coverage.
-#        c_CO_s = solver._extract_symbol("CO_s", "ads_cvg")
-#        c_O_s = solver._extract_symbol("O_s", "ads_cvg")
-#        c_s = solver._extract_symbol("s", "free_site_cvg")
-#
-#        # Pressure.
-#        p_CO2_g = solver._extract_symbol("CO2_g", "pressure")
-#        p_O2_g = solver._extract_symbol("O2_g", "pressure")
-#        p_CO_g = solver._extract_symbol("CO_g", "pressure")
-#
-#        # Constants.
-#        kB = solver._kB_sym
-#        T = solver._T_sym
-#        h = solver._h_sym
-#        from sympy import E
-#
-#        kf = T*kB*E**((-G_COO_2s + G_CO_s + G_O_s)/(T*kB))/h
-#        kr = T*kB*E**((2*G_s - G_COO_2s + G_CO2_g)/(T*kB))/h
-#
-#        rxn_expression = 'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s'
-#        rf = kf*c_CO_s*c_O_s
-#        rr = kr*p_CO2_g*c_s**2
-#
-#        ref_dtheta_dt = rr - rf
-#        adsorbate = "CO_s"
-#        ret_dtheta_dt = solver.get_elementary_dtheta_dt_sym(adsorbate, rxn_expression)
-#
-#        self.assertEqual(ref_dtheta_dt, ret_dtheta_dt)
-#
-#    def test_get_adsorbate_dtheta_dt_sym(self):
-#        " Test we can get correct dtheta/dt for an adsorbate. "
-#        # NEED IMPLIMENTATION.
-#
+    def test_get_elementary_dtheta_dt_sym(self):
+        " Test we can get correct dtheta/dt expression for an elementary reaction. "
+        # Construction.
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+        parser = model.parser
+        solver = model.solver
+
+        parser.parse_data(filename=mkm_energy)
+        solver.get_data()
+        solver.get_data_symbols()
+
+        # Get symbols.
+
+        # Relative energies.
+        Ga_0, Ga_1, Ga_2 = solver._Ga_sym
+        dG_0, dG_1, dG_2 = solver._dG_sym
+
+        # Coverage.
+        theta_CO_s = solver._extract_symbol("CO_s", "ads_cvg")
+        theta_O_s = solver._extract_symbol("O_s", "ads_cvg")
+        theta_s = solver._extract_symbol("*_s", "free_site_cvg")
+
+        # Pressure.
+        p_CO2_g = solver._extract_symbol("CO2_g", "pressure")
+        p_O2_g = solver._extract_symbol("O2_g", "pressure")
+        p_CO_g = solver._extract_symbol("CO_g", "pressure")
+
+        # Constants.
+        kB = solver._kB_sym
+        T = solver._T_sym
+        h = solver._h_sym
+        from sympy import E
+
+        rxn_expression = 'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s'
+        rf = T*kB*theta_CO_s*theta_O_s*E**(-Ga_2/(T*kB))/h
+        rr = T*kB*p_CO2_g*(-theta_CO_s - theta_O_s + 1.0)**2*E**((-Ga_2 + dG_2)/(T*kB))/h
+
+        ref_dtheta_dt = rr - rf
+        adsorbate = "CO_s"
+        ret_dtheta_dt = solver.get_elementary_dtheta_dt_sym(adsorbate, rxn_expression)
+
+        self.assertEqual(ref_dtheta_dt.simplify(), ret_dtheta_dt.simplify())
+
+    def test_get_adsorbate_dtheta_dt_sym(self):
+        " Test we can get correct dtheta/dt for an adsorbate. "
+        # NEED IMPLIMENTATION.
+
     def test_steady_state_function_by_sym(self):
         " Test function steady_state_function(). "
         # Construction.
