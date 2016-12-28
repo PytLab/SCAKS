@@ -92,7 +92,7 @@ class SolverBase(ModelShell):
 
         return kf, kr
 
-    def get_rxn_rates_CT(self, rxn_expression, relative_energies):
+    def get_rxn_rates_CT(self, rxn_expression, relative_energies, include_pressure=False):
         """
         Function to get rate constants for an elementary reaction
         using Collision Theory wrt adsorption process.
@@ -100,7 +100,13 @@ class SolverBase(ModelShell):
         Parameters:
         -----------
         rxn_expression: The expression of an elementary reaction, str.
+
         relative_energies: The relative energies for all elementary reactions.
+
+        include_pressure: The flag for whether to include the actual gas pressure
+                          (not the pressure of standard condition, 101325.0 Pa).
+                          The default value is False, meaning that we calculate the
+                          rate constant by default.
         """
         # {{{
         # Get the condition for log info output.
@@ -140,8 +146,12 @@ class SolverBase(ModelShell):
             idx = is_types.index("gas")
             formula = istate[idx]
             gas_name = formula.formula()
-            p = self._owner.species_definitions[gas_name]["pressure"]
             m = ParserBase.get_molecular_mass(formula.species(), absolute=True)
+
+            if include_pressure:
+                p = 101325.0*self._owner.species_definitions[gas_name]["pressure"]
+            else:
+                p = 101325.0
 
             # Use Collision Theory to get forward rate.
             Ea = Gaf
@@ -171,7 +181,11 @@ class SolverBase(ModelShell):
             idx = fs_types.index("gas")
             formula = fstate[idx]
             gas_name = formula.formula()
-            p = self._owner.species_definitions[gas_name]["pressure"]
+
+            if include_pressure:
+                p = 101325.0*self._owner.species_definitions[gas_name]["pressure"]
+            else:
+                p = 101325.0
 
             # Use Collision Theory to get reverse rate.
             Ea = Gar
