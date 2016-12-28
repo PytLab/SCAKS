@@ -2,6 +2,7 @@ import cPickle as cpkl
 import copy
 import logging
 import os
+from operator import add
 
 import kynetix.descriptors.descriptors as dc
 import kynetix.descriptors.component_descriptors as cpdc
@@ -37,7 +38,7 @@ class KineticModel(object):
                                        candidates=range(0, 60, 10))
 
     parser = cpdc.Component("parser", default=None, candidates=["RelativeEnergyParser",
-                                                                "CsvParser",
+                                                                "AbsoluteEnergyParser",
                                                                 "KMCParser"])
 
     solver = cpdc.Component("solver", default=None, candidates=["KMCSolver",
@@ -298,6 +299,53 @@ class KineticModel(object):
             self.solver = setup_dict["solver"]
         # }}}
 
+    def generate_relative_energies_file(self, filename="rel_energy.py"):
+        """
+        Generate a energy input file containing relative energies
+        for all elementary reactions.
+
+        Parameters:
+        -----------
+        filename: The name of relative input file, str.
+                  Default value is 'rel_energy.py'.
+        """
+        content = ("# Relative Energies for all elementary reactions.\n" +
+                   "Ga, dG = [], []\n\n")
+
+        for rxn_expression in self.rxn_expressions:
+            rxn_content = "# {}\nGa.append()\ndG.append()\n\n".format(rxn_expression)
+            content += rxn_content
+
+        with open(filename, "w") as f:
+            f.write(content)
+
+    def generate_absolute_energies_file(self, filename="abs_energy.py"):
+        """
+        Generate a energy input file containing absolute energies
+        for all species(including sites).
+
+        Parameters:
+        -----------
+        filename: The name of absolute energy input file, str.
+                  Default value is 'abs_energy.py'.
+        """
+        content = ("# Absolute energies for all species.\n" +
+                   "absolute_energies = {\n\n")
+
+        all_species = reduce(add, [self.gas_names,
+                                   self.liquid_names,
+                                   self.adsorbate_names,
+                                   self.transition_state_names,
+                                   self.site_names])
+
+        for sp in all_species:
+            content += "    '{}': 0.0, # eV\n\n".format(sp)
+
+        content += "}\n\n"
+
+        with open(filename, "w") as f:
+            f.write(content)
+
     def run(self, *kwargs):
         pass
 
@@ -387,4 +435,10 @@ class KineticModel(object):
         """
         return self._relative_energies
 
+    @dc.Property
+    def absolute_energies(self):
+        """
+        Query function for absolute energy in data file.
+        """
+        return self._absolute_energies
 

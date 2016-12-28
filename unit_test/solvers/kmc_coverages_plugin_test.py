@@ -28,8 +28,8 @@ class KMCCoveragesPluginTest(unittest.TestCase):
                 'CO_g': {'pressure': 0.01},
                 'O2_g': {'pressure': 0.2},
                 'CO2_g': {'pressure': 0.01},
-                'b': {'site_name': 'bridge', 'type': 'site', 'total': 0.5},
-                't': {'site_name': 'top', 'type': 'site', 'total': 0.5},
+                '*_b': {'site_name': 'bridge', 'type': 'site', 'total': 0.5},
+                '*_t': {'site_name': 'top', 'type': 'site', 'total': 0.5},
             },
 
             temperature = 298.,
@@ -62,8 +62,7 @@ class KMCCoveragesPluginTest(unittest.TestCase):
     def test_run_with_coverages(self):
         " Make sure the model can run with frequency analysis. "
         model = KMCModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-        model.parser.parse_data(relative=True,
-                                energy_file=kmc_energy,
+        model.parser.parse_data(energy_file=kmc_energy,
                                 processes_file=kmc_processes,
                                 configuration_file=kmc_config,
                                 sitesmap_file=kmc_sites)

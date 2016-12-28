@@ -9,7 +9,7 @@ if "__main__" == __name__:
     # Plot TOFs.
     globs, locs = {}, {}
     execfile("auto_tofs.py", globs, locs)
-    pressures = locs['pCO']
+    pressures = locs['pO2']
     TONs = locs['tofs']
 
     fig = plt.figure()
@@ -25,7 +25,7 @@ if "__main__" == __name__:
     pressure_range = max(pressures) - min(pressures)
     ax1.set_ylim(-0.1, 1.1)
     ax1.set_xlim(min(pressures)-pressure_range*0.1, max(pressures)+pressure_range*0.1)
-    ax1.set_xlabel(r"$\bf{P(CO_g)/bar}$")
+    ax1.set_xlabel(r"$\bf{P(O2_g)/bar}$")
     ax1.set_ylabel(r"$\bf{Coverages}$")
 
 
@@ -40,7 +40,7 @@ if "__main__" == __name__:
                                            marker='o',
                                            markerfacecolor=colors[idx],
                                            markeredgecolor=colors[idx],
-                                           markersize=7.0,
+                                           markersize=14.0,
                                            alpha=0.7,
                                            label=sp)
 
@@ -52,20 +52,20 @@ if "__main__" == __name__:
     ax2.set_ylabel(r"$\bf{TOF/s^-1}$")
     ax2.plot(pressures, TONs, color="#0F0F0F",
                               linewidth=2.0,
-                              marker='o',
+                              marker='^',
                               markerfacecolor="#0F0F0F",
                               markeredgecolor="#0F0F0F",
-                              markersize=7.0,
+                              markersize=14.0,
                               alpha=0.3,
                               label='TOF')
 
     # Trick for labels.
     ax1.plot(0, 0, color="#0F0F0F",
                    linewidth=2.0,
-                   marker='o',
+                   marker='^',
                    markerfacecolor="#0F0F0F",
                    markeredgecolor="#0F0F0F",
-                   markersize=7.0,
+                   markersize=14.0,
                    alpha=0.3,
                    label='TOF')
     ax1.grid(True)

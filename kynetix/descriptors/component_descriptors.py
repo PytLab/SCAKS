@@ -1,6 +1,5 @@
 from kynetix.parsers import *
 from kynetix.solvers import *
-from kynetix.table_makers import *
 from kynetix.correctors import *
 from kynetix.plotters import *
 from kynetix.descriptors.descriptors import AttrDescriptor

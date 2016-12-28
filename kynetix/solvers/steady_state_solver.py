@@ -15,7 +15,25 @@ from kynetix.errors.error import *
 from kynetix.utilities.format_utilities import get_list_string
 from kynetix.parsers.rxn_parser import *
 from kynetix.solvers.rootfinding_iterators import *
-from kynetix.solvers.mean_field_solver import *
+from kynetix.solvers.mean_field_solver import MeanFieldSolver
+
+
+class Memoized(object):
+    def __init__(self, func):
+        self.func = func
+        self.results = {}
+
+    def __get__(self, instance, cls):
+        self.instance = instance
+        return self
+
+    def __call__(self, *args):
+        key = args
+        try:
+            return self.results[key]
+        except KeyError:
+            self.results[key] = self.func(self.instance, *args)
+            return self.results[key]
 
 
 class SteadyStateSolver(MeanFieldSolver):
@@ -326,18 +344,18 @@ class SteadyStateSolver(MeanFieldSolver):
             return "theta['{}']".format(sp_name)
 
         # Get all sites in term_expression.
-        site_cvg_regex = r"theta\['\*_(\w*)'\]"
+        site_cvg_regex = r"theta\['(\*_\w*)'\]"
         sites_list = re.findall(site_cvg_regex, term_expression)
 
         # Get site info of adsorbate.
         formula = ChemFormula(adsorbate_name)
-        site_name = formula.site()
-        site_cvg_expr = theta('*_' + site_name)
+        site_name = "*_{}".format(formula.site())
+        site_cvg_expr = theta(site_name)
         site_total = self._owner.species_definitions[site_name]['total']
 
         # Get derivation expression wrt free site.
         def deriv_site_part(site_name, term_expression):
-            initial_expr = self.__term_adsorbate_derivation('*_'+site_name, term_expression)
+            initial_expr = self.__term_adsorbate_derivation(site_name, term_expression)
 
             # Convert site expression to adsobate expression.
             if site_cvg_expr in initial_expr:
@@ -390,6 +408,7 @@ class SteadyStateSolver(MeanFieldSolver):
         return derivation_expression
         # }}}
 
+    @Memoized
     def poly_adsorbate_derivation(self, adsorbate_name, poly_expression):
         """
         Expect a polynomial expression of dtheta_dt and an adsorbate_name,
@@ -958,131 +977,6 @@ class SteadyStateSolver(MeanFieldSolver):
         return all_data
         # }}}
 
-    def __get_Gs_tof(self, Gs, gas_name=None):  # Gs -> free energies
-        """
-        Private function to get TOF for a given formation energies.
-
-        Parameters:
-        -----------
-        Gs: free energies of all intermediates(adsorbates and transition states).
-
-        gas_name: The gas whose TOF would be returned.
-
-        Returns:
-        --------
-        If gas name is not specified, a list of TOF for all gas species would be returned.
-        If gas name is specified, the TOF of the gas would be returned.
-        """
-        # {{{
-        # Get initial guess
-        if hasattr(self, "_coverage"):
-            init_guess = self._coverage
-        else:
-            msg = ("Converged coverages are needed to calculate TOF for a list " +
-                   "formation energies, so try to get steady state coverages first.")
-            raise AttributeError(msg)
-
-        Gs_order = self._owner.adsorbate_names + self._owner.transition_state_names
-
-        # Copy the original energies.
-        G_copy = copy.deepcopy(self._G)
-
-        # Update formation energies of solver.
-        for intermediate, G in zip(Gs_order, Gs):
-            self._G[intermediate] = G
-
-        # Get new relative energies.
-        relative_energies = self.get_relative_from_absolute()
-
-        # Calculate the new steady state coverages.
-        steady_state_cvg = self.get_steady_state_cvgs(init_guess, relative_energies)
-
-        # Get turnover frequencies.
-        tof_list = self.get_tof(steady_state_cvg, relative_energies)
-
-        # Recover solver's formation energy dict.
-        self._G = G_copy
-
-        # Return.
-        if gas_name is None:
-            return tof_list
-        else:
-            # Check gas name.
-            gas_names = self._owner.gas_names
-            if gas_name not in gas_names:
-                msg = "'{}' is not a gas species in model".format(gas_name)
-                raise ParameterError(msg)
-            idx = gas_names.index(gas_name)
-            return tof_list[idx]
-        # }}}
-
-    def __get_intermediates_Gs(self):
-        """
-        Private helper function to get formation energies of intermediates.
-        """
-        all_intermediates = (self._owner.adsorbate_names +
-                             self._owner.transition_state_names)
-        Gs = []
-        for intermediates_name in all_intermediates:
-            Gs.append(self._G[intermediates_name])
-
-        return Gs
-
-    def get_single_XTRC(self, gas_name, epsilon=None):
-        """
-        Function to get XTRC for one gas species.
-
-        Parameters:
-        -----------
-        gas_name: The gas name whose XTRC would be calculated.
-
-        epsilon: The perturbation size for numerical jacobian matrix.
-        """
-        # {{{
-        if self._owner.log_allowed:
-            self.__logger.info("Calculating Degree of Thermodynamic Rate Control(XTRC)...")
-            self.__logger.info("-"*55 + "\n")
-
-        # Get intermediates formation energies.
-        Gs = self.__get_intermediates_Gs()
-
-        # Get intermediate names.
-        intermediates = (self._owner.adsorbate_names +
-                         self._owner.transition_state_names)
-        if self._owner.log_allowed:
-            self.__logger.info("surface species: {}".format(intermediates))
-
-        kT = self._owner.kB*self._owner.temperature
-
-        # Get perturbation size.
-        if epsilon is None:
-            epsilon = self._mpf(self._owner.perturbation_size)
-        if self._owner.log_allowed:
-            self.__logger.info("epsilon = {:.2e}\n".format(float(epsilon)))
-
-            # Original tof
-            self.__logger.info("Calculating original TOF...")
-        r = self.__get_Gs_tof(Gs, gas_name=gas_name)
-
-        XTRCs = []
-        # Loop over all intermediates.
-        for i, intermediate in enumerate(intermediates):
-            if self._owner.log_allowed:
-                self.__logger.info("Calculating XTRC for '{}'...".format(intermediate))
-
-            Gs_prime = copy.deepcopy(Gs)
-            Gs_prime[i] += epsilon
-            r_prime = self.__get_Gs_tof(Gs_prime, gas_name=gas_name)
-            drdG = (r_prime - r)/epsilon
-            XTRC = -kT/r*drdG
-            XTRCs.append(XTRC)
-
-        # Log it.
-        self.__log_single_XTRC(XTRCs, gas_name)
-
-        return XTRCs
-        # }}}
-
     def __log_single_XTRC(self, XTRCs, gas_name):
         """
         Private helper function to log XTRC for a gas species.
@@ -1107,55 +1001,6 @@ class SteadyStateSolver(MeanFieldSolver):
             self.__logger.info(all_data)
 
         return all_data
-        # }}}
-
-    def get_XTRC(self, epsilon=None):
-        """
-        Function to get XTRC matrix for all gas species.
-
-        Parameters:
-        -----------
-        epsilon: The perturbation size for numerical jacobian matrix.
-
-        Returns:
-        --------
-        An XTRC mpmath.matrix for all gas species.
-            - rows for gas species.
-            - columns for intermediates and transition states.
-        """
-        # {{{
-        # Get intermediates formation energies.
-        Gs = self.__get_intermediates_Gs()
-
-        kT = self._owner.kB*self._owner.temperature
-
-        # Get perturbation size.
-        if epsilon is None:
-            epsilon = self._mpf(self._owner.perturbation_size)
-
-        # Get dr/dG matrix.
-        drdG = numerical_jacobian(f=self.__get_Gs_tof,
-                                  x=Gs,
-                                  num_repr=self._owner.numerical_representation,
-                                  matrix=self._matrix,
-                                  h=epsilon,
-                                  direction=self._owner.perturbation_direction)
-        r = self.__get_Gs_tof(Gs)
-
-        # multiply 1/r to drdG matrix.
-        diag_matrix = self._linalg.diag([-kT/tof for tof in r])
-        XTRC = diag_matrix*drdG
-
-        # Covert it to list.
-        XTRC_list = XTRC.tolist()
-
-        # Archive
-        self.archive_data('XTRC', XTRC_list)
-
-        # Log it.
-        self.__log_XTRC(XTRC_list)
-
-        return XTRC
         # }}}
 
     def __log_XTRC(self, XTRC_matrix):
@@ -1187,7 +1032,7 @@ class SteadyStateSolver(MeanFieldSolver):
         return all_data
         # }}}
 
-    def get_single_XRC(self, gas_name, epsilon=None, parallel=False):
+    def get_single_XRC(self, gas_name, epsilon=None):
         """
         Function to get XRC for one gas species.
 
@@ -1196,8 +1041,6 @@ class SteadyStateSolver(MeanFieldSolver):
         gas_name: The gas name whose XTRC would be calculated.
 
         epsilon: The perturbation size for numerical jacobian matrix.
-
-        parallel: use multi-threads or not, default value is False.
         """
         # {{{
         if self._owner.log_allowed:
@@ -1253,33 +1096,18 @@ class SteadyStateSolver(MeanFieldSolver):
 
             return XRCi
 
-        if not parallel:
-            XRCs = [None]*n_rxns
-            for i in xrange(n_rxns):
-                if self._owner.log_allowed:
-                    self.__logger.info("Calculating XRC for {} ...".format(rxn_expressions[i]))
+        XRCs = [None]*n_rxns
+        for i in xrange(n_rxns):
+            if self._owner.log_allowed:
+                self.__logger.info("Calculating XRC for {} ...".format(rxn_expressions[i]))
 
-                # Get XRC for that elementary reaction.
-                XRC = get_XRCi(i)
-                XRCs[i] = XRC
+            # Get XRC for that elementary reaction.
+            XRC = get_XRCi(i)
+            XRCs[i] = XRC
 
-                # Ouput log info.
-                if self._owner.log_allowed:
-                    self.__logger.info("XRC({}) = {:.2e}\n".format(rxn_expressions[i], float(XRC)))
-        else:
-            self.__logger.info("Calculating XRCs in multi-threads...")
-            # Reset logging level.
-            stream_level = self._owner.set_logger_level("StreamHandler", logging.WARNING)
-            file_level = self._owner.set_logger_level("FileHandler", logging.WARNING)
-
-            pool = ThreadPool()
-            XRCs = pool.map(get_XRCi, range(n_rxns))
-            pool.close()
-            pool.join()
-
-            # Recover logging level.
-            self._owner.set_logger_level("StreamHandler", stream_level)
-            self._owner.set_logger_level("FileHandler", file_level)
+            # Ouput log info.
+            if self._owner.log_allowed:
+                self.__logger.info("XRC({}) = {:.2e}\n".format(rxn_expressions[i], float(XRC)))
 
         # Ouput log info.
         self.__log_single_XRC(XRCs=XRCs, gas_name=gas_name)
@@ -1318,9 +1146,11 @@ class SteadyStateSolver(MeanFieldSolver):
         """
         if self._owner.log_allowed:
             self.__logger.info("Use ODE integration to get new initial coverages...")
-        end_time = random.randint(0, 10**5)
+        end_time = random.randint(0, 10)
 
-        new_cvgs = self.solve_ode(time_end=end_time)[-1]
+        time_span = 10**(-random.randint(0, 5))
+
+        new_cvgs = self.solve_ode(time_end=end_time, time_span=time_span)[-1]
 
         if self._owner.log_allowed:
             self.__logger.info('modify initial coverage - success')
@@ -1342,6 +1172,9 @@ class SteadyStateSolver(MeanFieldSolver):
         -----------
         algo: algorithm for ODE solving, optional, str.
               'vode' | 'zvode' | 'lsoda' | 'dopri5' | 'dop853'
+
+              for more details of integration algorithm, see:
+              https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.ode.html
 
         time_span: time span for each step, float, default to be 0.1
 

@@ -26,7 +26,7 @@ class ParserBaseTest(unittest.TestCase):
                 'CO_g': {'pressure': 1.0},
                 'O2_g': {'pressure': 1./3.},
                 'CO2_g': {'pressure': 0.00},
-                's': {'site_name': '111', 'type': 'site', 'total': 1.0},
+                '*_s': {'site_name': '111', 'type': 'site', 'total': 1.0},
             },
 
             temperature = 450.0,
@@ -34,7 +34,6 @@ class ParserBaseTest(unittest.TestCase):
             solver = "SteadyStateSolver",
             corrector = "ThermodynamicCorrector",
             plotter = "EnergyProfilePlotter",
-            ref_species = ['CO_g', 'CO2_g', 's'],
             rootfinding = 'ConstrainedNewton',
             tolerance = 1e-20,
             max_rootfinding_iterations = 100,
@@ -101,8 +100,8 @@ class ParserBaseTest(unittest.TestCase):
                                        [2.0, 0.0, -2.0],
                                        [-2.0, 1.0, 1.0]])
         ref_site_matrix = np.matrix([[0.0, 1.0, 0.0],
-                                    [0.0, 0.0, 1.0],
-                                    [-1.0, 0.0, 0.0]])
+                                     [0.0, 0.0, 1.0],
+                                     [-1.0, 0.0, 0.0]])
         ret_reapro_matrix, ret_site_matrix = parser.get_stoichiometry_matrices()
 
         self.assertTrue(np.allclose(ref_reapro_matrix, ret_reapro_matrix))
@@ -122,7 +121,7 @@ class ParserBaseTest(unittest.TestCase):
         ref_adsorbate_names = ('CO_s', 'O_s')
         ref_gas_names = ('CO2_g', 'CO_g', 'O2_g')
         ref_liquid_names = ()
-        ref_site_names = ('s', )
+        ref_site_names = ('*_s', )
         ref_transition_state_names = ('CO-O_2s', )
 
         (ret_adsorbate_names,

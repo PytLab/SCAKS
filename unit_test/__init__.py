@@ -13,4 +13,5 @@ kmc_config = kmc_path + "/kmc_configuration.py"
 # Get absolute path for mkm input data.
 mkm_path = abs_path + "/mkm_inputs"
 mkm_energy = mkm_path + "/rel_energy.py"
+mkm_abs_energy = mkm_path + "/abs_energy.py"
 

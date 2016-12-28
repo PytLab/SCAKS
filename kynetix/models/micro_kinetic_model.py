@@ -53,9 +53,6 @@ class MicroKineticModel(km.KineticModel):
     # Ode ouptut interval.
     ode_output_interval = dc.Integer("ode_output_interval", default=200)
 
-    # Species used for conversion from relative energy to absolute eneergy.
-    ref_species = dc.Sequence("ref_species", default=[], entry_type=str)
-
     # Reference energies used to calculate formation energy.
     ref_energies = dc.RefEnergies("ref_energies", default={})
     # }}}
@@ -94,7 +91,7 @@ class MicroKineticModel(km.KineticModel):
         if not mpi.is_master:
             self.set_logger_level("StreamHandler", logging.WARNING)
 
-    @do_cprofile("./MicroKineticModel_run.prof")
+    @do_cprofile("./mkm_run.prof")
     def run(self, **kwargs):
         """
         Function to solve Micro-kinetic model using Steady State Approxmiation
@@ -103,8 +100,6 @@ class MicroKineticModel(km.KineticModel):
         Parameters:
         -----------
         init_cvgs: Initial guess for coverages, tuple of floats.
-
-        correct_energy: add free energy corrections to energy data or not, bool
 
         solve_ode: solve ODE only or not, bool
 
@@ -123,7 +118,6 @@ class MicroKineticModel(km.KineticModel):
         # Setup default parameters.
         init_cvgs = kwargs.pop("init_cvgs", None)
         relative = kwargs.pop("relative", False)
-        correct_energy = kwargs.pop("correct_energy", False)
         solve_ode = kwargs.pop("solve_ode", False)
         fsolve = kwargs.pop("fsolve", False)
         coarse_guess = kwargs.pop("coarse_guess", True)
@@ -146,13 +140,7 @@ class MicroKineticModel(km.KineticModel):
         # Parse data.
         if self.log_allowed:
             self._logger.info('reading data...')
-        if relative:
-            if self.log_allowed:
-                self._logger.info('use relative energy directly...')
-        else:
-            if self.log_allowed:
-                self._logger.info('convert relative to absolute energy...')
-        parser.parse_data(filename=data_file, relative=relative)
+        parser.parse_data(filename=data_file)
 
         # -- solve steady state coverages --
         if self.log_allowed:

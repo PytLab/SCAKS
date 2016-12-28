@@ -3,12 +3,15 @@ import os
 import threading
 
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.transforms as transforms
 from math import sqrt
-from matplotlib.patches import Ellipse
 from scipy import interpolate
 from scipy.optimize import fsolve
+try:
+    import matplotlib.pyplot as plt
+    import matplotlib.transforms as transforms
+    from matplotlib.patches import Ellipse
+except ImportError:
+    pass
 
 from kynetix.errors.error import *
 from kynetix.parsers.rxn_parser import *

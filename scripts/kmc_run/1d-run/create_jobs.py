@@ -31,7 +31,7 @@ if "__main__" == __name__:
     for p in species_pressures[species_name]:
         dest = str(p)
         print("Create job {}".format(p))
-        job_dirs += "{} ".format(p)
+        job_dirs += "{}\n".format(p)
 
         if os.path.exists(dest):
             shutil.rmtree(dest)

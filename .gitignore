@@ -85,10 +85,10 @@ auto_*
 *.png
 
 # auto-generated files in examples.
-examples/*/trajplots/
-examples/*/plot_*
-examples/*/traj/
-examples/*/input_*_out.py
+examples/**/trajplots/
+examples/**/plot_*
+examples/**/traj/
+examples/**/input_*_out.py
 
 # kmc_plot scripts
 plot_coverages.py

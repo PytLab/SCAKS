@@ -21,8 +21,8 @@ setup_dict = dict(
     species_definitions = {
         'CO_g': {'pressure': 0.10},
         'O2_g': {'pressure': 0.2},
-        'CO2_g': {'pressure': 0.0288},
-        's': {'site_name': 'top', 'type': 'site', 'total': 1.0},
+        'CO2_g': {'pressure': 0.01},
+        '*_s': {'site_name': 'top', 'type': 'site', 'total': 1.0},
     },
 
     temperature = 500,
@@ -57,23 +57,27 @@ if "__main__" == __name__:
         model = MicroKineticModel(setup_dict=setup_dict, console_handler_level=logging.WARNING)
 
         # Read data.
-        model.parser.parse_data(relative=True)
+        model.parser.parse_data()
         model.solver.get_data()
 
         # Initial coverage guess.
-        if i == 0:
-            trajectory = model.solver.solve_ode(time_span=0.0001,
-                                                time_end=10,
-                                                traj_output=False)
-            init_guess = trajectory[-1]
-        else:
-            init_guess = ss_cvgs[-1]
+#        if i == 0:
+#            trajectory = model.solver.solve_ode(time_span=0.0001,
+#                                                time_end=10,
+#                                                traj_output=False)
+#            init_guess = trajectory[-1]
+#        else:
+#            init_guess = ss_cvgs[-1]
+
+        trajectory = model.solver.solve_ode(time_span=0.0001,
+                                            time_end=10,
+                                            traj_output=False)
+        init_guess = trajectory[-1]
 
         # Run.
         print("Running pressure CO_g: {}".format(pCO))
         model.run(init_cvgs=init_guess,
                   solve_ode=False,
-                  relative=True,
                   XRC=False,
                   product_name="CO2_g")
         model.clear_handlers()

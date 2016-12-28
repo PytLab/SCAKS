@@ -105,7 +105,8 @@ class ParserBase(ModelShell):
                         adsorbate_names.append(species_site)
 
                     # Site names.
-                    site_names.extend([s for s in site_dict.keys() if s not in ("g", "l")])
+                    site_names.extend(["*_{}".format(s)
+                                       for s in site_dict if s not in ("g", "l")])
 
             # Append reaction list.
             elementary_rxns_list.append(rxn_list)
@@ -144,8 +145,7 @@ class ParserBase(ModelShell):
         """
         # {{{
         # Site and adsorbate names.
-        sites_names = (['*_'+site_name for site_name in self._owner.site_names] +
-                       list(self._owner.adsorbate_names))
+        sites_names = list(self._owner.site_names + self._owner.adsorbate_names)
 
         # Reactant and product names.
         reapro_names = list(self._owner.gas_names + self._owner.liquid_names)
@@ -309,7 +309,7 @@ class ParserBase(ModelShell):
         site_dict = state.get_sites_dict()
         formula_list = state.tolist()
 
-        species_definitions = self._owner.species_definitions
+        abs_energies = self._owner.absolute_energies
         energy = 0.0
 
         for formula in formula_list:
@@ -319,15 +319,15 @@ class ParserBase(ModelShell):
 
             # Adsorbate.
             if "*" not in species_site:
-                energy += n*species_definitions[species_site]["formation_energy"]
+                energy += n*abs_energies[species_site]
             # Site.
             else:
-                energy += n*species_definitions[site]["formation_energy"]
+                energy += n*abs_energies["*_" + site]
 
         return energy
         # }}}
 
-    def get_single_relative_energies(self, rxn_expression):
+    def _get_single_relative_energies(self, rxn_expression):
         """
         Function to get relative energies for an elementary reaction:
             forward barrier,
@@ -380,7 +380,7 @@ class ParserBase(ModelShell):
         return f_barrier, r_barrier, reaction_energy
         # }}}
 
-    def get_relative_from_absolute(self):
+    def _get_relative_from_absolute(self):
         """
         Function to set relative energies from absolute energies.
         """
@@ -388,7 +388,7 @@ class ParserBase(ModelShell):
         Gafs, Gars, dGs = [], [], []
 
         for rxn_expression in self._owner.rxn_expressions:
-            Gaf, Gar, dG = self.get_single_relative_energies(rxn_expression)
+            Gaf, Gar, dG = self._get_single_relative_energies(rxn_expression)
             Gafs.append(Gaf)
             Gars.append(Gar)
             dGs.append(dG)
