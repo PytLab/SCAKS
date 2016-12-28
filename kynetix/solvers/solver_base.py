@@ -36,7 +36,7 @@ class SolverBase(ModelShell):
         return kTST
 
     @staticmethod
-    def get_kCT(Ea, Auc, act_ratio, p, m, T, f=1.0):
+    def get_kCT(Ea, Auc, act_ratio, m, T, p=101325.0, f=1.0):
         """
         Static function to get rate constant/collision rate
         according to Collision Theory.
@@ -49,7 +49,7 @@ class SolverBase(ModelShell):
 
         act_ratio: area of active sites/area of unitcell, float(<= 1.0).
 
-        p: partial pressure of gas, float.
+        p: pressure of gas, float, default value is 101325 Pa (atm).
 
         m: absolute mass of molecule (kg), float.
 
@@ -145,7 +145,7 @@ class SolverBase(ModelShell):
 
             # Use Collision Theory to get forward rate.
             Ea = Gaf
-            rf = self.get_kCT(Ea, Auc, act_ratio, p, m, T)
+            rf = self.get_kCT(Ea=Ea, Auc=Auc, act_ratio=act_ratio, p=p, m=m, T=T)
             if log_allowed:
                 self.__logger.info("R(forward) = {} s^-1 (Collision Theory)".format(rf))
 
@@ -176,7 +176,7 @@ class SolverBase(ModelShell):
             # Use Collision Theory to get reverse rate.
             Ea = Gar
             m = ParserBase.get_molecular_mass(formula.species(), absolute=True)
-            rr = self.get_kCT(Ea, Auc, act_ratio, p, m, T)
+            rr = self.get_kCT(Ea=Ea, Auc=Auc, act_ratio=act_ratio, p=p, m=m, T=T)
             if log_allowed:
                 self.__logger.info("R(reverse) = {} s^-1 (Collision Theory)".format(rr))
 

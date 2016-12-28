@@ -29,7 +29,7 @@ class SolverBaseTest(unittest.TestCase):
         T = 450
         
         ref_r = 3.82203461455769e-15
-        ret_r = SolverBase.get_kCT(Ea, Auc, act_ratio, p, m, T)
+        ret_r = SolverBase.get_kCT(Ea=Ea, Auc=Auc, act_ratio=act_ratio, p=p, m=m, T=T)
 
         self.assertEqual(ref_r, ret_r)
 
