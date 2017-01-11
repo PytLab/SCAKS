@@ -214,7 +214,14 @@ class Property(object):
 class HashableDict(dict):
     # Override the __hash__ method of dict to make it hashable.
     def __hash__(self):
-        return tuple(sorted(self.items()))
+        # Make all keys hashable.
+        keys = tuple(map(make_hashable, self.keys()))
+        # Make all values hashable.
+        values = tuple(map(make_hashable, self.values()))
+        # Return the hash value of dict.
+        hash_value = hash(tuple(sorted(zip(keys, values))))
+
+        return hash_value
 
 
 class HashableList(list):
@@ -247,7 +254,7 @@ class Memoized(object):
         return self
 
     def __call__(self, *args):
-        # Make hashable.
+        # Make all arguments hashable.
         key = tuple(map(make_hashable, args))
 
         try:

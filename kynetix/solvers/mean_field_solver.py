@@ -192,6 +192,7 @@ class MeanFieldSolver(SolverBase):
             c_dict.setdefault(liquid_name, self._mpf(concentration))
         self._c = c_dict
 
+    @dc.Memoized
     def get_rate_constants(self, relative_energies=None):
         """
         Function to get rate constants for all elementary reactions

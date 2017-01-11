@@ -1062,7 +1062,7 @@ class SteadyStateSolver(MeanFieldSolver):
 
             # Rate constants change.
             k = kfs[idx]
-            ks_prime, _ = self.get_rate_constants(relative_energies=relative_energies)
+            ks_prime, _ = self.get_rate_constants(relative_energies)
             k_prime = ks_prime[idx]
             dk = k_prime - k
 
