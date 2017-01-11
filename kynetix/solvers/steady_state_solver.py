@@ -2,8 +2,6 @@ import copy
 import logging
 import random
 import re
-import signal
-from multiprocessing.dummy import Pool as ThreadPool
 
 from scipy.integrate import odeint, ode
 from scipy.linalg import norm
@@ -230,7 +228,7 @@ class SteadyStateSolver(MeanFieldSolver):
         theta = self._cvg_tuple2dict(cvgs_tuple)
 
         # Rate constants(kf, kr).
-        kf, kr = self.get_rate_constants(relative_energies)
+        kf, kr = self.get_rate_constants(relative_energies=relative_energies)
 
         # Pressure.
         p = self._p
@@ -462,7 +460,7 @@ class SteadyStateSolver(MeanFieldSolver):
         theta = self._cvg_tuple2dict(cvgs_tuple)
 
         # Rate constants(kf, kr).
-        kf, kr = self.get_rate_constants(relative_energies)
+        kf, kr = self.get_rate_constants(relative_energies=relative_energies)
 
         # Pressure.
         p = self._p
@@ -481,7 +479,8 @@ class SteadyStateSolver(MeanFieldSolver):
                 # Get adsorbate_name.
                 adsorbate_name = adsorbate_names[j]
                 # Fill the matrix
-                derivation = self.poly_adsorbate_derivation(adsorbate_name, poly_expression)
+                derivation = self.poly_adsorbate_derivation(adsorbate_name=adsorbate_name,
+                                                            poly_expression=poly_expression)
                 J[i, j] = eval(derivation)
 
         # Return Jacobian matrix.
@@ -1039,7 +1038,7 @@ class SteadyStateSolver(MeanFieldSolver):
         r = self.get_tof(cvgs=init_guess, gas_name=gas_name)
 
         # Original rate constants.
-        kfs, _ = self.get_rate_constants()
+        kfs, _ = self.get_rate_constants(relative_energies=None)
 
         # Get perturbation size.
         if epsilon is None:

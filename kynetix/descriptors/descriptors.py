@@ -210,6 +210,41 @@ class Property(object):
         raise AttributeError(msg)
 
 
+# ------------------------------------------------------------------
+# Functions and classes for parameters and return value memoization.
+# ------------------------------------------------------------------
+
+class HashableDict(dict):
+    # Override the __hash__ method of dict to make it hashable.
+    def __hash__(self):
+        # Make all keys hashable.
+        keys = tuple(map(make_hashable, self.keys()))
+        # Make all values hashable.
+        values = tuple(map(make_hashable, self.values()))
+        # Return the hash value of dict.
+        hash_value = hash(tuple(sorted(zip(keys, values))))
+
+        return hash_value
+
+
+class HashableList(list):
+    def __hash__(self):
+        # Use the hash value of corresponding hashable tuple.
+        return hash(tuple(map(make_hashable, self)))
+
+
+def make_hashable(var):
+    """
+    Function to make a immutable variable hashable.
+    """
+    if type(var) in (list, tuple):
+        return HashableList(var)
+    elif type(var) is dict:
+        return HashableDict(var)
+    else:
+        return var
+
+
 class Memoized(object):
     """
     Descriptor for returned value memoization.
@@ -222,11 +257,18 @@ class Memoized(object):
         self.instance = instance
         return self
 
-    def __call__(self, *args):
-        key = args
+    def __call__(self, **kwargs):
+        # Make all arguments hashable.
+        key = make_hashable(kwargs)
+
+        # NOTE: if relative_energies is None, then we should
+        #       search the model's relative energies.
+        if "relative_energies" in key and key["relative_energies"] is None:
+            key["relative_energies"] = make_hashable(self.instance._owner.relative_energies)
+
         try:
             return self.results[key]
         except KeyError:
-            self.results[key] = self.func(self.instance, *args)
+            self.results[key] = self.func(self.instance, **kwargs)
             return self.results[key]
 
