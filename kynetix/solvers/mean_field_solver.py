@@ -1103,3 +1103,4 @@ class MeanFieldSolver(SolverBase):
         Query functions for rate expressions for all elementary reactions.
         """
         return self._rate_expressions
+
