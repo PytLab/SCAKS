@@ -1038,7 +1038,7 @@ class SteadyStateSolver(MeanFieldSolver):
         r = self.get_tof(cvgs=init_guess, gas_name=gas_name)
 
         # Original rate constants.
-        kfs, _ = self.get_rate_constants()
+        kfs, _ = self.get_rate_constants(relative_energies=None)
 
         # Get perturbation size.
         if epsilon is None:

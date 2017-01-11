@@ -261,6 +261,11 @@ class Memoized(object):
         # Make all arguments hashable.
         key = make_hashable(kwargs)
 
+        # NOTE: if relative_energies is None, then we should
+        #       search the model's relative energies.
+        if "relative_energies" in key and key["relative_energies"] is None:
+            key["relative_energies"] = make_hashable(self.instance._owner.relative_energies)
+
         try:
             return self.results[key]
         except KeyError:
