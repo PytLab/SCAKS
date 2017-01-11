@@ -210,6 +210,30 @@ class Property(object):
         raise AttributeError(msg)
 
 
+# Functions and classes for parameters and return value memoization.
+class HashableDict(dict):
+    # Override the __hash__ method of dict to make it hashable.
+    def __hash__(self):
+        return tuple(sorted(self.items()))
+
+
+class HashableList(list):
+    def __hash__(self):
+        return id(self)
+
+
+def make_hashable(var):
+    """
+    Function to make a immutable variable hashable.
+    """
+    if type(var) is list:
+        return HashableList(var)
+    elif type(var) is dict:
+        return HashableDict(var)
+    else:
+        return var
+
+
 class Memoized(object):
     """
     Descriptor for returned value memoization.
@@ -223,7 +247,9 @@ class Memoized(object):
         return self
 
     def __call__(self, *args):
-        key = args
+        # Make hashable.
+        key = tuple(map(make_hashable, args))
+
         try:
             return self.results[key]
         except KeyError:
