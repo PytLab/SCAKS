@@ -229,14 +229,15 @@ class HashableDict(dict):
 
 class HashableList(list):
     def __hash__(self):
-        return id(self)
+        # Use the hash value of corresponding hashable tuple.
+        return hash(tuple(map(make_hashable, self)))
 
 
 def make_hashable(var):
     """
     Function to make a immutable variable hashable.
     """
-    if type(var) is list:
+    if type(var) in (list, tuple):
         return HashableList(var)
     elif type(var) is dict:
         return HashableDict(var)
@@ -258,7 +259,7 @@ class Memoized(object):
 
     def __call__(self, *args):
         # Make all arguments hashable.
-        key = tuple(map(make_hashable, args))
+        key = make_hashable(args)
 
         try:
             return self.results[key]
