@@ -228,7 +228,7 @@ class SteadyStateSolver(MeanFieldSolver):
         theta = self._cvg_tuple2dict(cvgs_tuple)
 
         # Rate constants(kf, kr).
-        kf, kr = self.get_rate_constants(relative_energies)
+        kf, kr = self.get_rate_constants(relative_energies=relative_energies)
 
         # Pressure.
         p = self._p
@@ -460,7 +460,7 @@ class SteadyStateSolver(MeanFieldSolver):
         theta = self._cvg_tuple2dict(cvgs_tuple)
 
         # Rate constants(kf, kr).
-        kf, kr = self.get_rate_constants(relative_energies)
+        kf, kr = self.get_rate_constants(relative_energies=relative_energies)
 
         # Pressure.
         p = self._p
@@ -479,7 +479,8 @@ class SteadyStateSolver(MeanFieldSolver):
                 # Get adsorbate_name.
                 adsorbate_name = adsorbate_names[j]
                 # Fill the matrix
-                derivation = self.poly_adsorbate_derivation(adsorbate_name, poly_expression)
+                derivation = self.poly_adsorbate_derivation(adsorbate_name=adsorbate_name,
+                                                            poly_expression=poly_expression)
                 J[i, j] = eval(derivation)
 
         # Return Jacobian matrix.
@@ -1060,7 +1061,7 @@ class SteadyStateSolver(MeanFieldSolver):
 
             # Rate constants change.
             k = kfs[idx]
-            ks_prime, _ = self.get_rate_constants(relative_energies)
+            ks_prime, _ = self.get_rate_constants(relative_energies=relative_energies)
             k_prime = ks_prime[idx]
             dk = k_prime - k
 

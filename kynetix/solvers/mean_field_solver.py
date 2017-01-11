@@ -379,7 +379,7 @@ class MeanFieldSolver(SolverBase):
         theta = self._cvg_tuple2dict(cvgs_tuple)
 
         # Rate constants(kf, kr).
-        kf, kr = self.get_rate_constants(relative_energies)
+        kf, kr = self.get_rate_constants(relative_energies=relative_energies)
 
         # Pressure.
         p = self._p

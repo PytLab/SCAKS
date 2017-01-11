@@ -257,13 +257,13 @@ class Memoized(object):
         self.instance = instance
         return self
 
-    def __call__(self, *args):
+    def __call__(self, **kwargs):
         # Make all arguments hashable.
-        key = make_hashable(args)
+        key = make_hashable(kwargs)
 
         try:
             return self.results[key]
         except KeyError:
-            self.results[key] = self.func(self.instance, *args)
+            self.results[key] = self.func(self.instance, **kwargs)
             return self.results[key]
 
