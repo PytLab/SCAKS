@@ -2,8 +2,6 @@ import copy
 import logging
 import random
 import re
-import signal
-from multiprocessing.dummy import Pool as ThreadPool
 
 from scipy.integrate import odeint, ode
 from scipy.linalg import norm

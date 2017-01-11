@@ -210,7 +210,10 @@ class Property(object):
         raise AttributeError(msg)
 
 
+# ------------------------------------------------------------------
 # Functions and classes for parameters and return value memoization.
+# ------------------------------------------------------------------
+
 class HashableDict(dict):
     # Override the __hash__ method of dict to make it hashable.
     def __hash__(self):
