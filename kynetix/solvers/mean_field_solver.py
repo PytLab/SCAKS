@@ -24,9 +24,6 @@ from kynetix.solvers.solver_base import *
 
 class MeanFieldSolver(SolverBase):
 
-    # Counter for calling number for get_rate_constants().
-    call_counter = 0
-
     def __init__(self, owner):
         """
         A class acts as a base class to be inherited by other
@@ -211,7 +208,6 @@ class MeanFieldSolver(SolverBase):
         relative_energies: The relative energies for all elementary reactions.
         """
         # {{{
-        log_allowed = (self._owner.log_allowed and MeanFieldSolver.call_counter == 0)
         # Get relative energies.
         if not relative_energies:
             if self._owner.has_relative_energy:
@@ -227,14 +223,8 @@ class MeanFieldSolver(SolverBase):
 
         if self._owner.rate_algo == "TST":
             rate_func = self.get_rxn_rates_TST
-            if log_allowed:
-                msg = "Use Transition State Theory to get rates for all processes."
-                self.__logger.info(msg)
         elif self._owner.rate_algo == "CT":
             rate_func = self.get_rxn_rates_CT
-            if log_allowed:
-                self.__logger.info("Use Collision Theory to get rates for adsorption processes")
-                self.__logger.info("Transition State Theory for others.")
         else:
             msg = "Unknown method type '{}'".format(method)
             raise ValueError(msg)
@@ -244,12 +234,6 @@ class MeanFieldSolver(SolverBase):
             kf, kr = rate_func(rxn_expression, relative_energies)
             kfs.append(kf)
             krs.append(kr)
-
-            if log_allowed:
-                msg = "Reaction: {}: kf = {}, kr = {} (s^-1)".format(rxn_expression, kf, kr)
-                self.__logger.info(msg)
-
-        MeanFieldSolver.call_counter += 1
 
         return kfs, krs
         # }}}
