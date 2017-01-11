@@ -202,7 +202,8 @@ class SteadyStateSolverTest(unittest.TestCase):
         ref_expression = ("-kf[0]*p['CO_g'] - kr[0] + " +
                           "-2*kr[2]*p['CO2_g']*(1.0 - theta['CO_s'] - theta['O_s'])**1 - " +
                           "kf[2]*theta['O_s']")
-        ret_expression = solver.poly_adsorbate_derivation(adsorbate, poly_expression)
+        ret_expression = solver.poly_adsorbate_derivation(adsorbate_name=adsorbate,
+                                                          poly_expression=poly_expression)
         self.assertEqual(ref_expression, ret_expression)
 
         adsorbate = "O_s"
@@ -213,7 +214,8 @@ class SteadyStateSolverTest(unittest.TestCase):
                           "2*2*kr[1]*theta['O_s']**1 + " +
                           "-2*kr[2]*p['CO2_g']*(1.0 - theta['CO_s'] - theta['O_s'])**1 - " +
                           "kf[2]*theta['CO_s']")
-        ret_expression = solver.poly_adsorbate_derivation(adsorbate, poly_expression)
+        ret_expression = solver.poly_adsorbate_derivation(adsorbate_name=adsorbate,
+                                                          poly_expression=poly_expression)
         self.assertEqual(ref_expression, ret_expression)
 
     def test_analytical_jacobian(self):
