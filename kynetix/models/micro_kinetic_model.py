@@ -225,7 +225,8 @@ class MicroKineticModel(km.KineticModel):
 
         # Get reversibilities.
         rf, rr = solver.get_rates(cvgs_tuple=self.__ss_cvgs,
-                                  relative_energies=relative_energies)
+                                  relative_energies=relative_energies,
+                                  log=True)
         reversibilities = solver.get_reversibilities(rf, rr)
 
         # Calculate XRC.

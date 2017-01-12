@@ -268,7 +268,7 @@ class MeanFieldSolver(SolverBase):
         # Get data content of table.
         content = title + line
         for rxn_expression, f, r in zip(self._owner.rxn_expressions, fdata, rdata):
-            content += data_format.format(rxn_expression, f, r)
+            content += data_format.format(rxn_expression, float(f), float(r))
 
         content = "\n\n" + content + line
 
@@ -395,7 +395,7 @@ class MeanFieldSolver(SolverBase):
 
         return f_rate_expressions, r_rate_expressions
 
-    def get_rates(self, cvgs_tuple, relative_energies=None):
+    def get_rates(self, cvgs_tuple, relative_energies=None, log=False):
         """
         Function to get forward and reverse rates list.
 
@@ -405,6 +405,8 @@ class MeanFieldSolver(SolverBase):
 
         relative_energies: A dict of relative eneriges of elementary reactions.
             NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
+
+        log: Output log info or not, bool, false by default.
 
         Returns:
         --------
@@ -434,6 +436,9 @@ class MeanFieldSolver(SolverBase):
             exec exprs_str in locals()
 
         rfs, rrs = map(tuple, (rfs, rrs))
+
+        if self._owner.log_allowed and log:
+            self.__log_rates(rfs, rrs, "R_forward", "R_reverse")
 
         # Archive.
         self.archive_data('rates', (rfs, rrs))
