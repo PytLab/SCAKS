@@ -5,4 +5,5 @@
 [![Software License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![versions](https://img.shields.io/badge/versions%20-%20%200.6.5-blue.svg)](https://github.com/PytLab/VASPy)
 
-###A Python Library for Catalysis Micro-kinetic Analysis
+###A Python Library for Catalytic Kinetics Analysis
+
