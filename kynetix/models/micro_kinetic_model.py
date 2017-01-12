@@ -217,6 +217,7 @@ class MicroKineticModel(km.KineticModel):
                                                           relative_energies=relative_energies)
 
         # Output rate constants for all elementary reactions.
+        solver.get_rate_constants(relative_energies=relative_energies, log=True)
 
         # Get TOFs for gases.
         self.__tofs = solver.get_tof(cvgs=self.__ss_cvgs,

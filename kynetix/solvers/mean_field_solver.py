@@ -193,7 +193,7 @@ class MeanFieldSolver(SolverBase):
         self._c = c_dict
 
     @dc.Memoized
-    def get_rate_constants(self, relative_energies=None):
+    def get_rate_constants(self, relative_energies=None, log=False):
         """
         Function to get rate constants for all elementary reactions
         using Transition State Theory.
@@ -202,6 +202,8 @@ class MeanFieldSolver(SolverBase):
         -----------
         relative_energies : A dict of relative eneriges of elementary reactions.
             NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
+
+        log: Output log or not, bool, False by default.
 
         Returns:
         --------
@@ -236,8 +238,34 @@ class MeanFieldSolver(SolverBase):
             kfs.append(kf)
             krs.append(kr)
 
+        if self._owner.log_allowed and log:
+            self.__log_rate_constants(kfs, krs)
+
         return kfs, krs
         # }}}
+
+    def __log_rate_constants(self, kfs, krs):
+        """
+        Private helpr function to output rate constants log information.
+        """
+        # Get the width for reaction expressions.
+        rxn_width = len(sorted(self._owner.rxn_expressions, key=lambda x: len(x))[-1])
+        title_format = "{{:<{width}}}{{:<12s}}{{:<12s}}\n".format(width=rxn_width+3)
+        data_format = "{{:<{width}}}{{:<12.4e}}{{:<12.4e}}\n".format(width=rxn_width+3)
+
+        # Title string.
+        title = title_format.format("reactions", "k_forward", "k_reverse")
+        # Cut-off line.
+        line = "-"*len(title) + "\n"
+
+        # Get data content of table.
+        content = title + line
+        for rxn_expression, kf, kr in zip(self._owner.rxn_expressions, kfs, krs):
+            content += data_format.format(rxn_expression, kf, kr)
+
+        content = "\n\n" + content + line
+
+        self.__logger.info(content)
 
     def boltzmann_coverages(self, include_empty_site=True):
         """
