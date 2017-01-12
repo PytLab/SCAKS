@@ -193,7 +193,7 @@ class MeanFieldSolver(SolverBase):
         self._c = c_dict
 
     @dc.Memoized
-    def get_rate_constants(self, relative_energies=None):
+    def get_rate_constants(self, relative_energies=None, log=False):
         """
         Function to get rate constants for all elementary reactions
         using Transition State Theory.
@@ -202,6 +202,8 @@ class MeanFieldSolver(SolverBase):
         -----------
         relative_energies : A dict of relative eneriges of elementary reactions.
             NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
+
+        log: Output log or not, bool, False by default.
 
         Returns:
         --------
@@ -236,8 +238,41 @@ class MeanFieldSolver(SolverBase):
             kfs.append(kf)
             krs.append(kr)
 
+        if self._owner.log_allowed and log:
+            self.__log_rates(kfs, krs, "k_forward", "k_reverse")
+
         return kfs, krs
         # }}}
+
+    def __log_rates(self, fdata, rdata, fname, rname):
+        """
+        Private helpr function to output rate log information.
+
+        Parameters:
+        -----------
+        fdata: Data for forward direction, list of float.
+        rdata: Data for reverse direction, list of float.
+        fname: The title name for forward data, str.
+        rname: The title name for reverse data, str.
+        """
+        # Get the width for reaction expressions.
+        rxn_width = len(sorted(self._owner.rxn_expressions, key=lambda x: len(x))[-1])
+        title_format = "{{:<{width}}}{{:<12s}}{{:<12s}}\n".format(width=rxn_width+3)
+        data_format = "{{:<{width}}}{{:<12.4e}}{{:<12.4e}}\n".format(width=rxn_width+3)
+
+        # Title string.
+        title = title_format.format("reactions", fname, rname)
+        # Cut-off line.
+        line = "-"*len(title) + "\n"
+
+        # Get data content of table.
+        content = title + line
+        for rxn_expression, f, r in zip(self._owner.rxn_expressions, fdata, rdata):
+            content += data_format.format(rxn_expression, float(f), float(r))
+
+        content = "\n\n" + content + line
+
+        self.__logger.info(content)
 
     def boltzmann_coverages(self, include_empty_site=True):
         """
@@ -360,7 +395,7 @@ class MeanFieldSolver(SolverBase):
 
         return f_rate_expressions, r_rate_expressions
 
-    def get_rates(self, cvgs_tuple, relative_energies=None):
+    def get_rates(self, cvgs_tuple, relative_energies=None, log=False):
         """
         Function to get forward and reverse rates list.
 
@@ -370,6 +405,8 @@ class MeanFieldSolver(SolverBase):
 
         relative_energies: A dict of relative eneriges of elementary reactions.
             NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
+
+        log: Output log info or not, bool, false by default.
 
         Returns:
         --------
@@ -399,6 +436,9 @@ class MeanFieldSolver(SolverBase):
             exec exprs_str in locals()
 
         rfs, rrs = map(tuple, (rfs, rrs))
+
+        if self._owner.log_allowed and log:
+            self.__log_rates(rfs, rrs, "R_forward", "R_reverse")
 
         # Archive.
         self.archive_data('rates', (rfs, rrs))

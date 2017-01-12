@@ -101,6 +101,10 @@ class MicroKineticModel(km.KineticModel):
         -----------
         init_cvgs: Initial guess for coverages, tuple of floats.
 
+        relative_energies: Relative energies for all elementary reactions, dict.
+            NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
+            e.g. {"Gaf": [...], "Gar": [...], "dG": [...]}
+
         solve_ode: solve ODE only or not, bool
 
         fsolve: use scipy.optimize.fsolve to get low-precision root or not, bool
@@ -117,7 +121,7 @@ class MicroKineticModel(km.KineticModel):
         # {{{
         # Setup default parameters.
         init_cvgs = kwargs.pop("init_cvgs", None)
-        relative = kwargs.pop("relative", False)
+        relative_energies = kwargs.pop("relative_energies", None)
         solve_ode = kwargs.pop("solve_ode", False)
         fsolve = kwargs.pop("fsolve", False)
         coarse_guess = kwargs.pop("coarse_guess", True)
@@ -180,7 +184,8 @@ class MicroKineticModel(km.KineticModel):
             init_guess = 'steady_state_coverage'
             if init_guess in data:
                 if self.log_allowed:
-                    self._logger.info('use coverages in {} as initial guess...'.format(self.data_file))
+                    msg = 'use coverages in {} as initial guess...'.format(self.data_file)
+                    self._logger.info(msg)
                 init_cvgs = data[init_guess]
                 coarse_guess = False
             else:
@@ -198,28 +203,42 @@ class MicroKineticModel(km.KineticModel):
         if fsolve:
             if self.log_allowed:
                 self._logger.info('using fsolve to get steady state coverages...')
-            self.__ss_cvgs = solver.fsolve_steady_state_cvgs(init_cvgs)
+            self.__ss_cvgs = solver.fsolve_steady_state_cvgs(c0=init_cvgs,
+                                                             relative_energies=relative_energies)
         else:
             if coarse_guess:
                 if self.log_allowed:
                     self._logger.info('getting coarse steady state coverages...')
-                init_cvgs = solver.coarse_steady_state_cvgs(init_cvgs)  # coarse root
+                init_cvgs = solver.coarse_steady_state_cvgs(c0=init_cvgs,
+                                                            relative_energies=relative_energies)
             if self.log_allowed:
                 self._logger.info('getting precise steady state coverages...')
-            self.__ss_cvgs = solver.get_steady_state_cvgs(init_cvgs)
+            self.__ss_cvgs = solver.get_steady_state_cvgs(c0=init_cvgs,
+                                                          relative_energies=relative_energies)
+
+        # Output rate constants for all elementary reactions.
+        solver.get_rate_constants(relative_energies=relative_energies, log=True)
+
+        # Get steady state rates for all elementary reactions.
+        rf, rr = solver.get_rates(cvgs_tuple=self.__ss_cvgs,
+                                  relative_energies=relative_energies,
+                                  log=True)
 
         # Get TOFs for gases.
-        self.__tofs = solver.get_tof(self.__ss_cvgs)
+        self.__tofs = solver.get_tof(cvgs=self.__ss_cvgs,
+                                     relative_energies=relative_energies)
 
         # Get reversibilities.
-        rf, rr = solver.get_rates(self.__ss_cvgs)
         reversibilities = solver.get_reversibilities(rf, rr)
 
         # Calculate XRC.
         if XRC:
             if product_name is None:
                 raise ParameterError("production name must be provided to get XRC.")
-            solver.get_single_XRC(product_name, epsilon=1e-5)
+
+            solver.get_single_XRC(product_name,
+                                  epsilon=1e-5,
+                                  relative_energies=relative_energies)
 
         return
         # }}}

@@ -1013,7 +1013,7 @@ class SteadyStateSolver(MeanFieldSolver):
         return all_data
         # }}}
 
-    def get_single_XRC(self, gas_name, epsilon=None):
+    def get_single_XRC(self, gas_name, epsilon=None, relative_energies=None):
         """
         Function to get XRC for one gas species.
 
@@ -1022,8 +1022,14 @@ class SteadyStateSolver(MeanFieldSolver):
         gas_name: The gas name whose XTRC would be calculated.
 
         epsilon: The perturbation size for numerical jacobian matrix.
+
+        relative_energies: Relative energies for all elementary reactions.
         """
         # {{{
+        # Get correct relative energies.
+        if relative_energies is None:
+            relative_energies = self._owner.relative_energies
+
         if self._owner.log_allowed:
             self.__logger.info("Calculating Degree of Rate Control(XRC)...")
             self.__logger.info("-"*55 + "\n")
@@ -1035,10 +1041,12 @@ class SteadyStateSolver(MeanFieldSolver):
             msg = ("Converged coverages are needed to calculate XRC, " +
                    "so try to get steady state coverages first.")
             raise AttributeError(msg)
-        r = self.get_tof(cvgs=init_guess, gas_name=gas_name)
+        r = self.get_tof(cvgs=init_guess,
+                         gas_name=gas_name,
+                         relative_energies=relative_energies)
 
         # Original rate constants.
-        kfs, _ = self.get_rate_constants(relative_energies=None)
+        kfs, _ = self.get_rate_constants(relative_energies=relative_energies)
 
         # Get perturbation size.
         if epsilon is None:
@@ -1055,21 +1063,21 @@ class SteadyStateSolver(MeanFieldSolver):
             Nested function to calculate XRC for a single elementary reaction.
             """
             # Add epsilon to relative energies.
-            relative_energies = copy.deepcopy(self._owner.relative_energies)
-            relative_energies["Gaf"][idx] += epsilon
-            relative_energies["Gar"][idx] += epsilon
+            relative_energies_copy = copy.deepcopy(relative_energies)
+            relative_energies_copy["Gaf"][idx] += epsilon
+            relative_energies_copy["Gar"][idx] += epsilon
 
             # Rate constants change.
             k = kfs[idx]
-            ks_prime, _ = self.get_rate_constants(relative_energies=relative_energies)
+            ks_prime, _ = self.get_rate_constants(relative_energies=relative_energies_copy)
             k_prime = ks_prime[idx]
             dk = k_prime - k
 
             # Get steady state coverages.
             steady_cvgs = self.get_steady_state_cvgs(c0=init_guess,
-                                                     relative_energies=relative_energies)
+                                                     relative_energies=relative_energies_copy)
             r_prime = self.get_tof(cvgs=steady_cvgs,
-                                   relative_energies=relative_energies,
+                                   relative_energies=relative_energies_copy,
                                    gas_name=gas_name)
             dr = r_prime - r
 
