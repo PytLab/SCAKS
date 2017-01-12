@@ -239,14 +239,21 @@ class MeanFieldSolver(SolverBase):
             krs.append(kr)
 
         if self._owner.log_allowed and log:
-            self.__log_rate_constants(kfs, krs)
+            self.__log_rates(kfs, krs, "k_forward", "k_reverse")
 
         return kfs, krs
         # }}}
 
-    def __log_rate_constants(self, kfs, krs):
+    def __log_rates(self, fdata, rdata, fname, rname):
         """
-        Private helpr function to output rate constants log information.
+        Private helpr function to output rate log information.
+
+        Parameters:
+        -----------
+        fdata: Data for forward direction, list of float.
+        rdata: Data for reverse direction, list of float.
+        fname: The title name for forward data, str.
+        rname: The title name for reverse data, str.
         """
         # Get the width for reaction expressions.
         rxn_width = len(sorted(self._owner.rxn_expressions, key=lambda x: len(x))[-1])
@@ -254,14 +261,14 @@ class MeanFieldSolver(SolverBase):
         data_format = "{{:<{width}}}{{:<12.4e}}{{:<12.4e}}\n".format(width=rxn_width+3)
 
         # Title string.
-        title = title_format.format("reactions", "k_forward", "k_reverse")
+        title = title_format.format("reactions", fname, rname)
         # Cut-off line.
         line = "-"*len(title) + "\n"
 
         # Get data content of table.
         content = title + line
-        for rxn_expression, kf, kr in zip(self._owner.rxn_expressions, kfs, krs):
-            content += data_format.format(rxn_expression, kf, kr)
+        for rxn_expression, f, r in zip(self._owner.rxn_expressions, fdata, rdata):
+            content += data_format.format(rxn_expression, f, r)
 
         content = "\n\n" + content + line
 
