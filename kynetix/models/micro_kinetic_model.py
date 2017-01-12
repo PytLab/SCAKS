@@ -231,7 +231,10 @@ class MicroKineticModel(km.KineticModel):
         if XRC:
             if product_name is None:
                 raise ParameterError("production name must be provided to get XRC.")
-            solver.get_single_XRC(product_name, epsilon=1e-5)
+
+            solver.get_single_XRC(product_name,
+                                  epsilon=1e-5,
+                                  relative_energies=relative_energies)
 
         return
         # }}}
