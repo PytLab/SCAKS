@@ -133,12 +133,14 @@ class MicroKineticModel(km.KineticModel):
         if self.log_allowed:
             self._logger.info('--- Solve Micro-kinetic model ---')
 
+        solver = self.solver
+
         # solve ODE
         # !! do ODE integration AFTER passing data to solver !!
         if solve_ode:
             if self.log_allowed:
                 self._logger.info("initial coverages = %s", str(init_cvgs))
-            self.solver.solve_ode(initial_cvgs=init_cvgs)
+            solver.solve_ode(initial_cvgs=init_cvgs)
             return
 
         # set initial guess(initial coverage)
@@ -172,55 +174,57 @@ class MicroKineticModel(km.KineticModel):
                 coarse_guess = False
             else:
                 if self.log_allowed:
-                    self._logger.info('use Boltzmann coverages as initial guess...')
-                init_cvgs = self.solver.boltzmann_coverages()
+                    self._logger.info('Do ODE integration to get initial guess...')
+                ode_traj = solver.solve_ode()
+                init_cvgs = ode_traj[-1]
 
-        else:  # use Boltzmann coverage
+        else:
             if self.log_allowed:
-                self._logger.info('use Boltzmann coverages as initial guess...')
-            init_cvgs = self.solver.boltzmann_coverages()
+                self._logger.info('Do ODE integration to get initial guess...')
+            ode_traj = solver.solve_ode()
+            init_cvgs = ode_traj[-1]
 
         # Solve steady state coverages.
         # Use scipy.optimize.fsolve or not (fast but low-precision).
         if fsolve:
             if self.log_allowed:
                 self._logger.info('using fsolve to get steady state coverages...')
-            self.__ss_cvgs = self.solver.fsolve_steady_state_cvgs(c0=init_cvgs,
-                                                                  relative_energies=relative_energies)
+            self.__ss_cvgs = solver.fsolve_steady_state_cvgs(c0=init_cvgs,
+                                                             relative_energies=relative_energies)
         else:
             if coarse_guess:
                 if self.log_allowed:
                     self._logger.info('getting coarse steady state coverages...')
-                init_cvgs = self.solver.coarse_steady_state_cvgs(c0=init_cvgs,
-                                                                 relative_energies=relative_energies)
+                init_cvgs = solver.coarse_steady_state_cvgs(c0=init_cvgs,
+                                                            relative_energies=relative_energies)
             if self.log_allowed:
                 self._logger.info('getting precise steady state coverages...')
-            self.__ss_cvgs = self.solver.get_steady_state_cvgs(c0=init_cvgs,
-                                                               relative_energies=relative_energies)
+            self.__ss_cvgs = solver.get_steady_state_cvgs(c0=init_cvgs,
+                                                          relative_energies=relative_energies)
 
         # Output rate constants for all elementary reactions.
-        self.solver.get_rate_constants(relative_energies=relative_energies, log=True)
+        solver.get_rate_constants(relative_energies=relative_energies, log=True)
 
         # Get steady state rates for all elementary reactions.
-        rf, rr = self.solver.get_rates(cvgs_tuple=self.__ss_cvgs,
-                                       relative_energies=relative_energies,
-                                       log=True)
+        rf, rr = solver.get_rates(cvgs_tuple=self.__ss_cvgs,
+                                  relative_energies=relative_energies,
+                                  log=True)
 
         # Get TOFs for gases.
-        self.__tofs = self.solver.get_tof(cvgs=self.__ss_cvgs,
-                                          relative_energies=relative_energies)
+        self.__tofs = solver.get_tof(cvgs=self.__ss_cvgs,
+                                     relative_energies=relative_energies)
 
         # Get reversibilities.
-        reversibilities = self.solver.get_reversibilities(rf, rr)
+        reversibilities = solver.get_reversibilities(rf, rr)
 
         # Calculate XRC.
         if XRC:
             if product_name is None:
                 raise ParameterError("production name must be provided to get XRC.")
 
-            self.solver.get_single_XRC(product_name,
-                                       epsilon=1e-5,
-                                       relative_energies=relative_energies)
+            solver.get_single_XRC(product_name,
+                                  epsilon=1e-5,
+                                  relative_energies=relative_energies)
 
         return
         # }}}
