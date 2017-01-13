@@ -104,8 +104,6 @@ class MicroKineticModel(km.KineticModel):
             NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
             e.g. {"Gaf": [...], "Gar": [...], "dG": [...]}
 
-        solve_ode: solve ODE only or not, bool
-
         fsolve: use scipy.optimize.fsolve to get low-precision root or not, bool
 
         coarse_guess: use fsolve to do initial coverages preprocessing or not, bool
@@ -119,7 +117,6 @@ class MicroKineticModel(km.KineticModel):
         # Setup default parameters.
         init_cvgs = kwargs.pop("init_cvgs", None)
         relative_energies = kwargs.pop("relative_energies", None)
-        solve_ode = kwargs.pop("solve_ode", False)
         fsolve = kwargs.pop("fsolve", False)
         coarse_guess = kwargs.pop("coarse_guess", True)
         XRC = kwargs.pop("XRC", False)
@@ -134,14 +131,6 @@ class MicroKineticModel(km.KineticModel):
             self._logger.info('--- Solve Micro-kinetic model ---')
 
         solver = self.solver
-
-        # solve ODE
-        # !! do ODE integration AFTER passing data to solver !!
-        if solve_ode:
-            if self.log_allowed:
-                self._logger.info("initial coverages = %s", str(init_cvgs))
-            solver.solve_ode(initial_cvgs=init_cvgs)
-            return
 
         # set initial guess(initial coverage)
         # if there is converged coverage in current path,
