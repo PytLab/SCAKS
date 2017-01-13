@@ -101,6 +101,8 @@ class MicroKineticModelTest(unittest.TestCase):
         " Test micro kinetic model can run correctly. "
         model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
         init_cvgs = [0.9, 0.1]
+        model.parser.parse_data(filename=mkm_energy)
+        model.solver.get_data()
         model.run(data_file=mkm_energy, init_cvgs=init_cvgs)
 
 if __name__ == '__main__':
