@@ -144,7 +144,7 @@ class ThermodynamicCorrector(CorrectorBase):
 
         m: absolute molecular mass, species mass by default, float.
 
-        p: partial pressure, model's pressure by default, float.
+        p: partial pressure (**bar**), model's pressure by default, float.
 
         T: temperature, model's temperature by default, float.
 
@@ -182,7 +182,7 @@ class ThermodynamicCorrector(CorrectorBase):
             m = parser.get_molecular_mass(species_name, absolute=True)
         if p is None:
             species_definitions = self._owner.species_definitions
-            p = species_definitions[species_site]['pressure']
+            p = P0*species_definitions[species_site]['pressure']
         if T is None:
             T = self._owner.temperature
 

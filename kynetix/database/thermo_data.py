@@ -11,6 +11,9 @@ kB_eV = 8.6173324e-5   # eV/K
 h_J = 6.626070040e-34   # J s
 h_eV = 4.135667662e-15  # eV s
 
+# Standard gas pressure
+P0 = 101325 # Pa
+
 # statistic thermodynamics data
 # Tien C L, Lienhard J H. Statistical Thermodynamics, 1979, p178
 
