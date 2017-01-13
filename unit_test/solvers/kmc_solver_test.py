@@ -89,7 +89,7 @@ class KMCSolverTest(unittest.TestCase):
                                 configuration_file=kmc_config,
                                 sitesmap_file=kmc_sites)
 
-        ref_r = (1575287.974387463, 3.930352817738651e-09)
+        ref_r = (1575287.974387463, 9.68605536974103e-14)
         ret_r = model.solver.get_rxn_rates_CT('CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b',
                                               model.relative_energies,
                                               include_pressure=True)

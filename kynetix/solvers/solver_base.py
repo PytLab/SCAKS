@@ -188,15 +188,15 @@ class SolverBase(ModelShell):
                 p = P0
 
             # Use Collision Theory to get reverse rate.
-            Ea = Gar
+#            Ea = Gar
             m = ParserBase.get_molecular_mass(formula.species(), absolute=True)
-            rr = self.get_kCT(Ea=Ea, Auc=Auc, act_ratio=act_ratio, p=p, m=m, T=T)
-            if log_allowed:
-                self.__logger.info("R(reverse) = {} s^-1 (Collision Theory)".format(rr))
-#            correction_energy = corrector.entropy_correction(gas_name, m, p, T)
-#            stoichiometry = formula.stoichiometry()
-#            Gar -= stoichiometry*correction_energy
-#            rr = self.get_kTST(Gar, T)
+#            rr = self.get_kCT(Ea=Ea, Auc=Auc, act_ratio=act_ratio, p=p, m=m, T=T)
+#            if log_allowed:
+#                self.__logger.info("R(reverse) = {} s^-1 (Collision Theory)".format(rr))
+            correction_energy = corrector.entropy_correction(gas_name, m, p, T)
+            stoichiometry = formula.stoichiometry()
+            Gar -= stoichiometry*correction_energy
+            rr = self.get_kTST(Gar, T)
 
             # Use Transition State theory to get forward rate.
             if Gar < 1.0e-10:
