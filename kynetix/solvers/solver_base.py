@@ -2,7 +2,7 @@ import logging
 from math import exp, pi, sqrt
 
 from kynetix import ModelShell
-from kynetix.database.thermo_data import kB_J, kB_eV, h_eV
+from kynetix.database.thermo_data import kB_J, kB_eV, h_eV, P0
 from kynetix.functions import *
 from kynetix.parsers.rxn_parser import *
 from kynetix.parsers.parser_base import ParserBase
@@ -36,7 +36,7 @@ class SolverBase(ModelShell):
         return kTST
 
     @staticmethod
-    def get_kCT(Ea, Auc, act_ratio, m, T, p=101325.0, f=1.0):
+    def get_kCT(Ea, Auc, act_ratio, m, T, p=P0, f=1.0):
         """
         Static function to get rate constant/collision rate
         according to Collision Theory.
@@ -149,9 +149,9 @@ class SolverBase(ModelShell):
             m = ParserBase.get_molecular_mass(formula.species(), absolute=True)
 
             if include_pressure:
-                p = 101325.0*self._owner.species_definitions[gas_name]["pressure"]
+                p = P0*self._owner.species_definitions[gas_name]["pressure"]
             else:
-                p = 101325.0
+                p = P0
 
             # Use Collision Theory to get forward rate.
             Ea = Gaf
@@ -183,9 +183,9 @@ class SolverBase(ModelShell):
             gas_name = formula.formula()
 
             if include_pressure:
-                p = 101325.0*self._owner.species_definitions[gas_name]["pressure"]
+                p = P0*self._owner.species_definitions[gas_name]["pressure"]
             else:
-                p = 101325.0
+                p = P0
 
             # Use Collision Theory to get reverse rate.
             Ea = Gar
