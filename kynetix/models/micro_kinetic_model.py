@@ -91,7 +91,6 @@ class MicroKineticModel(km.KineticModel):
         if not mpi.is_master:
             self.set_logger_level("StreamHandler", logging.WARNING)
 
-    @do_cprofile("./mkm_run.prof")
     def run(self, **kwargs):
         """
         Function to solve Micro-kinetic model using Steady State Approxmiation
@@ -140,16 +139,6 @@ class MicroKineticModel(km.KineticModel):
         # Get parser and solver.
         parser = self.__parser
         solver = self.__solver
-
-        # Parse data.
-        if self.log_allowed:
-            self._logger.info('reading data...')
-        parser.parse_data(filename=data_file)
-
-        # -- solve steady state coverages --
-        if self.log_allowed:
-            self._logger.info('passing data to solver...')
-        solver.get_data()
 
         # solve ODE
         # !! do ODE integration AFTER passing data to solver !!
