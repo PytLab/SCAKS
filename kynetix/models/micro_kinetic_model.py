@@ -91,7 +91,6 @@ class MicroKineticModel(km.KineticModel):
         if not mpi.is_master:
             self.set_logger_level("StreamHandler", logging.WARNING)
 
-    @do_cprofile("./mkm_run.prof")
     def run(self, **kwargs):
         """
         Function to solve Micro-kinetic model using Steady State Approxmiation
@@ -105,8 +104,6 @@ class MicroKineticModel(km.KineticModel):
             NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
             e.g. {"Gaf": [...], "Gar": [...], "dG": [...]}
 
-        solve_ode: solve ODE only or not, bool
-
         fsolve: use scipy.optimize.fsolve to get low-precision root or not, bool
 
         coarse_guess: use fsolve to do initial coverages preprocessing or not, bool
@@ -115,19 +112,15 @@ class MicroKineticModel(km.KineticModel):
 
         product_name: Production name of the model, str. e.g. "CH3OH_g"
 
-        data_file: The name of data file, str.
-
         """
         # {{{
         # Setup default parameters.
         init_cvgs = kwargs.pop("init_cvgs", None)
         relative_energies = kwargs.pop("relative_energies", None)
-        solve_ode = kwargs.pop("solve_ode", False)
         fsolve = kwargs.pop("fsolve", False)
         coarse_guess = kwargs.pop("coarse_guess", True)
         XRC = kwargs.pop("XRC", False)
         product_name = kwargs.pop("product_name", None)
-        data_file = kwargs.pop("data_file", "./rel_energy.py")
 
         if kwargs:
             for key in kwargs:
@@ -137,27 +130,7 @@ class MicroKineticModel(km.KineticModel):
         if self.log_allowed:
             self._logger.info('--- Solve Micro-kinetic model ---')
 
-        # Get parser and solver.
-        parser = self.__parser
-        solver = self.__solver
-
-        # Parse data.
-        if self.log_allowed:
-            self._logger.info('reading data...')
-        parser.parse_data(filename=data_file)
-
-        # -- solve steady state coverages --
-        if self.log_allowed:
-            self._logger.info('passing data to solver...')
-        solver.get_data()
-
-        # solve ODE
-        # !! do ODE integration AFTER passing data to solver !!
-        if solve_ode:
-            if self.log_allowed:
-                self._logger.info("initial coverages = %s", str(init_cvgs))
-            solver.solve_ode(initial_cvgs=init_cvgs)
-            return
+        solver = self.solver
 
         # set initial guess(initial coverage)
         # if there is converged coverage in current path,
@@ -190,13 +163,15 @@ class MicroKineticModel(km.KineticModel):
                 coarse_guess = False
             else:
                 if self.log_allowed:
-                    self._logger.info('use Boltzmann coverages as initial guess...')
-                init_cvgs = solver.boltzmann_coverages()
+                    self._logger.info('Do ODE integration to get initial guess...')
+                ode_traj = solver.solve_ode()
+                init_cvgs = ode_traj[-1]
 
-        else:  # use Boltzmann coverage
+        else:
             if self.log_allowed:
-                self._logger.info('use Boltzmann coverages as initial guess...')
-            init_cvgs = solver.boltzmann_coverages()
+                self._logger.info('Do ODE integration to get initial guess...')
+            ode_traj = solver.solve_ode()
+            init_cvgs = ode_traj[-1]
 
         # Solve steady state coverages.
         # Use scipy.optimize.fsolve or not (fast but low-precision).
