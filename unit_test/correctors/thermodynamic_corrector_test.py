@@ -81,12 +81,12 @@ class ThermodynamicCorrectorTest(unittest.TestCase):
         # Check.
         gas = "CO_g"
         ret_delta = corrector.entropy_correction(gas)
-        ref_delta = -1.1538116935108251
+        ref_delta = -0.7068530839482651
         self.assertEqual(ref_delta, ret_delta)
 
         gas = "O2_g"
         ret_delta = corrector.entropy_correction(gas)
-        ref_delta = -1.2250150716175705
+        ref_delta = -0.7780564620550103
         self.assertEqual(ref_delta, ret_delta)
 
         gas = "O4_g"
