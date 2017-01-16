@@ -12,8 +12,8 @@ from kynetix.models.micro_kinetic_model import MicroKineticModel
 setup_dict = dict(
     rxn_expressions = [
         'CO_g + *_s -> CO_s',
-        'O2_g + 2*_s -> O2_2s',
-        'O2_2s + CO_s <-> OCO-O_2s + *_s -> O_s + CO2_g + 2*_s',
+#        'O2_g + 2*_s -> O2_2s',
+#        'O2_2s + CO_s <-> OCO-O_2s + *_s -> O_s + CO2_g + 2*_s',
         'O2_g + 2*_s -> 2O_s',
         'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s',
     ],
@@ -41,8 +41,8 @@ setup_dict = dict(
     max_rootfinding_iterations = 100,
 )
 
-pCOs = np.arange(0.01, 0.05, 0.01)
-pO2s = np.arange(0.01, 0.05, 0.01)
+pCOs = np.linspace(1e-5, 0.5, 10)
+pO2s = np.arange(1e-5, 0.5, 10)
 #pO2s = np.arange(0.01, 1.0, 0.02)
 
 if "__main__" == __name__:
