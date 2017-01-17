@@ -9,6 +9,7 @@ import time
 import numpy as np
 
 from kynetix.models.micro_kinetic_model import MicroKineticModel
+from kynetix.utilities.format_utilities import convert_time
 
 setup_dict = dict(
     rxn_expressions = [
@@ -119,4 +120,8 @@ if "__main__" == __name__:
         cvgs_CO_str = "cvgs_CO = {}\n\n".format(cvgs_CO_2d)
         with open("auto_cvgs.py", "w") as f:
             f.write(essential_str + cvgs_O_str + cvgs_CO_str)
+
+        delta_time = end - start
+        h, m, s = convert_time(delta_time)
+        print "Time used: {:d} h {:d} min {:f} sec ({:.2f}s)".format(h, m, s, delta_time)
 
