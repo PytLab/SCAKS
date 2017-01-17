@@ -4,6 +4,7 @@
 import commands
 import logging
 import os
+import time
 
 import numpy as np
 
@@ -42,12 +43,14 @@ setup_dict = dict(
 )
 
 pCOs = np.linspace(1e-5, 0.5, 10)
-pO2s = np.arange(1e-5, 0.5, 10)
+pO2s = np.linspace(1e-5, 0.5, 10)
 #pO2s = np.arange(0.01, 1.0, 0.02)
 
 if "__main__" == __name__:
     # Clean up current dir.
     commands.getstatusoutput("rm -rf out.log auto_*")
+
+    start = time.time()
 
     cvgs_CO_2d = []
     cvgs_O_2d = []
@@ -80,8 +83,6 @@ if "__main__" == __name__:
 
                 # Run.
                 model.run(init_cvgs=init_guess,
-                          solve_ode=False,
-                          XRC=False,
                           product_name="CO2_g")
                 model.clear_handlers()
 
@@ -94,13 +95,14 @@ if "__main__" == __name__:
                 cvgs_CO_1d.append(cvg_CO)
 
                 # Collect O_s coverage.
-                cvg_O = (float(model.steady_state_coverages[1]) +
-                         float(model.steady_state_coverages[2]))
+                cvg_O = float(model.steady_state_coverages[1])
                 cvgs_O_1d.append(cvg_O)
 
             tofs_2d.append(tofs_1d)
             cvgs_CO_2d.append(cvgs_CO_1d)
             cvgs_O_2d.append(cvgs_O_1d)
+
+            end = time.time()
             print " "
 
     finally:
