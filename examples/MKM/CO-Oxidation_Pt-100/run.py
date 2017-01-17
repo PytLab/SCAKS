@@ -14,7 +14,7 @@ from kynetix.utilities.format_utilities import convert_time
 # Custom parameters.
 OdeInterval = 0.0001          # ODE integration time interval.
 OdeEnd = 10          # ODE integration time limit.
-OdeOutput = False           # Output ODE integration data or not.
+OdeOutput = True           # Output ODE integration data or not.
 CalcXRC = False             # Calculate Degree of Rate Control(XRC) or not.
 ProductionName = "CO2_g"  # Production name of your model.
 OdeOnly = False             # Do ODE integration only.
