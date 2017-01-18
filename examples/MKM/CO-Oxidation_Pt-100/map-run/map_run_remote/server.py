@@ -16,10 +16,43 @@ from kynetix.models.micro_kinetic_model import MicroKineticModel
 ADDR = ''
 PORT = 5000
 AUTHKEY = 'pytlab'
-N = 20
+N = 10
 NNODE = 2
 pCOs = np.linspace(1e-5, 0.5, N).tolist()
 pO2s = np.linspace(1e-5, 0.5, N).tolist()
+setup_dict = dict(
+    # {{{
+    rxn_expressions = [
+        'CO_g + *_s -> CO_s',
+#        'O2_g + 2*_s -> O2_2s',
+#        'O2_2s + CO_s <-> OCO-O_2s + *_s -> O_s + CO2_g + 2*_s',
+        'O2_g + 2*_s -> 2O_s',
+        'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s',
+    ],
+
+    species_definitions = {
+        'CO_g': {'pressure': 0.10},
+        'O2_g': {'pressure': 0.2},
+        'CO2_g': {'pressure': 0.01},
+        '*_s': {'site_name': 'top', 'type': 'site', 'total': 1.0},
+    },
+
+    temperature = 500,
+
+    unitcell_area = 9.0e-20,
+    active_ratio = 4./9.,
+
+    parser = "RelativeEnergyParser",
+    solver = "SteadyStateSolver",
+    corrector = "ThermodynamicCorrector",
+    plotter = "EnergyProfilePlotter",
+
+    rate_algo = "CT",
+    rootfinding = "MDNewton",
+    tolerance = 1e-15,
+    max_rootfinding_iterations = 100,
+    # }}}
+)
 
 
 def get_manager():
@@ -64,25 +97,23 @@ if "__main__" == __name__:
     # Clean up current dir.
     commands.getstatusoutput("rm -rf out.log auto_*")
 
-    try:
-        start = time.time()
-        run_server()
-        end = time.time()
-        delta_time = end - start
+    start = time.time()
+    run_server()
+    end = time.time()
+    delta_time = end - start
 
-    finally:
-        model = MicroKineticModel(setup_dict=setup_dict,
-                                  console_handler_level=logging.WARNING)
-        # Write tofs to file.
-        p_str = "pCO = {}\n\npO2 = {}\n\n".format(pCOs.tolist(), pO2s.tolist())
-        adsorbates_str = "adsorbates = {}\n\n".format(model.adsorbate_names)
-        essential_str = p_str + adsorbates_str
+    model = MicroKineticModel(setup_dict=setup_dict,
+                              console_handler_level=logging.WARNING)
+    # Write tofs to file.
+    p_str = "pCO = {}\n\npO2 = {}\n\n".format(pCOs.tolist(), pO2s.tolist())
+    adsorbates_str = "adsorbates = {}\n\n".format(model.adsorbate_names)
+    essential_str = p_str + adsorbates_str
 
-        tof_str = "tofs = {}\n\n".format(tofs_2d)
-        with open("auto_tofs.py", "w") as f:
-            f.write(essential_str + tof_str)
+    tof_str = "tofs = {}\n\n".format(tofs_2d)
+    with open("auto_tofs.py", "w") as f:
+        f.write(essential_str + tof_str)
 
-        delta_time = end - start
-        h, m, s = convert_time(delta_time)
-        print "Time used: {:d} h {:d} min {:f} sec ({:.2f} s)".format(h, m, s, delta_time)
+    delta_time = end - start
+    h, m, s = convert_time(delta_time)
+    print "Time used: {:d} h {:d} min {:f} sec ({:.2f} s)".format(h, m, s, delta_time)
 
