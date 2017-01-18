@@ -5,6 +5,7 @@ import commands
 import logging
 import os
 import time
+import Queue
 from multiprocessing import Pool
 from multiprocessing.managers import BaseManager
 
@@ -12,7 +13,7 @@ import numpy as np
 
 from kynetix.models.micro_kinetic_model import MicroKineticModel
 
-ADDR = '10.10.10.254'
+ADDR = '127.0.0.1'
 PORT = 5000
 AUTHKEY = 'pytlab'
 
@@ -70,8 +71,6 @@ def task(pO2):
     # {{{
     setup_dict['species_definitions']['O2_g']['pressure'] = pO2
 
-    cvgs_CO_1d = []
-    cvgs_O_1d = []
     tofs_1d = []
     for j, pCO in enumerate(pCOs):
         print "INFO: runing pO2: {} pCO: {}".format(pO2, pCO)
@@ -110,20 +109,24 @@ if "__main__" == __name__:
 
     shared_tofs_list = manager.get_tofs_list()
     shared_jobid_queue = manager.get_jobid_queue()
-    shared_pCOs = manager.get_pCOs()
-    pO2s = manager.get_pO2()
+    pCOs = manager.get_pCOs()
+    shared_pO2s = manager.get_pO2s()
 
     pool = Pool()
 
     while 1:
         try:
             indices = shared_jobid_queue.get_nowait()
-            pCOs = [pCOs[i] for i in indices]
-            tofs_2d = pool(task, pCOs)
+            pO2s = [shared_pO2s[i] for i in indices]
+            print "Run {}".format(str(pO2s))
+#            import ipdb
+#            ipdb.set_trace()
+            tofs_2d = pool.map(task, pO2s)
 
             # Update shared tofs list.
             for idx, tofs_1d in zip(indices, tofs_2d):
                 shared_tofs_list[idx] = tofs_1d
-        except Empty:
+        except Queue.Empty:
             break
+    manager.shutdown()
 
