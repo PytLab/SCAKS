@@ -13,7 +13,7 @@ import numpy as np
 
 from kynetix.models.micro_kinetic_model import MicroKineticModel
 
-ADDR = '127.0.0.1'
+ADDR = '192.168.1.110'
 PORT = 5000
 AUTHKEY = 'pytlab'
 
@@ -128,5 +128,4 @@ if "__main__" == __name__:
                 shared_tofs_list[idx] = tofs_1d
         except Queue.Empty:
             break
-    manager.shutdown()
 
