@@ -15,7 +15,7 @@ from kynetix.models.micro_kinetic_model import MicroKineticModel
 
 ADDR = '192.168.1.110'
 PORT = 5000
-AUTHKEY = 'pytlab'
+AUTHKEY = "\xf4'4E\xc5\xed*\x00w\xec\xc9\x81\xff\xfe\xabaL3P\xe6"
 
 setup_dict = dict(
     # {{{

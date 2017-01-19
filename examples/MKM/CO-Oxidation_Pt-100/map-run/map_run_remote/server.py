@@ -16,7 +16,7 @@ from kynetix.utilities.format_utilities import convert_time
 
 ADDR = '192.168.1.110'
 PORT = 5000
-AUTHKEY = 'pytlab'
+AUTHKEY = "\xf4'4E\xc5\xed*\x00w\xec\xc9\x81\xff\xfe\xabaL3P\xe6"
 N = 10
 NNODE = 2
 pCOs = np.linspace(1e-5, 0.5, N).tolist()
