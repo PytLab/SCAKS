@@ -5,6 +5,7 @@ import commands
 import logging
 import os
 import time
+from multiprocessing import Pool
 
 import numpy as np
 
@@ -47,6 +48,51 @@ pCOs = np.linspace(1e-5, 0.5, 10)
 pO2s = np.linspace(1e-5, 0.5, 10)
 #pO2s = np.arange(0.01, 1.0, 0.02)
 
+def task(pO2):
+    # {{{
+    setup_dict['species_definitions']['O2_g']['pressure'] = pO2
+
+    cvgs_CO_1d = []
+    cvgs_O_1d = []
+    tofs_1d = []
+    for j, pCO in enumerate(pCOs):
+        print "INFO: runing pO2: {} pCO: {}".format(pO2, pCO)
+        setup_dict['species_definitions']['CO_g']['pressure'] = pCO
+
+        # Construct model.
+        model = MicroKineticModel(setup_dict=setup_dict,
+                                  console_handler_level=logging.WARNING)
+
+        # Read data.
+        model.parser.parse_data()
+        model.solver.get_data()
+
+        # Initial coverage guess.
+        trajectory = model.solver.solve_ode(time_span=0.0001,
+                                            time_end=10,
+                                            traj_output=False)
+        init_guess = trajectory[-1]
+
+        # Run.
+        model.run(init_cvgs=init_guess,
+                  product_name="CO2_g")
+        model.clear_handlers()
+
+        # Collect TOF.
+        tof_idx = model.gas_names.index("CO2_g")
+        tofs_1d.append(float(model.TOFs[tof_idx]))
+
+        # Collect CO_s coverage.
+        cvg_CO = float(model.steady_state_coverages[0])
+        cvgs_CO_1d.append(cvg_CO)
+
+        # Collect O_s coverage.
+        cvg_O = float(model.steady_state_coverages[1])
+        cvgs_O_1d.append(cvg_O)
+
+    return tofs_1d, cvgs_CO_1d, cvgs_O_1d
+    # }}}
+
 if "__main__" == __name__:
     # Clean up current dir.
     commands.getstatusoutput("rm -rf out.log auto_*")
@@ -57,56 +103,15 @@ if "__main__" == __name__:
     cvgs_O_2d = []
     tofs_2d = []
     try:
-        for i, pO2 in enumerate(pO2s):
-            # Construct setup dict.
-            setup_dict['species_definitions']['O2_g']['pressure'] = pO2
-
-            cvgs_CO_1d = []
-            cvgs_O_1d = []
-            tofs_1d = []
-            for j, pCO in enumerate(pCOs):
-                print "INFO: runing pO2: {} pCO: {}".format(pO2, pCO)
-                setup_dict['species_definitions']['CO_g']['pressure'] = pCO
-
-                # Construct model.
-                model = MicroKineticModel(setup_dict=setup_dict,
-                                          console_handler_level=logging.WARNING)
-
-                # Read data.
-                model.parser.parse_data()
-                model.solver.get_data()
-
-                # Initial coverage guess.
-                trajectory = model.solver.solve_ode(time_span=0.0001,
-                                                    time_end=10,
-                                                    traj_output=False)
-                init_guess = trajectory[-1]
-
-                # Run.
-                model.run(init_cvgs=init_guess,
-                          product_name="CO2_g")
-                model.clear_handlers()
-
-                # Collect TOF.
-                tof_idx = model.gas_names.index("CO2_g")
-                tofs_1d.append(float(model.TOFs[tof_idx]))
-
-                # Collect CO_s coverage.
-                cvg_CO = float(model.steady_state_coverages[0])
-                cvgs_CO_1d.append(cvg_CO)
-
-                # Collect O_s coverage.
-                cvg_O = float(model.steady_state_coverages[1])
-                cvgs_O_1d.append(cvg_O)
-
-            tofs_2d.append(tofs_1d)
-            cvgs_CO_2d.append(cvgs_CO_1d)
-            cvgs_O_2d.append(cvgs_O_1d)
-
-            end = time.time()
-            print " "
+        start = time.time()
+        pool = Pool()
+        res = pool.map(task, pCOs)
+        end = time.time()
+        tofs_2d, cvgs_CO_2d, cvgs_O_2d = zip(*res)
 
     finally:
+        model = MicroKineticModel(setup_dict=setup_dict,
+                                  console_handler_level=logging.WARNING)
         # Write tofs to file.
         p_str = "pCO = {}\n\npO2 = {}\n\n".format(pCOs.tolist(), pO2s.tolist())
         adsorbates_str = "adsorbates = {}\n\n".format(model.adsorbate_names)
@@ -123,5 +128,5 @@ if "__main__" == __name__:
 
         delta_time = end - start
         h, m, s = convert_time(delta_time)
-        print "Time used: {:d} h {:d} min {:f} sec ({:.2f}s)".format(h, m, s, delta_time)
+        print "Time used: {:d} h {:d} min {:f} sec ({:.2f} s)".format(h, m, s, delta_time)
 
