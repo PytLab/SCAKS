@@ -18,7 +18,7 @@ ADDR = '192.168.1.110'
 PORT = 5000
 AUTHKEY = 'pytlab'
 N = 10
-NNODE = 1
+NNODE = 2
 pCOs = np.linspace(1e-5, 0.5, N).tolist()
 pO2s = np.linspace(1e-5, 0.5, N).tolist()
 setup_dict = dict(
@@ -85,11 +85,16 @@ def run_server():
     manager = get_manager()
     print "Start manager at {}:{}...".format(ADDR, PORT)
     manager.start()
-    shared_job_queue = fill_jobid_queue(manager, NNODE)
+    fill_jobid_queue(manager, NNODE)
+    shared_job_queue = manager.get_jobid_queue()
     shared_tofs_list = manager.get_tofs_list()
 
+    queue_size = shared_job_queue.qsize()
+
     while None in shared_tofs_list:
-        pass
+        if shared_job_queue.qsize() < queue_size:
+            queue_size = shared_job_queue.qsize()
+            print "Job picked..."
 
     return manager
 
