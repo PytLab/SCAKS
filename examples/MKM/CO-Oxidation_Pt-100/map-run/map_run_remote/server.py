@@ -14,7 +14,7 @@ from kynetix.models.micro_kinetic_model import MicroKineticModel
 from kynetix.utilities.format_utilities import convert_time
 
 
-ADDR = '202.120.101.132'
+ADDR = ''
 PORT = 5000
 AUTHKEY = "pytlab"
 N = 10
@@ -76,10 +76,12 @@ def fill_jobid_queue(manager, nclient):
     indices = range(N)
     interval = N/nclient
     jobid_queue = manager.get_jobid_queue()
+    start = 0
     for i in range(nclient):
-        jobid_queue.put(indices[i: i+interval])
+        jobid_queue.put(indices[start: start+interval])
+        start += interval
     if N % nclient > 0:
-        jobid_queue.put(indices[i+interval:])
+        jobid_queue.put(indices[start:])
 
 def run_server():
     manager = get_manager()
