@@ -36,6 +36,9 @@ class KMCModel(km.KineticModel):
     # Random seed for kMC simulation.
     random_seed = dc.Integer("random_seed", default=None)
 
+    # Flag for if adding time in seed number.
+    time_seed = dc.Bool('time_seed', default=False)
+
     # Interval for trajectory dumping.
     trajectory_dump_interval = dc.Integer("trajectory_dump_interval",
                                           default=1)
