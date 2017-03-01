@@ -80,30 +80,30 @@ class KMCSolverTest(unittest.TestCase):
         self.assertEqual(13996, control_parameters.seed())
         self.assertEqual(False, control_parameters.timeSeed())
 
-    def test_get_rxn_rates_CT(self):
-        " Make sure we can get correct forward and reverse rates for a reaction. "
-        # Construction.
-        model = KMCModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
-        model.parser.parse_data(energy_file=kmc_energy,
-                                processes_file=kmc_processes,
-                                configuration_file=kmc_config,
-                                sitesmap_file=kmc_sites)
-
-        ref_r = (1575287.974387463, 9.68605536974103e-14)
-        ret_r = model.solver.get_rxn_rates_CT('CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b',
-                                              model.relative_energies,
-                                              include_pressure=True)
-        self.assertTupleEqual(ref_r, ret_r)
-
-        ref_r = (21871349.27440768, 4.8442119396621617e-39)
-        ret_r = model.solver.get_rxn_rates_CT('O2_g + 2*_b -> 2O_b',
-                                              model.relative_energies,
-                                              include_pressure=True)
-        self.assertTupleEqual(ref_r, ret_r)
-
-        ref_r = (116884008.39043356, 6.97527426524941e-14)
-        ret_r = model.solver.get_rxn_rates_CT('CO_g + *_t -> CO_t', model.relative_energies)
-        self.assertTupleEqual(ref_r, ret_r)
+#    def test_get_rxn_rates_CT(self):
+#        " Make sure we can get correct forward and reverse rates for a reaction. "
+#        # Construction.
+#        model = KMCModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+#        model.parser.parse_data(energy_file=kmc_energy,
+#                                processes_file=kmc_processes,
+#                                configuration_file=kmc_config,
+#                                sitesmap_file=kmc_sites)
+#
+#        ref_r = (1575287.974387463, 9.68605536974103e-14)
+#        ret_r = model.solver.get_rxn_rates_CT('CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b',
+#                                              model.relative_energies,
+#                                              include_pressure=True)
+#        self.assertTupleEqual(ref_r, ret_r)
+#
+#        ref_r = (21871349.27440768, 4.8442119396621617e-39)
+#        ret_r = model.solver.get_rxn_rates_CT('O2_g + 2*_b -> 2O_b',
+#                                              model.relative_energies,
+#                                              include_pressure=True)
+#        self.assertTupleEqual(ref_r, ret_r)
+#
+#        ref_r = (116884008.39043356, 6.97527426524941e-14)
+#        ret_r = model.solver.get_rxn_rates_CT('CO_g + *_t -> CO_t', model.relative_energies)
+#        self.assertTupleEqual(ref_r, ret_r)
 
     def test_get_single_process(self):
         " Make sure we can parse a process dict correctly. "
