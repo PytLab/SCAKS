@@ -13,10 +13,10 @@ from kynetix.utilities.format_utilities import convert_time
 
 setup_dict = dict(
     rxn_expressions = [
-        'CO_g + *_s -> CO_s',
+        'CO_g + *_s <-> CO-_s -> CO_s',
 #        'O2_g + 2*_s -> O2_2s',
 #        'O2_2s + CO_s <-> OCO-O_2s + *_s -> O_s + CO2_g + 2*_s',
-        'O2_g + 2*_s -> 2O_s',
+        'O2_g + 2*_s <-> O2-_s + *_s -> 2O_s',
         'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s',
     ],
 
@@ -79,8 +79,8 @@ if "__main__" == __name__:
                 model.solver.get_data()
 
                 # Initial coverage guess.
-                trajectory = model.solver.solve_ode(time_span=0.0001,
-                                                    time_end=10,
+                trajectory = model.solver.solve_ode(time_span=1,
+                                                    time_end=10000,
                                                     traj_output=False)
                 init_guess = trajectory[-1]
 

@@ -45,7 +45,7 @@ if "__main__" == __name__:
         parser.parse_data()
 
         # Correct relative energies.
-        model.corrector.correct_relative_energies(model.relative_energies, method="shomate")
+        model.corrector.correct_relative_energies(model.relative_energies, method="entropy")
         solver.get_data()
 
         # Initial coverages guess.
