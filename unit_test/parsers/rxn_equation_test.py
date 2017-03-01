@@ -56,6 +56,24 @@ class RxnEquationTest(unittest.TestCase):
         ref_reverse = "CO2_g + 2*_s -> CO_s + O_s"
         ret_reverse = equation.revert().rxn_equation()
 
+    def test_adsorption_gases(self):
+        " Make sure we can get the correct gas species in IS. "
+        equation = RxnEquation("CO2_g + 2*_s -> CO_s + O_s")
+        gases = equation.adsorption_gases()
+        ref_gas_names = ["CO2_g"]
+        ret_gas_names = [gas.formula() for gas in gases]
+
+        self.assertListEqual(ref_gas_names, ret_gas_names)
+
+    def test_desorption_gases(self):
+        " Make sure we can get the correct gas species in FS. "
+        equation = RxnEquation("CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s"))
+        gases = equation.desorption_gases()
+        ref_gas_names = ["CO2_g"]
+        ret_gas_names = [gas.formula() for gas in gases]
+
+        self.assertListEqual(ref_gas_names, ret_gas_names)
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(RxnEquationTest)
     unittest.TextTestRunner(verbosity=2).run(suite)

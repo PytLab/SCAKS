@@ -95,13 +95,13 @@ class KMCSolverTest(unittest.TestCase):
                                               include_pressure=True)
         self.assertTupleEqual(ref_r, ret_r)
 
-        ref_r = (21871349.27440768, 1.706299385289795e-44)
+        ref_r = (21871349.27440768, 4.8442119396621617e-39)
         ret_r = model.solver.get_rxn_rates_CT('O2_g + 2*_b -> 2O_b',
                                               model.relative_energies,
                                               include_pressure=True)
         self.assertTupleEqual(ref_r, ret_r)
 
-        ref_r = (116884008.39043356, 1.3130247359797917e-18)
+        ref_r = (116884008.39043356, 6.97527426524941e-14)
         ret_r = model.solver.get_rxn_rates_CT('CO_g + *_t -> CO_t', model.relative_energies)
         self.assertTupleEqual(ref_r, ret_r)
 
