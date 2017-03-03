@@ -54,7 +54,8 @@ class KMCModel(km.KineticModel):
                            entry_type=str,
                            candidates=["CoveragesAnalysis",
                                        "FrequencyAnalysis",
-                                       "TOFAnalysis"])
+                                       "TOFAnalysis",
+                                       "EventAnalysis"])
 
     # Interval of doing on-the-fly analysis.
     analysis_interval = dc.AnalysisInterval("analysis_interval", default=None)
