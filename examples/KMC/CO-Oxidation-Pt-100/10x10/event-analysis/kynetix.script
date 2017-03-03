@@ -1,0 +1,51 @@
+#!/bin/bash 
+#PBS -N redistribution
+#PBS -r n 
+#PBS -j oe 
+#PBS -l walltime=72:00:00
+#PBS -l nodes=1:ppn=12
+#PBS -q normal
+
+# Go to work dir.
+cd $PBS_O_WORKDIR
+
+# Log time and jobpath.
+echo $(date +'%Y-%m-%d %H:%M:%S') >> $HOME/qsub.log
+echo $PBS_O_WORKDIR >> $HOME/qsub.log
+
+# Set env variables.
+export LD_LIBRARY_PATH=/data/apps/python/Python-2.7.5/lib:$LD_LIBRARY_PATH
+export PYTHONPATH=/data/home/zjshao/script_shao/pytlab/KMCLibX/python/src:/data/home/zjshao/script_shao/pytlab/Pynetics
+
+# setup mpd env (Of course use some other secret word than "dfadfs")
+if [ ! -f ~/.mpd.conf ]; then
+  /bin/echo "secretword=dfadfs" >> ~/.mpd.conf
+  /bin/chmod 600 ~/.mpd.conf
+fi
+
+##########################################################
+# The following should be no need to
+#       change any of these settings for normal use.
+##########################################################
+# setup Nums of Processor
+NP=`cat $PBS_NODEFILE|wc -l`
+echo "Numbers of Processors:  $NP"
+echo "---------------------------"
+echo `date`
+cat $PBS_NODEFILE | uniq
+
+# setup mpi env (em64t)
+export OMP_NUM_THREADS=1
+#export P4_GLOBMEMSIZE=1073741824
+export I_MPI_PIN_DOMAIN=auto
+export MPD_CON_EXT=$PBS_JOBID
+
+source /data/apps/intel/impi/5.0.3.048/intel64/bin/mpivars.sh
+
+# Run job.
+PY=/data/apps/python/Python-2.7.5/bin/python
+mpirun -r ssh -genv I_MPI_FABRICS shm:dapl -n $NP $PY ./run.py 2>&1 > /dev/null
+
+echo $(date +'%Y-%m-%d %H:%M:%S') >> $HOME/finish
+echo `pwd` >>  $HOME/finish
+
