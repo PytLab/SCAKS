@@ -6,8 +6,8 @@ import commands
 import logging
 import time
 
-from kynetix.mpicommons import mpi
-from kynetix.models.kmc_model import KMCModel
+from kynetix import mpi_master
+from kynetix.model import KineticModel
 from kynetix.utilities.format_utilities import convert_time
 
 if "__main__" == __name__:
@@ -18,24 +18,24 @@ if "__main__" == __name__:
     logger = logging.getLogger("model.KMCModelRun")
 
     # Construct KMC model.
-    model = KMCModel(setup_file="pt-100.mkm")
-    model.parser.parse_data(energy_file="rel_energy.py")
+    model = KineticModel(setup_file="pt-100.mkm")
+    parser = model.parser()
+    parser.parse_data(filename="rel_energy.py", relative=True)
 
-    if mpi.is_master:
-        start = time.time()
-
+    start = time.time()
     try:
-        model.run()
+        model.run_kmc()
     except Exception as e:
         # Log exception info.
-        if mpi.is_master:
+        if mpi_master:
             msg = "{} exception is catched.".format(type(e).__name__)
             logger.exception(msg)
         raise e
 
-    if mpi.is_master:
-        end = time.time()
-        t = end - start
-        h, m, s = convert_time(t)
+    end = time.time()
+    t = end - start
+    h, m, s = convert_time(t)
+
+    if mpi_master:
         logger.info("Time used: {:d} h {:d} min {:f} sec".format(h, m, s))
 

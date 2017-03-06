@@ -13,10 +13,10 @@ from kynetix.utilities.format_utilities import convert_time
 
 setup_dict = dict(
     rxn_expressions = [
-        'CO_g + *_s -> CO_s',
-        'O2_g + 2*_s -> O2_2s',
-        'O2_2s + CO_s <-> OCO-O_2s + *_s -> O_s + CO2_g + 2*_s',
-        'O2_g + 2*_s -> 2O_s',
+        'CO_g + *_s <-> CO-_s -> CO_s',
+#        'O2_g + 2*_s -> O2_2s',
+#        'O2_2s + CO_s <-> OCO-O_2s + *_s -> O_s + CO2_g + 2*_s',
+        'O2_g + 2*_s <-> O2-_s + *_s -> 2O_s',
         'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s',
     ],
 
@@ -37,14 +37,15 @@ setup_dict = dict(
     corrector = "ThermodynamicCorrector",
     plotter = "EnergyProfilePlotter",
 
-    rate_algo = "CT",
+    rate_algo = "TST",
     rootfinding = "MDNewton",
     tolerance = 1e-15,
     max_rootfinding_iterations = 100,
 )
 
-pCOs = np.arange(0.01, 1.0, 0.05)
-pO2s = np.arange(0.01, 2.0, 0.1)
+pCOs = np.linspace(1e-5, 0.5, 10)
+pO2s = np.linspace(1e-5, 0.5, 10)
+#pO2s = np.arange(0.01, 1.0, 0.02)
 
 if "__main__" == __name__:
     # Clean up current dir.
@@ -73,18 +74,18 @@ if "__main__" == __name__:
 
                 # Read data.
                 model.parser.parse_data()
+                # Correct relative energies.
+                model.corrector.correct_relative_energies(model.relative_energies, method="entropy")
                 model.solver.get_data()
 
                 # Initial coverage guess.
-                trajectory = model.solver.solve_ode(time_span=0.0001,
-                                                    time_end=10,
+                trajectory = model.solver.solve_ode(time_span=1,
+                                                    time_end=10000,
                                                     traj_output=False)
                 init_guess = trajectory[-1]
 
                 # Run.
                 model.run(init_cvgs=init_guess,
-                          solve_ode=False,
-                          XRC=False,
                           product_name="CO2_g")
                 model.clear_handlers()
 
@@ -97,13 +98,14 @@ if "__main__" == __name__:
                 cvgs_CO_1d.append(cvg_CO)
 
                 # Collect O_s coverage.
-                cvg_O = (float(model.steady_state_coverages[1]) +
-                         float(model.steady_state_coverages[2]))
+                cvg_O = float(model.steady_state_coverages[1])
                 cvgs_O_1d.append(cvg_O)
 
             tofs_2d.append(tofs_1d)
             cvgs_CO_2d.append(cvgs_CO_1d)
             cvgs_O_2d.append(cvgs_O_1d)
+
+            end = time.time()
             print " "
 
     finally:
@@ -121,8 +123,7 @@ if "__main__" == __name__:
         with open("auto_cvgs.py", "w") as f:
             f.write(essential_str + cvgs_O_str + cvgs_CO_str)
 
-        end = time.time()
-        t = end - start
-        h, m, s = convert_time(t)
-        print "INFO: Time used {:d} h {:d} min {:f} sec".format(h, m, s)
+        delta_time = end - start
+        h, m, s = convert_time(delta_time)
+        print "Time used: {:d} h {:d} min {:f} sec ({:.2f}s)".format(h, m, s, delta_time)
 

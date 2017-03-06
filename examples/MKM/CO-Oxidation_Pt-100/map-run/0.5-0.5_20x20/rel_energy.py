@@ -5,12 +5,12 @@ Ga.append(0.0)
 dG.append(-2.09)
 
 # O2_g + 2*_s -> O2_2s
-Ga.append(0.0)
-dG.append(-1.13)
-
-# O2_2s + CO_s <-> OCO-O_2s + *_s -> O_s + CO2_g + 2*_s
-Ga.append(0.78)
-dG.append(-1.65)
+#Ga.append(0.0)
+#dG.append(-1.13)
+#
+## O2_2s + CO_s <-> OCO-O_2s + *_s -> O_s + CO2_g + 2*_s
+#Ga.append(0.78)
+#dG.append(-1.65)
 
 # O2_g + 2*_s -> 2O_s
 Ga.append(0.07)

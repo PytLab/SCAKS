@@ -36,6 +36,9 @@ class KMCModel(km.KineticModel):
     # Random seed for kMC simulation.
     random_seed = dc.Integer("random_seed", default=None)
 
+    # Flag for if adding time in seed number.
+    time_seed = dc.Bool('time_seed', default=False)
+
     # Interval for trajectory dumping.
     trajectory_dump_interval = dc.Integer("trajectory_dump_interval",
                                           default=1)
@@ -51,7 +54,8 @@ class KMCModel(km.KineticModel):
                            entry_type=str,
                            candidates=["CoveragesAnalysis",
                                        "FrequencyAnalysis",
-                                       "TOFAnalysis"])
+                                       "TOFAnalysis",
+                                       "EventAnalysis"])
 
     # Interval of doing on-the-fly analysis.
     analysis_interval = dc.AnalysisInterval("analysis_interval", default=None)

@@ -1,5 +1,6 @@
 import logging
 from math import exp, pi, sqrt
+from operator import mul
 
 from kynetix import ModelShell
 from kynetix.database.thermo_data import kB_J, kB_eV, h_eV, P0
@@ -76,7 +77,7 @@ class SolverBase(ModelShell):
 
         return kCT
 
-    def get_rxn_rates_TST(self, rxn_expression, relative_energies):
+    def get_rxn_rates_TST(self, rxn_expression, relative_energies, include_pressure=False):
         """
         Function to get rate constants for an elementary reaction
         using Transition State Theory.
@@ -84,13 +85,56 @@ class SolverBase(ModelShell):
         Parameters:
         -----------
         rxn_expression: The expression of an elementary reaction, str.
-        relative_energies: The relative energies for all elementary reactions.
-        """
-        Gaf, Gar, dG = self._get_relative_energies(rxn_expression, relative_energies)
-        T = self._owner.temperature
-        kf, kr = [self.get_kTST(Ga, T) for Ga in [Gaf, Gar]]
 
-        return kf, kr
+        relative_energies: The relative energies for all elementary reactions.
+
+        include_pressure: The flag for whether to include the actual gas pressure
+                          (not the pressure of standard condition, 101325.0 Pa).
+                          The default value is False, meaning that we calculate the
+                          RATE CONSTANT by default.
+        """
+        # {{{
+        # Get the condition for log info output.
+        cls_name = self.__class__.__name__
+        log_allowed = (self._owner.log_allowed and cls_name == "KMCSolver")
+
+        Gaf, Gar, dG = self._get_relative_energies(rxn_expression, relative_energies)
+        if log_allowed:
+            self.__logger.info("{} (Gaf={}, Gar={}, dG={})".format(rxn_expression, Gaf, Gar, dG))
+
+        T = self._owner.temperature
+
+        # Use Transition State Theory to get rate constants.
+        rf, rr = [self.get_kTST(Ga, T) for Ga in [Gaf, Gar]]
+        if log_allowed:
+            self.__logger.info("Rates without partial pressure:")
+            self.__logger.info("R(forward) = {} s^-1 (Transition State Theory)".format(rf))
+            self.__logger.info("R(reverse) = {} s^-1 (Transition State Theory)".format(rr))
+
+        # Include pressures.
+        if include_pressure:
+            rxn_equation = RxnEquation(rxn_expression)
+            f = lambda gas: self._owner.species_definitions[gas]["pressure"]
+
+            # Forward rate.
+            adsorption_gases = rxn_equation.adsorption_gases()
+            pressures = [f(gas.formula()) for gas in adsorption_gases]
+            p = reduce(mul, pressures) if pressures else 1.0
+            rf = p*rf
+
+            # Reverse rate.
+            desorption_gases = rxn_equation.desorption_gases()
+            pressures = [f(gas.formula()) for gas in desorption_gases]
+            p = reduce(mul, pressures) if pressures else 1.0
+            rr = p*rr
+
+            if log_allowed:
+                self.__logger.info("Rates including partial pressure:")
+                self.__logger.info("R(forward) = {} s^-1 (Transition State Theory)".format(rf))
+                self.__logger.info("R(reverse) = {} s^-1 (Transition State Theory)".format(rr))
+
+        return rf, rr
+        # }}}
 
     def get_rxn_rates_CT(self, rxn_expression, relative_energies, include_pressure=False):
         """
@@ -106,7 +150,7 @@ class SolverBase(ModelShell):
         include_pressure: The flag for whether to include the actual gas pressure
                           (not the pressure of standard condition, 101325.0 Pa).
                           The default value is False, meaning that we calculate the
-                          rate constant by default.
+                          RATE CONSTANT by default.
         """
         # {{{
         # Get the condition for log info output.
@@ -160,20 +204,25 @@ class SolverBase(ModelShell):
                 self.__logger.info("R(forward) = {} s^-1 (Collision Theory)".format(rf))
 
             # Use equilibrium condition to get reverse rate.
-            correction_energy = corrector.entropy_correction(gas_name, m, p, T)
-            stoichiometry = formula.stoichiometry()
-            dG -= stoichiometry*correction_energy
+#            correction_energy = corrector.entropy_correction(gas_name, m, p, T)
+#            stoichiometry = formula.stoichiometry()
+#            dG -= stoichiometry*correction_energy
+#
+#            # Info output.
+#            if log_allowed:
+#                msg = "Correct dG: {} -> {}".format(dG+correction_energy, dG)
+#                self.__logger.info(msg)
 
-            # Info output.
-            if log_allowed:
-                msg = "Correct dG: {} -> {}".format(dG+correction_energy, dG)
-                self.__logger.info(msg)
+#            # Use Equilibrium condition to get reverse rate.
+#            K = exp(-dG/(kB_eV*T))
+#            rr = rf/K
+#            if log_allowed:
+#                self.__logger.info("R(reverse) = {} s^-1 (Equilibrium Condition)".format(rr))
 
-            # Use Equilibrium condition to get reverse rate.
-            K = exp(-dG/(kB_eV*T))
-            rr = rf/K
+            # Use Transition State Theory to get reverse rate.
+            rr = self.get_kTST(-dG, T);
             if log_allowed:
-                self.__logger.info("R(reverse) = {} s^-1 (Equilibrium Condition)".format(rr))
+                self.__logger.info("R(reverse) = {} s^-1 (Transition State Theory)".format(rr))
 
         # Desorption process.
         elif "gas" in fs_types:
@@ -199,12 +248,12 @@ class SolverBase(ModelShell):
             rr = self.get_kTST(Gar, T)
 
             # Use Transition State theory to get forward rate.
-            if Gar < 1.0e-10:
-                # NOTE: If the reverse barrier is 0, that means the
-                #       forward barrier depends on the final state energy.
-                correction_energy = corrector.entropy_correction(gas_name, m, p, T)
-                stoichiometry = formula.stoichiometry()
-                Gaf += stoichiometry*correction_energy
+#            if Gar < 1.0e-10:
+#                # NOTE: If the reverse barrier is 0, that means the
+#                #       forward barrier depends on the final state energy.
+#                correction_energy = corrector.entropy_correction(gas_name, m, p, T)
+#                stoichiometry = formula.stoichiometry()
+#                Gaf += stoichiometry*correction_energy
             rf = self.get_kTST(Gaf, T)
 
             if log_allowed:

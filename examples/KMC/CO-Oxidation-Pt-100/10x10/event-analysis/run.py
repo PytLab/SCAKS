@@ -19,11 +19,10 @@ if "__main__" == __name__:
 
     # Construct KMC model.
     model = KMCModel(setup_file="pt-100.mkm")
-    model.parser.parse_data(energy_file="rel_energy.py")
+    parser = model.parser
+    parser.parse_data(energy_file="rel_energy.py")
 
-    if mpi.is_master:
-        start = time.time()
-
+    start = time.time()
     try:
         model.run()
     except Exception as e:
@@ -33,9 +32,10 @@ if "__main__" == __name__:
             logger.exception(msg)
         raise e
 
+    end = time.time()
+    t = end - start
+    h, m, s = convert_time(t)
+
     if mpi.is_master:
-        end = time.time()
-        t = end - start
-        h, m, s = convert_time(t)
         logger.info("Time used: {:d} h {:d} min {:f} sec".format(h, m, s))
 

@@ -50,6 +50,7 @@ class KMCModelTest(unittest.TestCase):
             possible_site_types = ["P"],
             nstep = 50,
             random_seed = 13996,
+            time_seed = True,
             random_generator = 'MT',
             analysis = [],
             analysis_interval = [],
@@ -71,6 +72,7 @@ class KMCModelTest(unittest.TestCase):
         self.assertTrue(hasattr(model, "_KMCModel__periodic"))
         self.assertTrue(hasattr(model, "_KMCModel__nstep"))
         self.assertTrue(hasattr(model, "_KMCModel__random_seed"))
+        self.assertTrue(hasattr(model, "_KMCModel__time_seed"))
         self.assertTrue(hasattr(model, "_KMCModel__random_generator"))
         self.assertTrue(hasattr(model, "_KMCModel__analysis"))
         self.assertTrue(hasattr(model, "_KMCModel__analysis_interval"))

@@ -7,6 +7,17 @@ import sys
 from kynetix.utilities.coordinate_utilities import CoordsGroup
 
 def generate_process_dict(origin, ori_coord, coord, rxn_expression, coord_groups):
+    """
+    Function to get kMC process definition dict.
+
+    Parameters:
+    -----------
+    origin: The CoordsGroup object of the original origin coordinates group.
+    ori_coord: The original coordinates of origin, list of floats.
+    coord: The coordinates after moving, list of floats.
+    rxn_expression: Reaction expression, str.
+    coord_groups: Original coordinates groups, list of CoordsGroup.
+    """
     offset = [i - j for i, j in zip(coord, ori_coord)]
     coord_group = reduce(add, coord_groups) + origin.move(offset)
     elements_after = ["V"]*len(coord_group.elements())

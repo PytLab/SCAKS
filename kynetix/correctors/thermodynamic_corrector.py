@@ -249,8 +249,9 @@ class ThermodynamicCorrector(CorrectorBase):
             raise ValueError("Unknown method: '{}'".format(method))
 
         # Loop over all elementary reactions.
-        self.__logger.info("Use {} method to correct relative energies".format(method))
-        self.__logger.info("------------------------------------------")
+        if self._owner.log_allowed:
+            self.__logger.info("Use {} method to correct relative energies".format(method))
+            self.__logger.info("------------------------------------------")
         for idx, rxn_expression in enumerate(self._owner.rxn_expressions):
             # Data used for info output.
             Gaf = relative_energies["Gaf"][idx]
@@ -269,9 +270,11 @@ class ThermodynamicCorrector(CorrectorBase):
                                                   Gaf, Gaf_prime,
                                                   Gar, Gar_prime,
                                                   dG, dG_prime)
-            self.__logger.info(msg)
+            if self._owner.log_allowed:
+                self.__logger.info(msg)
 
-        self.__logger.info("------------------------------------------\n")
+        if self._owner.log_allowed:
+            self.__logger.info("------------------------------------------\n")
 
         return relative_energies
 

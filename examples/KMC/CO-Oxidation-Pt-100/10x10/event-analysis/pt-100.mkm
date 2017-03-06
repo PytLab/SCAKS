@@ -1,0 +1,44 @@
+surface_name = 'Pt-100'
+active_ratio = 0.444444444444
+empty_type = 'V'
+random_generator = 'MT'
+parser = 'KMCParser'
+seed = 1399999986
+basis_sites = [[0.0, 0.0, 0.0], [0.0, 0.5, 0.0], [0.5, 0.0, 0.0], [0.5, 0.5, 0.0]]
+cell_vectors = [[3.0, 0.0, 0.0], [0.0, 3.0, 0.0], [0.0, 0.0, 3.0]]
+time_limit = 500000.0
+tools = ['parser', 'solver', 'corrector']
+nstep = 5000
+temperature = 500
+#do_redistribution = True
+#redistribution_interval = 100
+trajectory_dump_interval = 10
+repetitions = (10, 10, 1)
+tof_interval = 600
+species_definitions = {'t': {'type': 'site', 'total': 0.5, 'site_name': 'top'}, 'b': {'type': 'site', 'total': 0.5, 'site_name': 'bridge'}, 'CO_g': {'pressure': 0.1}, 'O2_g': {'pressure': 10.000006666666668}, 'CO2_g': {'pressure': 0.01}}
+rxn_expressions = [
+    'CO_g + *_t -> CO_t',
+    'CO_g + *_b -> CO_b',
+    'O2_g + 2*_t -> O2_2t',
+    'O2_2t + 2*_b <-> O-O_2t + 2*_b -> 2O_b + 2*_t',
+    'O2_2t + CO_b <-> OCO-O_2t + *_b -> O_b + CO2_g + 2*_t',
+    'O2_g + 2*_b -> 2O_b',
+    'CO_b + O_b <-> CO-O_2b -> CO2_g + 2*_b',
+    'CO_b + O_b <-> OC-O_2b -> CO2_g + 2*_b',
+    'CO_b + *_t <-> CO_t + *_b -> CO_b + *_t',
+    'O_b + *_t <-> O_t + *_b -> O_b + *_t',
+    'O2_g + 2*_b -> O_b + O_b',
+    'CO_t + O_b <-> CO-O_t + *_b -> CO2_g + *_b + *_t']
+coverage_ratios = [1.0, 0.5, 0.5, 1.0]
+#distributor_type = 'ProcessRandomDistributor'
+solver = 'KMCSolver'
+possible_element_types = ['O_u', 'O_d', 'O_l', 'O_r', 'V', 'O_s', 'C']
+periodic = (True, True, False)
+possible_site_types = ['P']
+corrector = 'ThermodynamicCorrector'
+unitcell_area = 9e-20
+
+# Event Analysis
+#analysis_interval = [(0, 500, 1)]  # (start, end, step)
+#analysis = ['EventAnalysis']
+
