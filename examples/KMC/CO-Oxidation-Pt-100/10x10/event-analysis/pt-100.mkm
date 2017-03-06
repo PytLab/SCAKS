@@ -8,11 +8,11 @@ basis_sites = [[0.0, 0.0, 0.0], [0.0, 0.5, 0.0], [0.5, 0.0, 0.0], [0.5, 0.5, 0.0
 cell_vectors = [[3.0, 0.0, 0.0], [0.0, 3.0, 0.0], [0.0, 0.0, 3.0]]
 time_limit = 500000.0
 tools = ['parser', 'solver', 'corrector']
-nstep = 500
+nstep = 5000
 temperature = 500
 #do_redistribution = True
 #redistribution_interval = 100
-trajectory_dump_interval = 1
+trajectory_dump_interval = 10
 repetitions = (10, 10, 1)
 tof_interval = 600
 species_definitions = {'t': {'type': 'site', 'total': 0.5, 'site_name': 'top'}, 'b': {'type': 'site', 'total': 0.5, 'site_name': 'bridge'}, 'CO_g': {'pressure': 0.1}, 'O2_g': {'pressure': 10.000006666666668}, 'CO2_g': {'pressure': 0.01}}
@@ -39,6 +39,6 @@ corrector = 'ThermodynamicCorrector'
 unitcell_area = 9e-20
 
 # Event Analysis
-analysis_interval = [(0, 500, 1)]  # (start, end, step)
-analysis = ['EventAnalysis']
+#analysis_interval = [(0, 500, 1)]  # (start, end, step)
+#analysis = ['EventAnalysis']
 
