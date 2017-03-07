@@ -33,6 +33,13 @@ class SolverBaseTest(unittest.TestCase):
 
         self.assertEqual(ref_r, ret_r)
 
+    def test_get_TST_barrier_from_CT(self):
+        " Make sure we can get correct TST barrier from CT rate. "
+        kCT = 90235665.7025331
+        ref_Ga = 0.5022461602982147
+        ret_Ga = SolverBase.get_TST_barrier_from_CT(kCT, 500)
+
+        self.assertEqual(ref_Ga, ret_Ga)
 
 
 if __name__ == '__main__':

@@ -1,5 +1,5 @@
 import logging
-from math import exp, pi, sqrt
+from math import exp, pi, sqrt, log
 from operator import mul
 
 from kynetix import ModelShell
@@ -27,9 +27,9 @@ class SolverBase(ModelShell):
 
         Parameters:
         -----------
-        Ga: free energy barrier, float.
+        Ga: Free energy barrier, float.
 
-        T: thermodynamics constants, floats.
+        T: Temperature(K), floats.
         """
 
         kTST = kB_eV*T/h_eV*exp(-Ga/(kB_eV*T))
@@ -44,7 +44,7 @@ class SolverBase(ModelShell):
 
         Parameters:
         -----------
-        Ea: energy barrier( NOT free energy barrier), float.
+        Ea: energy barrier( NOT free energy barrier ), float.
 
         Auc: area of unitcell (m^-2), float.
 
@@ -76,6 +76,22 @@ class SolverBase(ModelShell):
         kCT = S*(p*Auc)/(sqrt(2*pi*m*kB_J*T))
 
         return kCT
+
+    @staticmethod
+    def get_TST_barrier_from_CT(kCT, T):
+        """
+        Static method to get TST barrier from the rate constant calculated by Collision Theory.
+
+        Parameters:
+        -----------
+        kCT: Rate constant calculated by Collision Theory, float.
+
+        T: Temperature(K), float.
+        """
+
+        Ga = -log(kCT*h_eV/(kB_eV*T))*(kB_eV*T)
+
+        return Ga
 
     def get_rxn_rates_TST(self, rxn_expression, relative_energies, include_pressure=False):
         """
