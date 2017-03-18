@@ -12,7 +12,7 @@ from kynetix.models.micro_kinetic_model import MicroKineticModel
 from kynetix.utilities.format_utilities import convert_time
 
 # Custom parameters.
-OdeInterval = 0.00001          # ODE integration time interval.
+OdeInterval = 0.001          # ODE integration time interval.
 OdeEnd = 1          # ODE integration time limit.
 OdeOutput = True           # Output ODE integration data or not.
 CalcXRC = False             # Calculate Degree of Rate Control(XRC) or not.

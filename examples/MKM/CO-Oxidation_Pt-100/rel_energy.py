@@ -1,7 +1,7 @@
 Ga, dG = [], []
 
 # CO_g + *_s -> CO_s
-Ga.append(0.4)
+Ga.append(0.3)
 dG.append(-2.09)
 
 # O2_g + 2*_s -> O2_2s
