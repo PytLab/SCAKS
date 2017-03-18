@@ -236,8 +236,22 @@ class SolverBase(ModelShell):
 #                self.__logger.info("R(reverse) = {} s^-1 (Equilibrium Condition)".format(rr))
 
             # Use Transition State Theory to get reverse rate.
-            rr = self.get_kTST(-dG, T);
+            # Get equivalent free energy barrier for TST.
+            Gaf_TST = self.get_TST_barrier_from_CT(rf, T)
+
+            # Correct the reaction energy dG.
+            correction_energy = corrector.entropy_correction(gas_name, m, p, T)
+            stoichiometry = formula.stoichiometry()
+            dG -= stoichiometry*correction_energy
+            Gar_TST = Gaf_TST - dG
+
+            if Gar_TST < 0:
+                Gar_TST = 0.0
+
+            rr = self.get_kTST(Gar_TST, T);
             if log_allowed:
+                self.__logger.info("Get equivalent TST barrier from CT: {} eV".format(Gaf_TST))
+                self.__logger.info("Get equivalent reverse barrier: {} eV".format(Gar_TST))
                 self.__logger.info("R(reverse) = {} s^-1 (Transition State Theory)".format(rr))
 
         # Desorption process.
