@@ -3,32 +3,22 @@ import logging
 
 import mpmath as mp
 import numpy as np
-import gmpy2
+#import gmpy2
 import sympy as sym
-
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-    print "!!!                                                   !!!"
-    print "!!!       WARNING: Matplotlib is not installed        !!!"
-    print "!!!       Any plot functions will be disabled         !!!"
-    print "!!!                                                   !!!"
-    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
 import kynetix.descriptors.descriptors as dc
 from kynetix.functions import *
-from kynetix.parsers.rxn_parser import *
-from kynetix.solvers.solver_base import *
+from kynetix.parsers.rxn_parser import RxnEquation, ChemFormula
+from kynetix.solvers.solver_base import SolverBase
 
 
 class MeanFieldSolver(SolverBase):
+    """
+    A class acts as a base class to be inherited by other
+    solver classes, it is not functional on its own.
+    """
 
     def __init__(self, owner):
-        """
-        A class acts as a base class to be inherited by other
-        solver classes, it is not functional on its own.
-        """
         # {{{
         super(MeanFieldSolver, self).__init__(owner)
 
@@ -73,43 +63,43 @@ class MeanFieldSolver(SolverBase):
             self._matrix = mp.matrix
             self._Axb_solver = mp.lu_solve
             self._norm = lambda x: mp.norm(x, p=2)
-        # Gmpy2.
-        elif self._owner.numerical_representation == 'gmpy':
-            gmpy2.get_context().precision = 3*self._owner.decimal_precision
-            self._math = gmpy2
-            self._linalg = np
-            self._mpf = gmpy2.mpfr
-
-            def cus_matrix(*args):
-                if len(args) == 1:
-                    mat = np.matrix(args[0])
-                    mat_shape = mat.shape
-                    if mat_shape[0] == 1 and mat_shape[1] > 1:
-                        mat.shape = (-1, 1)
-                    return mat
-                elif len(args) == 2:
-                    return np.matrix(np.empty(args, object))
-
-            self._matrix = cus_matrix
-            self._Axb_solver = np.linalg.solve
-            self._norm = lambda x: gmpy2.sqrt(np.sum(np.square(x)))  # x is a column vector
-        # Sympy.
-        elif self._owner.numerical_representation == 'sympy':
-            self._math = sym
-            self._linalg = sym
-            precision = self._owner.decimal_precision
-            self._mpf = lambda x: \
-                sym.N(sym.RealNumber(str(x), precision), precision)
-
-            def cus_matrix(*args):
-                if len(args) == 1:
-                    return sym.Matrix(args[0])
-                elif len(args) == 2:
-                    return sym.zeros(*args)
-
-            self._matrix = cus_matrix
-            self._Axb_solver = lambda A, b: A.LUsolve(b)
-            self._norm = lambda x: sym.sqrt((x.transpose()*x)[0])  # x is a column vector
+#        # Gmpy2.
+#        elif self._owner.numerical_representation == 'gmpy':
+#            gmpy2.get_context().precision = 3*self._owner.decimal_precision
+#            self._math = gmpy2
+#            self._linalg = np
+#            self._mpf = gmpy2.mpfr
+#
+#            def cus_matrix(*args):
+#                if len(args) == 1:
+#                    mat = np.matrix(args[0])
+#                    mat_shape = mat.shape
+#                    if mat_shape[0] == 1 and mat_shape[1] > 1:
+#                        mat.shape = (-1, 1)
+#                    return mat
+#                elif len(args) == 2:
+#                    return np.matrix(np.empty(args, object))
+#
+#            self._matrix = cus_matrix
+#            self._Axb_solver = np.linalg.solve
+#            self._norm = lambda x: gmpy2.sqrt(np.sum(np.square(x)))  # x is a column vector
+#        # Sympy.
+#        elif self._owner.numerical_representation == 'sympy':
+#            self._math = sym
+#            self._linalg = sym
+#            precision = self._owner.decimal_precision
+#            self._mpf = lambda x: \
+#                sym.N(sym.RealNumber(str(x), precision), precision)
+#
+#            def cus_matrix(*args):
+#                if len(args) == 1:
+#                    return sym.Matrix(args[0])
+#                elif len(args) == 2:
+#                    return sym.zeros(*args)
+#
+#            self._matrix = cus_matrix
+#            self._Axb_solver = lambda A, b: A.LUsolve(b)
+#            self._norm = lambda x: sym.sqrt((x.transpose()*x)[0])  # x is a column vector
         # }}}
 
     def log_latex(self, latex_tup):
@@ -128,7 +118,6 @@ class MeanFieldSolver(SolverBase):
         for site_name in self._owner.site_names:
             classified_adsorbates.setdefault(site_name, [])
 
-        species_definitions = self._owner.species_definitions
         for adsorbate_name in self._owner.adsorbate_names:
             formula = ChemFormula(adsorbate_name)
             site_name = "*_{}".format(formula.site())
@@ -229,7 +218,7 @@ class MeanFieldSolver(SolverBase):
         elif self._owner.rate_algo == "CT":
             rate_func = self.get_rxn_rates_CT
         else:
-            msg = "Unknown method type '{}'".format(method)
+            msg = "Unknown method type '{}'".format(self._owner.rate_algo)
             raise ValueError(msg)
 
         kfs, krs = [], []

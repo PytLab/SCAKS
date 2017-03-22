@@ -6,7 +6,6 @@ import logging
 
 import mpmath as mp
 from scipy.optimize import golden
-import gmpy2
 import sympy as sym
 
 from kynetix.errors.error import *
@@ -84,14 +83,6 @@ class ConstrainedNewton(RootfindingIterator):
         self.logger = logging.getLogger('model.solvers.ConstrainedNewton')
 
     def __iter__(self):
-
-        def vec2tup(col_vector):
-            "convert column vector of mpmath or numpy to python tuple."
-            if self._mpfloat == gmpy2.mpfr:  # gmpy
-                return tuple(col_vector.reshape(1, -1).tolist()[0])
-            else:
-                return tuple(col_vector)
-
         iter_counter = 0
         f = self.f
         J = self._J
@@ -123,13 +114,13 @@ class ConstrainedNewton(RootfindingIterator):
             #use golden method to get optimal step size
             def fl(l):
                 x1 = self._matrix(x0) + l*s
-                fx = self._matrix(f(vec2tup(x1)))
+                fx = self._matrix(f(tuple(x1)))
                 return norm(fx)
             l = golden(fl)
 #            print l
 #            l = mp.mpf('1.0')
             x1 = self._matrix(x0) + l*s  # matrix
-            x1 = self.constraint(vec2tup(x1))
+            x1 = self.constraint(tuple(x1))
             if x1 == x0:
                 self.logger.info("Solver: Found stationary point.")
                 cancel = True
