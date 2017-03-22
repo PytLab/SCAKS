@@ -1,46 +1,49 @@
+'''
+Test case for SteadyStateSolver.
+'''
+
 import logging
-import re
 import unittest
 
-import numpy as np
-from numpy import matrix
-import mpmath as mp
 from mpmath import mpf
 
 from kynetix.models.micro_kinetic_model import MicroKineticModel
-from kynetix.solvers import *
+from kynetix.solvers import SteadyStateSolver
 
 from unit_test import *
 
 
 class SteadyStateSolverTest(unittest.TestCase):
+    '''
+    Test case for SteadyStateSolver.
+    '''
 
     def setUp(self):
         # Test case setting.
         self.maxDiff = None
         self.setup_dict = dict(
-            rxn_expressions = [
+            rxn_expressions=[
                 'CO_g + *_s -> CO_s',
                 'O2_g + 2*_s -> 2O_s',
                 'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s',
             ],
 
-            species_definitions = {
+            species_definitions={
                 'CO_g': {'pressure': 1.0},
                 'O2_g': {'pressure': 1./3.},
                 'CO2_g': {'pressure': 0.00},
                 '*_s': {'site_name': '111', 'type': 'site', 'total': 1.0},
             },
 
-            temperature = 450.0,
-            parser = "RelativeEnergyParser",
-            solver = "SteadyStateSolver",
-            corrector = "ThermodynamicCorrector",
-            plotter = "EnergyProfilePlotter",
-            rootfinding = 'ConstrainedNewton',
-            decimal_precision = 100,
-            tolerance = 1e-20,
-            max_rootfinding_iterations = 100,
+            temperature=450.0,
+            parser="RelativeEnergyParser",
+            solver="SteadyStateSolver",
+            corrector="ThermodynamicCorrector",
+            plotter="EnergyProfilePlotter",
+            rootfinding='ConstrainedNewton',
+            decimal_precision=100,
+            tolerance=1e-20,
+            max_rootfinding_iterations=100,
         )
 
     def test_solver_construction_query(self):
@@ -104,12 +107,14 @@ class SteadyStateSolverTest(unittest.TestCase):
                          "kr[2]*p['CO2_g']*theta['*_s']**2 - " +
                          "kf[2]*theta['CO_s']*theta['O_s']")
         ret_dtheta_dt = solver.get_adsorbate_dtheta_dt_expression("CO_s")
+        self.assertEqual(ref_dtheta_dt, ret_dtheta_dt)
 
         ref_dtheta_dt = ("2*kf[1]*p['O2_g']*theta['*_s']**2 - " +
                          "2*kr[1]*theta['O_s']**2 + " +
                          "kr[2]*p['CO2_g']*theta['*_s']**2 - " +
                          "kf[2]*theta['CO_s']*theta['O_s']")
         ret_dtheta_dt = solver.get_adsorbate_dtheta_dt_expression("O_s")
+        self.assertEqual(ref_dtheta_dt, ret_dtheta_dt)
 
     def test_dtheta_dt_expression(self):
         " Make sure we can get dtheta/dt expression correctly. "
@@ -142,7 +147,7 @@ class SteadyStateSolverTest(unittest.TestCase):
 
         # Check.
         coverages = (0.2, 0.5)
-        ref_dtheta_dt = (2812943317895.31469634,562588664794.88448169)
+        ref_dtheta_dt = (2812943317895.31469634, 562588664794.88448169)
         ret_dtheta_dt = solver.steady_state_function(coverages)
 
         for ref, ret in ref_dtheta_dt, ret_dtheta_dt:
@@ -235,7 +240,7 @@ class SteadyStateSolverTest(unittest.TestCase):
         ret_jacobian = solver.analytical_jacobian(coverages).tolist()
         for m in range(2):
             for n in range(2):
-                self.assertAlmostEqual(ref_jacobian[m][n], float(ret_jacobian[m][n]), places=2)
+                self.assertAlmostEqual(ref_jacobian[m][n], float(ret_jacobian[m][n]), places=1)
 
     def test_get_residual(self):
         " Test we can get correct residual. "
