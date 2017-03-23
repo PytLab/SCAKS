@@ -1,3 +1,6 @@
+# Author: Shao Zhengjiang<shaozhengjiang@gmail.com>
+# Date  : 2017-03-23
+
 find_package(SWIG REQUIRED)
 include(${SWIG_USE_FILE})
 
