@@ -7,8 +7,9 @@ CXX = g++
 SWIG = swig
 SWIGFLAGS = -python -c++ -Wall -Werror
 CPPFLAGS = -O3 -fPIC -std=c++0x -c -Wall -Werror
-INC = -I/usr/include/python2.7/
-LDFLAGS = -shared
+#INC = -I/usr/include/python2.7/
+INC = -I/Users/zjshao/.pyenv/versions/2.7.13/include/python2.7
+LDFLAGS = -lpython -dynamiclib 
 EXTNAME = kmc_functions
 EXTDIR = ../kynetix/solvers/kmc_plugins/plugin_backends
 
@@ -31,7 +32,7 @@ install:
 	cp _$(EXTNAME).so $(EXTNAME).py $(EXTDIR)
 
 clean:
-	rm -rf build wrap/$(EXTNAME)_wrap.cxx $(EXTNAME).py *.so
+	rm -rf build wrap/$(EXTNAME)_wrap.cxx $(EXTNAME).py *.so *.o
 
 uninstall:
 	rm -f $(EXTDIR)/$(EXTNAME).py $(EXTDIR)/_$(EXTNAME).so
