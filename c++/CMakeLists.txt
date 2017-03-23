@@ -17,5 +17,5 @@ add_subdirectory(wrap)
 
 # Install the target
 install(FILES ${PROJECT_BINARY_DIR}/wrap/kmc_functions.py ${PROJECT_BINARY_DIR}/wrap/_kmc_functions.so
-    DESTINATION ${PROJECT_SOURCE_DIR}/kynetix/solvers/kmc_plugins/plugin_backends/)
+    DESTINATION ${PROJECT_SOURCE_DIR}/../kynetix/solvers/kmc_plugins/plugin_backends/)
 
