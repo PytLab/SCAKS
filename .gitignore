@@ -102,3 +102,6 @@ temp/
 
 # profiling files.
 *.prof
+
+# build directory
+build/
