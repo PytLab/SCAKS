@@ -1,15 +1,22 @@
+'''
+Module for micro-kinetic model class definition.
+'''
+
 import cPickle as cpkl
 import logging
 import os
 
+from kynetix.errors.error import ParameterError
 from kynetix.mpicommons import mpi
 import kynetix.models.kinetic_model as km
 import kynetix.descriptors.descriptors as dc
-import kynetix.descriptors.component_descriptors as cpdc
 from kynetix.utilities.profiling_utitlities import do_cprofile
 
 
 class MicroKineticModel(km.KineticModel):
+    '''
+    Class for micro-kinetic model.
+    '''
 
     # {{{
     # Data precision.
@@ -19,7 +26,7 @@ class MicroKineticModel(km.KineticModel):
     perturbation_size = dc.Float("perturbation_size", default=0.01)
 
     # Direction of perturbation.
-    perturbation_direction = dc.String("perturbation_direction", 
+    perturbation_direction = dc.String("perturbation_direction",
                                        default="right",
                                        candidates=["right", "left"])
 
@@ -64,7 +71,7 @@ class MicroKineticModel(km.KineticModel):
         setup_file: kinetic model set up file, str.
 
         setup_dict: A dictionary contains essential setup parameters for kinetic model.
-        
+
         logger_level: logging level, int.
 
         file_handler_level: logging level for file handler, int.
@@ -84,6 +91,11 @@ class MicroKineticModel(km.KineticModel):
             mpi.barrier()
             if mpi.is_master:
                 os.mkdir("./data")
+
+        # Model attributes definitions.
+        self.__ss_cvgs = None          # steady-state coverages
+        self.__tofs = None              # turn-over frequencies
+        self.__reversibilities = None  # reversibilities
 
     def _set_logger(self, filename=None):
         super(MicroKineticModel, self)._set_logger(filename)
@@ -204,7 +216,9 @@ class MicroKineticModel(km.KineticModel):
                                      relative_energies=relative_energies)
 
         # Get reversibilities.
-        reversibilities = solver.get_reversibilities(rf, rr)
+        import ipdb
+        ipdb.set_trace()
+        self.__reversibilities = solver.get_reversibilities(rf, rr)
 
         # Calculate XRC.
         if XRC:
@@ -220,6 +234,9 @@ class MicroKineticModel(km.KineticModel):
 
     @dc.Property
     def data_file(self):
+        '''
+        Get the name of file where serialzed data stored.
+        '''
         if mpi.size == 1:
             return "data.pkl"
         else:
