@@ -216,8 +216,6 @@ class MicroKineticModel(km.KineticModel):
                                      relative_energies=relative_energies)
 
         # Get reversibilities.
-        import ipdb
-        ipdb.set_trace()
         self.__reversibilities = solver.get_reversibilities(rf, rr)
 
         # Calculate XRC.
