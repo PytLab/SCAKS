@@ -1,8 +1,16 @@
 import time
-try:
+import sys
+
+# For python compatibility.
+if sys.version > "3":
+    PY2 = False
+else:
+    PY2 = True
+
+if PY2:
     import cPickle as pickle
-except ImportError:
-    import picke
+else:
+    import pickle
 
 from kynetix.functions import *
 from kynetix.errors.error import *
