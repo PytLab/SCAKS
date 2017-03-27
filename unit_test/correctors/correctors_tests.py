@@ -1,6 +1,6 @@
 import unittest
 
-from thermodynamic_corrector_test import ThermodynamicCorrectorTest
+from .thermodynamic_corrector_test import ThermodynamicCorrectorTest
 
 
 def suite():

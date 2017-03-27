@@ -4,20 +4,20 @@ import logging
 try:
     from KMCLib import KMCAnalysisPlugin
 except ImportError:
-    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-    print "!!!                                                    !!!"
-    print "!!!         WARNING: KMCLibX is not installed          !!!"
-    print "!!! Any kMC calculation using KMCLibX will be disabled !!!"
-    print "!!!                                                    !!!"
-    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    print("!!!                                                    !!!")
+    print("!!!         WARNING: KMCLibX is not installed          !!!")
+    print("!!! Any kMC calculation using KMCLibX will be disabled !!!")
+    print("!!!                                                    !!!")
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
 try:
-    from kynetix.solvers.kmc_plugins.plugin_backends.kmc_functions import *
+    from kynetix.solvers.kmc_plugins.plugin_backends.kmc_functions import collect_coverages
 except ImportError:
-    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-    print "!!!   WARNING: plugin backends extension not found.   !!!"
-    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-    from kynetix.solvers.kmc_plugins.kmc_functions import *
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    print("!!!   WARNING: plugin backends extension not found.   !!!")
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    from kynetix.solvers.kmc_plugins.kmc_functions import collect_coverages
 
 from kynetix import file_header
 from kynetix.mpicommons import mpi
@@ -43,6 +43,8 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
 
         buffer_size: The max length of recorder variables.
         """
+        super(CoveragesAnalysis, self).__init__()
+
         # LatticeModel object.
         self.__kmc_model = kmc_model
 

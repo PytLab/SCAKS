@@ -5,12 +5,12 @@ from math import exp
 try:
     from KMCLib import *
 except ImportError:
-    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-    print "!!!                                                   !!!"
-    print "!!!          WARNING: KMCLib is not installed         !!!"
-    print "!!! Any kMC calculation using KMCLib will be disabled !!!"
-    print "!!!                                                   !!!"
-    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    print("!!!                                                   !!!")
+    print("!!!          WARNING: KMCLib is not installed         !!!")
+    print("!!! Any kMC calculation using KMCLib will be disabled !!!")
+    print("!!!                                                   !!!")
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
 import kynetix.descriptors.descriptors as dc
 from kynetix import __version__
