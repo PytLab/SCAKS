@@ -209,7 +209,8 @@ class ParserBase(ModelShell):
         x = null(site_matrix.T)  # basis of null space
         if not x.any():  # x is not empty
             raise ValueError('Failed to get basis of nullspace.')
-        x = map(abs, x.T.tolist()[0])
+
+        x = [abs(i) for i in x.T.tolist()[0]]
         #convert entries of x to integer
         min_x = min(x)
         x = [round(i/min_x, 1) for i in x]
@@ -217,7 +218,7 @@ class ParserBase(ModelShell):
         total_coefficients = (x*reapro_matrix).tolist()[0]
 
         # cope with small differences between coeffs
-        abs_total_coefficients = map(abs, total_coefficients)
+        abs_total_coefficients = list(map(abs, total_coefficients))
         min_coeff = min(abs_total_coefficients)
         total_coefficients = [int(i/min_coeff) for i in total_coefficients]
 

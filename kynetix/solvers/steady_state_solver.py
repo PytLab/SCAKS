@@ -92,9 +92,9 @@ class SteadyStateSolver(MeanFieldSolver):
         if not consistant:
             if self._owner.log_allowed:
                 self.__logger.warning('coverage constraining...\n')
-                self.__logger.debug('    initial coverage: %s', str(map(float, cvgs_tuple)))
+                self.__logger.debug('    initial coverage: %s', str([float(i) for cvg in cvgs_tuple]))
                 self.__logger.debug('constrained coverage: %s\n',
-                                    str(map(float, constrained_cvgs_tuple)))
+                                    str([float(cvg) for cvg in constrained_cvgs_tuple]))
 
         return constrained_cvgs_tuple
         # }}}
@@ -720,7 +720,7 @@ class SteadyStateSolver(MeanFieldSolver):
         #fprime = lambda x: get_jacobian(c0, relative_energies=relative_energies)
 
         # Main hotpot.
-        c0 = map(float, c0)  # covert to float
+        c0 = [float(c) for c in c0]
         converged_cvgs = fsolve(self.steady_state_function, c0,
                                 (relative_energies, ),
                                 fprime=get_jacobian)
@@ -778,7 +778,7 @@ class SteadyStateSolver(MeanFieldSolver):
                     converged = True
                     self._coverage = c0
                     if self._owner.log_allowed:
-                        self.__logger.info('Good initial guess: \n%s', str(map(float, c0)))
+                        self.__logger.info('Good initial guess: \n%s', str([float(i) for i in c0]))
 
                     # log steady state coverages
                     self.__log_sscvg(c0, self._owner.adsorbate_names)
@@ -821,7 +821,7 @@ class SteadyStateSolver(MeanFieldSolver):
                     # log initial guess
                     if self._owner.log_allowed:
                         self.__logger.info('initial guess coverage - success')
-                        self.__logger.debug(str(map(float, c0)))
+                        self.__logger.debug(str([float(c) for c in c0]))
 
                 #####    Sub LOOP for a c0    #####
 
@@ -871,7 +871,7 @@ class SteadyStateSolver(MeanFieldSolver):
                                 break
                             else:  # bad root, iteration continue...
                                 if self._owner.log_allowed:
-                                    self.__logger.warning('bad root: %s', str(map(float, x)))
+                                    self.__logger.warning('bad root: %s', str([float(i) for i in x]))
                                     self.__logger.warning('root finding continue...\n')
                         else:
                             error = f_resid(x)  # use residual as error and continue

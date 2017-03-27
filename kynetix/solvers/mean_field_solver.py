@@ -425,7 +425,7 @@ class MeanFieldSolver(SolverBase):
             exprs_str = '\n'.join(exprs_list)
             exec(exprs_str, locals=locs)
 
-        rfs, rrs = map(tuple, (locs['rfs'], locs['rrs']))
+        rfs, rrs = locs['rfs'], locs['rrs']
 
         if self._owner.log_allowed and log:
             self.__log_rates(rfs, rrs, "R_forward", "R_reverse")
