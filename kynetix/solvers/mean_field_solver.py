@@ -420,12 +420,9 @@ class MeanFieldSolver(SolverBase):
         rate_expressions = self.get_rate_expressions()
 
         # Calculate rates.
-        locs = locals()
         for exprs_list in rate_expressions:
             exprs_str = '\n'.join(exprs_list)
-            exec(exprs_str, locals=locs)
-
-        rfs, rrs = locs['rfs'], locs['rrs']
+            exec(exprs_str)
 
         if self._owner.log_allowed and log:
             self.__log_rates(rfs, rrs, "R_forward", "R_reverse")
