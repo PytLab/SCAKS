@@ -23,3 +23,13 @@ if PY2:
 else:
     Exception = Exception
 
+# Compatible utility funcitons.
+def merge_two_dicts(dict1, dict2):
+    """
+    Compatible function to merge two dicts using dict constructor.
+    """
+    if PY2:
+        return dict(dict1, **dict2)
+    else:
+        return {**dict1, **dict2}
+

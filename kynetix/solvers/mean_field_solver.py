@@ -6,6 +6,7 @@ import numpy as np
 #import gmpy2
 import sympy as sym
 
+from kynetix.compatutil import merge_two_dicts
 import kynetix.descriptors.descriptors as dc
 from kynetix.functions import *
 from kynetix.parsers.rxn_parser import RxnEquation, ChemFormula
@@ -891,7 +892,7 @@ class MeanFieldSolver(SolverBase):
         # Merge dicts.
         subs_dict = {}
         for dic in dicts_list:
-            subs_dict = dict(subs_dict, **dic)
+            subs_dict = merge_two_dicts(subs_dict, dic)
 
         return subs_dict
         # }}}
