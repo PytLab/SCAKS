@@ -420,11 +420,12 @@ class MeanFieldSolver(SolverBase):
         rate_expressions = self.get_rate_expressions()
 
         # Calculate rates.
+        locs = locals()
         for exprs_list in rate_expressions:
             exprs_str = '\n'.join(exprs_list)
-            exec exprs_str in locals()
+            exec(exprs_str, locals=locs)
 
-        rfs, rrs = map(tuple, (rfs, rrs))
+        rfs, rrs = map(tuple, (locs['rfs'], locs['rrs']))
 
         if self._owner.log_allowed and log:
             self.__log_rates(rfs, rrs, "R_forward", "R_reverse")
@@ -598,7 +599,6 @@ class MeanFieldSolver(SolverBase):
         inter_num = len(self._owner.adsorbate_names)
 
         for j in xrange(n):
-            print j
             xj = x.copy()
             #using delta proportional to xj is more stable
             delta = abs(h*xj[j])

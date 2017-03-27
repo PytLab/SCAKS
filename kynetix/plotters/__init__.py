@@ -1,2 +1,2 @@
-from plotter_base import *
-from energy_profile_plotter import *
+from kynetix.plotters.plotter_base import *
+from kynetix.plotters.energy_profile_plotter import *
