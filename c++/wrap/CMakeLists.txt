@@ -6,6 +6,27 @@ include(${SWIG_USE_FILE})
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
+# Read config file.
+if (CONFIG)
+    file(READ "${PROJECT_SOURCE_DIR}/config" config)
+    string(REGEX MATCH "^PYINCLUDE = (.*)\nPYLIB = (.*)\n+$" path ${config})
+
+    # Read PYINCLUDE.
+    if (CMAKE_MATCH_1)
+        set(PYINCLUDE ${CMAKE_MATCH_1})
+    else()
+        message(FATAL_ERROR "Missing PYINCLUDE in config file")
+    endif()
+
+    # Read PYLIB.
+    if (CMAKE_MATCH_2)
+        set(PYLIB ${CMAKE_MATCH_2})
+    else()
+        message(FATAL_ERROR "Missing PYLIB in config file")
+    endif()
+endif()
+
+# Load PYTHON_INCLUDE_PATH & PYTHON_LIBRARY.
 if (PYINCLUDE)
     # Python header file include.
     message( STATUS "Customized Python include path detected" )
@@ -23,9 +44,8 @@ else()
     find_package(PythonLibs REQUIRED)
 endif()
 
-message( STATUS "Using Python header files in: ${PYTHON_INCLUDE_PATH}")
-message( STATUS "Using Python library: ${PYTHON_LIBRARY}")
-
+message(STATUS "Using Python header files in ${PYTHON_INCLUDE_PATH}")
+message(STATUS "Using Python library ${PYTHON_LIBRARY}")
 # Set flags for swig.
 set(CMAKE_SWIG_FLAGS "")
 
