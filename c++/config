@@ -1,2 +1,2 @@
-PYINCLUDE = /Users/zjshao/.pyenv/versions/2.7.13/include/python2.7/
-PYLIB = /Users/zjshao/.pyenv/versions/2.7.13/lib/libpython2.7.dylib
+PYINCLUDE = /Users/zjshao/.pyenv/versions/3.5.3/include/python3.5m/
+PYLIB = /Users/zjshao/.pyenv/versions/3.5.3/lib/libpython3.5.dylib
