@@ -165,7 +165,7 @@ class CoveragesAnalysis(KMCAnalysisPlugin):
         list_str = get_list_string(var_name, coverages, ncols=1)
 
         extend_str = ""
-        for idx in xrange(len(self.__possible_types)):
+        for idx in range(len(self.__possible_types)):
             sub_extend_str = "coverages[{}].extend(coverages_{}[{}])\n"
             sub_extend_str = sub_extend_str.format(idx, self.__flush_counter, idx)
             extend_str += sub_extend_str

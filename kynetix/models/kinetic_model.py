@@ -3,10 +3,8 @@ import logging
 import os
 from operator import add
 
-from kynetix import PY2
-if not PY2:
-    from functools import reduce
 
+from kynetix.compatutil import reduce
 import kynetix.descriptors.descriptors as dc
 import kynetix.descriptors.component_descriptors as cpdc
 from kynetix.mpicommons import mpi
@@ -122,7 +120,7 @@ class KineticModel(object):
         else:
             self.setup_file = setup_file
             globs, locs = {}, {}
-            execfile(self.setup_file, globs, locs)
+            exec(open(self.setup_file, "rb").read(), globs, locs)
             self.setup_dict = locs
 
         # Set logger.

@@ -79,7 +79,7 @@ class RelativeEnergyParser(ParserBase):
         # Read relative energy data file.
         if os.path.exists(filename):
             globs, locs = {}, {}
-            execfile(filename, globs, locs)
+            exec(open(filename, "rb").read(), globs, locs)
         else:
             raise IOError("{} is not found.".format(filename))
 

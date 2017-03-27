@@ -25,7 +25,7 @@ if "__main__" == __name__:
     setup_file = "./template/{}".format(filename)
     if os.path.exists(setup_file):
         globs, locs = {}, {}
-        execfile(setup_file, globs, locs)
+        exec(open(setup_file, "rb").read(), globs, locs)
 
     job_dirs = ""
     for p in species_pressures[species_name]:

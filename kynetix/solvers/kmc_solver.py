@@ -376,7 +376,7 @@ class KMCSolver(SolverBase):
             content += proc_str
         # gather processes
         proc_str = 'processes = [\n'
-        for idx in xrange(len(processes)):
+        for idx in range(len(processes)):
             proc_str += (' '*4 + 'process_%d,\n' % idx)
         proc_str += ']\n\n'
 

@@ -83,7 +83,7 @@ if "__main__" == __name__:
 
     # Get parameters in input files.
     glob, locs = {}, {}
-    execfile(inputfile, glob, locs)
+    exec(open(inputfile, "rb").read(), glob, locs)
 
     coords_indices = locs["coords_indices"]
     rxn_expression = locs["rxn_expression"]

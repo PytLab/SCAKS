@@ -48,7 +48,7 @@ def get_relative_energy_tuple(energy_tuple):
     "Set is energy as 0, other energies are relative."
     energy_list = list(energy_tuple)
     reference_energy = energy_list[0]
-    for i in xrange(len(energy_list)):
+    for i in range(len(energy_list)):
         energy_list[i] = energy_list[i] - reference_energy
     return tuple(energy_list)
 
@@ -100,15 +100,15 @@ def _add_line_shadow(ax, x, y, depth, color, line_width=3, offset_coeff=1.0):
         return
 
     threads = []
-    for i in xrange(depth):  # gather thread objects
+    for i in range(depth):  # gather thread objects
         t = ShadowThread(add_single_shadow, (ax, x, y, i, depth,
                                              color, line_width))
         threads.append(t)
 
-    for i in xrange(depth):
+    for i in range(depth):
         threads[i].start()
 
-    for i in xrange(depth):
+    for i in range(depth):
         threads[i].join()
 
     return ax.lines
@@ -744,10 +744,10 @@ def plot_multi_energy_diagram(*args, **kwargs):
         t = NoteThread(add_state_note, (pts, tex_states))
         note_threads.append(t)
 
-    for i in xrange(nstates):
+    for i in range(nstates):
         note_threads[i].start()
 
-    for i in xrange(nstates):
+    for i in range(nstates):
         note_threads[i].join()
 
     # Add species note at last section.

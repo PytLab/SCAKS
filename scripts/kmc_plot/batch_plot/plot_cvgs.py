@@ -21,7 +21,7 @@ if "__main__" == __name__:
         filename = "{}/auto_coverages.py".format(d)
         if os.path.exists(filename):
             globs, locs = {}, {}
-            execfile(filename, globs, locs)
+            exec(open(filename, "rb").read(), globs, locs)
 
             possible_types = locs["possible_types"]
             for species, type_names in species_names.items():

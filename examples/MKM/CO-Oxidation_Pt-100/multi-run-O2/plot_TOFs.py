@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 if "__main__" == __name__:
     globs, locs = {}, {}
-    execfile("auto_tofs.py", globs, locs)
+    exec(open("auto_tofs.py", "rb").read(), globs, locs)
     pressures = locs['pCO']
     TONs = locs['tofs']
 

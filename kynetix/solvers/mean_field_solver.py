@@ -598,7 +598,7 @@ class MeanFieldSolver(SolverBase):
         J = self._matrix(m, n)
         inter_num = len(self._owner.adsorbate_names)
 
-        for j in xrange(n):
+        for j in range(n):
             xj = x.copy()
             #using delta proportional to xj is more stable
             delta = abs(h*xj[j])
@@ -612,7 +612,7 @@ class MeanFieldSolver(SolverBase):
                 xj[j] -= delta
                 Jj = (self._matrix(f(xj)) - fx)/(-delta)
 
-            for i in xrange(m):
+            for i in range(m):
                 J[i, j] = Jj[i]
         return J
 
@@ -662,7 +662,7 @@ class MeanFieldSolver(SolverBase):
 
         # Equilibrium constants(K) symbols for each elementary rxn.
         K_sym_list = []
-        for i in xrange(self._rxns_num):
+        for i in range(self._rxns_num):
             #subscript = i + 1
             K_sym = sym.Symbol('K_' + str(i), real=True, positive=True)
             K_sym_list.append(K_sym)

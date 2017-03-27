@@ -3,6 +3,7 @@ from math import exp, pi, sqrt, log
 from operator import mul
 
 from kynetix import ModelShell
+from kynetix.compatutil import reduce
 from kynetix.database.thermo_data import kB_J, kB_eV, h_eV, P0
 from kynetix.functions import *
 from kynetix.parsers.rxn_parser import *

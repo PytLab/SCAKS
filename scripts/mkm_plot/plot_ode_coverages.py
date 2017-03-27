@@ -13,7 +13,7 @@ else:
     adsorbate_names = []
 
 globs, locs = {}, {}
-execfile('auto_ode_coverages.py', globs, locs)
+exec(open('auto_ode_coverages.py', "rb").read(), globs, locs)
 times, coverages = locs['times'], locs['coverages']
 
 # check args number

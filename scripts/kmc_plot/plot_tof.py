@@ -12,7 +12,7 @@ production = "CO2_g"
 
 if "__main__" == __name__:
     globs, locs = {}, {}
-    execfile("auto_tofs.py", globs, locs)
+    exec(open("auto_tofs.py", "rb").read(), globs, locs)
     rates_lists = locs["tofs"]
     times = locs["times"]
     processes = locs["processes"]

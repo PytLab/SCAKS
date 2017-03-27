@@ -24,7 +24,7 @@ for pO2_dir in pO2_dirs:
         # Read tofs.
         filename = "{}/{}/auto_frequency.py".format(pO2_dir, pCO_dir)
         globs, locs = {}, {}
-        execfile(filename, globs, locs)
+        exec(open(filename, "rb").read(), globs, locs)
         reaction_rates = locs["reaction_rates"]
         TON = 0.0
         reactions = sorted(reaction_rates.keys())

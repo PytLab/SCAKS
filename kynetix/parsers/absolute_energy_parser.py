@@ -31,7 +31,7 @@ class AbsoluteEnergyParser(ParserBase):
         filename: file name of energy data.
         """
         globs, locs = {}, {}
-        execfile(filename, globs, locs)
+        exec(open(filename, "rb").read(), globs, locs)
 
         self._owner._absolute_energies = locs["absolute_energies"]
 

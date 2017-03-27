@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 globs, locs = {}, {}
-execfile('auto_frequency.py', globs, locs)
+exec(open('auto_frequency.py', "rb").read(), globs, locs)
 
 reaction_occurencies = locs['reaction_occurencies']
 reactions = sorted(reaction_occurencies)

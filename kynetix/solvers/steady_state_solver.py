@@ -473,9 +473,9 @@ class SteadyStateSolver(MeanFieldSolver):
         adsorbate_names = self._owner.adsorbate_names
 
         # Fill matrix.
-        for i in xrange(m):
+        for i in range(m):
             poly_expression = dtheta_dt_expressions[i]
-            for j in xrange(n):
+            for j in range(n):
                 # Get adsorbate_name.
                 adsorbate_name = adsorbate_names[j]
                 # Fill the matrix
@@ -616,10 +616,10 @@ class SteadyStateSolver(MeanFieldSolver):
         sym_jacobian = [[0.0]*m, [0.0]*n]
 
         # dtheta/dt (row).
-        for i in xrange(m):
+        for i in range(m):
             dthe_dt_sym = dtheta_dt_syms[i]
             # adsorbate (column).
-            for j in xrange(n):
+            for j in range(n):
                 ads_name = self._owner.adsorbate_names[j]
                 theta_sym = self._extract_symbol(ads_name, 'ads_cvg')
                 sym_jacobian[i][j] = sym.Derivative(dthe_dt_sym, theta_sym).doit()
@@ -642,8 +642,8 @@ class SteadyStateSolver(MeanFieldSolver):
         m = n = len(sym_jacobian)
         num_jacobian = [[0.0]*m, [0.0]*n]
 
-        for i in xrange(m):
-            for j in xrange(n):
+        for i in range(m):
+            for j in range(n):
                 entry_value = sym_jacobian[i][j].evalf(subs=subs_dict)
                 num_jacobian[i][j] = self._mpf(entry_value)
 
@@ -1086,7 +1086,7 @@ class SteadyStateSolver(MeanFieldSolver):
             return XRCi
 
         XRCs = [None]*n_rxns
-        for i in xrange(n_rxns):
+        for i in range(n_rxns):
             if self._owner.log_allowed:
                 self.__logger.info("Calculating XRC for {} ...".format(rxn_expressions[i]))
 

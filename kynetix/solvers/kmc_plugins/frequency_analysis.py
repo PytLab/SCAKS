@@ -12,6 +12,7 @@ except ImportError:
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
 from kynetix import file_header
+from kynetix.compatutil import reduce
 from kynetix.mpicommons import mpi
 from kynetix.utilities.format_utilities import get_list_string, get_dict_string
 

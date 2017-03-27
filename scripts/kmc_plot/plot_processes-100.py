@@ -119,7 +119,7 @@ if __name__ == "__main__":
                     [0.5, 0.5, 0.0]]
 
     globs, locs = {}, {}
-    execfile("kmc_processes.py", globs, locs)
+    exec(open("kmc_processes.py", "rb").read(), globs, locs)
 
     path = "./processes/"
     if not os.path.exists(path):

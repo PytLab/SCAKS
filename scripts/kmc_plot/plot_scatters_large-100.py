@@ -140,7 +140,7 @@ if __name__ == '__main__':
     # Read data from file.
     globs = {}
     locs = {}
-    execfile(filename, globs, locs)
+    exec(open(filename, "rb").read(), globs, locs)
 
     steps = locs["steps"]
     times = locs["times"]

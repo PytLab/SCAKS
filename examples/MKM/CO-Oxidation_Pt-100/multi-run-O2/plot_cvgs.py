@@ -12,7 +12,7 @@ species = {"CO": ["CO_s"], "O": ["O_s", "O2_2s"]}
 
 if "__main__" == __name__:
     globs, locs = {}, {}
-    execfile("auto_cvgs.py", globs, locs)
+    exec(open("auto_cvgs.py", "rb").read(), globs, locs)
     pressures = locs['pCO']
     coverages = locs['cvgs']
     adsorbates = locs['adsorbates']

@@ -16,6 +16,7 @@ except ImportError:
     print("!!!                                                   !!!")
     print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
+from kynetix.compatutil import reduce
 from kynetix.database.thermo_data import kB_eV
 from kynetix.errors.error import *
 from kynetix.database.lattice_data import grid_neighbor_offsets
@@ -104,7 +105,7 @@ class KMCParser(RelativeEnergyParser):
             site_types = init_default_types()
         else:
             globs, locs = {}, {}
-            execfile(filename, globs, locs)
+            exec(open(filename, "rb").read(), globs, locs)
 
             if "site_types" not in locs:
                 site_types = init_default_types()
@@ -172,7 +173,7 @@ class KMCParser(RelativeEnergyParser):
             repetitions = self._owner.repetitions
             basis_sites = self._owner.basis_sites
             nsite = reduce(mul, repetitions)*len(basis_sites)
-            types = [empty_type for i in xrange(nsite)]
+            types = [empty_type for i in range(nsite)]
             return types
 
         possible_element_types = self._owner.possible_element_types
@@ -188,7 +189,7 @@ class KMCParser(RelativeEnergyParser):
         # Use data in file.
         if os.path.exists(filename):
             globs, locs = {}, {}
-            execfile(filename, globs, locs)
+            exec(open(filename, "rb").read(), globs, locs)
             if "types" in locs:
                 types = locs["types"]
             else:
@@ -224,7 +225,7 @@ class KMCParser(RelativeEnergyParser):
             filename = "kmc_processes.py"
 
         globs, locs = {}, {}
-        execfile(filename, globs, locs)
+        exec(open(filename, "rb").read(), globs, locs)
 
         # Get all possible process objects.
         if self._owner.log_allowed:
