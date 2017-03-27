@@ -73,7 +73,7 @@ def plot_scatters(types,
     for t, coord in zip(types, coordinates):
         scatter_dict[t].append(coord[: 2])
 
-    for t, pts in scatter_dict.iteritems():
+    for t, pts in scatter_dict.items():
         if not pts:
             continue
         x, y = zip(*pts)

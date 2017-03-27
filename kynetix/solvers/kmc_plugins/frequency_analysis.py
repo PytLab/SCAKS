@@ -124,7 +124,7 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
 
         # Calculate rates.
         reaction_rates = {}
-        for reaction, occurency in steady_reaction_occurencies.iteritems():
+        for reaction, occurency in steady_reaction_occurencies.items():
             rate = occurency/(delta_t*nsites)
             reaction_rates.setdefault(reaction, rate)
         reaction_rates_str = get_dict_string("reaction_rates", reaction_rates)

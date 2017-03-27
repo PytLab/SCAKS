@@ -9,7 +9,7 @@ import numpy as np
 
 def dict2setup(d):
     setup = ""
-    for key, value in d.iteritems():
+    for key, value in d.items():
         value = "'{}'".format(value) if type(value) is str else value
         line = "{} = {}\n".format(key, value)
         setup += line

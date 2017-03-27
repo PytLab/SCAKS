@@ -25,7 +25,7 @@ if "__main__" == __name__:
             execfile(filename, globs, locs)
 
             possible_types = locs["possible_types"]
-            for species, type_names in species_names.iteritems():
+            for species, type_names in species_names.items():
                 coverage = 0.0
                 for type_name in type_names:
                     index = possible_types.index(type_name)

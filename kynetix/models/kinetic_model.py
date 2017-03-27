@@ -241,7 +241,7 @@ class KineticModel(object):
 
         # Set model attributes in setup file.
         class_attrs = self.__mro_class_attrs()
-        for key, value in setup_dict.iteritems():
+        for key, value in setup_dict.items():
             # Check redundant parameter.
             if key not in class_attrs:
                 if self.log_allowed:
@@ -267,7 +267,7 @@ class KineticModel(object):
                 if self.log_allowed:
                     self._logger.info("{} =".format(key))
                 if type(setup_dict[key]) is dict:
-                    for k, v in value.iteritems():
+                    for k, v in value.items():
                         if self.log_allowed:
                             self._logger.info("        {}: {}".format(k, v))
                 else:
