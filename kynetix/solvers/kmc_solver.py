@@ -1,4 +1,5 @@
 import logging
+import importlib
 import time
 from math import exp
 
@@ -63,7 +64,7 @@ class KMCSolver(SolverBase):
         if analysis_name:
             analysis = []
             for classname in analysis_name:
-                _module = __import__('kmc_plugins', globals(), locals())
+                _module = importlib.import_module('kynetix.solvers.kmc_plugins')
                 analysis_object = getattr(_module, classname)(self._owner)
                 analysis.append(analysis_object)
         else:
