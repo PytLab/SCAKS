@@ -8,7 +8,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # Read config file.
 if (CONFIG)
-    file(READ "${PROJECT_SOURCE_DIR}/config" config)
+    file(READ "${PROJECT_SOURCE_DIR}/${CONFIG}" config)
     string(REGEX MATCH "^PYINCLUDE = (.*)\nPYLIB = (.*)\n+$" path ${config})
 
     # Read PYINCLUDE.
