@@ -4,12 +4,12 @@ from operator import mul
 try:
     from KMCLib import KMCAnalysisPlugin
 except ImportError:
-    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-    print "!!!                                                    !!!"
-    print "!!!         WARNING: KMCLibX is not installed          !!!"
-    print "!!! Any kMC calculation using KMCLibX will be disabled !!!"
-    print "!!!                                                    !!!"
-    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    print("!!!                                                    !!!")
+    print("!!!         WARNING: KMCLibX is not installed          !!!")
+    print("!!! Any kMC calculation using KMCLibX will be disabled !!!")
+    print("!!!                                                    !!!")
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
 from kynetix import file_header
 from kynetix.compatutil import reduce

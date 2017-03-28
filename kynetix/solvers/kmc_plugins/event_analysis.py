@@ -5,19 +5,19 @@ from prettytable import PrettyTable
 try:
     from KMCLib import KMCAnalysisPlugin
 except ImportError:
-    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-    print "!!!                                                    !!!"
-    print "!!!         WARNING: KMCLibX is not installed          !!!"
-    print "!!! Any kMC calculation using KMCLibX will be disabled !!!"
-    print "!!!                                                    !!!"
-    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    print("!!!                                                    !!!")
+    print("!!!         WARNING: KMCLibX is not installed          !!!")
+    print("!!! Any kMC calculation using KMCLibX will be disabled !!!")
+    print("!!!                                                    !!!")
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
 try:
     from kynetix.solvers.kmc_plugins.plugin_backends.kmc_functions import *
 except ImportError:
-    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-    print "!!!   WARNING: plugin backends extension not found.   !!!"
-    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    print("!!!   WARNING: plugin backends extension not found.   !!!")
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     from kynetix.solvers.kmc_plugins.kmc_functions import *
 
 from kynetix.mpicommons import mpi
