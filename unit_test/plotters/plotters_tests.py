@@ -1,6 +1,6 @@
 import unittest
 
-from energy_profile_plotter_test import EnergyProfilePlotterTest
+from .energy_profile_plotter_test import EnergyProfilePlotterTest
 
 
 def suite():

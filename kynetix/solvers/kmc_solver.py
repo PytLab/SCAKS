@@ -1,16 +1,17 @@
 import logging
+import importlib
 import time
 from math import exp
 
 try:
     from KMCLib import *
 except ImportError:
-    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-    print "!!!                                                   !!!"
-    print "!!!          WARNING: KMCLib is not installed         !!!"
-    print "!!! Any kMC calculation using KMCLib will be disabled !!!"
-    print "!!!                                                   !!!"
-    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    print("!!!                                                   !!!")
+    print("!!!          WARNING: KMCLib is not installed         !!!")
+    print("!!! Any kMC calculation using KMCLib will be disabled !!!")
+    print("!!!                                                   !!!")
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
 import kynetix.descriptors.descriptors as dc
 from kynetix import __version__
@@ -63,7 +64,7 @@ class KMCSolver(SolverBase):
         if analysis_name:
             analysis = []
             for classname in analysis_name:
-                _module = __import__('kmc_plugins', globals(), locals())
+                _module = importlib.import_module('kynetix.solvers.kmc_plugins')
                 analysis_object = getattr(_module, classname)(self._owner)
                 analysis.append(analysis_object)
         else:
@@ -376,7 +377,7 @@ class KMCSolver(SolverBase):
             content += proc_str
         # gather processes
         proc_str = 'processes = [\n'
-        for idx in xrange(len(processes)):
+        for idx in range(len(processes)):
             proc_str += (' '*4 + 'process_%d,\n' % idx)
         proc_str += ']\n\n'
 

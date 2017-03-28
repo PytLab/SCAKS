@@ -187,7 +187,7 @@ class ChemState(object):
         # Merge all elements dicts.
         merged_dict = {}
         for elements_dict in elements_dicts:
-            for element, number in elements_dict.iteritems():
+            for element, number in elements_dict.items():
                 if element not in merged_dict:
                     merged_dict.setdefault(element, number)
                 else:
@@ -209,7 +209,7 @@ class ChemState(object):
         # Merge all elements dicts.
         merged_dict = {}
         for sites_dict in sites_dicts:
-            for site, number in sites_dict.iteritems():
+            for site, number in sites_dict.items():
                 # If gas or liquid, pass.
                 if site in exclusive_sites:
                     continue
@@ -345,7 +345,7 @@ class ChemFormula(object):
 
         # Get total elements dict.
         elements_dict = {elem: self.__stoich*num
-                         for elem, num in sp_elements_dict.iteritems()}
+                         for elem, num in sp_elements_dict.items()}
 
         return elements_dict
 
@@ -385,7 +385,7 @@ class ChemFormula(object):
         Function to get site dictionary of formula.
         """
         single_dict = dict([(self.__site, self.__nsite)])
-        sites_dict = {site: num*self.__stoich for site, num in single_dict.iteritems()}
+        sites_dict = {site: num*self.__stoich for site, num in single_dict.items()}
 
         return sites_dict
 

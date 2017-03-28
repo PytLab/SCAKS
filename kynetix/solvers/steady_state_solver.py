@@ -92,9 +92,9 @@ class SteadyStateSolver(MeanFieldSolver):
         if not consistant:
             if self._owner.log_allowed:
                 self.__logger.warning('coverage constraining...\n')
-                self.__logger.debug('    initial coverage: %s', str(map(float, cvgs_tuple)))
+                self.__logger.debug('    initial coverage: %s', str([float(i) for cvg in cvgs_tuple]))
                 self.__logger.debug('constrained coverage: %s\n',
-                                    str(map(float, constrained_cvgs_tuple)))
+                                    str([float(cvg) for cvg in constrained_cvgs_tuple]))
 
         return constrained_cvgs_tuple
         # }}}
@@ -473,9 +473,9 @@ class SteadyStateSolver(MeanFieldSolver):
         adsorbate_names = self._owner.adsorbate_names
 
         # Fill matrix.
-        for i in xrange(m):
+        for i in range(m):
             poly_expression = dtheta_dt_expressions[i]
-            for j in xrange(n):
+            for j in range(n):
                 # Get adsorbate_name.
                 adsorbate_name = adsorbate_names[j]
                 # Fill the matrix
@@ -616,10 +616,10 @@ class SteadyStateSolver(MeanFieldSolver):
         sym_jacobian = [[0.0]*m, [0.0]*n]
 
         # dtheta/dt (row).
-        for i in xrange(m):
+        for i in range(m):
             dthe_dt_sym = dtheta_dt_syms[i]
             # adsorbate (column).
-            for j in xrange(n):
+            for j in range(n):
                 ads_name = self._owner.adsorbate_names[j]
                 theta_sym = self._extract_symbol(ads_name, 'ads_cvg')
                 sym_jacobian[i][j] = sym.Derivative(dthe_dt_sym, theta_sym).doit()
@@ -642,8 +642,8 @@ class SteadyStateSolver(MeanFieldSolver):
         m = n = len(sym_jacobian)
         num_jacobian = [[0.0]*m, [0.0]*n]
 
-        for i in xrange(m):
-            for j in xrange(n):
+        for i in range(m):
+            for j in range(n):
                 entry_value = sym_jacobian[i][j].evalf(subs=subs_dict)
                 num_jacobian[i][j] = self._mpf(entry_value)
 
@@ -720,7 +720,7 @@ class SteadyStateSolver(MeanFieldSolver):
         #fprime = lambda x: get_jacobian(c0, relative_energies=relative_energies)
 
         # Main hotpot.
-        c0 = map(float, c0)  # covert to float
+        c0 = [float(c) for c in c0]
         converged_cvgs = fsolve(self.steady_state_function, c0,
                                 (relative_energies, ),
                                 fprime=get_jacobian)
@@ -778,7 +778,7 @@ class SteadyStateSolver(MeanFieldSolver):
                     converged = True
                     self._coverage = c0
                     if self._owner.log_allowed:
-                        self.__logger.info('Good initial guess: \n%s', str(map(float, c0)))
+                        self.__logger.info('Good initial guess: \n%s', str([float(i) for i in c0]))
 
                     # log steady state coverages
                     self.__log_sscvg(c0, self._owner.adsorbate_names)
@@ -821,7 +821,7 @@ class SteadyStateSolver(MeanFieldSolver):
                     # log initial guess
                     if self._owner.log_allowed:
                         self.__logger.info('initial guess coverage - success')
-                        self.__logger.debug(str(map(float, c0)))
+                        self.__logger.debug(str([float(c) for c in c0]))
 
                 #####    Sub LOOP for a c0    #####
 
@@ -871,7 +871,7 @@ class SteadyStateSolver(MeanFieldSolver):
                                 break
                             else:  # bad root, iteration continue...
                                 if self._owner.log_allowed:
-                                    self.__logger.warning('bad root: %s', str(map(float, x)))
+                                    self.__logger.warning('bad root: %s', str([float(i) for i in x]))
                                     self.__logger.warning('root finding continue...\n')
                         else:
                             error = f_resid(x)  # use residual as error and continue
@@ -1086,7 +1086,7 @@ class SteadyStateSolver(MeanFieldSolver):
             return XRCi
 
         XRCs = [None]*n_rxns
-        for i in xrange(n_rxns):
+        for i in range(n_rxns):
             if self._owner.log_allowed:
                 self.__logger.info("Calculating XRC for {} ...".format(rxn_expressions[i]))
 

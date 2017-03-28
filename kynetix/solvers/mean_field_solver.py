@@ -6,6 +6,7 @@ import numpy as np
 #import gmpy2
 import sympy as sym
 
+from kynetix.compatutil import merge_two_dicts
 import kynetix.descriptors.descriptors as dc
 from kynetix.functions import *
 from kynetix.parsers.rxn_parser import RxnEquation, ChemFormula
@@ -422,9 +423,7 @@ class MeanFieldSolver(SolverBase):
         # Calculate rates.
         for exprs_list in rate_expressions:
             exprs_str = '\n'.join(exprs_list)
-            exec exprs_str in locals()
-
-        rfs, rrs = map(tuple, (rfs, rrs))
+            exec(exprs_str)
 
         if self._owner.log_allowed and log:
             self.__log_rates(rfs, rrs, "R_forward", "R_reverse")
@@ -597,8 +596,7 @@ class MeanFieldSolver(SolverBase):
         J = self._matrix(m, n)
         inter_num = len(self._owner.adsorbate_names)
 
-        for j in xrange(n):
-            print j
+        for j in range(n):
             xj = x.copy()
             #using delta proportional to xj is more stable
             delta = abs(h*xj[j])
@@ -612,7 +610,7 @@ class MeanFieldSolver(SolverBase):
                 xj[j] -= delta
                 Jj = (self._matrix(f(xj)) - fx)/(-delta)
 
-            for i in xrange(m):
+            for i in range(m):
                 J[i, j] = Jj[i]
         return J
 
@@ -662,7 +660,7 @@ class MeanFieldSolver(SolverBase):
 
         # Equilibrium constants(K) symbols for each elementary rxn.
         K_sym_list = []
-        for i in xrange(self._rxns_num):
+        for i in range(self._rxns_num):
             #subscript = i + 1
             K_sym = sym.Symbol('K_' + str(i), real=True, positive=True)
             K_sym_list.append(K_sym)
@@ -894,7 +892,7 @@ class MeanFieldSolver(SolverBase):
         # Merge dicts.
         subs_dict = {}
         for dic in dicts_list:
-            subs_dict = dict(subs_dict, **dic)
+            subs_dict = merge_two_dicts(subs_dict, dic)
 
         return subs_dict
         # }}}

@@ -16,7 +16,7 @@ if "__main__" == __name__:
         filename = "{}/auto_frequency.py".format(d)
         if os.path.exists(filename):
             globs, locs = {}, {}
-            execfile(filename, globs, locs)
+            exec(open(filename, "rb").read(), globs, locs)
             try:
                 reaction_rates = locs["reaction_rates"]
             except KeyError:

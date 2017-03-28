@@ -2,7 +2,10 @@
    Module containing error handling.
 '''
 
-from exceptions import Exception
+from kynetix import PY2
+
+if PY2:
+    from exceptions import Exception
 
 
 class Error(Exception):

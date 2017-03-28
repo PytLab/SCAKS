@@ -4,14 +4,15 @@ from operator import mul
 try:
     from KMCLib import KMCAnalysisPlugin
 except ImportError:
-    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-    print "!!!                                                    !!!"
-    print "!!!         WARNING: KMCLibX is not installed          !!!"
-    print "!!! Any kMC calculation using KMCLibX will be disabled !!!"
-    print "!!!                                                    !!!"
-    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    print("!!!                                                    !!!")
+    print("!!!         WARNING: KMCLibX is not installed          !!!")
+    print("!!! Any kMC calculation using KMCLibX will be disabled !!!")
+    print("!!!                                                    !!!")
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
 from kynetix import file_header
+from kynetix.compatutil import reduce
 from kynetix.mpicommons import mpi
 from kynetix.utilities.format_utilities import get_list_string, get_dict_string
 
@@ -124,7 +125,7 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
 
         # Calculate rates.
         reaction_rates = {}
-        for reaction, occurency in steady_reaction_occurencies.iteritems():
+        for reaction, occurency in steady_reaction_occurencies.items():
             rate = occurency/(delta_t*nsites)
             reaction_rates.setdefault(reaction, rate)
         reaction_rates_str = get_dict_string("reaction_rates", reaction_rates)

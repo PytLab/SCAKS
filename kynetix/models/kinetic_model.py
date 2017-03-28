@@ -1,9 +1,10 @@
-import cPickle as cpkl
 import copy
 import logging
 import os
 from operator import add
 
+
+from kynetix.compatutil import reduce
 import kynetix.descriptors.descriptors as dc
 import kynetix.descriptors.component_descriptors as cpdc
 from kynetix.mpicommons import mpi
@@ -119,7 +120,7 @@ class KineticModel(object):
         else:
             self.setup_file = setup_file
             globs, locs = {}, {}
-            execfile(self.setup_file, globs, locs)
+            exec(open(self.setup_file, "rb").read(), globs, locs)
             self.setup_dict = locs
 
         # Set logger.
@@ -242,7 +243,7 @@ class KineticModel(object):
 
         # Set model attributes in setup file.
         class_attrs = self.__mro_class_attrs()
-        for key, value in setup_dict.iteritems():
+        for key, value in setup_dict.items():
             # Check redundant parameter.
             if key not in class_attrs:
                 if self.log_allowed:
@@ -268,7 +269,7 @@ class KineticModel(object):
                 if self.log_allowed:
                     self._logger.info("{} =".format(key))
                 if type(setup_dict[key]) is dict:
-                    for k, v in value.iteritems():
+                    for k, v in value.items():
                         if self.log_allowed:
                             self._logger.info("        {}: {}".format(k, v))
                 else:

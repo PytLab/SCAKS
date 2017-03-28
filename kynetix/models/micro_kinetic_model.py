@@ -2,9 +2,10 @@
 Module for micro-kinetic model class definition.
 '''
 
-import cPickle as cpkl
 import logging
 import os
+
+from kynetix import pickle
 
 from kynetix.errors.error import ParameterError
 from kynetix.mpicommons import mpi
@@ -165,7 +166,7 @@ class MicroKineticModel(km.KineticModel):
 
         elif os.path.exists(self.data_file):
             with open(self.data_file, 'rb') as f:
-                data = cpkl.load(f)
+                data = pickle.load(f)
             init_guess = 'steady_state_coverage'
             if init_guess in data:
                 if self.log_allowed:

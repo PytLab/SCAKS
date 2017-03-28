@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 if "__main__" == __name__:
     globs, locs = {}, {}
-    execfile('auto_coverages.py', globs, locs)
+    exec(open('auto_coverages.py', "rb").read(), globs, locs)
 
     times, steps, coverages = locs['times'], locs['steps'], locs['coverages']
     possible_types = locs['possible_types']

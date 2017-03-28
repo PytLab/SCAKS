@@ -9,7 +9,7 @@ import numpy as np
 
 def dict2setup(d):
     setup = ""
-    for key, value in d.iteritems():
+    for key, value in d.items():
         value = "'{}'".format(value) if type(value) is str else value
         line = "{} = {}\n".format(key, value)
         setup += line
@@ -25,7 +25,7 @@ if "__main__" == __name__:
     setup_file = "./template/{}".format(filename)
     if os.path.exists(setup_file):
         globs, locs = {}, {}
-        execfile(setup_file, globs, locs)
+        exec(open(setup_file, "rb").read(), globs, locs)
 
     job_dirs = ""
     for pO2 in pO2s:

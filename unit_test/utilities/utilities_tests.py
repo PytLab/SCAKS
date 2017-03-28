@@ -1,6 +1,6 @@
 import unittest
 
-from coordinates_utilities_test import CoordinatesUtilitiesTest
+from .coordinates_utilities_test import CoordinatesUtilitiesTest
 
 def suite():
     suite = unittest.TestSuite(

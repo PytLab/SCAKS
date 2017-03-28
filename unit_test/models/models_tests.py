@@ -1,7 +1,7 @@
 import unittest
 
-from mkm_model_test import MicroKineticModelTest
-from kmc_model_test import KMCModelTest
+from .mkm_model_test import MicroKineticModelTest
+from .kmc_model_test import KMCModelTest
 
 
 def suite():

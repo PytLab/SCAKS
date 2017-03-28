@@ -4,6 +4,10 @@
 from operator import add
 import sys
 
+from kynetix import PY2
+if not PY2:
+    from functools import reduce
+
 from kynetix.utilities.coordinate_utilities import CoordsGroup
 
 def generate_process_dict(origin, ori_coord, coord, rxn_expression, coord_groups):
@@ -83,7 +87,7 @@ if "__main__" == __name__:
 
     # Get parameters in input files.
     glob, locs = {}, {}
-    execfile(inputfile, glob, locs)
+    exec(open(inputfile, "rb").read(), glob, locs)
 
     coords_indices = locs["coords_indices"]
     rxn_expression = locs["rxn_expression"]

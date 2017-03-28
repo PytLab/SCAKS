@@ -80,7 +80,7 @@ def check_species_definitions(species_definitions):
         raise SetupError("species definitions is not a dict.")
 
     # Check data.
-    for species, definitions in species_definitions.iteritems():
+    for species, definitions in species_definitions.items():
         if species.endswith("_g") and "pressure" not in definitions:
             msg = "No pressure info for gas species {}.".format(species)
             raise SetupError(msg)
@@ -103,7 +103,7 @@ def check_ref_energies(ref_energies):
     if not isinstance(ref_energies, dict):
         raise SetupError("ref_energies is not a dict.")
 
-    for key, value in ref_energies.iteritems():
+    for key, value in ref_energies.items():
         if not isinstance(key, str):
             raise SetupError("key '{}' is not a string.".format(key))
         if not isinstance(value, float):

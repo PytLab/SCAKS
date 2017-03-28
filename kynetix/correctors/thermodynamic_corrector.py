@@ -4,6 +4,7 @@ from math import pi, exp, log
 import numpy as np
 import mpmath as mp
 
+from kynetix.compatutil import reduce
 from kynetix.correctors.corrector_base import *
 from kynetix.database.thermo_data import *
 from kynetix.errors.error import *

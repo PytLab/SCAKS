@@ -79,7 +79,7 @@ def numerical_jacobian(f, x, matrix, num_repr='gmpy', h=1e-10, direction='right'
     m = len(fx)
     n = len(x)
     J = matrix(m, n)
-    for j in xrange(n):
+    for j in range(n):
         xj = copy.copy(x)
         delta = abs(h*xj[j])
         delta = max(delta, h)
@@ -93,7 +93,7 @@ def numerical_jacobian(f, x, matrix, num_repr='gmpy', h=1e-10, direction='right'
             xj[j] += delta
             Jj = (matrix(f(xj)) - fx)/(delta)
             Jj = vec2list(Jj)
-        for i in xrange(m):
+        for i in range(m):
             J[i, j] = Jj[i]
     return J
 
