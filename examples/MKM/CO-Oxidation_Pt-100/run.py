@@ -2,11 +2,11 @@
 Script for running Micro-kinetic Model simulation.
 """
 
-import commands
 import logging
 import sys
 import time
 
+from kynetix.compatutil import subprocess
 from kynetix.mpicommons import mpi
 from kynetix.models.micro_kinetic_model import MicroKineticModel
 from kynetix.utilities.format_utilities import convert_time
@@ -21,13 +21,13 @@ OdeOnly = False             # Do ODE integration only.
 
 if "__main__" == __name__:
     # Clean up current dir.
-    commands.getstatusoutput("rm -rf out.log auto_*")
+    subprocess.getstatusoutput("rm -rf out.log auto_*")
 
     # Set script logger.
     logger = logging.getLogger("model.MkmRunScript")
 
     # Get setup file.
-    status, output= commands.getstatusoutput("ls *.mkm | tail -1")
+    status, output= subprocess.getstatusoutput("ls *.mkm | tail -1")
     if status:
         if mpi.is_master:
             logger.error(output)
