@@ -23,6 +23,12 @@ if PY2:
 else:
     Exception = Exception
 
+# Compatible importing of subprocess module.
+if PY2:
+    import commands as subprocess
+else:
+    import subprocess
+
 # Compatible utility functions.
 def merge_two_dicts(dict1, dict2):
     """
