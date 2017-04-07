@@ -8,8 +8,8 @@ rxn_expressions = [
 
 # Gas pressure.
 species_definitions = {}
-species_definitions['CO_g'] = {'pressure': 0.1}
-species_definitions['O2_g'] = {'pressure': 0.4}
+species_definitions['CO_g'] = {'pressure': 0.11111888888888888}
+species_definitions['O2_g'] = {'pressure': 0.38889111111111108}
 species_definitions['CO2_g'] = {'pressure': 0.01}
 
 # Site info.
