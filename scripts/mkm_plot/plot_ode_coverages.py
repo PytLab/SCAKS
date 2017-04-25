@@ -18,20 +18,20 @@ times, coverages = locs['times'], locs['coverages']
 
 # check args number
 if adsorbate_names and len(adsorbate_names) != len(coverages[0]):
-    print "args do not match coverges in auto_ode_coverages.py"
+    print("args do not match coverges in auto_ode_coverages.py")
     sys.exit(1)
 
 # plot
 plt.subplot(111)
 coverages = np.array(coverages)
 if adsorbate_names:
-    for idx in xrange(len(adsorbate_names)):
+    for idx in range(len(adsorbate_names)):
         ads = r'$\bf{' + adsorbate_names[idx] + r'^{*}}$'
         cvgs = coverages[:, idx]
         plt.plot(times, cvgs, label=ads, linewidth=2.5)
         plt.legend()
 else:
-    for idx in xrange(len(coverages[0])):
+    for idx in range(len(coverages[0])):
         cvgs = coverages[:, idx]
         plt.plot(times, cvgs, linewidth=2.5)
 
