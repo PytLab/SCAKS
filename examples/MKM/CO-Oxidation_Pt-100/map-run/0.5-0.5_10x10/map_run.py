@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import commands
 import logging
 import os
 import time
 
 import numpy as np
 
+from kynetix.compatutil import subprocess
 from kynetix.models.micro_kinetic_model import MicroKineticModel
 from kynetix.utilities.format_utilities import convert_time
 
@@ -49,7 +49,7 @@ pO2s = np.linspace(1e-5, 0.5, 10)
 
 if "__main__" == __name__:
     # Clean up current dir.
-    commands.getstatusoutput("rm -rf out.log auto_*")
+    subprocess.getstatusoutput("rm -rf out.log auto_*")
 
     start = time.time()
 
@@ -65,7 +65,7 @@ if "__main__" == __name__:
             cvgs_O_1d = []
             tofs_1d = []
             for j, pCO in enumerate(pCOs):
-                print "INFO: runing pO2: {} pCO: {}".format(pO2, pCO)
+                print("INFO: runing pO2: {} pCO: {}".format(pO2, pCO))
                 setup_dict['species_definitions']['CO_g']['pressure'] = pCO
 
                 # Construct model.
@@ -104,7 +104,7 @@ if "__main__" == __name__:
             cvgs_O_2d.append(cvgs_O_1d)
 
             end = time.time()
-            print " "
+            print(" ")
 
     finally:
         # Write tofs to file.
@@ -123,5 +123,5 @@ if "__main__" == __name__:
 
         delta_time = end - start
         h, m, s = convert_time(delta_time)
-        print "Time used: {:d} h {:d} min {:f} sec ({:.2f}s)".format(h, m, s, delta_time)
+        print("Time used: {:d} h {:d} min {:f} sec ({:.2f}s)".format(h, m, s, delta_time))
 
