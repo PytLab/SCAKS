@@ -17,8 +17,8 @@ interp_func = interp2d(pCO, pO2, tofs, kind="linear")
 
 # Plot 3D contour.
 #y, x = np.mgrid[0:1:100j, 0:1:100j]
-ynew = np.linspace(0.01, 2, 100)
-xnew = np.linspace(0.01, 1, 100)
+ynew = np.linspace(1e-5, 0.5, 100)
+xnew = np.linspace(1e-5, 0.5, 100)
 z = interp_func(xnew, ynew)
 
 extent = [np.min(xnew), np.max(xnew), np.min(ynew), np.max(ynew)]
@@ -33,8 +33,8 @@ plt.clabel(CS2, colors='grey', inline=1, fontsize=12, fmt="%.2f")
 
 # Add orthogonal lines.
 # horizontal_line
-plt.plot([0.01, 1.0], [1.0, 1.0], color='#000000', linewidth=1.0)
-plt.plot([0.6, 0.6], [0.01, 2.0], color='#000000', linewidth=1.0)
+#plt.plot([0.01, 1.0], [1.0, 1.0], color='#000000', linewidth=1.0)
+#plt.plot([0.6, 0.6], [0.01, 2.0], color='#000000', linewidth=1.0)
 
 plt.xlabel("P(CO_g)/bar")
 plt.ylabel("P(O_2_g)/bar")
