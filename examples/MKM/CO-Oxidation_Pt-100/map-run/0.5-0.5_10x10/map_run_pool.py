@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import commands
 import logging
 import os
 import time
@@ -9,6 +8,7 @@ from multiprocessing import Pool
 
 import numpy as np
 
+from kynetix.compatutil import subprocess
 from kynetix.models.micro_kinetic_model import MicroKineticModel
 from kynetix.utilities.format_utilities import convert_time
 
@@ -44,8 +44,8 @@ setup_dict = dict(
     max_rootfinding_iterations = 100,
 )
 
-pCOs = np.linspace(1e-5, 0.5, 10)
-pO2s = np.linspace(1e-5, 0.5, 10)
+pCOs = np.linspace(1e-5, 0.5, 20)
+pO2s = np.linspace(1e-5, 0.5, 20)
 #pO2s = np.arange(0.01, 1.0, 0.02)
 
 def task(pO2):
@@ -56,7 +56,7 @@ def task(pO2):
     cvgs_O_1d = []
     tofs_1d = []
     for j, pCO in enumerate(pCOs):
-        print "INFO: runing pO2: {} pCO: {}".format(pO2, pCO)
+        print("INFO: runing pO2: {} pCO: {}".format(pO2, pCO))
         setup_dict['species_definitions']['CO_g']['pressure'] = pCO
 
         # Construct model.
@@ -95,7 +95,7 @@ def task(pO2):
 
 if "__main__" == __name__:
     # Clean up current dir.
-    commands.getstatusoutput("rm -rf out.log auto_*")
+    subprocess.getstatusoutput("rm -rf out.log auto_*")
 
     start = time.time()
 
@@ -128,5 +128,5 @@ if "__main__" == __name__:
 
         delta_time = end - start
         h, m, s = convert_time(delta_time)
-        print "Time used: {:d} h {:d} min {:f} sec ({:.2f} s)".format(h, m, s, delta_time)
+        print("Time used: {:d} h {:d} min {:f} sec ({:.2f} s)".format(h, m, s, delta_time))
 

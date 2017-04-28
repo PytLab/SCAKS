@@ -43,8 +43,8 @@ setup_dict = dict(
     max_rootfinding_iterations = 100,
 )
 
-pCOs = np.linspace(1e-5, 0.5, 10)
-pO2s = np.linspace(1e-5, 0.5, 10)
+pCOs = np.linspace(1e-5, 0.5, 20)
+pO2s = np.linspace(1e-5, 0.5, 20)
 #pO2s = np.arange(0.01, 1.0, 0.02)
 
 if "__main__" == __name__:

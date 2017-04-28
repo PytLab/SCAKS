@@ -1,4 +1,3 @@
-import commands
 import os
 
 import numpy as np
