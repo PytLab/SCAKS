@@ -23,7 +23,7 @@ for pO2_dir in pO2_dirs:
     pCOs = [float(pCO_dir.split('-')[-1]) for pCO_dir in pCO_dirs]
     cvgs_1d = []
     for pCO_dir in pCO_dirs:
-        # Read tofs.
+        # Read coverages.
         filename = "{}/{}/auto_coverages.py".format(pO2_dir, pCO_dir)
         globs, locs = {}, {}
         execfile(filename, globs, locs)
