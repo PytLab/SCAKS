@@ -28,9 +28,9 @@ if "__main__" == __name__:
     ax1.set_ylabel(r"$\bf{Coverages}$")
 
 
-    coverages = zip(*coverages)
-    CO_cvgs = np.array(coverages[0]) + np.array(coverages[1])
-    O_cvgs = np.array(coverages[2])
+    coverages = list(zip(*coverages))
+    CO_cvgs = np.array(coverages[0])
+    O_cvgs = np.array(coverages[1])
     cvgs_dict = {"CO": CO_cvgs, "O": O_cvgs}
     colors = ["#CD6889", "#7D9EC0"]
     for idx, sp in enumerate(cvgs_dict):

@@ -1,4 +1,3 @@
-import commands
 import os
 
 import numpy as np
@@ -25,13 +24,13 @@ if "__main__" == __name__:
     pressure_range = max(pressures) - min(pressures)
     ax1.set_ylim(-0.1, 1.1)
     ax1.set_xlim(min(pressures)-pressure_range*0.1, max(pressures)+pressure_range*0.1)
-    ax1.set_xlabel(r"$\bf{P(O2_g)/bar}$")
+    ax1.set_xlabel(r"$\bf{P(CO_g)/bar}$")
     ax1.set_ylabel(r"$\bf{Coverages}$")
 
 
-    coverages = zip(*coverages)
-    CO_cvgs = np.array(coverages[0]) + np.array(coverages[1])
-    O_cvgs = np.array(coverages[2])
+    coverages = list(zip(*coverages))
+    CO_cvgs = np.array(coverages[0])
+    O_cvgs = np.array(coverages[1])
     cvgs_dict = {"CO": CO_cvgs, "O": O_cvgs}
     colors = ["#CD6889", "#7D9EC0"]
     for idx, sp in enumerate(cvgs_dict):
