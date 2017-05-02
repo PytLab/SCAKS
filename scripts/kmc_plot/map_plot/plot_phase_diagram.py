@@ -30,10 +30,11 @@ for pO2_dir in pO2_dirs:
     cvgs_O_1d = []
 
     for pCO_dir in pCO_dirs:
+        print("Go to {}/{} ...".format(pO2_dir, pCO_dir))
         # Read tofs.
         filename = "{}/{}/auto_frequency.py".format(pO2_dir, pCO_dir)
         globs, locs = {}, {}
-        execfile(filename, globs, locs)
+        exec(open(filename, "r").read(), globs, locs)
         reaction_rates = locs["reaction_rates"]
         tof = 0.0
         reactions = sorted(reaction_rates.keys())
@@ -44,15 +45,15 @@ for pO2_dir in pO2_dirs:
         # Read coverages.
         filename = "{}/{}/auto_coverages.py".format(pO2_dir, pCO_dir)
         globs, locs = {}, {}
-        execfile(filename, globs, locs)
+        exec(open(filename, "r").read(), globs, locs)
         cvg_O = locs["coverages"][-2][-1]
         cvg_CO = locs["coverages"][-1][-1]
         cvgs_O_1d.append(cvg_O)
         cvgs_CO_1d.append(cvg_CO)
 
     tofs.append(tofs_1d)
-    cvgs_CO.append(cvgs_CO)
-    cvgs_O.append(cvgs_O)
+    cvgs_CO.append(cvgs_CO_1d)
+    cvgs_O.append(cvgs_O_1d)
 
 pCOs = np.array(pCOs)
 pO2s = np.array(pO2s)
@@ -62,14 +63,14 @@ cvgs_O = np.array(cvgs_O)
 cvgs = cvgs_O - cvgs_CO
 
 # 2D interpolate.
-pO2.shape = (-1, 1)
-interp_func_cvgs = interp2d(pCO, pO2, cvgs, kind="linear")
-interp_func_tofs = interp2d(pCO, pO2, tofs, kind="linear")
+pO2s.shape = (-1, 1)
+interp_func_cvgs = interp2d(pCOs, pO2s, cvgs, kind="linear")
+interp_func_tofs = interp2d(pCOs, pO2s, tofs, kind="linear")
 
 # Plot 3D contour.
 #y, x = np.mgrid[0:1:100j, 0:1:100j]
 ynew = np.linspace(1e-5, 0.5, 100)
-xnew = np.linspace(1e-5, 0.5, 100)
+xnew = np.linspace(1e-5, 0.5, 200)
 extent = [np.min(xnew), np.max(xnew), np.min(ynew), np.max(ynew)]
 z_cvgs = interp_func_cvgs(xnew, ynew)
 z_tofs = interp_func_tofs(xnew, ynew)
@@ -90,5 +91,4 @@ cbar.ax.set_ylabel("TOF")
 #cbar.add_lines(CS2)
 
 plt.show()
-
 
