@@ -27,7 +27,7 @@ for pO2_dir in pO2_dirs:
         filename = "{}/{}/auto_coverages.py".format(pO2_dir, pCO_dir)
         globs, locs = {}, {}
         execfile(filename, globs, locs)
-        cvg = locs["coverages"][-1][-1]
+        cvg = locs["coverages"][-2][-1]
         cvgs_1d.append(cvg)
     cvgs.append(cvgs_1d)
 
@@ -48,7 +48,7 @@ z = interp_func(xnew, ynew)
 extent = [np.min(xnew), np.max(xnew), np.min(ynew), np.max(ynew)]
 
 CS = plt.contourf(xnew.reshape(-1), ynew.reshape(-1),
-                  z, 10, cmap=plt.cm.Blues)
+                  z, 10, cmap=plt.cm.Reds)
 
 # Add orthogonal lines.
 # horizontal_line
@@ -60,7 +60,7 @@ plt.ylabel("P(O_2_g)/bar")
 
 # Make a colorbar.
 cbar = plt.colorbar(CS)
-cbar.ax.set_ylabel("CO coverage")
+cbar.ax.set_ylabel("O coverage")
 
 plt.show()
 #plt.savefig('tofs_contour.pdf')
