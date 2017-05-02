@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import commands
-
 import numpy as np
 from scipy.interpolate import interp2d
+import matplotlib
+#matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 
+from kynetix.compatutil import subprocess
+
 # Get pO2 dirs.
-pO2_dirs = [i for i in commands.getoutput('ls').split('\n') if i.startswith('pO2-')]
+pO2_dirs = [i for i in subprocess.getoutput('ls').split('\n') if i.startswith('pO2-')]
 
 pO2s = []
 tofs = []
@@ -17,20 +19,20 @@ for pO2_dir in pO2_dirs:
     pO2s.append(pO2)
     # Get pCO dirs.
     cmd = "ls {}/".format(pO2_dir)
-    pCO_dirs = [i for i in commands.getoutput(cmd).split('\n') if i.startswith('pCO-')]
+    pCO_dirs = [i for i in subprocess.getoutput(cmd).split('\n') if i.startswith('pCO-')]
     pCOs = [float(pCO_dir.split('-')[-1]) for pCO_dir in pCO_dirs]
     tofs_1d = []
     for pCO_dir in pCO_dirs:
         # Read tofs.
         filename = "{}/{}/auto_frequency.py".format(pO2_dir, pCO_dir)
         globs, locs = {}, {}
-        exec(open(filename, "rb").read(), globs, locs)
+        execfile(filename, globs, locs)
         reaction_rates = locs["reaction_rates"]
         TON = 0.0
         reactions = sorted(reaction_rates.keys())
-        for idx in [0, 2, 8, 12]:
+        for idx in [0, 2, 8]:
             TON += reaction_rates[reactions[idx]]
-        tof = TON/3600
+        tof = TON
         tofs_1d.append(tof)
     tofs.append(tofs_1d)
 
@@ -44,8 +46,8 @@ interp_func = interp2d(pCOs, pO2s, tofs, kind="linear")
 
 # Plot 3D contour.
 #y, x = np.mgrid[0:1:100j, 0:1:100j]
-ynew = np.linspace(0.01, 2, 100)
-xnew = np.linspace(0.01, 1, 100)
+ynew = np.linspace(1e-5, 0.5, 100)
+xnew = np.linspace(1e-5, 0.5, 100)
 z = interp_func(xnew, ynew)
 
 extent = [np.min(xnew), np.max(xnew), np.min(ynew), np.max(ynew)]
@@ -73,4 +75,5 @@ cbar.ax.set_ylabel("TOF/s^-1")
 cbar.add_lines(CS2)
 
 plt.show()
+#plt.savefig('tofs_contour.pdf')
 
