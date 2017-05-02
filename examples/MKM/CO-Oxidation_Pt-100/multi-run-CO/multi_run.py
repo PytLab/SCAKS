@@ -1,26 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import commands
 import logging
 import os
 
 import numpy as np
 
 from kynetix.models.micro_kinetic_model import MicroKineticModel
+from kynetix.compatutil import subprocess
 
 setup_dict = dict(
     rxn_expressions = [
         'CO_g + *_s -> CO_s',
-        'O2_g + 2*_s -> O2_2s',
-        'O2_2s + CO_s <-> OCO-O_2s + *_s -> O_s + CO2_g + 2*_s',
+#        'O2_g + 2*_s -> O2_2s',
+#        'O2_2s + CO_s <-> OCO-O_2s + *_s -> O_s + CO2_g + 2*_s',
         'O2_g + 2*_s -> 2O_s',
         'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s',
     ],
 
     species_definitions = {
         'CO_g': {'pressure': 0.10},
-        'O2_g': {'pressure': 0.2},
+        'O2_g': {'pressure': 0.4},
         'CO2_g': {'pressure': 0.01},
         '*_s': {'site_name': 'top', 'type': 'site', 'total': 1.0},
     },
@@ -41,11 +41,11 @@ setup_dict = dict(
     max_rootfinding_iterations = 100,
 )
 
-pCOs = np.arange(0.01, 0.2, 0.002)
+pCOs = np.linspace(1e-5, 0.2, 20)
 
 if "__main__" == __name__:
     # Clean up current dir.
-    commands.getstatusoutput("rm -rf out.log auto_*")
+    subprocess.getstatusoutput("rm -rf out.log auto_*")
 
     ss_cvgs = []
     tofs = []
