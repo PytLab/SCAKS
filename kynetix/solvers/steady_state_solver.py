@@ -1238,21 +1238,22 @@ class SteadyStateSolver(MeanFieldSolver):
 
             while r.t < t_end:
                 nstep += 1
+                output_allowed = (nstep % self._owner.ode_output_interval == 0)
 
                 # Integrate.
                 r.integrate(r.t + t_step)
-                if traj_output:
+                if traj_output and output_allowed:
                     ts.append(r.t)
                     ys.append(r.y.tolist())
 
                 # Info output.
-                if self._owner.log_allowed and (nstep % self._owner.ode_output_interval == 0):
+                if self._owner.log_allowed and ():
                     msg = "{:10.2f}%{:20f}" + "{:20.8e}"*nads
                     msg = msg.format(r.t/t_end*100, r.t, *r.y)
                     self.__logger.info(msg)
 
                 # Flush time coverages to file.
-                if traj_output and (nstep % self._owner.ode_buffer_size == 0):
+                if traj_output and output_allowed:
                     if ts and ys:
                         last_time = ts[-1]
                         last_coverages = ys[-1]
