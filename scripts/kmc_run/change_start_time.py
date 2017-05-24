@@ -2,6 +2,11 @@
 # -*- coding: utf-8 -*-
 from auto_lattice_trajectory_old import times
 
+globs, locs = {}, {}
+
+exec(open("auto_lattice_trajectory_old.py", "r").read(), globs, locs)
+times = locs["times"]
+
 start_time = times[-1]
 
 with open("pt-100.mkm", "r") as f:

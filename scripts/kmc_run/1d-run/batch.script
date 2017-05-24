@@ -14,7 +14,7 @@ echo $PBS_O_WORKDIR >> $HOME/qsub.log
 
 # Set env variables.
 export LD_LIBRARY_PATH=/data/apps/python/Python-2.7.5/lib:$LD_LIBRARY_PATH
-export PYTHONPATH=/data/home/zjshao/script_shao/pytlab/KMCLibX/python/src:/data/home/zjshao/script_shao/pytlab/Pynetics
+export PYTHONPATH=/data/home/zjshao/script_shao/pytlab/KMCLibX/python/src:/data/home/zjshao/script_shao/pytlab/Kynetix
 
 # setup mpd env (Of course use some other secret word than "dfadfs")
 if [ ! -f ~/.mpd.conf ]; then
