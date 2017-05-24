@@ -3,63 +3,19 @@
 
 import numpy as np
 from scipy.interpolate import interp2d
-import matplotlib
-#matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 
-from kynetix.compatutil import subprocess
+with np.load("tofs-data.npz") as data:
+    pCOs = data['pCOs']
+    pO2s = data['pO2s']
+    tofs = data['tofs']
 
-# Get pO2 dirs.
-pO2_dirs = [i for i in subprocess.getoutput('ls').split('\n') if i.startswith('pO2-')]
+with np.load("CO-cvgs-data.npz") as data:
+    cvgs_CO = data['cvgs']
 
-pO2s = []
-tofs = []
-cvgs_CO = []
-cvgs_O = []
+with np.load("O-cvgs-data.npz") as data:
+    cvgs_O = data['cvgs']
 
-for pO2_dir in pO2_dirs:
-    pO2 = float(pO2_dir.split('-')[-1])
-    pO2s.append(pO2)
-    # Get pCO dirs.
-    cmd = "ls {}/".format(pO2_dir)
-    pCO_dirs = [i for i in subprocess.getoutput(cmd).split('\n') if i.startswith('pCO-')]
-    pCOs = [float(pCO_dir.split('-')[-1]) for pCO_dir in pCO_dirs]
-
-    tofs_1d = []
-    cvgs_CO_1d = []
-    cvgs_O_1d = []
-
-    for pCO_dir in pCO_dirs:
-        print("Go to {}/{} ...".format(pO2_dir, pCO_dir))
-        # Read tofs.
-        filename = "{}/{}/auto_frequency.py".format(pO2_dir, pCO_dir)
-        globs, locs = {}, {}
-        exec(open(filename, "r").read(), globs, locs)
-        reaction_rates = locs["reaction_rates"]
-        tof = 0.0
-        reactions = sorted(reaction_rates.keys())
-        for idx in [0, 2, 8]:
-            tof += reaction_rates[reactions[idx]]
-        tofs_1d.append(tof)
-
-        # Read coverages.
-        filename = "{}/{}/auto_coverages.py".format(pO2_dir, pCO_dir)
-        globs, locs = {}, {}
-        exec(open(filename, "r").read(), globs, locs)
-        cvg_O = locs["coverages"][-2][-1]
-        cvg_CO = locs["coverages"][-1][-1]
-        cvgs_O_1d.append(cvg_O)
-        cvgs_CO_1d.append(cvg_CO)
-
-    tofs.append(tofs_1d)
-    cvgs_CO.append(cvgs_CO_1d)
-    cvgs_O.append(cvgs_O_1d)
-
-pCOs = np.array(pCOs)
-pO2s = np.array(pO2s)
-tofs = np.array(tofs)
-cvgs_CO = np.array(cvgs_CO)
-cvgs_O = np.array(cvgs_O)
 cvgs = cvgs_O - cvgs_CO
 
 # 2D interpolate.
