@@ -47,8 +47,12 @@ source /data/apps/intel/impi/5.0.3.048/intel64/bin/mpivars.sh
 
 mpirun -r ssh -genv I_MPI_FABRICS shm:dapl -n $NP $PY ./run.py 2>&1 > /dev/null
 
-while 1 
+while true 
 do
+    if [ ! -f "auto_coverages.py" ]; then
+        echo "No result files generated, current job may fail"
+        break
+    fi
     bash /data/apps/python/Python-2.7.5/scripts/kmc_continue.sh
     if [ -d continue ]; then
         cd "continue"
