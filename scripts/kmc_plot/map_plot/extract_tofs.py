@@ -39,5 +39,5 @@ pO2s = np.array(pO2s)
 tofs = np.array(tofs)
 
 # Write data to file.
-np.savez("tof-data.npz", pCOs=pCOs, pO2s=pO2s, tofs=tofs)
+np.savez("tofs-data.npz", pCOs=pCOs, pO2s=pO2s, tofs=tofs)
 

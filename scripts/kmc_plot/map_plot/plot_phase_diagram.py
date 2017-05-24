@@ -37,12 +37,12 @@ CS_cvgs = plt.contourf(xnew.reshape(-1), ynew.reshape(-1),
 CS_tofs = plt.contour(xnew.reshape(-1), ynew.reshape(-1), z_tofs, 10,
                       alpha=0.7, linewidths=1.0)
 
-plt.xlabel("P(CO_g)/bar")
-plt.ylabel(r"P(O_2_g)/bar")
+plt.xlabel(r"$P(CO_{(g)}/bar$")
+plt.ylabel(r"$P(O_{2(g)}/bar$")
 
 # Make a colorbar.
 cbar = plt.colorbar(CS_tofs)
-cbar.ax.set_ylabel("TOF")
+cbar.ax.set_ylabel("$TOF$")
 
 #cbar.add_lines(CS2)
 
