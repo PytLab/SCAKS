@@ -18,9 +18,6 @@ species_definitions['*_s'] = {'site_name': 'top', 'type': 'site', 'total': 1.0}
 # Temperature.
 temperature = 500  # K
 
-unitcell_area = 9.0e-20
-active_ratio = 4./9.
-
 parser = "RelativeEnergyParser"
 solver = "SteadyStateSolver"
 corrector = "ThermodynamicCorrector"
