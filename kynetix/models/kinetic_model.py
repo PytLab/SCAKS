@@ -45,11 +45,17 @@ class KineticModel(object):
     solver = cpdc.Component("solver", default=None, candidates=["KMCSolver",
                                                                 "SteadyStateSolver"])
 
-    corrector = cpdc.Component("corrector", default=None, candidates=["ThermodynamicCorrector"])
+    corrector = cpdc.Component("corrector",
+                               default=None,
+                               candidates=["ThermodynamicCorrector"])
 
-    table_maker = cpdc.Component("table_maker", default=None, candidates=["CsvMaker"])
+    table_maker = cpdc.Component("table_maker",
+                                 default=None,
+                                 candidates=["CsvMaker"])
 
-    plotter = cpdc.Component("plotter", default=None, candidates=["EnergyProfilePlotter"])
+    plotter = cpdc.Component("plotter",
+                             default=None,
+                             candidates=["EnergyProfilePlotter"])
 
     # Temperature.
     temperature = dc.Float("temperature", default=298.0)

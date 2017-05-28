@@ -123,6 +123,8 @@ class MicroKineticModel(km.KineticModel):
 
         XRC: calculate degree of rate control or nor, bool.
 
+        epsilon: the change of energy for XRC calculation, float, default is 10-5.
+
         product_name: Production name of the model, str. e.g. "CH3OH_g"
 
         """
@@ -133,6 +135,7 @@ class MicroKineticModel(km.KineticModel):
         fsolve = kwargs.pop("fsolve", False)
         coarse_guess = kwargs.pop("coarse_guess", True)
         XRC = kwargs.pop("XRC", False)
+        epsilon = kwargs.pop("epsilon", 1e-5)
         product_name = kwargs.pop("product_name", None)
 
         if kwargs:
@@ -225,10 +228,8 @@ class MicroKineticModel(km.KineticModel):
                 raise ParameterError("production name must be provided to get XRC.")
 
             solver.get_single_XRC(product_name,
-                                  epsilon=1e-5,
+                                  epsilon=epsilon,
                                   relative_energies=relative_energies)
-
-        return
         # }}}
 
     @dc.Property
