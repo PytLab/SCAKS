@@ -89,7 +89,6 @@ class SolverBase(ModelShell):
 
         T: Temperature(K), float.
         """
-
         Ga = -log(kCT*h_eV/(kB_eV*T))*(kB_eV*T)
 
         return Ga
@@ -191,6 +190,10 @@ class SolverBase(ModelShell):
         # Get rate constant.
         T = self._owner.temperature
         Auc = self._owner.unitcell_area
+
+        if not Auc > 0.0:
+            raise AttributeError("Invalid unitcell area: {}".format(Auc))
+
         act_ratio = self._owner.active_ratio
 
         # Get model corrector.
