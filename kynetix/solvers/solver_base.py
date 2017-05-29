@@ -21,10 +21,9 @@ class SolverBase(ModelShell):
         # Set logger.
         self.__logger = logging.getLogger("model.solver.SolverBase")
 
-    @staticmethod
-    def get_kTST(Ga, T):
+    def get_kTST(self, Ga, T):
         """
-        Static function to get rate constants according to Transition State Theory.
+        Calculate rate constants according to Transition State Theory.
 
         Parameters:
         -----------
@@ -32,8 +31,15 @@ class SolverBase(ModelShell):
 
         T: Temperature(K), floats.
         """
-
-        kTST = kB_eV*T/h_eV*exp(-Ga/(kB_eV*T))
+        if self.__class__.__name__ == "SteadyStateSolver":
+            # Convert float numbers to mpfloat.
+            kB_eV_mp = self._mpf(kB_eV)
+            T_mp = self._mpf(T)
+            h_eV_mp = self._mpf(h_eV)
+            Ga_mp = self._mpf(Ga)
+            kTST = kB_eV_mp*T_mp/h_eV_mp*self._math.exp(-Ga_mp/(kB_eV_mp*T_mp))
+        else:
+            kTST = kB_eV*T/h_eV*exp(-Ga/(kB_eV*T))
 
         return kTST
 
