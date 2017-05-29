@@ -1081,7 +1081,12 @@ class SteadyStateSolver(MeanFieldSolver):
                                    gas_name=gas_name)
             dr = r_prime - r
 
-            XRCi = k/r*(dr/dk)
+            try:
+                XRCi = k/r*(dr/dk)
+            except ZeroDivisionError:
+                self.__logger.error("ZeroDivisionError exception detected when" +
+                                    "calculating XRC, the XRC is set to inf")
+                XRCi = 'inf'
 
             return XRCi
 
