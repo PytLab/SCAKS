@@ -97,6 +97,17 @@ class MeanFieldSolverTest(unittest.TestCase):
         self.assertDictEqual(ref_classified_adsorbates, solver.classified_adsorbates)
         # }}}
 
+    def test_get_kTST(self):
+        " Test static method get_kTST(). "
+        model = MicroKineticModel(setup_dict=self.setup_dict, logger_level=logging.WARNING)
+        Ga = 1.56
+        T = 450
+
+        ref_r = mpf('3.168158762312e-5')
+        ret_r = model.solver.get_kTST(Ga, T)
+
+        self.assertEqual(ref_r, ret_r)
+
     def test_get_data(self):
         # {{{
         " Test solver can get data correctly. "
@@ -132,8 +143,8 @@ class MeanFieldSolverTest(unittest.TestCase):
         solver.get_data()
 
         # Check rate constants.
-        ref_forward_rate_constants = [9376477746581.562, 9376477746581.562, 0.09389759708784133]
-        ref_reverse_rate_constants = [30395.72540148798, 2.5429515269621107e-17, 399.2961612111053]
+        ref_forward_rate_constants = [mpf('9376477746560.0'), mpf('9376477746560.0'), mpf('0.09389759708665')]
+        ref_reverse_rate_constants = [mpf('30395.72540021'), mpf('2.542951527174e-17'), mpf('399.2961611934')]
         ret_forward_rate_constants, ret_reverse_rate_constants = solver.get_rate_constants()
         self.assertListEqual(ref_forward_rate_constants, ret_forward_rate_constants)
         self.assertListEqual(ref_reverse_rate_constants, ret_reverse_rate_constants)

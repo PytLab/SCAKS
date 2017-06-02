@@ -9,16 +9,6 @@ class SolverBaseTest(unittest.TestCase):
         # Test case setting.
         self.maxDiff = None
 
-    def test_get_kTST(self):
-        " Test static method get_kTST(). "
-        Ga = 1.56
-        T = 450
-
-        ref_r = 3.168158762449045e-05
-        ret_r = SolverBase.get_kTST(Ga, T)
-
-        self.assertEqual(ref_r, ret_r)
-
     def test_get_kCT(self):
         " Test statice function get_kCT(). "
         Auc = 9.64e-20
