@@ -27,19 +27,19 @@ extent = [np.min(xnew), np.max(xnew), np.min(ynew), np.max(ynew)]
 CS = plt.contourf(xnew.reshape(-1), ynew.reshape(-1),
                   z, 20, cmap=plt.cm.Reds)
 
-CS2 = plt.contour(CS, levels=CS.levels[::2],
-                  colors='#838B8B',
-                  hold='on')
-plt.clabel(CS2, colors='grey', inline=1, fontsize=12, fmt="%.2f")
+#CS2 = plt.contour(CS, levels=CS.levels[::2],
+#                  colors='#838B8B',
+#                  hold='on')
+#plt.clabel(CS2, colors='grey', inline=1, fontsize=12, fmt="%.2f")
 
-plt.xlabel("P(CO_g)/bar")
-plt.ylabel(r"P(O_2_g)/bar")
+plt.xlabel(r"$PCO_{(g)}/bar$", fontsize="x-large")
+plt.ylabel(r"PO_{2(g)}/bar$", fontsize="x-large")
 
 # Make a colorbar.
 cbar = plt.colorbar(CS)
-cbar.ax.set_ylabel("O_coverage")
+cbar.ax.set_ylabel(r"$\theta_{O^{*}}$")
 
-cbar.add_lines(CS2)
+#cbar.add_lines(CS2)
 
 plt.show()
 

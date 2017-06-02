@@ -29,19 +29,27 @@ z_cvgs = interp_func_cvgs(xnew, ynew)
 z_tofs = interp_func_tofs(xnew, ynew)
 
 CS_cvgs = plt.contourf(xnew.reshape(-1), ynew.reshape(-1),
-                       z_cvgs, 10, cmap=plt.cm.coolwarm)
+                      z_cvgs, 5, cmap=plt.cm.coolwarm)
 
 CS_tofs = plt.contour(xnew.reshape(-1), ynew.reshape(-1), z_tofs, 10,
                       alpha=0.7, linewidths=1.0)
 
-plt.xlabel("P(CO_g)/bar")
-plt.ylabel(r"P(O_2_g)/bar")
+plt.xlabel(r"$P(CO_{(g)})/bar$")
+plt.ylabel(r"$P(O_{2(g)}/bar$")
 
 # Make a colorbar.
 cbar = plt.colorbar(CS_tofs)
-cbar.ax.set_ylabel("TOF")
+cbar.ax.set_ylabel(r"$TOF$")
 
 #cbar.add_lines(CS2)
+# Add lines.
+plt.plot([0.1, 0.1], [0.2, 0.5], lw=1, color="#FFFFFF", marker="_")
+plt.plot([0.0, 0.2], [0.35, 0.35], lw=1, color="#C5C5C2", marker="|")
+
+# set limits.
+plt.xlim([0.0, 0.5])
+plt.ylim([0.0, 0.5])
+
 
 plt.show()
 

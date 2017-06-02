@@ -23,19 +23,19 @@ z = interp_func(xnew, ynew)
 extent = [np.min(xnew), np.max(xnew), np.min(ynew), np.max(ynew)]
 
 CS = plt.contourf(xnew.reshape(-1), ynew.reshape(-1),
-                  z, 10, cmap=plt.cm.Blues)
+                  z, 20, cmap=plt.cm.Blues)
 
 # Add orthogonal lines.
 # horizontal_line
 #plt.plot([0.01, 1.0], [1.0, 1.0], color='#000000', linewidth=1.0)
 #plt.plot([0.6, 0.6], [0.01, 2.0], color='#000000', linewidth=1.0)
 
-plt.xlabel("P(CO_g)/bar")
-plt.ylabel("P(O_2_g)/bar")
+plt.xlabel(r"$P_{CO(g)}/bar$", fontsize="x-large")
+plt.ylabel(r"$P_{O_{2(g)}}/bar$", fontsize="x-large")
 
 # Make a colorbar.
 cbar = plt.colorbar(CS)
-cbar.ax.set_ylabel("CO coverage")
+cbar.ax.set_ylabel(r"$\theta_{CO^{*}}$", fontsize="x-large")
 
 plt.show()
 #plt.savefig('tofs_contour.pdf')

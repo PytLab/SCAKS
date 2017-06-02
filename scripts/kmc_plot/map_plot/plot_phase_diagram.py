@@ -42,9 +42,17 @@ plt.ylabel(r"$P(O_{2(g)}/bar$")
 
 # Make a colorbar.
 cbar = plt.colorbar(CS_tofs)
-cbar.ax.set_ylabel("$TOF$")
+cbar.ax.set_ylabel("$TOF/s^{-1}$")
 
 #cbar.add_lines(CS2)
+
+# Add lines.
+plt.plot([0.1, 0.1], [0.2, 0.5], lw=1, color="#FFFFFF", marker="_")
+plt.plot([0.0, 0.2], [0.35, 0.35], lw=1, color="#FFFFFF", marker="|")
+
+# set limits.
+plt.xlim([0.0, 0.5])
+plt.ylim([0.0, 0.5])
 
 plt.show()
 

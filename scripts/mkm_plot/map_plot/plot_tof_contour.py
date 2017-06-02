@@ -26,24 +26,24 @@ extent = [np.min(xnew), np.max(xnew), np.min(ynew), np.max(ynew)]
 CS = plt.contourf(xnew.reshape(-1), ynew.reshape(-1),
                   z, 20, cmap=plt.cm.coolwarm)
 
-CS2 = plt.contour(CS, levels=CS.levels[::2],
-                  colors='#838B8B',
-                  hold='on')
-plt.clabel(CS2, colors='grey', inline=1, fontsize=12, fmt="%.2f")
+#CS2 = plt.contour(CS, levels=CS.levels[::2],
+#                  colors='#838B8B',
+#                  hold='on')
+#plt.clabel(CS2, colors='grey', inline=1, fontsize=12, fmt="%.2f")
 
 # Add orthogonal lines.
 # horizontal_line
 #plt.plot([0.01, 1.0], [1.0, 1.0], color='#000000', linewidth=1.0)
 #plt.plot([0.6, 0.6], [0.01, 2.0], color='#000000', linewidth=1.0)
 
-plt.xlabel("P(CO_g)/bar")
-plt.ylabel("P(O_2_g)/bar")
+plt.xlabel(r"$P_{CO_{g}}/bar$", fontsize="x-large")
+plt.ylabel("$P_{O{2(g)}}/bar$", fontsize="x-large")
 
 # Make a colorbar.
 cbar = plt.colorbar(CS)
-cbar.ax.set_ylabel("TOF/s^-1")
+cbar.ax.set_ylabel(r"$TOF/s^{-1}$", fontsize="x-large")
 
-cbar.add_lines(CS2)
+#cbar.add_lines(CS2)
 
 plt.show()
 

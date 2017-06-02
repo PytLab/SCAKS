@@ -25,19 +25,19 @@ z = interp_func(xnew, ynew)
 extent = [np.min(xnew), np.max(xnew), np.min(ynew), np.max(ynew)]
 
 CS = plt.contourf(xnew.reshape(-1), ynew.reshape(-1),
-                  z, 10, cmap=plt.cm.Blues)
+                  z, 20, cmap=plt.cm.Blues)
 
 #CS2 = plt.contour(CS, levels=CS.levels[::2],
 #                  colors='#838B8B',
 #                  hold='on')
 #plt.clabel(CS2, colors='grey', inline=1, fontsize=12, fmt="%.2f")
 
-plt.xlabel("P(CO_g)/bar")
-plt.ylabel(r"P(O_2_g)/bar")
+plt.xlabel("P(CO_g)/bar", fontsize="x-large")
+plt.ylabel(r"P(O_2_g)/bar", fontsize="x-large")
 
 # Make a colorbar.
 cbar = plt.colorbar(CS)
-cbar.ax.set_ylabel("CO_coverage")
+cbar.ax.set_ylabel(r"$\theta_{CO^{*}}$")
 
 #cbar.add_lines(CS2)
 
