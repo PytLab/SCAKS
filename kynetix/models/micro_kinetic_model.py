@@ -222,6 +222,9 @@ class MicroKineticModel(km.KineticModel):
         # Get reversibilities.
         self.__reversibilities = solver.get_reversibilities(rf, rr)
 
+        # Get residual error.
+        self.__error = solver.error
+
         # Calculate XRC.
         if XRC:
             if product_name is None:
@@ -231,6 +234,21 @@ class MicroKineticModel(km.KineticModel):
                                   epsilon=epsilon,
                                   relative_energies=relative_energies)
         # }}}
+
+    @dc.Property
+    def model_info(self):
+        """
+        Generate a report dict containing model information.
+        """
+        info = {}
+        info['gas_names'] = self.gas_names
+        info['adsorbate_names'] = self.adsorbate_names
+        info['steady_state_coverages'] = \
+            [float(cvg) for cvg in self.steady_state_coverages]
+        info['TOFs'] = [float(tof) for tof in self.TOFs]
+        info['reversibilities'] = self.reversibilities
+
+        return info
 
     @dc.Property
     def data_file(self):
@@ -270,4 +288,11 @@ class MicroKineticModel(km.KineticModel):
             return self.__reversibilities
         except AttributeError:
             raise AttributeError("Unsolved model has no reversibilities.")
+
+    @dc.Property
+    def error(self):
+        try:
+            return self.__error
+        except AttributeError:
+            raise AttributeError("Unsolved model has no error.")
 
