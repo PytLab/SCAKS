@@ -247,6 +247,7 @@ class MicroKineticModel(km.KineticModel):
             [float(cvg) for cvg in self.steady_state_coverages]
         info['TOFs'] = [float(tof) for tof in self.TOFs]
         info['reversibilities'] = self.reversibilities
+        info['rxn_expressions'] = self.rxn_expressions
 
         return info
 
