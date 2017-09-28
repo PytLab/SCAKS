@@ -2,35 +2,34 @@
 Script for running Micro-kinetic Model simulation.
 """
 
-import commands
 import logging
 import sys
 import time
 
-from kynetix import mpi_master
-from kynetix.model import KineticModel
+from kynetix.compatutil import subprocess
+from kynetix.mpicommons import mpi
+from kynetix.models.micro_kinetic_model import MicroKineticModel
 from kynetix.utilities.format_utilities import convert_time
 
 # Custom parameters.
-UseRelativeEnergy = True    # Use only relative energies.
-OdeInterval = 0.1           # ODE integration time interval.
-OdeEnd = 10000              # ODE integration time limit.
-OdeOutput = False           # Output ODE integration data or not.
+OdeInterval = 0.001          # ODE integration time interval.
+OdeEnd = 1          # ODE integration time limit.
+OdeOutput = True           # Output ODE integration data or not.
 CalcXRC = False             # Calculate Degree of Rate Control(XRC) or not.
-ProductionName = "CH3OH_g"  # Production name of your model.
+ProductionName = "CO2_g"  # Production name of your model.
 OdeOnly = False             # Do ODE integration only.
 
 if "__main__" == __name__:
     # Clean up current dir.
-    commands.getstatusoutput("rm -rf out.log auto_*")
+    subprocess.getstatusoutput("rm -rf out.log auto_*")
 
     # Set script logger.
     logger = logging.getLogger("model.MkmRunScript")
 
     # Get setup file.
-    status, output= commands.getstatusoutput("ls *.mkm | tail -1")
+    status, output= subprocess.getstatusoutput("ls *.mkm | tail -1")
     if status:
-        if mpi_master:
+        if mpi.is_master:
             logger.error(output)
             logger.info("Exiting...")
         sys.exit(1)
@@ -38,12 +37,12 @@ if "__main__" == __name__:
     start = time.time()
     try:
         # Build micor-kinetic model.
-        model = KineticModel(setup_file=output)
+        model = MicroKineticModel(setup_file=output)
 
         # Read data.
-        parser = model.parser()
-        solver = model.solver()
-        parser.parse_data(relative=UseRelativeEnergy)
+        parser = model.parser
+        solver = model.solver
+        parser.parse_data()
         solver.get_data()
 
         # Initial coverages guess.
@@ -53,14 +52,13 @@ if "__main__" == __name__:
         init_guess = trajectory[-1]
 
         # Run.
-        model.run_mkm(init_cvgs=init_guess,
-                      solve_ode=OdeOnly,
-                      coarse_guess=False,
-                      relative=True,
-                      XRC=CalcXRC,
-                      product_name=ProductionName)
+        model.run(init_cvgs=init_guess,
+                  solve_ode=OdeOnly,
+                  coarse_guess=False,
+                  XRC=CalcXRC,
+                  product_name=ProductionName)
     except Exception as e:
-        if mpi_master:
+        if mpi.is_master:
             msg = "{} exception is catched.".format(type(e).__name__)
             logger.exception(msg)
         raise e
@@ -70,6 +68,6 @@ if "__main__" == __name__:
     t = end - start
     h, m, s = convert_time(t)
 
-    if mpi_master:
+    if mpi.is_master:
         logger.info("Time used: {:d} h {:d} min {:f} sec".format(h, m, s))
 
