@@ -38,7 +38,7 @@ def get_config_poscar(config, positions, poscar_template='POSCAR'):
 if __name__ == '__main__':
     from auto_lattice_trajectory import sites
     origin = [0.201250, 0.158250, 0.370509]
-    h = 0.02
+    h = 0.08
     unit_bases = [[0.25, 0.0, 0.0],
                   [0.0, 0.25, 0.0],
                   [0.0, 0.0, 0.0]]
