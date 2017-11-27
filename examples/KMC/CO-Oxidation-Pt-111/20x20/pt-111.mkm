@@ -52,7 +52,7 @@ unitcell_area = 7.15e-20  # m^2
 active_ratio = 1./3        # Ast / Auc
 
 # Supercell.
-repetitions = (20, 20, 1)   # (x, y, z)
+repetitions = (3, 3, 1)   # (x, y, z)
 periodic = (True, True, False)           # periodic boundary condition
 possible_element_types = ["O_u", "O_d", "O_l", "O_r", "O_ur", "O_dr", "O_dl", "O_ul", "V", "O_s", "C"]
 empty_type = "V"
@@ -67,7 +67,7 @@ solver = 'KMCSolver'
 corrector = "ThermodynamicCorrector"
 
 # KMC loop control parameters.
-nstep = 10**7                           # number of KMC loop step
+nstep = 100                           # number of KMC loop step
 time_limit = 1e6
 seed = 13996                         # seed for random number generator
 random_generator = 'MT'              # type of pseudo random number generator, 'MT' | 'MINSTD' | 'RANLUX24' | 'RANLUX48'
@@ -75,5 +75,5 @@ analysis = ["CoveragesAnalysis", "FrequencyAnalysis"]     # ['CoveragesAnalysis'
 analysis_interval = [100, 1]
 #tof_start = 400
 coverage_ratios = [1.0, 1./3, 1./3, 1./3, 1.0, 1.0]
-trajectory_dump_interval = nstep/200
+trajectory_dump_interval = 1
 
