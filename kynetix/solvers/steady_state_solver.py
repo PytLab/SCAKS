@@ -1224,7 +1224,7 @@ class SteadyStateSolver(MeanFieldSolver):
         # integration loop
         if self._owner.log_allowed:
             self.__logger.info('entering {} ODE integration loop...'.format(algo))
-            msg = "start = {:.2f}  end = {:.2f}  step = {:.2f}\n".format(t_start, t_end, t_step)
+            msg = "start = {:.2f}  end = {:.2f}  step = {:f}\n".format(t_start, t_end, t_step)
             self.__logger.info(msg)
             self.__logger.info('%10s%20s' + '%20s'*nads, 'process',
                                'time(s)', *adsorbate_names)
@@ -1252,7 +1252,8 @@ class SteadyStateSolver(MeanFieldSolver):
                     ys.append(r.y.tolist())
 
                 # Info output.
-                if self._owner.log_allowed and ():
+                if (self._owner.log_allowed and
+                        nstep % self._owner.ode_output_interval == 0):
                     msg = "{:10.2f}%{:20f}" + "{:20.8e}"*nads
                     msg = msg.format(r.t/t_end*100, r.t, *r.y)
                     self.__logger.info(msg)
