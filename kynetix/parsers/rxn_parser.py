@@ -295,7 +295,7 @@ class ChemFormula(object):
         Constructor.
         """
         self.__formula = formula
-        self.__formula_regex = re.compile(r'(\d*)(([\w\*-]*)_(\d*)([a-z\*]+))')
+        self.__formula_regex = re.compile(r'(\d*)(([\w\*-]*)_(\d*)([a-zA-Z\*]+))')
         self.__sp_regex = re.compile(r'([a-zA-Z\*])(\d*)')
 
         self.__split()
