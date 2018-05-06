@@ -354,7 +354,10 @@ class KineticModel(object):
             f.write(content)
 
     def run(self, *kwargs):
-        pass
+        """
+        Need implementation.
+        """
+        raise NotImplementedError
 
     @dc.Property
     def log_allowed(self):
