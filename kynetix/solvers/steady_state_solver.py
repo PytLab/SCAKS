@@ -1160,7 +1160,7 @@ class SteadyStateSolver(MeanFieldSolver):
                   time_span=0.1, initial_cvgs=None,
                   relative_energies=None, traj_output=False):
         """
-        Solve the differetial equations, return points of coverages.
+        Solve the steady state equations using ODE integration.
 
         Parameters:
         -----------
