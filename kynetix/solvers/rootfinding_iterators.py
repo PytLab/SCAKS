@@ -31,7 +31,7 @@ class RootfindingIterator(object):
 
         fx: value of f(x), sequence of float
         '''
-        pass
+        raise NotImplementedError
         return (x0, fxnorm, fx)
 
 
