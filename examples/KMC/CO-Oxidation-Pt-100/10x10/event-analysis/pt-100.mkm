@@ -39,6 +39,6 @@ corrector = 'ThermodynamicCorrector'
 unitcell_area = 9e-20
 
 # Event Analysis
-#analysis_interval = [(0, 500, 1)]  # (start, end, step)
-#analysis = ['EventAnalysis']
+analysis_interval = [(0, 500, 1)]  # (start, end, step)
+analysis = ['EventAnalysis']
 

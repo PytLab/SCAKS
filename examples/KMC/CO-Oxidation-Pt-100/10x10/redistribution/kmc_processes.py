@@ -3,7 +3,7 @@ processes = [
     # CO adsorbed at top site.
     {
         "reaction": "CO_g + *_t -> CO_t",
-       "coordinates_group": [[[0.0, 0.0, 0.0],
+        "coordinates_group": [[[0.0, 0.0, 0.0],
                               [-0.5, 0.0, 0.0],
                               [-0.5, 0.5, 0.0],
                               [0.0, 0.5, 0.0],

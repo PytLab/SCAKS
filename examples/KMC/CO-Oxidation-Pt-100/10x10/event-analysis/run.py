@@ -2,17 +2,17 @@
 Script to run kynetix kMC simulation.
 """
 
-import commands
 import logging
 import time
 
+from kynetix.compatutil import subprocess
 from kynetix.mpicommons import mpi
 from kynetix.models.kmc_model import KMCModel
 from kynetix.utilities.format_utilities import convert_time
 
 if "__main__" == __name__:
     # Remove old log file.
-    commands.getstatusoutput("rm -rm out.log auto_*")
+    subprocess.getstatusoutput("rm -rm out.log auto_*")
 
     # Set logger.
     logger = logging.getLogger("model.KMCModelRun")
