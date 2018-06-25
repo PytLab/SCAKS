@@ -768,7 +768,7 @@ class MeanFieldSolver(SolverBase):
 
         return kf_syms, kr_syms
 
-    def get_single_rate_sym(self, rxn_expression):
+    def get_elementary_rate_sym(self, rxn_expression):
         # {{{
         """
         Function to get rate expression for an elementary reaction.
@@ -834,7 +834,7 @@ class MeanFieldSolver(SolverBase):
         # Loop over all elementary reaction.
         rf_syms, rr_syms = [], []
         for rxn_expression in self._owner.rxn_expressions:
-            rf_sym, rr_sym = self.get_single_rate_sym(rxn_expression)
+            rf_sym, rr_sym = self.get_elementary_rate_sym(rxn_expression)
             rf_syms.append(rf_sym)
             rr_syms.append(rr_sym)
 

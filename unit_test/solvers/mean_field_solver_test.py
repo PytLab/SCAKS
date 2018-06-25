@@ -477,7 +477,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         ref_rf = T*kB*theta_CO_s*theta_O_s*E**(-Ga_2/(T*kB))/h
         ref_rr = T*kB*p_CO2_g*(-theta_CO_s - theta_O_s + 1.0)**2*E**((-Ga_2 + dG_2)/(T*kB))/h
 
-        ret_rf, ret_rr = solver.get_single_rate_sym(rxn_expression)
+        ret_rf, ret_rr = solver.get_elementary_rate_sym(rxn_expression)
 
         self.assertEqual(ref_rf.simplify(), ret_rf.simplify())
         self.assertEqual(ref_rr.simplify(), ret_rr.simplify())

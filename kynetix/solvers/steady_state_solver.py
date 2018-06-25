@@ -532,7 +532,7 @@ class SteadyStateSolver(MeanFieldSolver):
             return
 
         # Get dtheta_dt sym according rate symbols.
-        rf_sym, rr_sym = self.get_single_rate_sym(rxn_expression)
+        rf_sym, rr_sym = self.get_elementary_rate_sym(rxn_expression)
         if state_idx == 0:
             dtheta_dt_sym = -rf_sym + rr_sym
         else:
