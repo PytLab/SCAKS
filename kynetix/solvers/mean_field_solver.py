@@ -842,7 +842,7 @@ class MeanFieldSolver(SolverBase):
         rf_latexs = self.get_latex_strs(part1=r'r_{f', part2=r'^{+}}',
                                         symbols=rf_syms)
         rr_latexs = self.get_latex_strs(part1=r'r_{r', part2=r'^{-}}',
-                                        symbols=rf_syms)
+                                        symbols=rr_syms)
 
         if log_latex:
             # log it.
