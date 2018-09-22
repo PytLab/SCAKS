@@ -92,7 +92,7 @@ class SteadyStateSolver(MeanFieldSolver):
         if not consistant:
             if self._owner.log_allowed:
                 self.__logger.warning('coverage constraining...\n')
-                self.__logger.debug('    initial coverage: %s', str([float(i) for cvg in cvgs_tuple]))
+                self.__logger.debug('    initial coverage: %s', str([float(cvg) for cvg in cvgs_tuple]))
                 self.__logger.debug('constrained coverage: %s\n',
                                     str([float(cvg) for cvg in constrained_cvgs_tuple]))
 
