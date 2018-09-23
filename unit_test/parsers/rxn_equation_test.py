@@ -4,7 +4,7 @@ import unittest
 
 import numpy as np
 
-from kynetix.parsers.rxn_parser import *
+from mikiac.parsers.rxn_parser import *
 
 
 class RxnEquationTest(unittest.TestCase):
@@ -67,7 +67,7 @@ class RxnEquationTest(unittest.TestCase):
 
     def test_desorption_gases(self):
         " Make sure we can get the correct gas species in FS. "
-        equation = RxnEquation("CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s"))
+        equation = RxnEquation("CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s")
         gases = equation.desorption_gases()
         ref_gas_names = ["CO2_g"]
         ret_gas_names = [gas.formula() for gas in gases]

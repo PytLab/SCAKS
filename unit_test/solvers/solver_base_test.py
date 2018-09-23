@@ -1,6 +1,6 @@
 import unittest
 
-from kynetix.solvers.solver_base import SolverBase
+from mikiac.solvers.solver_base import SolverBase
 
 
 class SolverBaseTest(unittest.TestCase):

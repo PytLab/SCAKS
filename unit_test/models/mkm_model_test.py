@@ -2,8 +2,8 @@ import logging
 import unittest
 import os
 
-from kynetix.models.micro_kinetic_model import MicroKineticModel
-from kynetix.parsers import *
+from mikiac.models.micro_kinetic_model import MicroKineticModel
+from mikiac.parsers import *
 
 from unit_test import *
 

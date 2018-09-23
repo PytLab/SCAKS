@@ -1,6 +1,6 @@
 [run]
 branch = True
-source = ../kynetix
+source = ../mikiac
 
 [report]
 exclude_lines =

@@ -4,8 +4,8 @@ import unittest
 
 import numpy as np
 
-from kynetix.models.kmc_model import KMCModel
-from kynetix.solvers import *
+from mikiac.models.kmc_model import KMCModel
+from mikiac.solvers import *
 
 from unit_test import *
 

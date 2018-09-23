@@ -2,9 +2,9 @@ import logging
 import os
 import unittest
 
-from kynetix.models.micro_kinetic_model import MicroKineticModel
-from kynetix.functions import *
-from kynetix.parsers import *
+from mikiac.models.micro_kinetic_model import MicroKineticModel
+from mikiac.functions import *
+from mikiac.parsers import *
 
 from unit_test import *
 
@@ -80,6 +80,6 @@ class AbsoluteEnergyParserTest(unittest.TestCase):
         self.assertTrue(model.has_relative_energy)
 
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(RelativeEnergyParserTest)
+    suite = unittest.TestLoader().loadTestsFromTestCase(AbsoluteEnergyParserTest)
     unittest.TextTestRunner(verbosity=2).run(suite)
 

@@ -4,7 +4,7 @@ import unittest
 
 import numpy as np
 
-from kynetix.parsers.rxn_parser import *
+from mikiac.parsers.rxn_parser import *
 
 
 class ChemStateTest(unittest.TestCase):

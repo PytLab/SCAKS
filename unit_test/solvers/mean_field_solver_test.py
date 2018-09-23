@@ -5,9 +5,9 @@ import unittest
 import numpy as np
 from mpmath import mpf
 
-from kynetix.models.micro_kinetic_model import MicroKineticModel
-from kynetix.parsers.rxn_parser import *
-from kynetix.solvers import *
+from mikiac.models.micro_kinetic_model import MicroKineticModel
+from mikiac.parsers.rxn_parser import *
+from mikiac.solvers import *
 
 from unit_test import *
 
@@ -239,13 +239,13 @@ class MeanFieldSolverTest(unittest.TestCase):
                      (15197.8627007, 6.357378817428e-18, 0.0))
         for m in range(2):
             for n in range(3):
-                self.assertAlmostEqual(ref_rates[m][n], ret_rates[m][n])
+                self.assertAlmostEqual(ref_rates[m][n], ret_rates[m][n], places=4)
 
         # Check net rates.
         ref_net_rates = (-15197.8627007, -6.357378817429e-18, 0.02347439927189)
         ret_net_rates = solver.get_net_rates(coverages)
         for ref, ret in zip(ref_net_rates, ret_net_rates):
-            self.assertAlmostEqual(ref, ret)
+            self.assertAlmostEqual(ref, ret, places=4)
         # }}}
 
     def test_get_reversibilities(self):
@@ -264,7 +264,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         ret_reversibilities = solver.get_reversibilities(rfs, rrs)
 
         for ref, ret in zip(ref_reversibilities, ret_reversibilities):
-            self.assertAlmostEqual(ref, ret)
+            self.assertAlmostEqual(ref, ret, places=4)
         # }}}
 
     def test_get_tof(self):
@@ -285,7 +285,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         ret_tof = solver.get_tof(coverages)
 
         for ref, ret in zip(ref_tof, ret_tof):
-            self.assertAlmostEqual(ref, float(ret))
+            self.assertAlmostEqual(ref, float(ret), places=4)
 
         # Test gas tof.
         ref_tof = mpf('-3750591092544.0')
@@ -672,7 +672,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         ret_dict = solver.get_subs_dict(coverages)
 
         for key in ref_dict:
-            self.assertAlmostEqual(float(ref_dict[key]), float(ret_dict[key]))
+            self.assertAlmostEqual(float(ref_dict[key]), float(ret_dict[key]), places=4)
         # }}}
 
     def test_get_rate_constants_by_sym(self):
@@ -783,7 +783,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         ret_net_rates = solver.get_net_rates_by_sym(coverages)
 
         for ref, ret in zip(ref_net_rates, ret_net_rates):
-            self.assertAlmostEqual(ref, ret)
+            self.assertAlmostEqual(ref, ret, places=4)
 
     def test_get_tof_syms(self):
         " Test we can get TOF symbols correctly. "
@@ -852,7 +852,7 @@ class MeanFieldSolverTest(unittest.TestCase):
         ret_tof = solver.get_tof_by_sym(coverages)
 
         for ref, ret in zip(ref_tof, ret_tof):
-            self.assertAlmostEqual(ref, ret)
+            self.assertAlmostEqual(ref, ret, places=4)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(MeanFieldSolverTest)

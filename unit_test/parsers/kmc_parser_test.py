@@ -4,9 +4,9 @@ import unittest
 
 from KMCLib import *
 
-from kynetix.models.kmc_model import KMCModel
-from kynetix.functions import *
-from kynetix.parsers import *
+from mikiac.models.kmc_model import KMCModel
+from mikiac.functions import *
+from mikiac.parsers import *
 
 from unit_test import *
 
