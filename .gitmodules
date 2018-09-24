@@ -1,0 +1,3 @@
+[submodule "mikiac-docs"]
+	path = docs
+	url = git@github.com:PytLab/mikiac-docs.git
