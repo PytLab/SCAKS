@@ -15,9 +15,41 @@ from ..utilities.profiling_utitlities import do_cprofile
 
 
 class KineticModel(object):
-    """
-    Main class for kinetic models.
-    """
+    ''' The base class for kinetic models.
+
+    Attributes:
+        setup_file(:obj:`str`): kinetic model setup file
+
+        setup_dict(:obj:`dict`): A dictionary contains essnetial setup parameters for kinetic model
+
+        logger_level(:obj:`int`): The logging level for built-in logger
+
+        file_handler_level(:obj:`int`): The logging level for file handler
+
+        console_handler_level(:obj:`int`): The logging level for console handler
+
+        parser(:obj:`object`): Kinetic Model parser,
+        possible type could be :obj:`mikiac.parsers.RelativeEnergyParser`,
+        :obj:`mikiac.parsers.AbsoluteEnergyParser`, :obj:`mikiac.parsers.KMCParser`
+
+        solver(:obj:`object`): Kinetic Model solver,
+        possible type could be :obj:`mikiac.solvers.SteadyStateSolver`,
+        :obj:`mikiac.solvers.KMCSolver`
+
+        corrector(:obj:`object`): Kinetic Model data corrector,
+        possible type could be :obj:`ThermodynamicCorrector`
+
+        temperature(:obj:`float`): Environment temperature in K, default is 298.0K
+
+        rxn_expressions(:obj:`list` of :obj:`str`): Reaction expressions for elementary reactions,
+        default is []
+
+        species_definitions(:obj:`dict`): All species definition in kinetic model after parsing
+
+        rate_algo(:obj:`str`): Algorithm for rate calculation, could be 'TST' for
+        transition state theory or 'CT' for collision theory, default value is 'TST'
+
+    '''
 
     # Attribute descriptors.
     # {{{
@@ -39,23 +71,18 @@ class KineticModel(object):
                                        candidates=range(0, 60, 10))
 
     parser = Component("parser", default=None, candidates=["RelativeEnergyParser",
-                                                                "AbsoluteEnergyParser",
-                                                                "KMCParser"])
+                                                           "AbsoluteEnergyParser",
+                                                           "KMCParser"])
 
-    solver = Component("solver", default=None, candidates=["KMCSolver",
-                                                                "SteadyStateSolver"])
+    solver = Component("solver", default=None, candidates=["KMCSolver", "SteadyStateSolver"])
 
     corrector = Component("corrector",
-                               default=None,
-                               candidates=["ThermodynamicCorrector"])
-
-    table_maker = Component("table_maker",
-                                 default=None,
-                                 candidates=["CsvMaker"])
+                          default=None,
+                          candidates=["ThermodynamicCorrector"])
 
     plotter = Component("plotter",
-                             default=None,
-                             candidates=["EnergyProfilePlotter"])
+                        default=None,
+                        candidates=["EnergyProfilePlotter"])
 
     # Temperature.
     temperature = Float("temperature", default=298.0)
@@ -82,23 +109,25 @@ class KineticModel(object):
 
     def __init__(self, **kwargs):
         """
-        Parameters:
-        -----------
-        setup_file: kinetic model set up file, str.
+        :param setup_file: kinetic model set up file
+        :type setup_file: str
 
-        setup_dict: A dictionary contains essential setup parameters for kinetic model.
+        :param setup_dict: A dictionary contains essential setup parameters for kinetic model
+        :type setup_dict: dict
         
-        logger_level: logging level for logger, int.
+        :param logger_level: logging level for logger
+        :type logger_level: int
 
-        file_handler_level: logging level for file handler, int.
+        :param file_handler_level: logging level for file handler
+        :type file_handler_level: int
 
-        console_handler_level: logging level for console handler, int.
+        :param console_handler_level: logging level for console handler
+        :type console_handler_level: int
 
-        Example:
-        --------
-        >>> from .model import KineticModel
-        >>> model = KineticModel(setup_file="setup.mkm",
-                                 logger_level=logging.WARNING)
+        Example::
+
+            >>> from mikiac.models import KineticModel
+            >>> model = KineticModel(setup_file="setup.mkm", logger_level=30)
         """
 
         # {{{
@@ -152,8 +181,7 @@ class KineticModel(object):
         # }}}
 
     def _set_logger(self, filename=None):
-        """
-        Private function to get logging.logger instance as logger of kinetic model.
+        """ Private function to get logging.logger instance as logger of kinetic model.
         """
         # {{{
         # Create logger.
@@ -189,18 +217,16 @@ class KineticModel(object):
         # }}}
 
     def set_logger_level(self, handler_type, level):
-        """
-        Set the logging level of logger handler.
+        """ Set the logging level of logger handler.
 
-        Parameters:
-        -----------
-        handler_type: logger handler name, str.
+        :param handler_type: logger handler name
+        :type handler_type: str
 
-        level: logging level, int.
+        :param level: logging level
+        :type level: int
 
-        Returns
-        -------
-        Old logging level of the handler, int.
+        :return: Old logging level of the handler
+        :rtype: int
         """
         # Locate handler.
         handler = None
@@ -219,14 +245,12 @@ class KineticModel(object):
         return old_level
 
     def clear_handlers(self):
-        """
-        Clear all handlers in logger.
+        """ Clear all handlers in logger.
         """
         self._logger.handlers = []
 
     def __mro_class_attrs(self):
-        """
-        Private helper function to get all class attribute names(include father classes) .
+        """ Private helper function to get all class attribute names(include father classes) .
         """
         d = {}
 
@@ -236,8 +260,7 @@ class KineticModel(object):
         return d.keys()
 
     def _load(self, setup_dict):
-        """
-        Load 'setup_file' into kinetic model by exec setup file
+        """ Load 'setup_file' into kinetic model by exec setup file
         and assigning all local variables as attrs of model.
         For tools, create the instances of tool classes and
         assign them as the attrs of model.
@@ -307,14 +330,12 @@ class KineticModel(object):
         # }}}
 
     def generate_relative_energies_file(self, filename="rel_energy.py"):
-        """
-        Generate a energy input file containing relative energies
-        for all elementary reactions.
+        """ Generate a energy input file containing relative energies for 
+        all elementary reactions.
 
-        Parameters:
-        -----------
-        filename: The name of relative input file, str.
-                  Default value is 'rel_energy.py'.
+        :param filename: The name of relative input file, default value is 'rel_energy.py'.
+        :type filename: str
+
         """
         content = ("# Relative Energies for all elementary reactions.\n" +
                    "Ga, dG = [], []\n\n")
@@ -327,14 +348,11 @@ class KineticModel(object):
             f.write(content)
 
     def generate_absolute_energies_file(self, filename="abs_energy.py"):
-        """
-        Generate a energy input file containing absolute energies
+        """ Generate a energy input file containing absolute energies
         for all species(including sites).
 
-        Parameters:
-        -----------
-        filename: The name of absolute energy input file, str.
-                  Default value is 'abs_energy.py'.
+        :param filename: The name of absolute energy input file, default value is 'abs_energy.py'.
+        :type filename: str
         """
         content = ("# Absolute energies for all species.\n" +
                    "absolute_energies = {\n\n")
@@ -354,8 +372,7 @@ class KineticModel(object):
             f.write(content)
 
     def run(self, *kwargs):
-        """
-        Need implementation.
+        """ Need implementation.
         """
         raise NotImplementedError
 

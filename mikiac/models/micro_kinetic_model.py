@@ -14,50 +14,74 @@ from ..compatutil import pickle
 
 
 class MicroKineticModel(KineticModel):
-    '''
-    Class for micro-kinetic model.
+    ''' Class for micro-kinetic model.
+    
+    Attributes:
+        decimal_precision (:obj:`int`): Data precision, default value is 100
+
+        perturbation_size (:obj:`float`): Perturbation size for numerical jacobian matrix,
+        default value is 0.01
+
+        perturbation_direction (:obj:`str`): Direction of perturbation, :obj:`left` or :obj:`right`,
+        default is :obj:`'right'`
+
+        archived_variables (:obj:`str`): Archived variables. Possible values:
+        'initial_guess', 'steady_state_coverages', 'steady_state_error', 'rates',
+        'net_rates', 'reversibilities', 'tofs'
+
+        numerical_representation (:obj:`str`): Numerical representation method,
+        value could be 'mpmath' or 'sympy'.
+
+        rootfinding(:obj:`str`): Rootfinding iterator type, default value is 'MDNewton',
+        possible value can be 'MDNewton' or 'ConstrainedNewton'
+
+        tolerance (:obj:`float`): Iteration tolerance, default is 1e-8
+
+        max_rootfinding_iterations (:obj:`int`): Max iteraction steps, default is 100
+
+        ode_buffer_size (:obj:`int`): Ode integration buffer size, default is 500
+
+        ode_output_interval (:obj:`int`): Ode ouptut interval, default is 200
+
+        data_file (:obj:`str`): Filename for data store, default is 'data.pkl'
+
+        log_allowed (:obj:`bool`): If log output is allowed, default is `True`
+
+        TOFs (:obj:`list` of :obj:`float`): Turnover frequencies calculated.
+
+        reversibilities (:obj:`list` of :obj:`float`): Reversibilities calculated.
+
+        error (:obj:`list` of :obj:`float`): Residual errors after iterations.
     '''
 
     # {{{
-    # Data precision.
     decimal_precision = Integer("decimal_precision", default=100)
 
-    # Perturbation size for numerical jacobian matrix.
     perturbation_size = Float("perturbation_size", default=0.01)
 
-    # Direction of perturbation.
     perturbation_direction = String("perturbation_direction",
-                                       default="right",
-                                       candidates=["right", "left"])
+                                    default="right",
+                                    candidates=["right", "left"])
 
-    # Archived variables.
-    # Candidates: 'initial_guess', 'steady_state_coverages', 'steady_state_error',
-    #             'rates', 'net_rates', 'reversibilities', 'tofs'
     archived_variables = Sequence("archive_data",
-                                     default=["steady_state_coverages"],
-                                     entry_type=str)
+                                  default=["steady_state_coverages"],
+                                  entry_type=str)
 
-    # Numerical representation.
     numerical_representation = String("numerical_representation",
-                                         default="mpmath",
-                                         candidates=["mpmath", "gmpy", "sympy"])
+                                      default="mpmath",
+                                      candidates=["mpmath", "sympy"])
 
-    # Rootfinding iterator type.
     rootfinding = String("rootfinding",
-                            default="MDNewton",
-                            candidates=["MDNewton", "ConstrainedNewton"])
+                         default="MDNewton",
+                         candidates=["MDNewton", "ConstrainedNewton"])
 
-    # Iteration tolerance.
     tolerance = Float("tolerance", default=1e-8)
 
-    # Max iteraction steps.
     max_rootfinding_iterations = Integer("max_rootfinding_iterations",
                                             default=100)
 
-    # Ode integration buffer size.
     ode_buffer_size = Integer("ode_buffer_size", default=500)
 
-    # Ode ouptut interval.
     ode_output_interval = Integer("ode_output_interval", default=200)
 
     # Reference energies used to calculate formation energy.
@@ -66,23 +90,29 @@ class MicroKineticModel(KineticModel):
 
     def __init__(self, **kwargs):
         """
-        Parameters:
-        -----------
-        setup_file: kinetic model set up file, str.
+        :param setup_file: kinetic model set up file
+        :type setup_file: int
 
-        setup_dict: A dictionary contains essential setup parameters for kinetic model.
 
-        logger_level: logging level, int.
+        :param setup_dict: A dictionary contains essential setup parameters for kinetic model.
+        :type setup_dict: dict
 
-        file_handler_level: logging level for file handler, int.
+        :param logger_level: logging level
+        :type logger_level: int
 
-        console_handler_level: logging level for console handler, int.
+        :param file_handler_level: logging level for file handler
+        :type file_handler_level: int
 
-        Example:
-        --------
-        >>> from mikiac.models.kinetic_model import MicroKineticModel
-        >>> model = MicroKineticModel(setup_file="setup.mkm",
-                                      logger_level=logging.WARNING)
+        :param console_handler_level: logging level for console handler
+        :type console_handler_level: int
+
+        :returns: :obj:`None`
+
+        Example::
+
+            >>> from mikiac.models.kinetic_model import MicroKineticModel
+            >>> model = MicroKineticModel(setup_file="setup.mkm", logger_level=30)
+
         """
         super(MicroKineticModel, self).__init__(**kwargs)
 
@@ -105,27 +135,35 @@ class MicroKineticModel(KineticModel):
 
     def run(self, **kwargs):
         """
-        Function to solve Micro-kinetic model using Steady State Approxmiation
-        to get steady state coverages and turnover frequencies.
+        Run function to solve Micro-kinetic model using Steady State Approxmiation
+        to get steady state coverages and turnover frequencies (TOF).
 
-        Parameters:
-        -----------
-        init_cvgs: Initial guess for coverages, tuple of floats.
+        :param init_cvgs: Initial guess for coverages
+        :type init_cvgs: :obj:`list` of :obj:`float`
 
-        relative_energies: Relative energies for all elementary reactions, dict.
-            NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
-            e.g. {"Gaf": [...], "Gar": [...], "dG": [...]}
+        :param relative_energies: Relative energies for all elementary reactions.
+        :type relative_energies: dict
 
-        fsolve: use scipy.optimize.fsolve to get low-precision root or not, bool
+        .. note::
+            keys :obj:`Gaf` and :obj:`Gar` must be in relative energies dict.
+            e.g. :obj:`{"Gaf": [...], "Gar": [...], "dG": [...]}`
 
-        coarse_guess: use fsolve to do initial coverages preprocessing or not, bool
+        :param fsolve: use scipy.optimize.fsolve to get low-precision root or not
+        :type fsolve: bool
 
-        XRC: calculate degree of rate control or nor, bool.
+        :param coarse_guess: use fsolve to do initial coverages preprocessing or not
+        :type coarse_guess: bool
 
-        epsilon: the change of energy for XRC calculation, float, default is 10-5.
+        :param XRC: calculate degree of rate control or nor
+        :type XRC: bool
 
-        product_name: Production name of the model, str. e.g. "CH3OH_g"
+        :param epsilon: the change of energy for XRC calculation, default is 10-5.
+        :type epsilon: float
 
+        :param product_name: Production name of the model. e.g. :obj:`'CH3OH_g'`
+        :type product_name: str
+
+        :returns: :obj:`None`
         """
         # {{{
         # Setup default parameters.
@@ -252,8 +290,7 @@ class MicroKineticModel(KineticModel):
 
     @Property
     def data_file(self):
-        '''
-        Get the name of file where serialzed data stored.
+        ''' Get the name of file where serialzed data stored.
         '''
         if mpi.size == 1:
             return "data.pkl"
