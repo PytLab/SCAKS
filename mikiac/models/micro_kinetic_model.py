@@ -16,6 +16,29 @@ from ..compatutil import pickle
 class MicroKineticModel(KineticModel):
     ''' Class for micro-kinetic model.
     
+    :param setup_file: kinetic model set up file
+    :type setup_file: int
+
+
+    :param setup_dict: A dictionary contains essential setup parameters for kinetic model.
+    :type setup_dict: dict
+
+    :param logger_level: logging level
+    :type logger_level: int
+
+    :param file_handler_level: logging level for file handler
+    :type file_handler_level: int
+
+    :param console_handler_level: logging level for console handler
+    :type console_handler_level: int
+
+    :returns: :obj:`None`
+
+    Example::
+
+        >>> from mikiac.models.kinetic_model import MicroKineticModel
+        >>> model = MicroKineticModel(setup_file="setup.mkm", logger_level=30)
+
     Attributes:
         decimal_precision (:obj:`int`): Data precision, default value is 100
 
@@ -89,31 +112,6 @@ class MicroKineticModel(KineticModel):
     # }}}
 
     def __init__(self, **kwargs):
-        """
-        :param setup_file: kinetic model set up file
-        :type setup_file: int
-
-
-        :param setup_dict: A dictionary contains essential setup parameters for kinetic model.
-        :type setup_dict: dict
-
-        :param logger_level: logging level
-        :type logger_level: int
-
-        :param file_handler_level: logging level for file handler
-        :type file_handler_level: int
-
-        :param console_handler_level: logging level for console handler
-        :type console_handler_level: int
-
-        :returns: :obj:`None`
-
-        Example::
-
-            >>> from mikiac.models.kinetic_model import MicroKineticModel
-            >>> model = MicroKineticModel(setup_file="setup.mkm", logger_level=30)
-
-        """
         super(MicroKineticModel, self).__init__(**kwargs)
 
         # Create data directory if need.

@@ -17,8 +17,7 @@ class ParserBase(ModelShell):
     class to operate and analyse rxn equations and rxn lists.
     '''
     def __init__(self, owner):
-        """
-        A class acts as a base class to be inherited by other
+        """ A class acts as a base class to be inherited by other
         parser classes, it is not functional on its own.
         """
         super(ParserBase, self).__init__(owner)

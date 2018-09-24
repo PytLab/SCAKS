@@ -17,6 +17,26 @@ from ..utilities.profiling_utitlities import do_cprofile
 class KineticModel(object):
     ''' The base class for kinetic models.
 
+    :param setup_file: kinetic model set up file
+    :type setup_file: str
+
+    :param setup_dict: A dictionary contains essential setup parameters for kinetic model
+    :type setup_dict: dict
+    
+    :param logger_level: logging level for logger
+    :type logger_level: int
+
+    :param file_handler_level: logging level for file handler
+    :type file_handler_level: int
+
+    :param console_handler_level: logging level for console handler
+    :type console_handler_level: int
+
+    Example::
+
+        >>> from mikiac.models import KineticModel
+        >>> model = KineticModel(setup_file="setup.mkm", logger_level=30)
+
     Attributes:
         setup_file(:obj:`str`): kinetic model setup file
 
@@ -108,28 +128,6 @@ class KineticModel(object):
     # }}}
 
     def __init__(self, **kwargs):
-        """
-        :param setup_file: kinetic model set up file
-        :type setup_file: str
-
-        :param setup_dict: A dictionary contains essential setup parameters for kinetic model
-        :type setup_dict: dict
-        
-        :param logger_level: logging level for logger
-        :type logger_level: int
-
-        :param file_handler_level: logging level for file handler
-        :type file_handler_level: int
-
-        :param console_handler_level: logging level for console handler
-        :type console_handler_level: int
-
-        Example::
-
-            >>> from mikiac.models import KineticModel
-            >>> model = KineticModel(setup_file="setup.mkm", logger_level=30)
-        """
-
         # {{{
 
         # Get all kwargs.

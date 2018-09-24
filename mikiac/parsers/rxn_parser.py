@@ -5,8 +5,17 @@ from ..errors.error import *
 
 
 class RxnEquation(object):
-    """
-    Class to create reaction equation object.
+    """ Class to create reaction equation object.
+
+    :param rxn_equation: Elementary reaction expression that follows *MiKiAC* reaction
+                         expression conventions
+    :type rxn_equation: str
+
+    Example::
+
+        >>> from mikiac.parser.rxn_equation import RxnEquation
+        >>> rxn = RxnEquation('O2_g + 2*_s <-> O-O_2s -> 2O_s')
+
     """
     def __init__(self, rxn_equation):
         """
@@ -15,8 +24,10 @@ class RxnEquation(object):
         self.__rxn_equation = rxn_equation
 
     def tolist(self):
-        """
-        Convert rxn_equation string to rxn_list(chem_state objects).
+        """ Convert rxn_equation string to rxn_list (chem_state objects).
+
+        :return: a list of chemical states
+        :rtype: :obj:`list` of :obj:`rxn_equation.ChemState`
         """
         states_regex = re.compile(r'([^\<\>]*)(?:\<?\-\>)' +
                                   r'(?:([^\<\>]*)(?:\<?\-\>))?([^\<\>]*)')
@@ -30,8 +41,7 @@ class RxnEquation(object):
         return state_list
 
     def to_formula_list(self):
-        """
-        Function to get list of formulas for the reaction equation.
+        """ Function to get list of formulas for the reaction equation.
         """
         state_list = []
 
@@ -44,12 +54,10 @@ class RxnEquation(object):
         return state_list
 
     def check_conservation(self):
-        """
-        Function to check reaction equation conservation.
+        """ Function to check reaction equation conservation.
 
-        Returns:
-        --------
-        Conservative or not, bool.
+        :return: Conservative or not
+        :rtype: bool
         """
         state_list = self.tolist()
 
@@ -61,8 +69,10 @@ class RxnEquation(object):
         return True
 
     def texen(self):
-        """
-        Get tex string of a reaction equation.
+        """ Get tex string of a reaction equation.
+
+        :return: The LaTEX string for current reaction equation
+        :rtype: str
         """
         state_list = self.tolist()
         tex_list = [state_obj.texen() for state_obj in state_list]
@@ -76,8 +86,10 @@ class RxnEquation(object):
         return tex_str
 
     def revert(self):
-        """
-        Revert the reaction to its reverse RxnEquation object.
+        """ Revert the reaction to its reverse RxnEquation object.
+
+        :return: The reverse reaction equation
+        :rtype: :obj:`rxn_parser.RxnEquation` object
         """
         state_list = self.tolist()
 
@@ -96,12 +108,10 @@ class RxnEquation(object):
         return RxnEquation(rxn_expression)
 
     def adsorption_gases(self):
-        """
-        Get the gas formula objects in initial state.
+        """ Get the gas formula objects in initial state.
 
-        Return:
-        -------
-        gases: The ChemFormula objects for gas species in IS, list.
+        :return: The gas species in initial state.
+        :rtype: :obj:`list` of :obj:`ChemFormula`
         """
         formula_lists = self.to_formula_list()
         gases = [sp for sp in formula_lists[0] if sp.type() == "gas"]
@@ -109,12 +119,10 @@ class RxnEquation(object):
         return gases
 
     def desorption_gases(self):
-        """
-        Get the gas formula objects in final state.
+        """ Get the gas formula objects in final state.
 
-        Return:
-        -------
-        gases: The ChemFormula objects for gas species in FS, list.
+        :return: The gas species in final state
+        :rtype: :obj:`list` of :obj:`ChemFormula`
         """
         formula_lists = self.to_formula_list()
         gases = [sp for sp in formula_lists[-1] if sp.type() == "gas"]
@@ -125,8 +133,7 @@ class RxnEquation(object):
     # Query functions.
 
     def rxn_equation(self):
-        """
-        Query function for reaction equation string.
+        """ Query function for reaction equation string.
         """
         return self.__rxn_equation
 
@@ -136,28 +143,24 @@ class ChemState(object):
     Class to generate chemical state object.
     """
     def __init__(self, chem_state):
-        """
-        Constructor.
+        """ Constructor.
         """
         self.__chem_state = chem_state
 
     def split(self):
-        """
-        Function to split state to formula string list.
+        """ Function to split state to formula string list.
         """
         return [sp.strip() for sp in self.__chem_state.split('+')]
 
     def tolist(self):
-        """
-        Function to split state string to chemical formula list.
+        """ Function to split state string to chemical formula list.
         """
         formula_str_list = self.split()
         formula_list = [ChemFormula(formula) for formula in formula_str_list]
         return formula_list
 
     def get_species_site_list(self):
-        """
-        Function to get species_site list of the state.
+        """ Function to get species_site list of the state.
         """
         formula_list = self.tolist()
 
@@ -166,8 +169,7 @@ class ChemState(object):
         return species_site_list
 
     def get_species_site_dict(self):
-        """
-        Function to get species_site dictionary of the state.
+        """ Function to get species_site dictionary of the state.
         """
         formula_list = self.tolist()
 
@@ -177,8 +179,7 @@ class ChemState(object):
         return species_site_dict
 
     def get_elements_dict(self):
-        """
-        Function to get element dictionary of the state.
+        """ Function to get element dictionary of the state.
         """
         # Get elements dict of all species.
         formula_list = self.tolist()
@@ -196,8 +197,7 @@ class ChemState(object):
         return merged_dict
 
     def get_sites_dict(self):
-        """
-        Function to get sites dictionary of the state.
+        """ Function to get sites dictionary of the state.
         """
         # Get sites dict of all formulas.
         formula_list = self.tolist()
@@ -222,16 +222,14 @@ class ChemState(object):
         return merged_dict
 
     def conserve(self, another):
-        """
-        Function to check state conservation.
+        """ Function to check state conservation.
 
-        Parameters:
-        -----------
-        another: Another ChemState instance.
 
-        Returns:
-        --------
-        Conservative or not, bool.
+        :params another: Another chemical state.
+        :type another: :obj:`ChemState` instance.
+
+        :return: Conservative or not
+        :rtype: bool
         """
         # Check input parameter.
         if not isinstance(another, self.__class__):
@@ -287,8 +285,10 @@ class ChemFormulaError(Exception):
 
 
 class ChemFormula(object):
-    """
-    Class to generate chemical formula object.
+    """ Class to generate chemical formula object.
+
+    :param formula: A formula for a specific species
+    :type formula: str
     """
     def __init__(self, formula):
         """
@@ -301,8 +301,7 @@ class ChemFormula(object):
         self.__split()
 
     def __add__(self, formula_inst):
-        """
-        Overload + operation function.
+        """ Overload + operation function.
         """
         chem_state = self.formula + ' + ' + formula_inst.formula
         return ChemState(chem_state)
@@ -324,8 +323,7 @@ class ChemFormula(object):
             self.__nsite = int(m.group(4)) if m.group(4) else 1
 
     def type(self):
-        """
-        Function to get species type:  'gas' | 'liquid' | 'adsorbate'
+        """ Function to get species type:  'gas' | 'liquid' | 'adsorbate'
         """
         if self.__site == "g":
             return "gas"
@@ -350,16 +348,13 @@ class ChemFormula(object):
         return elements_dict
 
     def get_species_elements_dict(self, species=None):
-        """
-        Function to split elements of species to element dict.
+        """ Split elements of species to element dict.
 
-        Parameters:
-        -----------
-        species: The species name.
+        :param species: The species name.
+        :type species: str
 
-        Returns:
-        --------
-        The element dict of the species.
+        :return: The element of the species.
+        :rtype: dict
         """
         if not species:
             species = self.__species
@@ -381,8 +376,7 @@ class ChemFormula(object):
         return element_dict
 
     def get_sites_dict(self):
-        """
-        Function to get site dictionary of formula.
+        """ Function to get site dictionary of formula.
         """
         single_dict = dict([(self.__site, self.__nsite)])
         sites_dict = {site: num*self.__stoich for site, num in single_dict.items()}
@@ -390,16 +384,13 @@ class ChemFormula(object):
         return sites_dict
 
     def conserve(self, another):
-        """
-        Function to check conservation.
+        """ Function to check conservation.
 
-        Parameters:
-        -----------
-        another: Another ChemFormula instance.
+        :param another: Another chemical formula
+        :type another: :obj:`ChemFormula` instance.
 
-        Returns:
-        --------
-        Conservative or not, bool.
+        :return: Conservative or not
+        :rtype: bool
         """
         # Check parameter type.
         if not isinstance(another, self.__class__):
@@ -444,8 +435,7 @@ class ChemFormula(object):
         return tex_str
 
     def texen(self):
-        """
-        Get tex string of species.
+        """ Get tex string of species.
         """
         tex_str = r''
         tex_str += str(self.__stoich) if self.__stoich != 1 else ''
