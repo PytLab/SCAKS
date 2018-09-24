@@ -8,26 +8,24 @@ from ..functions import *
 
 
 class AbsoluteEnergyParser(ParserBase):
-    def __init__(self, owner):
-        """
-        Kinetic Model parser to parse absolute energies.
+    """ Kinetic Model parser to parse absolute energies.  
 
-        Parameter:
-        ----------
-        owner: The KineticModel object.
-        """
+    :param owner: The kinetic model that own this parser
+    :type owner: KineticModel
+    """
+    def __init__(self, owner):
         super(AbsoluteEnergyParser, self).__init__(owner)
 
         # Set tools logger as child of model's
         self.__logger = logging.getLogger('model.parser.AbsoluteEnergyParser')
 
     def parse_data(self, filename="./abs_energy.py"):
-        """
-        Read data in absolute energy file.
+        """ Read data in absolute energy file.
 
-        Parameters:
-        -----------
-        filename: file name of energy data.
+        :param filename: file name of energy data
+        :type filename: str
+
+        :return: :obj:`None`
         """
         globs, locs = {}, {}
         exec(open(filename, "rb").read(), globs, locs)

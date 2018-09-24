@@ -8,11 +8,13 @@ from ..functions import *
 
 
 class RelativeEnergyParser(ParserBase):
+    '''
+    Parser for parsing relative energy data
+
+    :param owner: The kinetic model that own this parser
+    :type owner: KineticModel
+    '''
     def __init__(self, owner):
-        '''
-        A class to parse relative energies
-        covert them to generalize formation energies.
-        '''
         super(RelativeEnergyParser, self).__init__(owner)
 
         # Set logger.
@@ -67,14 +69,13 @@ class RelativeEnergyParser(ParserBase):
         # }}}
 
     def parse_data(self, filename="./rel_energy.py"):
-        # {{{
-        """
-        Put generalized formation energy into species_definitions.
+        """ Parse relative energy data and model information to add essential
+        data to its owner, the kinetic model
 
-        Parameters:
-        -----------
-        filename: The filename of relative energies data.
+        :param filename: The filename of relative energies data.
+        :type filename: str
         """
+        # {{{
         # Read relative energy data file.
         if os.path.exists(filename):
             globs, locs = {}, {}

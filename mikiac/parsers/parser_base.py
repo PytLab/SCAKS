@@ -13,13 +13,12 @@ from .rxn_parser import *
 
 
 class ParserBase(ModelShell):
-    '''
-    class to operate and analyse rxn equations and rxn lists.
+    ''' Base parser class to operate and analyse rxn equations and energy data.
+
+    Attributes:
+        species_definition(:obj:`dict`): Definition for all species in kinetic model
     '''
     def __init__(self, owner):
-        """ A class acts as a base class to be inherited by other
-        parser classes, it is not functional on its own.
-        """
         super(ParserBase, self).__init__(owner)
 
         # Set elementary parse regex(compiled)
@@ -37,26 +36,18 @@ class ParserBase(ModelShell):
         """
         Parse all elementary rxn equations.
 
-        Parameters:
-        -----------
-        elementary_rxns: A list of elementary reaction strings.
+        :param elementary_rxns: Elementary reactions
+        :type elementary_rxns: list of str
 
-        Return:
-        -------
-        A tuple of elementary related attributes:
-            (adsorbate_names,
-             gas_names,
-             liquid_names,
-             site_names,
-             transition_state_names,
-             elementary_rxns_list)
+        :return: A tuple of elementary related attributes: ( adsorbate_names,
+            gas_names, liquid_names, site_names, transition_state_names,
+            elementary_rxns_list)
 
-        Example:
-        --------
-        >>> elementary_rxns = ['CO_g + *_s -> CO_s',
-                               'O2_g + 2*_s -> 2O_s',
-                               'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s']
-        >>> parser.parse_elementary_rxns(elementary_rxns)
+        Example::
+            >>> elementary_rxns = ['CO_g + *_s -> CO_s',
+                                   'O2_g + 2*_s -> 2O_s',
+                                   'CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s']
+            >>> parser.parse_elementary_rxns(elementary_rxns)
         """
         # {{{
         elementary_rxns_list = []
@@ -131,16 +122,15 @@ class ParserBase(ModelShell):
         Go through elementary_rxns_list, return sites stoichiometry matrix,
         reactants and products stoichiometry matrix.
 
-        Returns:
-        site_matrix: coefficients matrix for intermediates,
-                     if species is on the left of arrow, the entry
-                     will be positive, vice-versa.
-                     row vector: [*, *self.adsorbate_names], numpy.matrix.
+        :returns site_matrix: coefficients matrix for intermediates, if species
+            is on the left of arrow, the entry will be positive, vice-versa.
+            row vector: :obj:`[self.adsorbate_names]`
+        :rtype: numpy.matrix
 
-        reapro_matrix: coefficients matrix for reactants and product,
-                       if species is on the left of arrow, the entry
-                       will be positive, vice-versa.
-                       row vector: [*self.gas_names], numpy.matrix.
+        :returns reapro_matrix: coefficients matrix for reactants and product,
+            if species is on the left of arrow, the entry will be positive,
+            vice-versa.  row vector: :obj:`[self.gas_names]`
+        :rtype: numpy.matrix
         """
         # {{{
         # Site and adsorbate names.
@@ -193,8 +183,7 @@ class ParserBase(ModelShell):
         # }}}
 
     def get_total_rxn_equation(self):
-        """
-        Function to get total reaction expression of the kinetic model.
+        """ Function to get total reaction expression of the kinetic model.
         """
         # {{{
         site_matrix, reapro_matrix = self.get_stoichiometry_matrices()
@@ -257,21 +246,19 @@ class ParserBase(ModelShell):
 
     @staticmethod
     def get_molecular_mass(species_name, absolute=False):
-        """
-        Static function to get relative/absolute molecular mass.
+        """ Static function to get relative/absolute molecular mass.
 
-        Parameters:
-        -----------
-        species_name: name of the molecule species, str.
+        :param species_name: name of the molecule species
+        :type sepcies_name: str
 
-        absolute: return absolute mass or not(default), bool.
+        :param absolute: return absolute mass or not(default)
+        :type absolute: bool
 
-        Example:
-        --------
-        >>> m.parser.get_molecular_mass('CH4')
-        >>> 16.04246
-        >>> m.parser.get_molecular_mass('CH4', absolute=True)
-        >>> 2.6639131127638393e-26
+        Example::
+            >>> m.parser.get_molecular_mass('CH4')
+            >>> 16.04246
+            >>> m.parser.get_molecular_mass('CH4', absolute=True)
+            >>> 2.6639131127638393e-26
         """
         # {{{
         elements = string2symbols(species_name)
@@ -399,15 +386,13 @@ class ParserBase(ModelShell):
         # }}}
 
     def regex_dict(self):
-        """
-        Query function for regress expression dictionary.
+        """ Query function for regress expression dictionary.
         """
         return self.__regex_dict
 
     @Property
     def species_definitions(self):
-        """
-        Query function for parser's species definitions.
+        """ Query function for parser's species definitions.
         """
         # Use deep copy to avoid modification of the model's attribution.
         return self.__species_definitions

@@ -34,11 +34,11 @@ class ModelShell(object):
         """
         Update data dict and dump it to data file.
 
-        Parameters:
-        -----------
-        data_name: key in data dict, str.
+        :param data_name: key in data dict
+        :type data_name: str
 
-        data: value in data dict, any python data type.
+        :param data: value in data dict
+        :type data: any
         """
         # Update data dict.
         if data_name in self._owner.archived_variables:
