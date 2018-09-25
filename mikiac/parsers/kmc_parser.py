@@ -27,10 +27,12 @@ from ..utilities.check_utilities import *
 
 
 class KMCParser(RelativeEnergyParser):
+    """ Parser class for KMC simulation.
+
+    :param owner: The kinetic model that own this parser
+    :type owner: KineticModel
+    """
     def __init__(self, owner):
-        """
-        Parser class for KMC simulation.
-        """
         super(KMCParser, self).__init__(owner)
 
         # Set logger.
@@ -44,16 +46,14 @@ class KMCParser(RelativeEnergyParser):
         """
         Function to get data from kMC input files, processes, configuration & sitesmap.
 
-        Parameters:
-        -----------
-        processes_file: The name of processes definition file, str.
-                        the default name is "kmc_processes.py".
+        :param processes_file: The name of processes definition file,  default name is "kmc_processes.py".
+        :type process_file: str
 
-        configuration_file: The name of configuration definition file, str.
-                            the default name is "kmc_processes.py".
+        :param configuration_file: The name of configuration definition file, default name is "kmc_processes.py".
+        :type configuration_file: str
 
-        sitesmap_file: The name of sitesmap definition file, str.
-                       the default name is "kmc_processes.py".
+        sitesmap_file: The name of sitesmap definition file, default name is "kmc_processes.py".
+        :type sitesmap_file: str
         """
         # Basic parsing.
         super(KMCParser, self).parse_data(energy_file)
@@ -72,13 +72,11 @@ class KMCParser(RelativeEnergyParser):
         """
         Function to read kmc_site file and create KMCLibSitesMap objects.
 
-        Parameters:
-        -----------
-        filename: The name of configuration file, str.
+        :param filename: The name of configuration file
+        :type filename: str
 
-        Returns:
-        --------
-        A KMCLibSitesMap objects.
+        :return: A KMCSitesMap objects.
+        :rtype: :obj:`KMCSitesMap`
         """
         # {{{
         # Load data.
@@ -136,8 +134,10 @@ class KMCParser(RelativeEnergyParser):
         # }}}
 
     def construct_lattice(self):
-        """
-        Function to construct KMCLattice object.
+        """ Function to construct KMCLattice object.
+
+        :return: A kMC lattice grid
+        :rtype: :obj:`KMCLattice`
         """
         # Construct unitcell.
         cell_vectors = np.array(self._owner.cell_vectors)
@@ -157,15 +157,11 @@ class KMCParser(RelativeEnergyParser):
         """
         Function to read configuration file and create KMCLibConfiguration objects.
 
-        Parameters:
-        -----------
-        lattice: The lattice of the configurartion as a KMCLattice.
+        :param filename: The name of configuration file
+        :type filename: str
 
-        filename: The name of configuration file, str.
-
-        Returns:
-        --------
-        A KMCLibConfiguration objects.
+        :return: A kMC configuration
+        :rtype: :obj:`KMCConfiguration`
         """
         # {{{
         # Inner function to initialize emtpy lattice.
@@ -213,13 +209,11 @@ class KMCParser(RelativeEnergyParser):
         """
         Function to read processes file and get process dicts.
 
-        Parameters:
-        -----------
-        filename: The name of processes file, str.
+        :param filename: The name of processes file
+        :type filename: str
 
-        Returns:
-        --------
-        A list of process dicts.
+        :return: Elementary processes for kMC
+        :rtype: list of dict
         """
         if filename is None:
             filename = "kmc_processes.py"

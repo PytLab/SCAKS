@@ -11,8 +11,10 @@ from ..parsers.parser_base import ParserBase
 
 
 class SolverBase(ModelShell):
-    """
-    Abstract base class to be herited by other solver classes.
+    """ Abstract base class to be herited by other solver classes.
+
+    :param owner: The kinetic model that own this solver
+    :type owner: KineticModel
     """
 
     def __init__(self, owner):
@@ -22,14 +24,13 @@ class SolverBase(ModelShell):
         self.__logger = logging.getLogger("model.solver.SolverBase")
 
     def get_kTST(self, Ga, T):
-        """
-        Calculate rate constants according to Transition State Theory.
+        """ Calculate rate constants according to Transition State Theory.
 
-        Parameters:
-        -----------
-        Ga: Free energy barrier, float.
+        :param Ga: Free energy barrier
+        :type Ga: float
 
-        T: Temperature(K), floats.
+        :param T: Temperature(K)
+        :type T: float
         """
         if self.__class__.__name__ == "SteadyStateSolver":
             # Convert float numbers to mpfloat.
@@ -45,27 +46,31 @@ class SolverBase(ModelShell):
 
     @staticmethod
     def get_kCT(Ea, Auc, act_ratio, m, T, p=P0, f=1.0):
-        """
-        Static function to get rate constant/collision rate
-        according to Collision Theory.
+        """ Static function to get rate constant/collision rate according to 
+        Collision Theory.
 
-        Parameters:
-        -----------
-        Ea: energy barrier( NOT free energy barrier ), float.
+        :param Ea: energy barrier( NOT free energy barrier )
+        :type Ea: float
 
-        Auc: area of unitcell (m^-2), float.
+        :param Auc: area of unitcell (m^-2)
+        :type Auc: float
 
-        act_ratio: area of active sites/area of unitcell, float(<= 1.0).
+        :param act_ratio: area of active sites/area of unitcell
+        :type act_ratio: float(<=1.0)
 
-        p: pressure of gas, float, default value is 101325 Pa (atm).
+        :param p: pressure of gas, default value is 101325 Pa (atm).
+        :type p: float
 
-        m: absolute mass of molecule (kg), float.
+        :param m: absolute mass of molecule (kg)
+        :type m: float
 
-        f: factor accounts for a further reduction in the sticking probability,
-           if particle with certain initial states are not efficiently steered
-           along the MEP, and reflected by a higher barrier, float(<= 1.0).
+        :param f: factor accounts for a further reduction in the sticking 
+            probability, if particle with certain initial states are not 
+            efficiently steered along the MEP, and reflected by a higher barrier
+        :type f: float(<= 1.0)
 
-        T: temperature (K), float.
+        :param T: temperature (K)
+        :type T: float
         """
         # Check parameters.
         if act_ratio > 1.0:
@@ -86,34 +91,40 @@ class SolverBase(ModelShell):
 
     @staticmethod
     def get_TST_barrier_from_CT(kCT, T):
-        """
-        Static method to get TST barrier from the rate constant calculated by Collision Theory.
+        """ Static method to get TST barrier from the rate constant calculated 
+        by Collision Theory.
 
-        Parameters:
-        -----------
-        kCT: Rate constant calculated by Collision Theory, float.
+        :param kCT: Rate constant calculated by Collision Theory
+        :type kCT: float
 
-        T: Temperature(K), float.
+        :param T: Temperature(K)
+        :type T: float
         """
         Ga = -log(kCT*h_eV/(kB_eV*T))*(kB_eV*T)
 
         return Ga
 
-    def get_rxn_rates_TST(self, rxn_expression, relative_energies, include_pressure=False):
+    def get_rxn_rates_TST(self,
+                          rxn_expression,
+                          relative_energies,
+                          include_pressure=False):
         """
-        Function to get rate constants for an elementary reaction
-        using Transition State Theory.
+        Function to get rate constants for an elementary reaction using 
+        Transition State Theory.
 
-        Parameters:
-        -----------
-        rxn_expression: The expression of an elementary reaction, str.
+        :param rxn_expression: The expression of an elementary reaction
+        :type rxn_expression: str
 
-        relative_energies: The relative energies for all elementary reactions.
+        :param relative_energies: The relative energies for all elementary reactions.
+        :type relative_energies: dict
 
-        include_pressure: The flag for whether to include the actual gas pressure
-                          (not the pressure of standard condition, 101325.0 Pa).
-                          The default value is False, meaning that we calculate the
-                          RATE CONSTANT by default.
+        :param include_pressure: The flag for whether to include the actual gas pressure
+        :type include_pressure: bool
+
+        .. note::
+             (not the pressure of standard condition, 101325.0 Pa).
+             The default value is False, meaning that we calculate the
+             RATE CONSTANT by default.
         """
         # {{{
         # Get the condition for log info output.
@@ -158,21 +169,26 @@ class SolverBase(ModelShell):
         return rf, rr
         # }}}
 
-    def get_rxn_rates_CT(self, rxn_expression, relative_energies, include_pressure=False):
-        """
-        Function to get rate constants for an elementary reaction
-        using Collision Theory wrt adsorption process.
+    def get_rxn_rates_CT(self,
+                         rxn_expression,
+                         relative_energies,
+                         include_pressure=False):
+        """ Function to get rate constants for an elementary reaction using 
+        Collision Theory wrt adsorption process.
 
-        Parameters:
-        -----------
-        rxn_expression: The expression of an elementary reaction, str.
+        :param rxn_expression: The expression of an elementary reaction
+        :type rxn_expression: str
 
-        relative_energies: The relative energies for all elementary reactions.
+        :param relative_energies: The relative energies for all elementary reactions.
+        :type relative_energies: dict
 
-        include_pressure: The flag for whether to include the actual gas pressure
-                          (not the pressure of standard condition, 101325.0 Pa).
-                          The default value is False, meaning that we calculate the
-                          RATE CONSTANT by default.
+        :param include_pressure: The flag for whether to include the actual gas pressure
+        :type include_pressure: bool
+
+        .. note::
+             (not the pressure of standard condition, 101325.0 Pa).
+             The default value is False, meaning that we calculate the
+             RATE CONSTANT by default.
         """
         # {{{
         # Get the condition for log info output.
