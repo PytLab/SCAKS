@@ -13,8 +13,6 @@ long_description = '''
 MiKiAC
 ======
 
-A **G**\ enetic **A**\ lgorithm **F**\ ramework in py\ **T**\ hon
-
 **M**\ icro-**K**\ inetic **A**\ nalysis package for **C**\ atalyst
 
 '''

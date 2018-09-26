@@ -1,5 +1,5 @@
 MiKiAC
 ======
 
-Micro-Kinetic Analysis package for Catalyst
+**M**\ icro-**K**\ inetic **A**\ nalysis package for **C**\ atalyst
 
