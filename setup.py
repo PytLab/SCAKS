@@ -13,7 +13,7 @@ long_description = '''
 MiKiAC
 ======
 
-**M**\ icro-**K**\ inetic **A**\ nalysis package for **C**\ atalyst
+**Mi**\ cro-**Ki**\ netic **A**\ nalysis package for **C**\ atalyst
 
 '''
 install_requires = [
