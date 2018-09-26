@@ -13,9 +13,11 @@ from .solver_base import SolverBase
 
 
 class MeanFieldSolver(SolverBase):
-    """
-    A class acts as a base class to be inherited by other
-    solver classes, it is not functional on its own.
+    """ A class acts as a base class to be inherited by other solver classes,
+    it is not functional on its own.
+
+    :param owner: The kinetic model that own this solver
+    :type owner: KineticModel
     """
 
     def __init__(self, owner):
@@ -103,7 +105,8 @@ class MeanFieldSolver(SolverBase):
         # }}}
 
     def log_latex(self, latex_tup):
-        "Append latex strings to 'formulas.tex'."
+        ''' Append latex strings to 'formulas.tex'
+        '''
         latex_str = ''.join(latex_tup)
         latex_str += '\n'
 
@@ -162,8 +165,7 @@ class MeanFieldSolver(SolverBase):
         return tuple(cvgs_list)
 
     def get_data(self):
-        """
-        Function to get data from model.
+        """ Function to get data from model.
         """
         species_definitions = self._owner.species_definitions
 
@@ -183,21 +185,23 @@ class MeanFieldSolver(SolverBase):
 
     @Memoized
     def get_rate_constants(self, relative_energies=None, log=False):
-        """
-        Function to get rate constants for all elementary reactions
+        """ Function to get rate constants for all elementary reactions
         using Transition State Theory.
 
-        Parameters:
-        -----------
-        relative_energies : A dict of relative eneriges of elementary reactions.
-            NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
+        :param relative_energies : relative eneriges of elementary reactions
+        :type relative_energies: dict
 
-        log: Output log or not, bool, False by default.
+        .. note::
+            keys "Gaf" and "Gar" must be in relative energies dict.
 
-        Returns:
-        --------
-        Forward rate constants, Reverse rate constants
-        relative_energies: The relative energies for all elementary reactions.
+        :param log: Output log or not, False by default.
+        :type log: bool
+
+        :return: Forward rate constants, Reverse rate constants
+        :rtype: tuple of float
+
+        :return: The relative energies for all elementary reactions.
+        :rtype: dict
         """
         # {{{
         # Get relative energies.
@@ -267,14 +271,12 @@ class MeanFieldSolver(SolverBase):
         """
         Function to get boltzmann coverages according to the formation energy of each adsorbate.
 
-        Parameters:
-        -----------
-        include_empty_site: If the empty sites are included in bolztmann sum, bool.
-                            Default value is True.
+        :param include_empty_site: If the empty sites are included in bolztmann 
+            sum, Default value is True.
+        :type include_empty_site: bool
 
-        Returns:
-        --------
-        cvgs: A tuple of coverages in order of adsorbates names.
+        :return: Coverages in order of adsorbates names.
+        :rtype: tuple of float
         """
         # {{{
         free_site_names = self._owner.site_names
@@ -308,19 +310,16 @@ class MeanFieldSolver(SolverBase):
         """
         Function to get the rate calculation expression for an elementary reaction.
 
-        Parameters:
-        -----------
-        elementary_rxn_list: An elementary reaction (in list).
+        :param elementary_rxn_list: An elementary reaction
+        :type elementary_rxn_list: list of str
 
-        Returns:
-        --------
-        f_expr, r_expr: A tuple of forward and reverse reaction rate expressions.
+        :return: Forward and reverse reaction rate expressions
+        :rtype: tuple of str
 
-        Example:
-        --------
-        >>> rxn_list = [['O2_g', '2*_s'], ['2O_s']]
-        >>> solver.get_elementary_rate_expression(rxn_list)
-        >>> ("kf[1]*p['O2_g']*theta['*_s']**2", "kr[1]*theta['O_s']**2")
+        Example::
+            >>> rxn_list = [['O2_g', '2*_s'], ['2O_s']]
+            >>> solver.get_elementary_rate_expression(rxn_list)
+            >>> ("kf[1]*p['O2_g']*theta['*_s']**2", "kr[1]*theta['O_s']**2")
         """
         # {{{
         idx = self._owner.rxn_expressions.index(rxn_expression)
@@ -370,8 +369,7 @@ class MeanFieldSolver(SolverBase):
         # }}}
 
     def get_rate_expressions(self):
-        """
-        Function to get rate expression for all elementary reactions in model.
+        """ Get rate expression for all elementary reactions in model.
         """
         f_rate_expressions, r_rate_expressions = [], []
         rxn_expressions = self._owner.rxn_expressions
@@ -385,21 +383,22 @@ class MeanFieldSolver(SolverBase):
         return f_rate_expressions, r_rate_expressions
 
     def get_rates(self, cvgs_tuple, relative_energies=None, log=False):
-        """
-        Function to get forward and reverse rates list.
+        """ Function to get forward and reverse rates list.
 
-        Parameters:
-        -----------
-        cvgs_tuple: coverage tuple, tuple of floats.
+        :param cvgs_tuple: coverages 
+        :type cvgs_tuple: tuple of floats.
 
-        relative_energies: A dict of relative eneriges of elementary reactions.
-            NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
+        :param relative_energies: Relative eneriges of elementary reactions.
+        :type relative_energies: dict
 
-        log: Output log info or not, bool, false by default.
+        .. note::
+            keys :obj:`Gaf` and :obj:`Gar` must be in relative energies dict.
 
-        Returns:
-        --------
-        rfs, rrs: forward rates and reverse rates, tuple of float.
+        :param log: Output log info or not, false by default
+        :type log: bool
+
+        :return: Forward rates and reverse rates
+        :rtype: tuple of float.
         """
         # Coverages(theta).
         theta = self._cvg_tuple2dict(cvgs_tuple)
@@ -436,16 +435,17 @@ class MeanFieldSolver(SolverBase):
         """
         Function to get forward and reverse rates list.
 
-        Parameters:
-        -----------
-        cvgs_tuple: coverage tuple, tuple of floats.
+        :param cvgs_tuple: coverages
+        :type cvgs_tuple: tuple of floats.
 
-        relative_energies: A dict of relative eneriges of elementary reactions.
-            NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
+        :param relative_energies: Relative eneriges of elementary reactions.
+        :type relative_energies: dict
 
-        Returns:
-        --------
-        net_rates: net rates for all elementary reactions, tuple of float.
+        .. note::
+            keys :obj:`Gaf` and :obj:`Gar` must be in relative energies dict.
+
+        :return: net rates for all elementary reactions
+        :rtype: tuple of float
         """
         # Get forward and reverse rates.
         rfs, rrs = self.get_rates(cvgs_tuple, relative_energies)
@@ -459,17 +459,16 @@ class MeanFieldSolver(SolverBase):
         return net_rates
 
     def get_reversibilities(self, rfs, rrs):
-        """
-        Function to get reversibilities of given rates.
+        """ Function to get reversibilities of given rates.
 
-        Parameters:
-        -----------
-        rfs: forward rates, list of float.
-        rrs: reverse rates, list of float.
+        :param rfs: forward rates
+        :type rfs: list of float
 
-        Returns:
-        --------
-        reversibilities: list of float.
+        :param rrs: reverse rates
+        :type rrs: list of float
+
+        :return: reversibilities
+        :rtype: list of float
         """
         if len(rfs) != len(rrs):
             raise ValueError('Different rates number is detected.')
@@ -511,22 +510,23 @@ class MeanFieldSolver(SolverBase):
         return all_data
 
     def get_tof(self, cvgs, relative_energies=None, gas_name=None):
-        """
-        Function to get the turnover frequencies(TOF) wrt all gas species.
+        """ Function to get the turnover frequencies(TOF) wrt all gas species.
 
-        Parameters:
-        -----------
-        cvgs: coverages of adsorbates on surface, tuple of float.
+        :param cvgs: Coverages of adsorbates on surface
+        :type cvgs: tuple of float
 
-        relative_energies: A dict of relative eneriges of elementary reactions.
-            NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
+        :param relative_energies: Relative eneriges of elementary reactions.
+        :type relative_energies: dict
 
-        gas_name: The gas whose TOF will be returned.
+        .. note::
+            keys "Gaf" and "Gar" must be in relative energies dict.
 
-        Returns:
-        --------
-        If gas name is not specified, a list of TOF for all gas species would be returned.
-        If gas name is specified, the TOF of the gas would be returned.
+        :param gas_name: The gas whose TOF will be returned
+        :type gas_name: str
+
+        :returns: If gas name is not specified, a list of TOF for all gas species would be returned.
+            If gas name is specified, the TOF of the gas would be returned.
+        :rtype: list of float or float
         """
         # Get net rates wrt the coverages c.
         net_rates = self.get_net_rates(cvgs, relative_energies)
@@ -620,10 +620,12 @@ class MeanFieldSolver(SolverBase):
     ######################################################
 
     def get_data_symbols(self):
+        """ Get Sympy Symbol objects for P, G, coverage.
+
+        :return: Sympy Symbols for pressure, free energies and coverages
+        :rtype: tuple of Sympy.Symbol
+        """
         # {{{
-        """
-        Get Sympy Symbol objects tuple for P, G, coverage.
-        """
         # Pressure symbols objects.
         self._p_sym = tuple([sym.Symbol('p_' + gas_name, real=True, positive=True)
                              for gas_name in self._owner.gas_names])
@@ -733,8 +735,10 @@ class MeanFieldSolver(SolverBase):
         return tuple(latex_strs)
 
     def get_equilibrium_constant_syms(self):
-        """
-        Function to get symbols of equilibrium constant.
+        """ Function to get symbols of equilibrium constant.
+
+        :return: equilibrium constant symbols
+        :rtype: tuple of Sympy.Symbol
         """
         # Get rate constant symbols
         kf_syms, kr_syms = self.get_rate_constant_syms()
@@ -749,8 +753,10 @@ class MeanFieldSolver(SolverBase):
         return K_syms
 
     def get_rate_constant_syms(self):
-        """
-        Fucntion to get rate constant expression symbols.
+        """ Fucntion to get rate constant expression symbols.
+
+        :return: Rate constant symbols
+        :rtype: tuple of Sympy.Symbol
         """
         # Go through rxn expressions to get symbols of rate constants.
         kB, h, T = self._kB_sym, self._h_sym, self._T_sym
@@ -768,17 +774,13 @@ class MeanFieldSolver(SolverBase):
         return kf_syms, kr_syms
 
     def get_elementary_rate_sym(self, rxn_expression):
-        # {{{
-        """
-        Function to get rate expression for an elementary reaction.
+        """ Function to get rate expression for an elementary reaction.
 
-        Parameters:
-        -----------
-        rxn_expression: An elementary expression, str.
+        :param rxn_expression: An elementary expression
+        :type rxn_expression: str
 
-        Returns:
-        --------
-        Forward and reverse rate expression symbols.
+        :return: Forward and reverse rate expression
+        :rtype: tuple of Sympy.Symbol
         """
         # {{{
         # Get expression index.
@@ -826,10 +828,12 @@ class MeanFieldSolver(SolverBase):
         # }}}
 
     def get_rate_syms(self, log_latex=False):
+        """ Function to get all rate expressions for all elementary reactions.
+
+        :param log_latex: If dump latex equations or not
+        :type log_latex: bool
+        """
         # {{{
-        """
-        Function to get all rate expressions for all elementary reactions.
-        """
         # Loop over all elementary reaction.
         rf_syms, rr_syms = [], []
         for rxn_expression in self._owner.rxn_expressions:
@@ -852,19 +856,14 @@ class MeanFieldSolver(SolverBase):
         # }}}
 
     def get_subs_dict(self, coverages=None):
+        """ Function to get substitution dict for all symbols.
+
+        :param coverages: optional, adsorbate coverages
+        :type coverages: tuple of float
+
+        :return: Substitution dict whose keys are Sympy.Symbol object and values are float.
+        """
         # {{{
-        """
-        Function to get substitution dict for all symbols.
-
-        Parameters:
-        -----------
-        coverages: optional, adsorbate coverages, tuple of float.
-
-        Returns:
-        --------
-        Substitution dict whose keys are Sympy.Symbol object and values are float.
-        """
-
         # Free energy substitution dict.
         G_subs_dict = self._get_G_subs_dict()
 
@@ -897,8 +896,7 @@ class MeanFieldSolver(SolverBase):
         # }}}
 
     def get_rate_constants_by_sym(self):
-        """
-        Function to get rate constants values by back substitution to symbol expressions.
+        """ Function to get rate constants values by back substitution to symbol expressions.
         """
         # Rate constant symbols.
         kf_syms, kr_syms = self.get_rate_constant_syms()
@@ -923,13 +921,10 @@ class MeanFieldSolver(SolverBase):
         """
         Function to get forward and reverse rates for all elementary reactions.
 
-        Parameters:
-        -----------
-        cvgs_tuple: Coverages tuple for rate calculating.
+        :param cvgs_tuple: Coverages rate calculating
+        :type cvgs_tuple: tuple of float
 
-        Returns:
-        --------
-        Forward rates, reverse rates.
+        :return: Forward rates and reverse rates
         """
         # Get rate symbols.
         rf_syms, rr_syms = self.get_rate_syms()
@@ -999,8 +994,7 @@ class MeanFieldSolver(SolverBase):
         return c_dict
 
     def get_net_rate_syms(self):
-        """
-        Function to get net rate symbols for all elementary expressions.
+        """ Function to get net rate symbols for all elementary expressions.
         """
         rf_syms, rr_syms = self.get_rate_syms()
         net_rate_syms = []
@@ -1038,8 +1032,7 @@ class MeanFieldSolver(SolverBase):
         # }}}
 
     def get_tof_syms(self):
-        """
-        Function to get TOF symbols for all elementary reactions.
+        """ Function to get TOF symbols for all elementary reactions.
         """
         _, gas_matrix = self._owner.parser.get_stoichiometry_matrices()
         gas_matrix = -sym.Matrix(gas_matrix)
@@ -1056,8 +1049,10 @@ class MeanFieldSolver(SolverBase):
         return tof_tup
 
     def get_tof_by_sym(self, cvgs_tuple):
-        """
-        Function to get TOFs for all gas species.
+        """ Function to get TOFs for all gas species.
+
+        :param cvgs_tuple: coverages for all adsorbates
+        :type cvgs_tuple: tuple of float
         """
         # Get tof vector.
         tof_syms_vect = sym.Matrix(self.get_tof_syms())
@@ -1076,57 +1071,49 @@ class MeanFieldSolver(SolverBase):
 
     @Property
     def has_absolute_energy(self):
-        """
-        Query function for has_absolute_energy flag.
+        """ Query function for has_absolute_energy flag.
         """
         return self._has_absolute_energy
 
     @Property
     def absolute_corrected(self):
-        """
-        Query function for has energy correction flag.
+        """ Query function for has energy correction flag.
         """
         return self._abs_corrected
 
     @Property
     def has_symbols(self):
-        """
-        Query function for has symbol flag.
+        """ Query function for has symbol flag.
         """
         return self._has_symbols
 
     @Property
     def classified_adsorbates(self):
-        """
-        Query function for classified adsorbates.
+        """ Query function for classified adsorbates.
         """
         return self._classified_adsorbates
 
     @Property
     def pressures(self):
-        """
-        Query function for gas pressures.
+        """ Query function for gas pressures.
         """
         return self._p
 
     @Property
     def concentrations(self):
-        """
-        Query function for liquid concentrations.
+        """ Query function for liquid concentrations.
         """
         return self._c
 
     @Property
     def absolute_energies(self):
-        """
-        Query function for formation energies.
+        """ Query function for formation energies.
         """
         return self._G
 
     @Property
     def rate_expressions(self):
-        """
-        Query functions for rate expressions for all elementary reactions.
+        """ Query functions for rate expressions for all elementary reactions.
         """
         return self._rate_expressions
 
