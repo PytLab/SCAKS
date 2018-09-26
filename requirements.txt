@@ -1,8 +1,8 @@
-numpy>=1.11.1
-scipy>=0.18.0
-matplotlib>=1.5.2
-sympy>=1.0
-mpmath>=0.19
-mpi4py>=2.0.0
-prettytable>=0.7.2
+numpy
+scipy
+matplotlib
+sympy
+mpmath
+mpi4py
+prettytable
 
