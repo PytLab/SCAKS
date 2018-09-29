@@ -16,6 +16,11 @@ _kJmol2eV = 0.01036427
 
 
 class ThermodynamicCorrector(CorrectorBase):
+    ''' Energy data corrector class
+
+    :param owner: The kinetic model that own this solver
+    :type owner: KineticModel
+    '''
     def __init__(self, owner):
         super(ThermodynamicCorrector, self).__init__(owner)
 
@@ -27,22 +32,19 @@ class ThermodynamicCorrector(CorrectorBase):
         self.__logger = logging.getLogger('model.correctors.ThermodynamicCorrector')
 
     def shomate_correction(self, gas_name, T=None):
-        """
-        Function to get energy correction dict for gas in model using Shomate equation.
+        """ Function to get energy correction dict for gas in model using Shomate equation.
 
-        Parameters:
-        -----------
-        gas_name: The species site name of gas species, e.g. CO_g.
+        :param gas_name: The species site name of gas species, e.g. :obj:`CO_g`
+        :type gas_name: str
 
-        T: Temperature(K), float.
+        :param T: Temperature(K)
+        :type T: float
 
-        Returns:
-        --------
-        The correction energy value, float.
+        :return: The correction energy value
+        :rtype: float
 
-        Example:
-        --------
-        >>> shomate_correction("CO_g")
+        Example::
+            >>> shomate_correction("CO_g")
         """
         # {{{
         # Check gas name.
@@ -135,24 +137,24 @@ class ThermodynamicCorrector(CorrectorBase):
         # }}}
 
     def entropy_correction(self, gas_name, m=None, p=None, T=None):
-        """
-        Function to get free energy constributions from
-        translational and internal modes of species in **GAS**.
+        """ Function to get free energy constributions from translational and 
+        internal modes of species in **GAS**.
 
-        Parameters:
-        -----------
-        gas_name: gas molecular formula, str.
+        :param gas_name: gas molecular formula
+        :type gas_name: str
 
-        m: absolute molecular mass, species mass by default, float.
+        :param m: absolute molecular mass, species mass by default
+        :type m: float
 
-        p: partial pressure (**bar**), model's pressure by default, float.
+        :param p: partial pressure (**bar**), model's pressure by default
+        :type p: float
 
-        T: temperature, model's temperature by default, float.
+        :param T: temperature, model's temperature by default
+        :param T: float
 
-        Example:
-        --------
-        >>> m.corrector.entropy_correction('CO_g')
-        >>> -1.1538116935108251
+        Example::
+            >>> m.corrector.entropy_correction('CO_g')
+            >>> -1.1538116935108251
         """
         # {{{
         # Check gas name.
@@ -239,8 +241,13 @@ class ThermodynamicCorrector(CorrectorBase):
         # }}}
 
     def correct_relative_energies(self, relative_energies, method="shomate"):
-        """
-        Function to correct relative energies.
+        """ Function to correct given relative energies.
+
+        :param relative_energies: Relative energies to be corrected
+        :type relative_energies: dict
+
+        :param method: Energy correctness method name, could be 'shomate' or 'entropy'
+        :type method: str
         """
         if method == "shomate":
             correct_func = self.shomate_correction
