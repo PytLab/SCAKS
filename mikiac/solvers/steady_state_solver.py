@@ -17,6 +17,11 @@ from .mean_field_solver import MeanFieldSolver
 
 
 class SteadyStateSolver(MeanFieldSolver):
+    ''' MicroKinetic model solver using steady state approximation.
+
+    :param owner: The kinetic model that own this solver
+    :type owner: KineticModel
+    '''
     def __init__(self, owner):
         # {{{
         super(SteadyStateSolver, self).__init__(owner)
@@ -103,23 +108,21 @@ class SteadyStateSolver(MeanFieldSolver):
                                             adsorbate_name,
                                             rxn_expression):
         """
-        Function to get dtheta_dt of the corresponding adsorbate in single
+        Function to get dtheta_dt of the corresponding adsorbate in single 
         elementary equation.
 
-        Parameters:
-        -----------
-        adsorbate_name: The adsorbate name whose coverage is derived wrt time, str.
+        :param adsorbate_name: The adsorbate name whose coverage is derived wrt time, str.
+        :type adsorbate_name: str
 
-        rxn_expression: The string expression of an elementary reaction.
+        :param rxn_expression: Elementary reaction expression
+        :type rxn_expression: str
 
-        Returns:
-        --------
-        The dtheta/dt expression, str.
+        :return: The dtheta/dt expression
+        :rtype: str.
 
-        Example:
-        --------
-        >>> s.get_elementary_dtheta_dt_expression("O_s", 'O2_g + 2*_s -> 2O_s')
-        >>> "2*kf[1]*p['O2_g']*theta['*_s']**2 - 2*kr[1]*theta['O_s']**2"
+        Example::
+            >>> s.get_elementary_dtheta_dt_expression("O_s", 'O2_g + 2*_s -> 2O_s')
+            >>> "2*kf[1]*p['O2_g']*theta['*_s']**2 - 2*kr[1]*theta['O_s']**2"
         """
         # {{{
         # Check adsorbate name.
@@ -173,14 +176,11 @@ class SteadyStateSolver(MeanFieldSolver):
         """
         Function to get dtheta/dt expression over all elementary reactions wrt an adsorbate.
 
-        Parameters:
-        -----------
-        adsorbate_name: The name of the adsorbate whose dtheta/dt expression
-                        would be returned.
+        :param adsorbate_name: The name of the adsorbate whose dtheta/dt expression would be returned.
+        :type adsorbate_name: str
 
-        Returns:
-        --------
-        dtheta_dt_expression: String of dtheta/dt expression.
+        :param dtheta_dt_expression: dtheta/dt expression
+        :type dtheta_dt_expression: str
         """
         # {{{
         # Collect all dtheta/dt exprression for an elementary reaction.
@@ -199,8 +199,10 @@ class SteadyStateSolver(MeanFieldSolver):
         # }}}
 
     def get_dtheta_dt_expressions(self):
-        """
-        Function to get dtheta/dt expression strings for all adsorbatets.
+        """ Function to get dtheta/dt expression strings for all adsorbatets.
+
+        :return: dtheta/dt expressions for all adsorbates
+        :rtype: list of str
         """
         # {{{
         try:
@@ -219,8 +221,14 @@ class SteadyStateSolver(MeanFieldSolver):
 
     def steady_state_function(self, cvgs_tuple, relative_energies=None):
         """
-        Recieve a coverages tuple containing coverages of adsorbates,
-        return a tuple of dtheta_dts of corresponding adsorbates.
+        Recieve a coverages tuple containing coverages of adsorbates, calculate 
+        dtheta_dts of corresponding adsorbates.
+
+        :param cvgs_tuple: adsorbate coverages
+        :type cvgs_tuple: tuple of float
+
+        :param relative_energies: Relative energies for calculation, if not provided, use model's relative energies, default is None
+        :type relative_energies: dict
         """
         # {{{
         # Set theta, kf, kr, p, dtheta_dt
@@ -303,18 +311,18 @@ class SteadyStateSolver(MeanFieldSolver):
         """
         Private function to get derivation expression taking FREE SITE into consideration.
 
-        NOTE: the coverage of free site can be expressed as (1 - theta_CO_s - ...),
-              so the derivation must take coverages of free site into consideration.
+        .. note::
+            the coverage of free site can be expressed as (1 - theta_CO_s - ...),
+            so the derivation must take coverages of free site into consideration.
 
-        Parameters:
-        -----------
-        adsorbate_name: The adsorbate name which derivation expression wrt
-                        would be returned, str.
-        term_expression: The string of term expression, str.
+        :param adsorbate_name: The adsorbate name which derivation expression wrt would be returned
+        :type adsorbate_name: str
 
-        Returns:
-        --------
-        The derivation expression, str.
+        :param term_expression: The string of term expression
+        :type term_expression: str
+
+        :return: The derivation expression
+        :rtype: str
         """
         # {{{
         if adsorbate_name not in self._owner.adsorbate_names:
@@ -395,20 +403,19 @@ class SteadyStateSolver(MeanFieldSolver):
         return a derivation expression about the adsorbate.
         Function to the derivation expression wrt an adsorbate.
 
-        Parameters:
-        -----------
-        adsorbate_name: The adsorbate name, str.
-        poly_expression: A polynomial expression of dtheta/dt, str.
+        :param adsorbate_name: The adsorbate name
+        :type adsorbate_name: str
 
-        Returns:
-        --------
-        The derivation expression, str.
+        :param poly_expression: A polynomial expression of dtheta/dt
+        :type poly_expression: str
 
-        Example:
-        --------
-        >>> adsorbate = "CO_s"
-        >>> poly_expression = "dtheta_dt[0] = kf[0]*p['CO_g']*theta['*_s'] - kr[0]*theta['CO_s']"
-        >>> solver.poly_adsorbate_derivation(adsorbate, poly_expression)
+        :return: The derivation expression
+        :rtype: str
+
+        Example::
+            >>> adsorbate = "CO_s"
+            >>> poly_expression = "dtheta_dt[0] = kf[0]*p['CO_g']*theta['*_s'] - kr[0]*theta['CO_s']"
+            >>> solver.poly_adsorbate_derivation(adsorbate, poly_expression)
         """
         # {{{
         # Split poly_expression.
@@ -434,17 +441,17 @@ class SteadyStateSolver(MeanFieldSolver):
         """
         Function to get analytical Jacobian matrix of the nonlinear equation system.
 
-        Parameters:
-        -----------
-        cvgs_tuple: A tuple of adsorbate coverages, tuple of float.
+        :param cvgs_tuple: Adsorbate coverages
+        :type cvgs_tuple: tuple of float
 
-        relative_energies: A dict of relative eneriges of elementary reactions.
-            NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
+        :param relative_energies: Relative eneriges of elementary reactions.
+        :rtype relative_energies: dict
 
-        Returns:
-        --------
-        The analytical Jacobian matrix, N x N matrix of float.
-        N is the number of adsorbates.
+        .. note::
+            keys ":obj:`Gaf` and G:obj:`Gar` must be in relative energies dict
+
+        :return: The analytical Jacobian matrix, N x N matrix of float, N is the number of adsorbates.
+        :rtype: numpy.matrix
         """
         # {{{
         # Check input parameter.
@@ -494,9 +501,13 @@ class SteadyStateSolver(MeanFieldSolver):
     ######################################################
 
     def get_elementary_dtheta_dt_sym(self, adsorbate_name, rxn_expression):
-        """
-        Function to get dtheta/dt expression symbol
-        for an adsorbate and an elementary reaction.
+        """ Function to get dtheta/dt expression symbol for an adsorbate and an elementary reaction.
+
+        :param adsorbate_name: Name of adsorbate for calculating dtheta/dt
+        :type adsorbate_name: str
+
+        :param rxn_expression: Elementary reaction expression
+        :type rxn_expression: str
         """
         # {{{
         # Check adsorbate name.
@@ -545,9 +556,8 @@ class SteadyStateSolver(MeanFieldSolver):
         """
         Function to get dtheta/dt for an adsorbate.
 
-        Parameters:
-        -----------
-        adsorbate_name: The adsorbate name, str.
+        :param adsorbate_name: The adsorbate name
+        :type adsorbate_name: str
         """
         total_dtheta_dt_sym = 0
 
@@ -564,8 +574,10 @@ class SteadyStateSolver(MeanFieldSolver):
         return total_dtheta_dt_sym
 
     def get_dtheta_dt_syms(self, log_latex=False):
-        """
-        Function to get dtheta/dt expressions for all adsorbates.
+        """ Function to get dtheta/dt expressions for all adsorbates.
+
+        :param log_latex: Dump LaTEX log or not
+        :type log_latex: bool
         """
         dtheta_dt_syms = []
         for adsorbate_name in self._owner.adsorbate_names:
@@ -585,9 +597,10 @@ class SteadyStateSolver(MeanFieldSolver):
         return dtheta_dt_syms
 
     def steady_state_function_by_sym(self, cvgs_tuple):
-        """
-        Recieve a coverages tuple containing coverages of adsorbates,
-        return a tuple of dtheta_dts of corresponding adsorbates.
+        """ Recieve a coverages tuple containing coverages of adsorbates, return a tuple of dtheta_dts of corresponding adsorbates.
+
+        :param cvgs_tuple: adsorbate coverages
+        :type cvgs_tuple: tuple of float
         """
         # Get dtheta/dt expressions.
         dtheta_dt_syms = self.get_dtheta_dt_syms()
@@ -604,9 +617,7 @@ class SteadyStateSolver(MeanFieldSolver):
         return tuple(dtheta_dts)
 
     def analytical_jacobian_sym(self):
-        """
-        Function to get the jacobian matrix symbol expressions of
-        the dtheta/dt nonlinear equations.
+        """ Function to get the jacobian matrix symbol expressions of the dtheta/dt nonlinear equations.
         """
         # Get dtheta/dt expressions.
         dtheta_dt_syms = self.get_dtheta_dt_syms()
@@ -627,9 +638,12 @@ class SteadyStateSolver(MeanFieldSolver):
         return sym_jacobian
 
     def analytical_jacobian_by_sym(self, cvgs_tuple):
-        """
-        Get the jacobian matrix of the dtheta/dt nonlinear equations.
-        Return a jacobian matrix(in self._matrix form).
+        """ Get the jacobian matrix of the dtheta/dt nonlinear equations.
+
+        :param cvgs_tuple: adsorbate coverages
+        :type cvgs_tuple: tuple of float
+
+        :return: A jacobian matrix(in self._matrix form).
         """
         # NOTE: precision may lose here.
 
@@ -671,16 +685,17 @@ class SteadyStateSolver(MeanFieldSolver):
         """
         Function to get residual value of equations(the max value of dthe/dt).
 
-        Parameters:
-        -----------
-        cvgs_tuple: A tuple of adsorbate coverages.
+        :param cvgs_tuple: Adsorbate coverages
+        :type cvgs_tuple: tuple of float
 
-        relative_energies: A dict of relative eneriges of elementary reactions.
-            NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
+        :param relative_energies: Relative eneriges of elementary reactions.
+        :type relative_energies: dict
 
-        Returns:
-        --------
-        The max value of dtheta/dt wrt the coverages.
+        .. note::
+            keys ":obj:`Gaf` and ":obj:`Gar` must be in relative energies dict
+
+        :return: The max value of dtheta/dt wrt the coverages.
+        :rtype: list of float
         """
         #constrain cvgs
         #cvgs_tuple = self.__constrain_coverages(cvgs_tuple)
@@ -693,20 +708,19 @@ class SteadyStateSolver(MeanFieldSolver):
 
     def coarse_steady_state_cvgs(self, c0, relative_energies=None):
         '''
-        Use scipy.optimize.fsolve to solve non-linear equations
-        with fast speed and low-precison.
+        Use scipy.optimize.fsolve to solve non-linear equations with fast speed and low-precison.
 
-        Parameters:
-        -----------
-        c0: initial coverages, a list or tuple of float
+        :param c0: initial coverages
+        :type c0: list of float
 
-        relative_energies: A dict of relative eneriges of elementary reactions.
-            NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
+        :param relative_energies: Relative eneriges of elementary reactions.
+        :type relative_energies: dict
 
-        Return:
-        -------
-        steady_state_coverages: in the order of self._owner.adsorbate_names,
-                                tuple of float
+        .. note::
+            keys ":obj:`Gaf` and ":obj:`Gar` must be in relative energies dict
+
+        :return steady_state_coverages: final steady state coverages
+        :rtype: tuple of float, in the order of :obj:`self._owner.adsorbate_names`
         '''
 
         def get_jacobian(c0, relative_energies=None):
@@ -728,28 +742,35 @@ class SteadyStateSolver(MeanFieldSolver):
         return converged_cvgs
 
     def fsolve_steady_state_cvgs(self, c0, relative_energies=None):
-        """
-        Use scipy.optimize.fsolve to get steady state coverages.
-        """
+        ''' Use scipy.optimize.fsolve to get steady state coverages.
+
+        :param c0: initial coverages
+        :type c0: list of float
+
+        :param relative_energies: Relative eneriges of elementary reactions.
+        :type relative_energies: dict
+
+        .. note::
+            keys ":obj:`Gaf` and ":obj:`Gar` must be in relative energies dict
+        '''
         return self.coarse_steady_state_cvgs(c0, relative_energies)
 
     def get_steady_state_cvgs(self, c0, single_pt=False, relative_energies=None):
-        """
-        Function to get steady state coverages.
+        """ Function to get steady state coverages.
 
-        Expect an inital coverages tuple, use Newton Method to
-        solving nonlinear equations, return steady state coverages,
-        if converged.
+        Expect an inital coverages tuple, use Newton Method to solving nonlinear equations, return steady state coverages, if converged.
 
-        Parameters
-        ----------
-        c0: initial coverages, tuple of float.
+        :param c0: initial coverages
+        :type c0: tuple of float
 
-        single_pt : bool
-            if True, no initial guess check will be done.
+        :param single_pt : if True, no initial guess check will be done
+        :type single_pt: bool
 
-        relative_energies: Optional, dict of relative eneriges of elementary reactions.
-            NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
+        :param relative_energies: Relative eneriges of elementary reactions.
+        :type relative_energies: dict
+
+        .. note::
+            keys ":obj:`Gaf` and ":obj:`Gar` must be in relative energies dict
 
         """
         # {{{
@@ -1017,13 +1038,14 @@ class SteadyStateSolver(MeanFieldSolver):
         """
         Function to get XRC for one gas species.
 
-        Parameters:
-        -----------
-        gas_name: The gas name whose XTRC would be calculated.
+        :param gas_name: The gas name whose XTRC would be calculated
+        :type gas_name: str
 
-        epsilon: The perturbation size for numerical jacobian matrix.
+        :param epsilon: The perturbation size for numerical jacobian matrix
+        :type epsilon: float
 
-        relative_energies: Relative energies for all elementary reactions.
+        :param relative_energies: Relative energies for calculation, if not provided, use model's relative energies, default is None
+        :type relative_energies: dict
         """
         # {{{
         # Get correct relative energies.
@@ -1135,8 +1157,7 @@ class SteadyStateSolver(MeanFieldSolver):
         # }}}
 
     def modify_init_guess(self, *args):
-        """
-        Use ODE integration to get new initial coverages guess.
+        """ Use ODE integration to get new initial coverages guess.
         """
         if self._owner.log_allowed:
             self.__logger.info("Use ODE integration to get new initial coverages...")
@@ -1162,37 +1183,43 @@ class SteadyStateSolver(MeanFieldSolver):
         """
         Solve the steady state equations using ODE integration.
 
-        Parameters:
-        -----------
-        algo: algorithm for ODE solving, optional, str.
-              'vode' | 'zvode' | 'lsoda' | 'dopri5' | 'dop853'
+        :param algo: algorithm for ODE solving, optional,
+             possible values: 'vode' | 'zvode' | 'lsoda' | 'dopri5' | 'dop853'
+        :type algo: str
 
-              for more details of integration algorithm, see:
-              https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.ode.html
+        .. note::
+             for more details of integration algorithm, see:
+             https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.ode.html
 
-        time_span: time span for each step, float, default to be 0.1
+        :param time_span: time span for each step, default to be 0.1
+        :type time_span: float
 
-        time_start: time when begin integration, float.
+        :param time_start: time when begin integration
+        :type time_start: float
 
-        time_end: time when stop integration, float.
+        :param time_end: time when stop integration
+        :type time_end: float
 
-        initial_cvgs: initial coverages at time_start, tuple of float
+        :param initial_cvgs: initial coverages at time_start
+        :type initial_cvgs: tuple of float
 
-        relative_energies: A dict of relative eneriges of elementary reactions.
-            NOTE: keys "Gaf" and "Gar" must be in relative energies dict.
+        :param relative_energies: Relative energies for calculation, if not provided, use model's relative energies, default is None
+        :type relative_energies: dict
 
-        traj_output: output ODE integration trajectory or not,
-                     default value is False.
+        .. note::
+            keys ":obj:`Gaf` and G:obj:`Gar` must be in relative energies dict
 
-        Returns:
-        --------
-        t: the integrated time, float.
-        y: integrated function values, list of float.
+        :param traj_output: output ODE integration trajectory or not, default value is False.
+        :type traj_output: bool
 
-        Examples:
-        ---------
-        >>> m.solver.solve_ode(initial_cvgs=(0.0, 0.0))
+        :return: the integrated time
+        :rtype: float
 
+        :return: integrated function values
+        :rtype: list of float
+
+        Examples::
+            >>> m.solver.solve_ode(initial_cvgs=(0.0, 0.0))
         """
         # {{{
         # set timr variables
@@ -1319,22 +1346,19 @@ class SteadyStateSolver(MeanFieldSolver):
 
     @Property
     def error(self):
-        """
-        Query function for converged error.
+        """ Query function for converged error.
         """
         return self._error
 
     @Property
     def coverages(self):
-        """
-        Query function for converaged coverages.
+        """ Query function for converaged coverages.
         """
         return self._coverages
 
     @Property
     def good_guess(self):
-        """
-        Query function for good initial coverages.
+        """ Query function for good initial coverages.
         """
         self._good_guess
 

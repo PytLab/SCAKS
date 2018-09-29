@@ -12,8 +12,7 @@ from ..errors.error import *
 
 
 class RootfindingIterator(object):
-    '''
-    Class base for rootfinding iterator sub-classes to inherit from.
+    ''' Class base for rootfinding iterator sub-classes to inherit from.
     '''
     def __init__(self, f, x0, **kwargs):
         # set attributes
@@ -23,13 +22,14 @@ class RootfindingIterator(object):
 
     def __iter__(self):
         '''
-        Returns:
-        -------
-        x0: current x vector, tuple of float.
+        :return: x0, current x vector
+        :rtype: tuple of float
 
-        fxnorm: norm of f(x), float
+        :return: fxnorm norm of f(x)
+        :rtype: float
 
-        fx: value of f(x), sequence of float
+        :return: fx, value of f(x)
+        :rtype: list of float
         '''
         raise NotImplementedError
         return (x0, fxnorm, fx)
@@ -41,24 +41,31 @@ class ConstrainedNewton(RootfindingIterator):
     to allow for constraints on the solution.
     Find the root of a vector function numerically using Newton's method.
 
-    Parameters:
-    -----------
-    f is a vector function representing a nonlinear equation system.
+    :param f: a vector function representing a nonlinear equation system
+    :type f: function
 
-    x0 is the starting point close to the root.
+    :param x0: Starting point close to the root
+    :type x0: tuple of float
 
-    **kwargs MUST contains: **
-    J: a function returning the Jacobian matrix for a point.
+    kwargs MUST contains:
 
-    constraint: a coverages tuple constraint function to set limit to x.
+    :param J: a function returning the Jacobian matrix for a point
+    :type J: function
 
-    norm: a function to get a norm.
+    :param constraint: a coverages tuple constraint function to set limit to x
+    :type constraint: function
 
-    mpfloat: high-precision float type, e.g. mpmath.mpfloat
+    :param norm: a function to get a norm
+    :type norm: function
 
-    matrix: matrix type, e.g. mpmath.matrix
+    :param mpfloat: high-precision float type, e.g. mpmath.mpfloat
+    :type mpfloat: type
 
-    Axb_solver: a function to solve system of linear equations by solving Ax=b.
+    :param matrix: matrix type, e.g. mpmath.matrix
+    :type matrix: type
+
+    :param Axb_solver: a function to solve system of linear equations by solving Ax=b
+    :type Axb_solver: function
 
     """
     def __init__(self, f, x0, **kwargs):
@@ -83,6 +90,16 @@ class ConstrainedNewton(RootfindingIterator):
         self.logger = logging.getLogger('model.solvers.ConstrainedNewton')
 
     def __iter__(self):
+        '''
+        :return: x0, current x vector
+        :rtype: tuple of float
+
+        :return: fxnorm norm of f(x)
+        :rtype: float
+
+        :return: fx, value of f(x)
+        :rtype: list of float
+        '''
         iter_counter = 0
         f = self.f
         J = self._J
@@ -134,29 +151,50 @@ class MDNewton(RootfindingIterator):
     """
     Find the root of a vector function numerically using Newton's method.
 
-    f is a vector function representing a nonlinear equation system.
+    :param f: a vector function representing a nonlinear equation system
+    :type f: function
 
-    x0 is the starting point close to the root.
+    :param x0: Starting point close to the root
+    :type x0: tuple of float
 
-    J is a function returning the Jacobian matrix for a point.
+    kwargs MUST contains:
 
-    Supports overdetermined systems.
+    :param J: a function returning the Jacobian matrix for a point
+    :type J: function
 
-    Use the 'norm' keyword to specify which norm to use. Defaults to max-norm.
-    The function to calculate the Jacobian matrix can be given using the
-    keyword 'J'. Otherwise it will be calculated numerically.
+    :param constraint: a coverages tuple constraint function to set limit to x
+    :type constraint: function
 
-    Please note that this method converges only locally. Especially for high-
-    dimensional systems it is not trivial to find a good starting point being
-    close enough to the root.
+    :param norm: a function to get a norm
+    :type norm: function
 
-    It is recommended to use a faster, low-precision solver from SciPy [1] or
-    OpenOpt [2] to get an initial guess. Afterwards you can use this method for
-    root-polishing to any precision.
+    :param mpfloat: high-precision float type, e.g. mpmath.mpfloat
+    :type mpfloat: type
 
-    [1] http://scipy.org
+    :param matrix: matrix type, e.g. mpmath.matrix
+    :type matrix: type
 
-    [2] http://openopt.org/Welcome
+    :param Axb_solver: a function to solve system of linear equations by solving Ax=b
+    :type Axb_solver: function
+
+    .. note::
+        Supports overdetermined systems.
+
+        Use the 'norm' keyword to specify which norm to use. Defaults to max-norm.
+        The function to calculate the Jacobian matrix can be given using the
+        keyword 'J'. Otherwise it will be calculated numerically.
+
+        Please note that this method converges only locally. Especially for high-
+        dimensional systems it is not trivial to find a good starting point being
+        close enough to the root.
+
+        It is recommended to use a faster, low-precision solver from SciPy [1] or
+        OpenOpt [2] to get an initial guess. Afterwards you can use this method for
+        root-polishing to any precision.
+
+        [1] http://scipy.org
+
+        [2] http://openopt.org/Welcome
     """
 
     def __init__(self, f, x0, **kwargs):
@@ -178,6 +216,16 @@ class MDNewton(RootfindingIterator):
         self.logger = logging.getLogger('model.solvers.MDNewton')
 
     def __iter__(self):
+        '''
+        :return: x0, current x vector
+        :rtype: tuple of float
+
+        :return: fxnorm norm of f(x)
+        :rtype: float
+
+        :return: fx, value of f(x)
+        :rtype: list of float
+        '''
         f = self.f
         x0 = self.x0
         norm = self.norm
