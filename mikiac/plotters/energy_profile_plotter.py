@@ -23,7 +23,6 @@ class EnergyProfilePlotter(PlotterBase):
     def plot_all(self, **kwargs):
         ''' Plot energy profile for all elementary reactions.
 
-
         :param energies: energies for states of a elementary reaction
         :type energies: tuple or list
 
@@ -33,11 +32,10 @@ class EnergyProfilePlotter(PlotterBase):
         :param hline_leng: the length of the horizontal line for the IS and FS
         :type hline_length: float
 
-        :param the width of the peak in energy profile, default is 1.0.
+        :param peak_width: the width of the peak in energy profile, default is 1.0.
         :type peak_width: float
 
-        :param interp_method: the type of interpolation algorithm, possible value: 
-        "spline", "quadratic", default is "spline".
+        :param interp_method: the type of interpolation algorithm, possible value: "spline", "quadratic", default is "spline".
         :type interp_method: str
 
         :param rxn_equation: elementary reaction equation, default is None.
