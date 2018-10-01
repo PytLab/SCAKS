@@ -9,20 +9,18 @@ from ..errors.error import *
 
 
 def check_sequence(sequence, entry_type=None, param_name="Tested object"):
-    """
-    Check the given object is a list or tuple of a type.
+    """ Check the given object is a list or tuple of a type.
 
-    Parameters:
-    -----------
-    sequence: The object to test.
+    :param sequence: The sequence object to test
+    :type sequence: any
 
-    entry_type: The type of entry of list.
+    :param entry_type: The type of entry of list
+    :type entry_type: type
 
-    param_name: The test parameter name.
+    :param param_name: The test parameter name
+    :type param_name: str
 
-    Returns:
-    --------
-    sequence: The valid sequence object.
+    :return: The valid sequence object.
     """
 
     msg = "{} is not a sequence of {}".format(param_name, entry_type)
@@ -38,20 +36,18 @@ def check_sequence(sequence, entry_type=None, param_name="Tested object"):
 
 
 def check_string(string, string_range=None, param_name="Tested object"):
-    """
-    Check the string type and if it is in the given sequence.
+    """ Check the string type and if it is in the given sequence.
 
-    Parameters:
-    -----------
-    string: The test string, str.
+    :param string: The test string
+    :type string: str
 
-    string_range: All possible string, list or tuple.
+    :param string_range: All possible string
+    :type string_range: list or tuple
 
-    param_name: The test parameter name, str.
+    :param param_name: The test parameter name
+    :type param_name: str
 
-    Return:
-    -------
-    string: The valid string object.
+    :return: The valid string object
     """
     if not isinstance(string, str):
         raise SetupError("{} is not a string.".format(param_name))
@@ -64,16 +60,13 @@ def check_string(string, string_range=None, param_name="Tested object"):
 
 
 def check_species_definitions(species_definitions):
-    """
-    Check the species definitions in setup file.
+    """ Check the species definitions in setup file.
 
-    Parameters:
-    -----------
-    species_definitions: A dict of species information.
+    :param species_definitions: Species information
+    :type species_definitions: dict
 
-    Return:
-    -------
-    species_definitions: The valid species definitions.
+    :return: The valid species definitions
+    :rtype: dict
     """
     # Check type.
     if not isinstance(species_definitions, dict):
@@ -88,16 +81,12 @@ def check_species_definitions(species_definitions):
     return species_definitions
 
 def check_ref_energies(ref_energies):
-    """
-    Check the ref_energies in setup file.
+    """ Check the ref_energies in setup file.
 
-    Parameters:
-    -----------
-    ref_energies: A dict of reference energies.
+    :param ref_energies: Reference energies
+    :type ref_energies: type
 
-    Return:
-    -------
-    ref_energies: The valid reference energies.
+    :return: The valid reference energies
     """
     # Check type.
     if not isinstance(ref_energies, dict):
@@ -113,12 +102,9 @@ def check_ref_energies(ref_energies):
 
 
 def check_analysis_interval(analysis_interval):
-    """
-    Check the analysis_interval in setup file.
+    """ Check the analysis_interval in setup file.
 
-    Return:
-    -------
-    analysis_interval: The valid analysis interval.
+    :return: The valid analysis interval
     """
     if type(analysis_interval) not in (int, list, tuple):
         raise SetupError("Invalid analysis_interval: int or list is expected.")
@@ -150,12 +136,10 @@ def check_analysis_interval(analysis_interval):
 
 
 def check_process_dict(process_dict):
-    """
-    Check if the process dict is correct.
+    """ Check if the process dict is correct.
 
-    Return:
-    -------
-    The valid process dict.
+    :return: The valid process dict
+    :rtype: dict
     """
     # Check keys.
     essential_keys = ("reaction", "coordinates_group", "elements_before",
@@ -209,16 +193,12 @@ def check_process_dict(process_dict):
 
 
 def check_process_coordinates(coordinates):
-    """
-    Function to check all coordinates in a process are different.
+    """ Function to check all coordinates in a process are different.
 
-    Parameters:
-    -----------
-    coordinates: A list of coordinates, 2D list or array of float.
+    :param coordinates: A list of coordinates
+    :type coordinates: 2D list or array of float
 
-    Return:
-    -------
-    A valid coordinates.
+    :return: A valid coordinates.
     """
     coord_pairs = combinations(coordinates, 2)
 
