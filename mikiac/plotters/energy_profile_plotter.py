@@ -1,90 +1,71 @@
 import logging
+import os
 
+from ..parsers.rxn_parser import RxnEquation
 from ..errors.error import *
-from .en_profile import *
 from .plotter_base import *
+from catplot.ep_components.ep_canvas import EPCanvas
+from catplot.ep_components.ep_lines import ElementaryLine
 
 
 class EnergyProfilePlotter(PlotterBase):
     def __init__(self, owner):
+        ''' Class for energy profile plotting
+
+        :param owner: The kinetic model that own this plotter
+        :type owner: KineticModel
+        '''
         super(EnergyProfilePlotter, self).__init__(owner)
 
         # Set logger.
-        self.__logger = logging.getLogger("model.plotters.KMCPlotter")
-
-    def plot_single(self, rxn_expression, **kwargs):
-        """
-        Function to plot energy profile for an elementary reaction.
-
-        Parameters:
-        -----------
-        rxn_expression: An elementary reaction epxression string, str.
-                        Must be one of owner's rxn_expressions.
-
-        kwargs: See doc string of mikiac.plotters.en_profile.plot_single_energy_diagram.
-
-        Returns:
-        --------
-        Matplotlib.figure.Figure object.
-        """
-        # {{{
-        rxn_expressions = self._owner.rxn_expressions
-
-        # Check.
-        if rxn_expression not in self._owner.rxn_expressions:
-            msg = "'{}' not in model's reaction expressions.".format(rxn_expression)
-            raise ParameterError(msg)
-
-        # Get energy tuple.
-        idx = rxn_expressions.index(rxn_expression)
-
-        if not self._owner.has_relative_energy:
-            msg_template = "Model '{}' has no relative energy, please try to parse data."
-            msg = msg.format(self._owner)
-            raise AttributeError(msg)
-
-        # Convert relative energies to energy tuple.
-        relative_energies = self._owner.relative_energies
-        Gaf = relative_energies['Gaf'][idx]
-        dG = relative_energies['dG'][idx]
-        energy_tuple = (0.0, Gaf, dG) if Gaf else (0.0, dG)
-
-        # Plot.
-        fig, _, _ = plot_single_energy_diagram(energy_tuple, rxn_expression, **kwargs)
-
-        return fig
-        # }}}
+        self.__logger = logging.getLogger("model.plotters.EnergyProfilePlotter")
 
     def plot_all(self, **kwargs):
-        """
-        Function to plot a merged energy profile with all elementary reactions.
+        ''' Plot energy profile for all elementary reactions.
 
-        Parameters:
-        -----------
-        kwargs: See doc string of mikiac.plotters.en_profile.plot_single_energy_diagram.
 
-        Returns:
-        --------
-        Matplotlib.figure.Figure object.
-        """
-        # Get reaction expressions.
-        rxn_expressions = self._owner.rxn_expressions
+        :param energies: energies for states of a elementary reaction
+        :type energies: tuple or list
 
-        # Get relative energies.
-        if not self._owner.has_relative_energy:
-            msg_template = "Model '{}' has no relative energy, please try to parse data."
-            msg = msg.format(self._owner)
-            raise AttributeError(msg)
+        :param n: the point number in each state, default is 100.
+        :type n: int
 
-        relative_energies = self._owner.relative_energies
-        energy_tuples = []
-        # Loop over all relative energies to collect energy tuples.
-        for Gaf, dG in zip(relative_energies['Gaf'], relative_energies['dG']):
-            energy_tuple = (0.0, Gaf, dG) if Gaf else (0.0, dG)
-            energy_tuples.append(energy_tuple)
+        :param hline_leng: the length of the horizontal line for the IS and FS
+        :type hline_length: float
 
-        # Plot.
-        fig, _, _ = plot_multi_energy_diagram(rxn_expressions, energy_tuples, **kwargs)
+        :param the width of the peak in energy profile, default is 1.0.
+        :type peak_width: float
 
-        return fig
+        :param interp_method: the type of interpolation algorithm, possible value: 
+        "spline", "quadratic", default is "spline".
+        :type interp_method: str
+
+        :param rxn_equation: elementary reaction equation, default is None.
+        :type rxn_equation: str
+
+        :param line_width: line width, default is 3.
+        :type line_width: float
+
+        :param color: color code of the line, default is #000000 (black).
+        :type color: str
+
+        :param shadow_color: color code of the shadow lines, default is #595959.
+        :type shadow_color: str
+
+        :param shadow_depth: shadow depth of the line, default is 0, no shadow.
+        :type shadow_depth: int
+        '''
+        if not os.path.exists('energy_profile'):
+            os.mkdir('energy_profile')
+
+        for idx, (rxn, Ga, dG) in enumerate(zip(self._owner.rxn_expressions,
+                                                self._owner.relative_energies['Gaf'],
+                                                self._owner.relative_energies['dG'])):
+            energies = [0.0, dG] if abs(Ga) < 1e-5 else [0.0, Ga, dG]
+            canvas = EPCanvas()
+            canvas.add_line(ElementaryLine(energies, rxn_equation=rxn, **kwargs))
+            canvas.draw()
+            image_name = 'energy_profile/{}_{}.png'.format(idx, rxn)
+            canvas.figure.savefig(image_name)
+            self.__logger.info('{} is saved'.format(image_name))
 
