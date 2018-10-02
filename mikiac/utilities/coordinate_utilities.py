@@ -1,5 +1,4 @@
-"""
-Module for doing coordinates group operation.
+""" Module for doing coordinates group operation.
 """
 
 import copy
@@ -8,21 +7,19 @@ import numpy as np
 
 
 class CoordsGroup(object):
+    ''' Class for a group of coordinates
+
+    :param coordinates: A list of coordinates, default value is [].
+    :type coordinates: list
+
+    :param elements: A list of elements, default value is ["V", ...].
+    :type elements: list of str
+    '''
 
     # Static class varibles.
     tolerance = 1e-4
 
     def __init__(self, coordinates=None, elements=None):
-        """
-        Constructor.
-
-        Parameters:
-        -----------
-        coordinates: A list of coordinates, default value is [].
-
-        elements: A list of elements, list of str,
-                  default value is ["V", ...].
-        """
         if coordinates is None:
             self.__coords = []
         else:
@@ -54,14 +51,13 @@ class CoordsGroup(object):
         return coordinate
 
     def append(self, coordinate, element=None):
-        """
-        Function to append a new coordinate.
+        """ Function to append a new coordinate.
 
-        Parameters:
-        -----------
-        coordinate: A list of 3 float.
+        :param coordinate: Coordinate vector
+        :type coordinate: list of float
 
-        element: str, default value is "V".
+        :param element: element type, default value is "V"
+        :type element: str
         """
         # Append coordinates.
         self.__check_coordinate(coordinate)
@@ -76,14 +72,13 @@ class CoordsGroup(object):
             self.__elements.append(element)
 
     def extend(self, coordinates, elements=None):
-        """
-        Function to add new coordinates.
+        """ Function to add new coordinates.
 
-        Parameters:
-        -----------
-        coordinates: A list of coordinates.
+        :param coordinates: A list of coordinates vector
+        :type coordinates: list
 
-        elements: A list of elements, list of str, default value is ["V", ...].
+        :param elements: Element list, list of str, default value is ["V", ...].
+        :type elements: list of str
         """
         if elements is None:
             elements = ["V"]*len(coordinates)
@@ -92,16 +87,13 @@ class CoordsGroup(object):
             self.append(coordinate, element)
 
     def move(self, move_vector=None):
-        """
-        Function to move all coordinates.
+        """ Function to move all coordinates.
 
-        Parameters:
-        -----------
-        move_vector: Move vector, list of 3 floats, default value is [0, 0, 0]
+        :param move_vector: Move vector, list of 3 floats, default value is [0, 0, 0]
+        :type move_vector: list of float
 
-        Returns:
-        --------
-        A new moved CoordsGroup object.
+        :return: A new moved CoordsGroup object
+        :rtype: C:obj:`CoordsGroup`
         """
         if move_vector is None:
             move_vector = [0.0, 0.0, 0.0]
@@ -164,14 +156,12 @@ class CoordsGroup(object):
         return len(self.__coords)
 
     def coordinates(self):
-        """
-        Query function to get coordinates.
+        """ Query function to get coordinates.
         """
         return self.__coords
 
     def elements(self):
-        """
-        Query function for elements.
+        """ Query function for elements.
         """
         return self.__elements
 

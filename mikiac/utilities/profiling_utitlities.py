@@ -1,5 +1,4 @@
-"""
-Module providing interface for profiling.
+""" Module providing interface for profiling.
 """
 
 import cProfile
@@ -7,8 +6,7 @@ import pstats
 import os
 
 def do_cprofile(filename):
-    """
-    Decorator for function profiling.
+    """ Decorator for function profiling.
     """
     def wrapper(func):
         def profiled_func(*args, **kwargs):
@@ -33,8 +31,7 @@ def do_cprofile(filename):
 
 
 def print_pstats(filename, sortby='cumtime'):
-    """
-    Function to print profiling stats results.
+    """ Function to print profiling stats results.
     """
     p = pstats.Stats(filename)
     p.sort_stats(sortby).print_stats(10, 1.0, '.*')

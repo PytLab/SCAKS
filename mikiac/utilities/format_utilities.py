@@ -8,27 +8,21 @@ from ..errors.error import *
 
 
 def get_list_string(var_name, list_obj, ncols=5):
-    '''
-    Function to get string format of a list object.
+    ''' Function to get string format of a list object.
 
-    Parameters:
-    -----------
-    var_name: name of variable, str.
+    :param var_name: name of variable
+    :type var_name: str
 
-    list_obj: object of variable.
+    :param list_obj: object of squence variable
+    :type list_obj: list
 
-    ncols: number of columns. 
+    :param ncols: number of columns, default is 5
+    :type ncols: int
 
-    Example:
-    --------
-    >>> a = [(1,2,3), (2,3,4)]
-    >>> get_list_string('a', a)
-    >>> 'a = [\n    (1, 2, 3),\n    (2, 3, 4),\n]\n\n'
-
-    Called:
-    -------
-    kmc_plugins.CoveragesAnalysis()
-
+    Example::
+        >>> a = [(1,2,3), (2,3,4)]
+        >>> get_list_string('a', a)
+        >>> 'a = [\\n    (1, 2, 3),\\n    (2, 3, 4),\\n]\\n\\n'
     '''
     begin = var_name + ' = ['
     indent = ' '*4
@@ -54,14 +48,13 @@ def get_list_string(var_name, list_obj, ncols=5):
     return content
 
 def get_dict_string(var_name, dict_obj):
-    """
-    Function to get string format of a list object.
+    """ Function to get string format of a list object.
 
-    Parameters:
-    -----------
-    var_name: name of variable, str.
+    :param var_name: name of variable
+    :type var_name: str
 
-    dict_obj: the dict object whose string would be returned.
+    :param dict_obj: the dict object whose string would be returned
+    :type dict_obj: dict
     """
     begin = var_name + " = {\n"
     data = ""
@@ -76,8 +69,10 @@ def get_dict_string(var_name, dict_obj):
 
 
 def convert_time(sec):
-    """
-    Convert format of time from seconds to *h *min *sec.
+    """ Convert format of time from seconds to h min sec.
+
+    :param sec: Number of seconds
+    :type sec: int
     """
     hours = int(sec/(3600.0))
     minutes = int((sec - hours*3600)/60.0)
