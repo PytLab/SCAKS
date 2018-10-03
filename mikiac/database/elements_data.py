@@ -1,5 +1,4 @@
-'''
-    Module to store chemical elements related data.
+''' Module to store chemical elements related data.
 '''
 C12 = 1.99264648e-26  # mass of C12 (kg/atom)
 amu = 1.66053904e-27  # atomic mass unit (kg)

@@ -6,8 +6,7 @@ from .descriptors import AttrDescriptor
 
 class Component(AttrDescriptor):
     def __init__(self, name, default, candidates):
-        """
-        Descriptor for kinetic model core components.
+        """ Descriptor for kinetic model core components.
         """
         super(Component, self).__init__(name, default)
         self.candidates = candidates
