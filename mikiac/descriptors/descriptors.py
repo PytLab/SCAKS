@@ -11,17 +11,18 @@ from ..utilities.check_utilities import check_analysis_interval
 
 
 class AttrDescriptor(object):
-    def __init__(self, name, default, deepcopy=False):
-        """
-        Base descriptor class for the attributes.
+    """ Base descriptor class for the attributes.
 
-        Parameters:
-        -----------
-        name: The attribute name, str.
-        default: The default value when calling __get__() method,
-                 could be any type.
-        deepcopy: The flag for returning the deepcopy or not, bool.
-        """
+    :param name: The attribute name
+    :type name: str
+
+    :param default: The default value when calling __get__() method
+    :type default: any
+
+    :param deepcopy: The flag for returning the deepcopy or not
+    :type deepcopy: bool
+    """
+    def __init__(self, name, default, deepcopy=False):
         self.name = name
         self.default = default
         self.deepcopy = deepcopy
@@ -54,15 +55,16 @@ class AttrDescriptor(object):
 
 class Type(AttrDescriptor):
     def __init__(self, name, type, default, deepcopy=False, candidates=None):
-        """
-        Descriptor for basic type attributes of kinetic model and its tools.
+        """ Descriptor for basic type attributes of kinetic model and its tools.
 
-        Parameters:
-        -----------
-        name: The attribute name, str.
-        default: The default value when calling __get__() method,
-                 could be any type.
-        candidates: All possible values of the attribute.
+        :param name: The attribute name
+        :type name: str
+
+        :param default: The default value when calling __get__() method
+        :type default: any
+
+        :param candidates: All possible values of the attribute.
+        :type candidates: list of any
         """
         super(Type, self).__init__(name, default, deepcopy)
         self.candidates = candidates
@@ -80,11 +82,39 @@ class Type(AttrDescriptor):
 
 
 class Integer(Type):
+    ''' Descriptor for integer type attribute of kinetic model and components
+
+    :param name: The attribute name
+    :type name: str
+
+    :param default: The default value when calling __get__() method
+    :type default: any
+
+    :param deepcopy: Copy deeply or not
+    :type deepcopy: bool
+
+    :param candidates: All possible values of the attribute.
+    :type candidates: list of any
+    '''
     def __init__(self, name, default, deepcopy=False, candidates=None):
         super(Integer, self).__init__(name, int, default, deepcopy, candidates)
 
 
 class Float(Type):
+    ''' Descriptor for float type attribute of kinetic model and components
+
+    :param name: The attribute name
+    :type name: str
+
+    :param default: The default value when calling __get__() method
+    :type default: any
+
+    :param deepcopy: Copy deeply or not
+    :type deepcopy: bool
+
+    :param candidates: All possible values of the attribute.
+    :type candidates: list of any
+    '''
     def __init__(self, name, default, deepcopy=False, candidates=None):
         super(Float, self).__init__(name, float, default, deepcopy, candidates)
 
@@ -100,21 +130,77 @@ class Float(Type):
 
 
 class String(Type):
+    ''' Descriptor for string type attribute of kinetic model and components
+
+    :param name: The attribute name
+    :type name: str
+
+    :param default: The default value when calling __get__() method
+    :type default: any
+
+    :param deepcopy: Copy deeply or not
+    :type deepcopy: bool
+
+    :param candidates: All possible values of the attribute.
+    :type candidates: list of any
+    '''
     def __init__(self, name, default, deepcopy=False, candidates=None):
         super(String, self).__init__(name, str, default, deepcopy, candidates)
 
 
 class Bool(Type):
+    ''' Descriptor for bool type attribute of kinetic model and components
+
+    :param name: The attribute name
+    :type name: str
+
+    :param default: The default value when calling __get__() method
+    :type default: any
+
+    :param deepcopy: Copy deeply or not
+    :type deepcopy: bool
+
+    :param candidates: All possible values of the attribute.
+    :type candidates: list of any
+    '''
     def __init__(self, name, default, deepcopy=False, candidates=None):
         super(Bool, self).__init__(name, bool, default, deepcopy, candidates)
 
 
 class Dict(Type):
+    ''' Descriptor for dictionary type attribute of kinetic model and components
+
+    :param name: The attribute name
+    :type name: str
+
+    :param default: The default value when calling __get__() method
+    :type default: any
+
+    :param deepcopy: Copy deeply or not
+    :type deepcopy: bool
+
+    :param candidates: All possible values of the attribute.
+    :type candidates: list of any
+    '''
     def __init__(self, name, default, deepcopy=False, candidates=None):
         super(Dict, self).__init__(name, dict, default, deepcopy, candidates)
 
 
 class SpeciesDefinitions(AttrDescriptor):
+    ''' Descriptor for species definition of kinetic model and components
+
+    :param name: The attribute name
+    :type name: str
+
+    :param default: The default value when calling __get__() method
+    :type default: any
+
+    :param deepcopy: Copy deeply or not
+    :type deepcopy: bool
+
+    :param candidates: All possible values of the attribute.
+    :type candidates: list of any
+    '''
     def __init__(self, name, default, deepcopy=True):
         super(SpeciesDefinitions, self).__init__(name, default, deepcopy)
 
@@ -124,6 +210,20 @@ class SpeciesDefinitions(AttrDescriptor):
 
 
 class RefEnergies(AttrDescriptor):
+    ''' Descriptor for reference energies of kinetic model
+
+    :param name: The attribute name
+    :type name: str
+
+    :param default: The default value when calling __get__() method
+    :type default: any
+
+    :param deepcopy: Copy deeply or not
+    :type deepcopy: bool
+
+    :param candidates: All possible values of the attribute.
+    :type candidates: list of any
+    '''
     def __init__(self, name, default, deepcopy=False):
         super(RefEnergies, self).__init__(name, default, deepcopy)
 
@@ -140,10 +240,21 @@ class AnalysisInterval(AttrDescriptor):
 
 
 class Sequence(AttrDescriptor):
+    """ Descriptor for list type attributes of kinetic model and components
+
+    :param name: The attribute name
+    :type name: str
+
+    :param default: The default value when calling __get__() method
+    :type default: any
+
+    :param deepcopy: Copy deeply or not
+    :type deepcopy: bool
+
+    :param candidates: All possible values of the attribute.
+    :type candidates: list of any
+    """
     def __init__(self, name, default, deepcopy=False, entry_type=None, candidates=None):
-        """
-        Descriptor for list type attributes of kinetic model and its tools.
-        """
         super(Sequence, self).__init__(name, default, deepcopy)
         self.candidates = candidates
         self.entry_type = entry_type
@@ -166,10 +277,18 @@ class Sequence(AttrDescriptor):
 
 
 class FloatList2D(AttrDescriptor):
+    """ Descriptor for 2D float list attributes of kinetic model
+
+    :param name: The attribute name
+    :type name: str
+
+    :param default: The default value when calling __get__() method
+    :type default: any
+
+    :param deepcopy: Copy deeply or not
+    :type deepcopy: bool
+    """
     def __init__(self, name, default, deepcopy=False):
-        """
-        Descriptor for 2D float list attributes of kinetic model.
-        """
         super(FloatList2D, self).__init__(name, default, deepcopy)
 
     def _check(self, value):
@@ -183,10 +302,18 @@ class FloatList2D(AttrDescriptor):
 
 
 class SpaceVectors(FloatList2D):
+    """ Descriptor for 3D space vectors list
+
+    :param name: The attribute name
+    :type name: str
+
+    :param default: The default value when calling __get__() method
+    :type default: any
+
+    :param deepcopy: Copy deeply or not
+    :type deepcopy: bool
+    """
     def __init__(self, name, default, deepcopy=False):
-        """
-        Descriptor for 3D space vectors list.
-        """
         super(SpaceVectors, self).__init__(name, default, deepcopy)
 
     def _check(self, value):
@@ -246,8 +373,7 @@ def make_hashable(var):
 
 
 class Memoized(object):
-    """
-    Descriptor for returned value memoization.
+    """ Descriptor for returned value memoization.
     """
     def __init__(self, func):
         self.func = func

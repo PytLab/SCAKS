@@ -5,9 +5,18 @@ from ..plotters import *
 from .descriptors import AttrDescriptor
 
 class Component(AttrDescriptor):
+    """ Descriptor for kinetic model core components.
+
+    :param name: The attribute name
+    :type name: str
+
+    :param default: The default value when calling __get__() method
+    :type default: any
+
+    :param candidates: All possible values of the attribute.
+    :type candidates: list of any
+    """
     def __init__(self, name, default, candidates):
-        """ Descriptor for kinetic model core components.
-        """
         super(Component, self).__init__(name, default)
         self.candidates = candidates
 
