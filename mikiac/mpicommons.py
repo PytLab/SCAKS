@@ -16,6 +16,8 @@ from .descriptors.descriptors import Property
 
 
 class MPIUtil(object):
+    ''' Higher level wrapper for MPI interfaces
+    '''
     def __init__(self):
         logger_name = 'mikiac.{}'.format(self.__class__.__name__)
         self._logger = logging.getLogger(logger_name)
@@ -55,8 +57,10 @@ class MPIUtil(object):
 
     # Utility methods.
     def split_seq(self, sequence):
-        '''
-        Split the sequence according to rank and processor number.
+        ''' Split the sequence according to rank and processor number.
+
+        :param sequence: The data sequence to be divided for parallel processing
+        :type sequence: list
         '''
         starts = [i for i in range(0, len(sequence), len(sequence)//self.size)]
         ends = starts[1: ] + [len(sequence)]
@@ -65,8 +69,10 @@ class MPIUtil(object):
         return sequence[start: end]
 
     def split_size(self, size):
-        '''
-        Split a size number(int) to sub-size number.
+        ''' Split a size number(int) to sub-size number.
+
+        :param size: The size to be splitted for each process
+        :type size: int
         '''
         if size < self.size:
             warn_msg = ('Splitting size({}) is smaller than process ' +
@@ -85,8 +91,10 @@ class MPIUtil(object):
         return splited_sizes[self.rank]
 
     def merge_seq(self, seq):
-        '''
-        Gather data in sub-process to root process.
+        ''' Gather data in sub-process to root process.
+
+        :param seq: Sequence to be merged
+        :type seq: list
         '''
         if self.size == 1:
             return seq
@@ -98,9 +106,7 @@ class MPIUtil(object):
 mpi = MPIUtil()
 
 def master_only(func):
-    '''
-    Decorator to limit a function to be called
-    only in master process in MPI env.
+    ''' Decorator to limit a function to be called only in master process in MPI env.
     '''
     @wraps(func)
     def _call_in_master_proc(*args, **kwargs):
