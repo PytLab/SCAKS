@@ -1,6 +1,7 @@
 import logging
 import unittest
 import os
+from copy import deepcopy
 
 from mikiac.models.micro_kinetic_model import MicroKineticModel
 from mikiac.parsers import *
@@ -96,6 +97,21 @@ class MicroKineticModelTest(unittest.TestCase):
         self.assertEqual(ref_content, ret_content)
 
         os.remove(filename)
+
+    def test_component_setters(self):
+        setup_dict = deepcopy(self.setup_dict)
+        for component in ['solver', 'plotter', 'corrector']:
+            setup_dict.pop(component, None)
+
+        model = MicroKineticModel(setup_dict=setup_dict,
+                                  logger_level=logging.WARNING)
+
+        self.assertIsNone(model.solver)
+
+        from mikiac.solvers.steady_state_solver import SteadyStateSolver
+        solver = SteadyStateSolver(model)
+        model.set_solver(solver)
+        self.assertTrue(isinstance(model.solver, SteadyStateSolver))
 
     def test_run(self):
         " Test micro kinetic model can run correctly. "
