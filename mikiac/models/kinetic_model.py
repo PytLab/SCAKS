@@ -374,6 +374,30 @@ class KineticModel(object):
         """
         raise NotImplementedError
 
+    def set_solver(self, solver):
+        ''' Set solver for current model
+
+        :param solver: Valid solver object
+        :type solver: any
+        '''
+        setattr(self, mangled_name(self, 'solver'), solver)
+
+    def set_plotter(self, plotter):
+        ''' Set plotter for current model
+
+        :param plotter: Valid plotter object
+        :type plotter: any
+        '''
+        setattr(self, mangled_name(self, 'plotter'), solver)
+
+    def set_corrector(self, corrector):
+        ''' Set corrector for current model
+
+        :param corrector: Valid corrector object
+        :type corrector: any
+        '''
+        setattr(self, mangled_name(self, 'corrector'), corrector)
+
     @Property
     def log_allowed(self):
         """
