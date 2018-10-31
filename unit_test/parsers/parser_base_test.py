@@ -4,8 +4,8 @@ import unittest
 
 import numpy as np
 
-from mikiac.models.micro_kinetic_model import MicroKineticModel
-from mikiac.parsers import *
+from catynetics.models.micro_kinetic_model import MicroKineticModel
+from catynetics.parsers import *
 
 from unit_test import *
 

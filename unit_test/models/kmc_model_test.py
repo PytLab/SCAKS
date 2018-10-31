@@ -4,7 +4,7 @@ import unittest
 
 sys.path.append("..")
 
-from mikiac.models.kmc_model import KMCModel
+from catynetics.models.kmc_model import KMCModel
 from unit_test import *
 
 

@@ -3,8 +3,8 @@ import unittest
 import os
 from copy import deepcopy
 
-from mikiac.models.micro_kinetic_model import MicroKineticModel
-from mikiac.parsers import *
+from catynetics.models.micro_kinetic_model import MicroKineticModel
+from catynetics.parsers import *
 
 from unit_test import *
 
@@ -108,7 +108,7 @@ class MicroKineticModelTest(unittest.TestCase):
 
         self.assertIsNone(model.solver)
 
-        from mikiac.solvers.steady_state_solver import SteadyStateSolver
+        from catynetics.solvers.steady_state_solver import SteadyStateSolver
         solver = SteadyStateSolver(model)
         model.set_solver(solver)
         self.assertTrue(isinstance(model.solver, SteadyStateSolver))

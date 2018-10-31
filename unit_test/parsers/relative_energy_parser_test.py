@@ -2,9 +2,9 @@ import logging
 import os
 import unittest
 
-from mikiac.models.micro_kinetic_model import MicroKineticModel
-from mikiac.functions import *
-from mikiac.parsers import *
+from catynetics.models.micro_kinetic_model import MicroKineticModel
+from catynetics.functions import *
+from catynetics.parsers import *
 
 from unit_test import *
 

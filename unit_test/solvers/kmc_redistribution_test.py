@@ -4,8 +4,8 @@
 import logging
 import unittest
 
-from mikiac.models.kmc_model import KMCModel
-from mikiac.solvers import *
+from catynetics.models.kmc_model import KMCModel
+from catynetics.solvers import *
 
 from unit_test import *
 

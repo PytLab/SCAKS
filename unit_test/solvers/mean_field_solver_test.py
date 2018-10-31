@@ -5,9 +5,9 @@ import unittest
 import numpy as np
 from mpmath import mpf
 
-from mikiac.models.micro_kinetic_model import MicroKineticModel
-from mikiac.parsers.rxn_parser import *
-from mikiac.solvers import *
+from catynetics.models.micro_kinetic_model import MicroKineticModel
+from catynetics.parsers.rxn_parser import *
+from catynetics.solvers import *
 
 from unit_test import *
 

@@ -7,8 +7,8 @@ import unittest
 
 from mpmath import mpf
 
-from mikiac.models.micro_kinetic_model import MicroKineticModel
-from mikiac.solvers import SteadyStateSolver
+from catynetics.models.micro_kinetic_model import MicroKineticModel
+from catynetics.solvers import SteadyStateSolver
 
 from unit_test import *
 

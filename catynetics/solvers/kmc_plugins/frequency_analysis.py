@@ -31,7 +31,7 @@ class FrequencyAnalysis(KMCAnalysisPlugin):
 
         Parameters:
         -----------
-        kmc_model: KMC model object of mikiac.KineticModel.
+        kmc_model: KMC model object of catynetics.KineticModel.
 
         filename: The name of data file, str.
 

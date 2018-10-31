@@ -2,8 +2,8 @@ import logging
 import re
 import unittest
 
-from mikiac.errors.error import *
-from mikiac.utilities.coordinate_utilities import *
+from catynetics.errors.error import *
+from catynetics.utilities.coordinate_utilities import *
 
 
 class CoordinatesUtilitiesTest(unittest.TestCase):

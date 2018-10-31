@@ -3,7 +3,7 @@ Module for all test suites for MiKiAC.
 """
 import unittest
 
-from mikiac.compatutil import subprocess
+from catynetics.compatutil import subprocess
 from correctors import correctors_tests
 from models import models_tests
 from plotters import plotters_tests
@@ -14,7 +14,7 @@ from utilities import utilities_tests
 
 def suite():
     """
-    Function to get all suites for mikiac.
+    Function to get all suites for catynetics.
     """
     all_suites = unittest.TestSuite([models_tests.suite(),
                                      parsers_tests.suite(),

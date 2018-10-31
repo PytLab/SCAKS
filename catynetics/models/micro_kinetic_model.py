@@ -36,7 +36,7 @@ class MicroKineticModel(KineticModel):
 
     Example::
 
-        >>> from mikiac.models.kinetic_model import MicroKineticModel
+        >>> from catynetics.models.kinetic_model import MicroKineticModel
         >>> model = MicroKineticModel(setup_file="setup.mkm", logger_level=30)
 
     Attributes:

@@ -1,5 +1,5 @@
 """
-Module for wrapped MPI interfaces used in MiKiAC.
+Module for wrapped MPI interfaces used in catynetics.
 """
 
 import logging
@@ -19,7 +19,7 @@ class MPIUtil(object):
     ''' Higher level wrapper for MPI interfaces
     '''
     def __init__(self):
-        logger_name = 'mikiac.{}'.format(self.__class__.__name__)
+        logger_name = 'catynetics.{}'.format(self.__class__.__name__)
         self._logger = logging.getLogger(logger_name)
 
     def bcast(self, data):

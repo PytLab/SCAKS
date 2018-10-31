@@ -5,8 +5,8 @@ import unittest
 import numpy as np
 from mpmath import mpf
 
-from mikiac.models.micro_kinetic_model import MicroKineticModel
-from mikiac.plotters import *
+from catynetics.models.micro_kinetic_model import MicroKineticModel
+from catynetics.plotters import *
 
 from unit_test import *
 

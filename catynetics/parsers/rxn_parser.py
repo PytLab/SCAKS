@@ -7,13 +7,13 @@ from ..errors.error import *
 class RxnEquation(object):
     """ Class to create reaction equation object.
 
-    :param rxn_equation: Elementary reaction expression that follows *MiKiAC* reaction
+    :param rxn_equation: Elementary reaction expression that follows *catynetics* reaction
                          expression conventions
     :type rxn_equation: str
 
     Example::
 
-        >>> from mikiac.parser.rxn_equation import RxnEquation
+        >>> from catynetics.parser.rxn_equation import RxnEquation
         >>> rxn = RxnEquation('O2_g + 2*_s <-> O-O_2s -> 2O_s')
 
     """
