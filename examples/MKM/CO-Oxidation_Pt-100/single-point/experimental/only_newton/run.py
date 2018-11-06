@@ -12,12 +12,12 @@ from catynetics.models.micro_kinetic_model import MicroKineticModel
 from catynetics.utilities.format_utilities import convert_time
 
 # Custom parameters.
-OdeInterval = 0.01          # ODE integration time interval.
+OdeInterval = 0.001          # ODE integration time interval.
 OdeEnd = 1          # ODE integration time limit.
 OdeOutput = True           # Output ODE integration data or not.
-CalcXRC = True             # Calculate Degree of Rate Control(XRC) or not.
-ProductionName = "CO2_g"  # Production name of your model.
-OdeOnly = False             # Do ODE integration only.
+CalcXRC = False             # Calculate Degree of Rate Control(XRC) or not.
+ProductionName = "CO2_g"   # Production name of your model.
+OdeOnly = False            # Do ODE integration only.
 
 if "__main__" == __name__:
     # Clean up current dir.
@@ -46,10 +46,11 @@ if "__main__" == __name__:
         solver.get_data()
 
         # Initial coverages guess.
-        trajectory = solver.solve_ode(time_span=OdeInterval,
-                                      time_end=OdeEnd,
-                                      traj_output=OdeOutput)
-        init_guess = trajectory[-1]
+        #trajectory = solver.solve_ode(time_span=OdeInterval,
+        #                              time_end=OdeEnd,
+        #                              traj_output=OdeOutput)
+        #init_guess = trajectory[-1]
+        init_guess = [0.0, 0.0]
 
         # Run.
         model.run(init_cvgs=init_guess,

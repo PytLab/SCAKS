@@ -46,10 +46,11 @@ if "__main__" == __name__:
         solver.get_data()
 
         # Initial coverages guess.
-        trajectory = solver.solve_ode(time_span=OdeInterval,
-                                      time_end=OdeEnd,
-                                      traj_output=OdeOutput)
-        init_guess = trajectory[-1]
+        #trajectory = solver.solve_ode(time_span=OdeInterval,
+        #                              time_end=OdeEnd,
+        #                              traj_output=OdeOutput)
+        #init_guess = trajectory[-1]
+        init_guess = [0.0, 0.0]
 
         # Run.
         model.run(init_cvgs=init_guess,
