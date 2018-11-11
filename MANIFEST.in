@@ -1,6 +1,5 @@
 include *.md
 include *.rst
-recursive-include mikiac *.py
-recursive-include tests *.py
+recursive-include catynetics *.py
 recursive-include examples *.py
 

@@ -2,19 +2,18 @@
 # -*- coding: utf-8 -*-
 
 from setuptools import setup, find_packages
-from mikiac import __version__ as version
+from catynetics import __version__ as version
 
 maintainer = 'Shao-Zheng-Jiang'
 maintainer_email = 'shaozhengjiang@gmail.com'
 author = maintainer
 author_email = maintainer_email
-description = "Micro-Kinetics Analysis package for Catalyst"
+description = "Micro-Kinetics Analysis package for Catalyst in Python"
 long_description = '''
-MiKiAC
-======
+Catynetics
+==========
 
-**Mi**\ cro-**Ki**\ netic **A**\ nalysis package for **C**\ atalyst
-
+A Micro-Kinetics Analysis package for Catalyst in Python
 '''
 install_requires = [
     'numpy',
@@ -28,10 +27,10 @@ install_requires = [
 
 license = 'LICENSE'
 
-name = 'mikiac'
-platforms = ['linux', 'windows', 'macos']
-url = 'https://mikiac-docs.readthedocs.io/en/latest/'
-download_url = 'https://github.com/PytLab/gaft/releases'
+name = 'catynetics'
+platforms = ['linux', 'macos']
+url = ''
+download_url = ''
 
 classifiers = [
     'Development Status :: 3 - Alpha',
@@ -42,6 +41,8 @@ classifiers = [
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.5',
 ]
+
+test_suite = 'catynetics.tests.test_all'
 
 setup(author=author,
       author_email=author_email,
@@ -55,5 +56,7 @@ setup(author=author,
       platforms=platforms,
       url=url,
       download_url=download_url,
-      version=version)
+      version=version,
+      test_suite=test_suite
+  )
 
