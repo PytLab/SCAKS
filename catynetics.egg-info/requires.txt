@@ -1,7 +1,0 @@
-numpy
-scipy
-matplotlib
-sympy
-mpmath
-mpi4py
-prettytable

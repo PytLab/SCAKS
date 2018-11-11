@@ -108,3 +108,5 @@ build/
 
 # coverage report
 .coverage
+
+*.egg-info
