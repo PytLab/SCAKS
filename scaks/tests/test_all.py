@@ -22,7 +22,7 @@ test_cases = (model_test_cases +
 
 def suite():
     """
-    Function to get all suites for catynetics.
+    Function to get all suites for scaks.
     """
     suite = unittest.TestSuite([
         unittest.TestLoader().loadTestsFromTestCase(tc) for tc in test_cases

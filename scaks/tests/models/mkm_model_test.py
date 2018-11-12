@@ -108,7 +108,7 @@ class MicroKineticModelTest(unittest.TestCase):
 
         self.assertIsNone(model.solver)
 
-        from catynetics.solvers.steady_state_solver import SteadyStateSolver
+        from scaks.solvers.steady_state_solver import SteadyStateSolver
         solver = SteadyStateSolver(model)
         model.set_solver(solver)
         self.assertTrue(isinstance(model.solver, SteadyStateSolver))

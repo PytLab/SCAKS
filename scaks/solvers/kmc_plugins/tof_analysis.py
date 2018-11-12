@@ -32,7 +32,7 @@ class TOFAnalysis(KMCAnalysisPlugin):
 
         Parameters:
         -----------
-        kmc_model: KMC model object of catynetics.KineticModel.
+        kmc_model: KMC model object of scaks.KineticModel.
 
         filename: The name of data file, str.
 

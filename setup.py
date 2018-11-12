@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from setuptools import setup, find_packages
-from catynetics import __version__ as version
+from scaks import __version__ as version
 
 maintainer = 'Shao-Zheng-Jiang'
 maintainer_email = 'shaozhengjiang@gmail.com'
@@ -10,10 +10,11 @@ author = maintainer
 author_email = maintainer_email
 description = "Micro-Kinetics Analysis package for Catalyst in Python"
 long_description = '''
-Catynetics
-==========
+SCAKS
+=====
 
-A Micro-Kinetics Analysis package for Catalyst in Python
+Shanghai CAtlysis Kinetics Software
+
 '''
 install_requires = [
     'numpy',
@@ -27,7 +28,7 @@ install_requires = [
 
 license = 'LICENSE'
 
-name = 'catynetics'
+name = 'scaks'
 platforms = ['linux', 'macos']
 url = ''
 download_url = ''
@@ -42,7 +43,7 @@ classifiers = [
     'Programming Language :: Python :: 3.5',
 ]
 
-test_suite = 'catynetics.tests.test_all'
+test_suite = 'scaks.tests.test_all'
 
 setup(author=author,
       author_email=author_email,

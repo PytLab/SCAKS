@@ -34,7 +34,7 @@ class KineticModel(object):
 
     Example::
 
-        >>> from catynetics.models import KineticModel
+        >>> from scaks.models import KineticModel
         >>> model = KineticModel(setup_file="setup.mkm", logger_level=30)
 
     Attributes:
@@ -49,12 +49,12 @@ class KineticModel(object):
         console_handler_level(:obj:`int`): The logging level for console handler
 
         parser(:obj:`object`): Kinetic Model parser,
-        possible type could be :obj:`catynetics.parsers.RelativeEnergyParser`,
-        :obj:`catynetics.parsers.AbsoluteEnergyParser`, :obj:`catynetics.parsers.KMCParser`
+        possible type could be :obj:`scaks.parsers.RelativeEnergyParser`,
+        :obj:`scaks.parsers.AbsoluteEnergyParser`, :obj:`scaks.parsers.KMCParser`
 
         solver(:obj:`object`): Kinetic Model solver,
-        possible type could be :obj:`catynetics.solvers.SteadyStateSolver`,
-        :obj:`catynetics.solvers.KMCSolver`
+        possible type could be :obj:`scaks.solvers.SteadyStateSolver`,
+        :obj:`scaks.solvers.KMCSolver`
 
         corrector(:obj:`object`): Kinetic Model data corrector,
         possible type could be :obj:`ThermodynamicCorrector`
