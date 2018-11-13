@@ -1,11 +1,9 @@
 import unittest
 
 from .mkm_model_test import MicroKineticModelTest
-from .kmc_model_test import KMCModelTest
 
 model_test_cases = [
     MicroKineticModelTest,
-    KMCModelTest
 ]
 
 def suite():
