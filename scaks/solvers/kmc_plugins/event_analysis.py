@@ -5,12 +5,7 @@ from prettytable import PrettyTable
 try:
     from KMCLib import KMCAnalysisPlugin
 except ImportError:
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-    print("!!!                                                    !!!")
-    print("!!!         WARNING: KMCLibX is not installed          !!!")
-    print("!!! Any kMC calculation using KMCLibX will be disabled !!!")
-    print("!!!                                                    !!!")
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    print("WARNING: KMCLib is not installed")
 
 try:
     from .solvers.kmc_plugins.plugin_backends.kmc_functions import *
