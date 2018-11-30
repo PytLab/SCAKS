@@ -4,6 +4,7 @@ Module for micro-kinetic model class definition.
 
 import logging
 import os
+from functools import wraps
 
 from .kinetic_model import KineticModel
 from ..errors.error import ParameterError
@@ -11,6 +12,7 @@ from ..mpicommons import mpi
 from ..descriptors.descriptors import *
 from ..utilities.profiling_utitlities import do_cprofile
 from ..compatutil import pickle
+from ..plugins.analysis import OnTheFlyAnalysis
 
 
 class MicroKineticModel(KineticModel):
@@ -75,6 +77,8 @@ class MicroKineticModel(KineticModel):
         reversibilities (:obj:`list` of :obj:`float`): Reversibilities calculated.
 
         error (:obj:`list` of :obj:`float`): Residual errors after iterations.
+
+        analysis (:obj:`list` of :obj:`scaks.plugins.analysis.OnTheFlyAnalysis`: On-the-fly analysis plugins
     '''
 
     # {{{
@@ -101,7 +105,7 @@ class MicroKineticModel(KineticModel):
     tolerance = Float("tolerance", default=1e-8)
 
     max_rootfinding_iterations = Integer("max_rootfinding_iterations",
-                                            default=100)
+                                         default=100)
 
     ode_buffer_size = Integer("ode_buffer_size", default=500)
 
@@ -109,6 +113,9 @@ class MicroKineticModel(KineticModel):
 
     # Reference energies used to calculate formation energy.
     ref_energies = RefEnergies("ref_energies", default={})
+
+    # On-the-fly analysis plugins
+    analysis = Sequence('analysis', default=[], entry_type=OnTheFlyAnalysis)
     # }}}
 
     def __init__(self, **kwargs):
@@ -269,6 +276,28 @@ class MicroKineticModel(KineticModel):
                                   epsilon=epsilon,
                                   relative_energies=relative_energies)
         # }}}
+
+    def hybrid_method_register(self, fn):
+        ''' A decorator for hybrid method function register to current model
+
+        :param fn: A function cooperate with Newton's method to provide a hybrid
+                   iteration method.
+        :type fn: function
+        '''
+        self.hybrid_method = fn
+
+    def analysis_register(self, analysis_cls):
+        ''' A decorator for analysis regsiter.
+
+        :param analysis_cls: The analysis to be registered
+        :type analysis_cls: :obj:`scaks.plugin_interfaces.OnTheFlyAnalysis`
+        '''
+        if not issubclass(analysis_cls, OnTheFlyAnalysis):
+            raise TypeError('analysis class must be subclass of OnTheFlyAnalysis')
+        
+        # Add analysis instance to model
+        analysis = analysis_cls()
+        self.analysis.append(analysis)
 
     @Property
     def model_info(self):

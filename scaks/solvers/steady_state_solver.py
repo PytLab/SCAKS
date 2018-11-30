@@ -854,6 +854,10 @@ class SteadyStateSolver(MeanFieldSolver):
                                        'status', 'N', 'residual', 'norm')
                     self.__logger.info('-'*60)
 
+                # Setup analysis plugins
+                for ap in self._owner.analysis:
+                    ap.setup(self._owner, icvg_counter)
+
                 for x, error, fx in newton_iterator:  # inner loop
                     nt_counter += 1
                     resid = f_resid(x)
@@ -908,25 +912,17 @@ class SteadyStateSolver(MeanFieldSolver):
                         cancel = False
                         break
 
-                    # residual is almost stagnated
-#                     elif abs(error - old_error) < self._stable_criterion:
-#                         if self._owner.log_allowed:
-#                             self.__logger.info('%-10s%10d%23.10e%23.10e', 'stable',
-#                                                nt_counter, float(resid), float(error))
-#                             self.__logger.warning('stable root: %s', str(map(float, x)))
-#                             self.__logger.debug(' difference: %-24.16e', abs(error - old_error))
-#                         # Jump out of loop for this c0.
-#                         cancel = False
-#                         break
-
                     old_error = error  # set old error to be compared in next loop
-                    #self._coverage = x
-                    #self._error = error
+                    self._coverage = x
+                    self._error = error
 
-                    # archive data every 100 steps
-#                    if nt_counter % 100 == 0:
-#                        self.archive_data('iter_coverage', x)
-#                        self.archive_data('iter_error', error)
+                    # On-the-fly analysis plugins
+                    for ap in self._owner.analysis:
+                        if inner_counter % ap.interval == 0:
+                            ap.register_step(self._owner,
+                                             inner_counter,
+                                             outer_counter)
+
                 #####    Sub loop for a c0 END    #####
 
                 # Change the initial guess(c0).
@@ -939,6 +935,9 @@ class SteadyStateSolver(MeanFieldSolver):
                 self.__logger.warning("ZeroDivisionError is catched !")
                 c0 = self.modify_init_guess()
                 icvg_counter += 1
+            finally:
+                for ap in self._owner.analysis:
+                    ap.finalize(model, icvg_counter)
 
         ##############    main loop end   #################
 
