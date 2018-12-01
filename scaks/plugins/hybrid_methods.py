@@ -11,7 +11,7 @@ def ODE_integration(model, N):
     :type N: int
     '''
     if model.log_allowed:
-        model.logger().info('Use ODE integration to get new initial coverages...')
+        model.logger.info('Use ODE integration to get new initial coverages...')
 
     end = 10
     span = 1e-2
@@ -22,7 +22,7 @@ def ODE_integration(model, N):
                                       initial_cvgs=init_cvgs)
 
     if model.log_allowed:
-        model.logger().info('generate new initial coverages - success')
+        model.logger.info('generate new initial coverages - success')
 
     return new_cvgs
 
