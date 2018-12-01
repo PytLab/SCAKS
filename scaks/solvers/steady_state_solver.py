@@ -7,8 +7,8 @@ from scipy.integrate import odeint, ode
 from scipy.linalg import norm
 from scipy.optimize import fsolve
 
-from ..descriptors.descriptors import Memoized, Property
 from .. import file_header
+from ..descriptors.descriptors import Memoized, Property
 from ..errors.error import *
 from ..utilities.format_utilities import get_list_string
 from ..parsers.rxn_parser import *
@@ -797,7 +797,7 @@ class SteadyStateSolver(MeanFieldSolver):
                 # Good initial coverages.
                 if f_resid(c0) <= self._owner.tolerance and not single_pt:
                     converged = True
-                    self._coverage = c0
+                    self._coverages = c0
                     if self._owner.log_allowed:
                         self.__logger.info('Good initial guess: \n%s', str([float(i) for i in c0]))
 
@@ -885,7 +885,7 @@ class SteadyStateSolver(MeanFieldSolver):
                                                        nt_counter, float(resid), float(error))
                                 # log steady state coverages
                                 self.__log_sscvg(x, self._owner.adsorbate_names)
-                                self._coverage = x
+                                self._coverages = x
                                 self._error = error
                                 if self._owner.log_allowed:
                                     self.__logger.info('error = %e', min(error, resid))
@@ -913,7 +913,7 @@ class SteadyStateSolver(MeanFieldSolver):
                         break
 
                     old_error = error  # set old error to be compared in next loop
-                    self._coverage = x
+                    self._coverages = x
                     self._error = error
 
                     # On-the-fly analysis plugins
@@ -928,13 +928,25 @@ class SteadyStateSolver(MeanFieldSolver):
                 # Change the initial guess(c0).
                 if not cancel:
                     # get a new initial guess coverage
-                    c0 = self.modify_init_guess()
-                    icvg_counter += 1
+                    #c0 = self.modify_init_guess()
+                    if not self._owner.hybrid_method:
+                        msg = 'No hybrid method registered for hybrid iteration'
+                        self.__logger.warning(msg)
+                        break
+                    else:
+                        c0 = self._owner.hybrid_method(self._owner, icvg_counter)
+                        icvg_counter += 1
             # }}}
             except ZeroDivisionError:
                 self.__logger.warning("ZeroDivisionError is catched !")
-                c0 = self.modify_init_guess()
-                icvg_counter += 1
+                #c0 = self.modify_init_guess()
+                if not self._owner.hybrid_method:
+                    msg = 'No hybrid method registered for hybrid iteration'
+                    self.__logger.warning(msg)
+                    break
+                else:
+                    c0 = self._owner.hybrid_method(self._owner, icvg_counter)
+                    icvg_counter += 1
             finally:
                 for ap in self._owner.analysis:
                     ap.finalize(model, icvg_counter)
@@ -943,14 +955,14 @@ class SteadyStateSolver(MeanFieldSolver):
 
         if converged:
             # Archive converged root and error.
-            self.archive_data('steady_state_coverages', self._coverage)
+            self.archive_data('steady_state_coverages', self._coverages)
             self.archive_data('steady_state_error', self._error)
             self._good_guess = c0
 
             # Archive initial guess.
             self.archive_data('initial_guess', c0)
 
-            return self._coverage
+            return self._coverages
     # }}}
 
     def __log_sscvg(self, cvgs_tuple, ads_names):
@@ -1056,8 +1068,8 @@ class SteadyStateSolver(MeanFieldSolver):
             self.__logger.info("-"*55 + "\n")
 
         # Get original TOF for the gas speices.
-        if hasattr(self, "_coverage"):
-            init_guess = self._coverage
+        if hasattr(self, "_coverages"):
+            init_guess = self._coverages
         else:
             msg = ("Converged coverages are needed to calculate XRC, " +
                    "so try to get steady state coverages first.")
@@ -1360,4 +1372,3 @@ class SteadyStateSolver(MeanFieldSolver):
         """ Query function for good initial coverages.
         """
         self._good_guess
-

@@ -284,7 +284,13 @@ class MicroKineticModel(KineticModel):
                    iteration method.
         :type fn: function
         '''
-        self.hybrid_method = fn
+        @wraps(fn)
+        def _hybrid_method(model):
+            if not isinstance(model, MicroKineticModel):
+                raise TypeError('model must be a MicroKineticModel object')
+            return fn(model)
+
+        self.hybrid_method = _hybrid_method
 
     def analysis_register(self, analysis_cls):
         ''' A decorator for analysis regsiter.
