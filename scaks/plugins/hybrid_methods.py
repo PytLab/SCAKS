@@ -19,7 +19,7 @@ def ODE_integration(model, N):
 
     new_cvgs = model.solver.solve_ode(time_end=end,
                                       time_span=span,
-                                      initial_cvgs=init_cvgs)
+                                      initial_cvgs=init_cvgs)[-1]
 
     if model.log_allowed:
         model.logger.info('generate new initial coverages - success')
