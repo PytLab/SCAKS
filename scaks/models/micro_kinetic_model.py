@@ -285,10 +285,11 @@ class MicroKineticModel(KineticModel):
         :type fn: function
         '''
         @wraps(fn)
-        def _hybrid_method(model):
+        def _hybrid_method(**kwargs):
+            model = kwargs.get('model', None)
             if not isinstance(model, MicroKineticModel):
                 raise TypeError('model must be a MicroKineticModel object')
-            return fn(model)
+            return fn(**kwargs)
 
         self.hybrid_method = _hybrid_method
 
