@@ -15,7 +15,7 @@ def ODE_integration(model, N):
 
     end = 10
     span = 1e-2
-    init_cvgs = model.coverages()
+    init_cvgs = model.solver.coverages
 
     new_cvgs = model.solver.solve_ode(time_end=end,
                                       time_span=span,
