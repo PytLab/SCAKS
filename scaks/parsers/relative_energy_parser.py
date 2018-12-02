@@ -68,26 +68,29 @@ class RelativeEnergyParser(ParserBase):
         return relative_energies
         # }}}
 
-    def parse_data(self, filename="./rel_energy.py"):
+    def parse_data(self, filename="./rel_energy.py", energy_data=None):
         """ Parse relative energy data and model information to add essential
         data to its owner, the kinetic model
 
         :param filename: The filename of relative energies data.
         :type filename: str
+
+        :param energy_data: Relative energy data
+        :type energy_data: dict
         """
         # {{{
         # Read relative energy data file.
         if os.path.exists(filename):
-            globs, locs = {}, {}
-            exec(open(filename, "rb").read(), globs, locs)
-        else:
+            globs, energy_data = {}, {}
+            exec(open(filename, "rb").read(), globs, energy_data)
+        elif energy_data is None:
             raise IOError("{} is not found.".format(filename))
 
         # Check data shape.
-        self.__chk_data_validity(locs)
+        self.__chk_data_validity(energy_data)
 
         # Get relative energies and pass it to model.
-        relative_energies = self.__get_relative_energies(locs)
+        relative_energies = self.__get_relative_energies(energy_data)
         self._owner._relative_energies = relative_energies
 
         # Set flags in model.

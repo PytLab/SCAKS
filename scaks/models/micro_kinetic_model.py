@@ -13,6 +13,7 @@ from ..descriptors.descriptors import *
 from ..utilities.profiling_utitlities import do_cprofile
 from ..compatutil import pickle
 from ..plugins.analysis import OnTheFlyAnalysis
+from ..plugins.hybrid_methods import ODE_integration
 
 
 class MicroKineticModel(KineticModel):
@@ -78,6 +79,8 @@ class MicroKineticModel(KineticModel):
 
         error (:obj:`list` of :obj:`float`): Residual errors after iterations.
 
+        hybrid_method (:obj:`function`): Hybrid function for initial coverages guess.
+
         analysis (:obj:`list` of :obj:`scaks.plugins.analysis.OnTheFlyAnalysis`: On-the-fly analysis plugins
     '''
 
@@ -113,6 +116,8 @@ class MicroKineticModel(KineticModel):
 
     # Reference energies used to calculate formation energy.
     ref_energies = RefEnergies("ref_energies", default={})
+
+    hybrid_method = staticmethod(ODE_integration)
 
     # On-the-fly analysis plugins
     analysis = Sequence('analysis', default=[], entry_type=OnTheFlyAnalysis)
