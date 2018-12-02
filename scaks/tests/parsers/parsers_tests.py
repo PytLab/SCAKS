@@ -5,7 +5,6 @@ from .chem_state_test import ChemStateTest
 from .parser_base_test import ParserBaseTest
 from .relative_energy_parser_test import RelativeEnergyParserTest
 from .absolute_energy_parser_test import AbsoluteEnergyParserTest
-from .kmc_parser_test import KMCParserTest
 
 parser_test_cases = [
     ChemStateTest,
@@ -13,7 +12,6 @@ parser_test_cases = [
     ParserBaseTest,
     RelativeEnergyParserTest,
     AbsoluteEnergyParserTest,
-    KMCParserTest
 ]
 
 
