@@ -1,5 +1,5 @@
 include *.md
 include *.rst
-recursive-include catynetics *.py
+recursive-include scaks *.py
 recursive-include examples *.py
 

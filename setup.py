@@ -20,7 +20,8 @@ install_requires = [
     'sympy',
     'mpmath',
     'mpi4py',
-    'prettytable'
+    'prettytable',
+    'catplot'
 ]
 
 license = 'LICENSE'
