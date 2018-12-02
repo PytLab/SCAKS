@@ -920,10 +920,10 @@ class SteadyStateSolver(MeanFieldSolver):
 
                     # On-the-fly analysis plugins
                     for ap in self._owner.analysis:
-                        if inner_counter % ap.interval == 0:
+                        if nt_counter % ap.interval == 0:
                             ap.register_step(self._owner,
-                                             inner_counter,
-                                             outer_counter)
+                                             nt_counter,
+                                             icvg_counter)
 
                 #####    Sub loop for a c0 END    #####
 
@@ -951,7 +951,7 @@ class SteadyStateSolver(MeanFieldSolver):
                     icvg_counter += 1
             finally:
                 for ap in self._owner.analysis:
-                    ap.finalize(model, icvg_counter)
+                    ap.finalize(self._owner, icvg_counter)
 
         ##############    main loop end   #################
 
@@ -1367,7 +1367,10 @@ class SteadyStateSolver(MeanFieldSolver):
     def coverages(self):
         """ Query function for converaged coverages.
         """
-        return self._coverages
+        try:
+            return self._coverages
+        except AttributeError:
+            return [0.0]*len(self._owner.adsorbate_names)
 
     @Property
     def good_guess(self):
