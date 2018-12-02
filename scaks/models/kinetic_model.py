@@ -12,6 +12,8 @@ from ..database.thermo_data import kB_eV, h_eV
 from ..errors.error import *
 from ..functions import *
 from ..utilities.profiling_utitlities import do_cprofile
+from ..solvers.solver_base import SolverBase
+from ..correctors.corrector_base import CorrectorBase
 
 
 class KineticModel(object):
@@ -380,7 +382,21 @@ class KineticModel(object):
         :param solver: Valid solver object
         :type solver: any
         '''
-        setattr(self, mangled_name(self, 'solver'), solver)
+        if isinstance(solver, SolverBase):
+            setattr(self, mangled_name(self, 'solver'), solver)
+        else:
+            raise TypeError('Invalid model solver')
+
+    def set_corrector(self, corrector):
+        ''' Set corrector for current model
+
+        :param corrector: Valid corrector object
+        :type corrector: any
+        '''
+        if isinstance(corrector, CorrectorBase):
+            setattr(self, mangled_name(self, 'corrector'), corrector)
+        else:
+            raise TypeError('Invalid model corrector')
 
     def set_plotter(self, plotter):
         ''' Set plotter for current model
