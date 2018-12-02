@@ -4,12 +4,7 @@ from operator import mul
 try:
     from KMCLib import KMCAnalysisPlugin
 except ImportError:
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-    print("!!!                                                    !!!")
-    print("!!!         WARNING: KMCLibX is not installed          !!!")
     print("!!! Any kMC calculation using KMCLibX will be disabled !!!")
-    print("!!!                                                    !!!")
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
 from ... import file_header
 from ...compatutil import reduce
