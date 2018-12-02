@@ -755,7 +755,7 @@ class SteadyStateSolver(MeanFieldSolver):
         '''
         return self.coarse_steady_state_cvgs(c0, relative_energies)
 
-    def get_steady_state_cvgs(self, c0, single_pt=False, relative_energies=None):
+    def get_steady_state_cvgs(self, c0=None, single_pt=False, relative_energies=None):
         """ Function to get steady state coverages.
 
         Expect an inital coverages tuple, use Newton Method to solving nonlinear equations, return steady state coverages, if converged.
@@ -774,6 +774,8 @@ class SteadyStateSolver(MeanFieldSolver):
 
         """
         # {{{
+        if c0 is None:
+            c0 = self._owner.hybrid_method(self._owner, 0)
         # Intial coverage must have physical meaning.
         c0 = self.__constrain_coverages(c0)
         self.__initial_guess = c0

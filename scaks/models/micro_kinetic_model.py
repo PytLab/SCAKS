@@ -232,9 +232,7 @@ class MicroKineticModel(KineticModel):
 
         else:
             if self.log_allowed:
-                self._logger.info('Do ODE integration to get initial guess...')
-            ode_traj = solver.solve_ode()
-            init_cvgs = ode_traj[-1]
+                self._logger.info('Use model\'s hybrid method to guess initial coverages')
 
         # Solve steady state coverages.
         # Use scipy.optimize.fsolve or not (fast but low-precision).
