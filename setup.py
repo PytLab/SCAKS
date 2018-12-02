@@ -9,13 +9,10 @@ maintainer_email = 'shaozhengjiang@gmail.com'
 author = maintainer
 author_email = maintainer_email
 description = "Micro-Kinetics Analysis package for Catalyst in Python"
-long_description = '''
-SCAKS
-=====
 
-Shanghai CAtlysis Kinetics Software
+with open('README.rst', 'r') as f:
+    long_description = f.read()
 
-'''
 install_requires = [
     'numpy',
     'scipy',

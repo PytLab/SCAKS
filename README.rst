@@ -1,24 +1,24 @@
-Catynetics
+SCAKS
 ==========
 
-A Micro-Kinetic Analysis package for Catalytic Reactions in Python
+Shanghai CAtalysis Kinetics Software.  A Micro-Kinetic Analysis package for Catalytic Reactions in Python
 
 Install
 -------
 
-1. Via pip (Not uploaded to PyPI yet):
+1. Via pip:
 
    .. code:: shell
 
-      pip install catynetics
+      pip install scaks
 
 2. From source
 
    .. code:: shell
 
-      git clone https://github.com/PytLab/catynetics.git
+      git clone https://github.com/PytLab/scaks.git
 
-      cd catynetics
+      cd scaks
       python setup.py install
 
 Test
@@ -32,10 +32,11 @@ or
 
 .. code:: shell
 
-   python -m catynetics.tests.test_all
+   python -m scaks.tests.test_all
 
 Documentation
 -------------
 
-For more details, see Catynetics documentation:
-https://catynetics-docs.readthedocs.io/en/latest/
+For more details, see SCAKS documentation:
+https://scaks-docs.readthedocs.io/en/latest/
+
