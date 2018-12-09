@@ -6,7 +6,7 @@ import sys
 
 import matplotlib.pyplot as plt
 
-from kynetix.parsers.rxn_parser import RxnEquation
+from scaks.parsers.rxn_parser import RxnEquation
 
 production = "CO2_g"
 

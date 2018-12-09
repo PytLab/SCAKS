@@ -5,7 +5,7 @@ import numpy as np
 from scipy.interpolate import interp2d
 import matplotlib.pyplot as plt
 
-from kynetix.compatutil import subprocess
+from scaks.compatutil import subprocess
 
 # Get pO2 dirs.
 pO2_dirs = [i for i in subprocess.getoutput('ls').split('\n') if i.startswith('pO2-')]

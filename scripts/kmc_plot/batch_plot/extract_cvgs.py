@@ -5,7 +5,7 @@ import os
 
 import numpy as np
 
-from kynetix.compatutil import subprocess
+from scaks.compatutil import subprocess
 
 species_names = {"O": ("O_s", "O_r", "O_u", "O_d", "O_l"),
                  "CO": ("C")}

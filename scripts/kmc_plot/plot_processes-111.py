@@ -7,7 +7,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from kynetix.utilities.coordinate_utilities import CoordsGroup
+from scaks.utilities.coordinate_utilities import CoordsGroup
 
 
 def plot_elements(cell_vectors,

@@ -19,8 +19,8 @@ except ImportError:
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     PIL_installed = False
 
-from kynetix.utilities.format_utilities import convert_time
-from kynetix.plotters import images2gif
+from scaks.utilities.format_utilities import convert_time
+from scaks.plotters import images2gif
 
 
 def plot_scatters(types,
