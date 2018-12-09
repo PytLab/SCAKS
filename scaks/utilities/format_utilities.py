@@ -29,7 +29,7 @@ def get_list_string(var_name, list_obj, ncols=5):
     data = ''
     for idx, elem in enumerate(list_obj):
         # if item is iterable, one a line
-        if hasattr(elem, '__iter__'):
+        if hasattr(elem, '__iter__') and not isinstance(elem, str):
             data += ('\n' + indent + str(elem) + ',')
             continue
         # 5 items a line by default

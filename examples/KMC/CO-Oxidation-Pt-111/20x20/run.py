@@ -5,10 +5,10 @@ Script to run kynetix kMC simulation.
 import logging
 import time
 
-from kynetix.mpicommons import mpi
-from kynetix.compatutil import subprocess
-from kynetix.models.kmc_model import KMCModel
-from kynetix.utilities.format_utilities import convert_time
+from scaks.mpicommons import mpi
+from scaks.compatutil import subprocess
+from scaks.models.kmc_model import KMCModel
+from scaks.utilities.format_utilities import convert_time
 
 if "__main__" == __name__:
     # Remove old log file.
