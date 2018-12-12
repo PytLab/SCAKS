@@ -6,10 +6,10 @@ import logging
 import sys
 import time
 
-from kynetix.compatutil import subprocess
-from kynetix.mpicommons import mpi
-from kynetix.models.micro_kinetic_model import MicroKineticModel
-from kynetix.utilities.format_utilities import convert_time
+from scaks.compatutil import subprocess
+from scaks.mpicommons import mpi
+from scaks.models.micro_kinetic_model import MicroKineticModel
+from scaks.utilities.format_utilities import convert_time
 
 # Custom parameters.
 OdeInterval = 0.001          # ODE integration time interval.
