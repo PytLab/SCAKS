@@ -5,17 +5,17 @@ def collect_coverages(types, possible_types, coverage_ratios):
     """
     Function to get current coverages of possible types.
 
-    Parameters:
-    -----------
-    types: The site types at the lattice points as a list, list of str.
+    :param types: The site types at the lattice points as a list
+    :type types: list of str
 
-    possible_types: possible species type in grid.
+    :param possible_types: possible species type in grid
+    :type possible_types: list of str
 
-    coverage_ratios: The coverages ratios for all basis sites.
+    :param coverage_ratios: The coverages ratios for all basis sites
+    :type coverage_ratios: list of float
 
-    Returns:
-    --------
-    cvgs: coverages of possible types, numpy.array int
+    :return: coverages of possible types
+    :rtype: numpy.array of int
     """
     # Total number of sites.
     nsite = len(types)//len(coverage_ratios)
