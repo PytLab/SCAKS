@@ -112,5 +112,3 @@ build/
 *.egg-info
 dist
 
-scaks/solvers/kmc_plugins/kmc_functions.py
-
