@@ -12,12 +12,12 @@ pO2_dirs = [i for i in subprocess.getoutput('ls').split('\n') if i.startswith('p
 pO2s = []
 cvgs = []
 for pO2_dir in pO2_dirs:
-    pO2 = float(pO2_dir.split('-')[-1])
+    pO2 = float(pO2_dir.split('pO2-')[-1])
     pO2s.append(pO2)
     # Get pCO dirs.
     cmd = "ls {}/".format(pO2_dir)
     pCO_dirs = [i for i in subprocess.getoutput(cmd).split('\n') if i.startswith('pCO-')]
-    pCOs = [float(pCO_dir.split('-')[-1]) for pCO_dir in pCO_dirs]
+    pCOs = [float(pCO_dir.split('pCO-')[-1]) for pCO_dir in pCO_dirs]
     cvgs_1d = []
     for pCO_dir in pCO_dirs:
         # Read tofs.

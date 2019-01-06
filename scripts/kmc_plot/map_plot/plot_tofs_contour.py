@@ -16,8 +16,8 @@ interp_func = interp2d(pCOs, pO2s, tofs, kind="linear")
 
 # Plot 3D contour.
 #y, x = np.mgrid[0:1:100j, 0:1:100j]
-ynew = np.linspace(1e-5, 0.5, 100)
-xnew = np.linspace(1e-5, 0.5, 100)
+ynew = np.linspace(1e-5, 5, 100)
+xnew = np.linspace(1e-5, 1e-4, 100)
 z = interp_func(xnew, ynew)
 
 extent = [np.min(xnew), np.max(xnew), np.min(ynew), np.max(ynew)]

@@ -13,12 +13,12 @@ pO2_dirs = [i for i in subprocess.getoutput('ls').split('\n') if i.startswith('p
 pO2s = []
 tofs = []
 for pO2_dir in pO2_dirs:
-    pO2 = float(pO2_dir.split('-')[-1])
+    pO2 = float(pO2_dir.split('pO2-')[-1])
     pO2s.append(pO2)
     # Get pCO dirs.
     cmd = "ls {}/".format(pO2_dir)
     pCO_dirs = [i for i in subprocess.getoutput(cmd).split('\n') if i.startswith('pCO-')]
-    pCOs = [float(pCO_dir.split('-')[-1]) for pCO_dir in pCO_dirs]
+    pCOs = [float(pCO_dir.split('pCO-')[-1]) for pCO_dir in pCO_dirs]
     tofs_1d = []
     for pCO_dir in pCO_dirs:
         # Read tofs.
@@ -28,7 +28,7 @@ for pO2_dir in pO2_dirs:
         reaction_rates = locs["reaction_rates"]
         TON = 0.0
         reactions = sorted(reaction_rates.keys())
-        for idx in [0, 2, 8]:
+        for idx in [10, 12]:
             TON += reaction_rates[reactions[idx]]
         tof = TON
         tofs_1d.append(tof)
