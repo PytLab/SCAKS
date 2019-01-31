@@ -900,6 +900,8 @@ class SteadyStateSolver(MeanFieldSolver):
                                 if self._owner.log_allowed:
                                     self.__logger.warning('bad root: %s', str([float(i) for i in x]))
                                     self.__logger.warning('root finding continue...\n')
+                                cancel = False
+                                break
                         else:
                             error = f_resid(x)  # use residual as error and continue
 
