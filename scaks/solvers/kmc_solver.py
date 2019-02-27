@@ -135,7 +135,9 @@ class KMCSolver(SolverBase):
         all_elements = process_dict["elements_before"] + process_dict["elements_after"]
         possible_elements = self._owner.possible_element_types
         for element in all_elements:
-            if element not in possible_elements:
+            if element == '*':
+                continue
+            elif element not in possible_elements:
                 msg = "Element '{}' in process not in possible types {}"
                 msg = msg.format(element, possible_elements)
                 raise SetupError(msg)
