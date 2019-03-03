@@ -3,6 +3,7 @@ import logging
 import random
 import re
 
+import numpy as np
 from scipy.integrate import odeint, ode
 from scipy.linalg import norm
 from scipy.optimize import fsolve
@@ -328,8 +329,7 @@ class SteadyStateSolver(MeanFieldSolver):
         if adsorbate_name not in self._owner.adsorbate_names:
             raise ValueError("'" + adsorbate_name + "' is not in adsorbate_names")
 
-        def theta(sp_name):
-            return "theta['{}']".format(sp_name)
+        theta = lambda sp_name: "theta['{}']".format(sp_name)
 
         # Get all sites in term_expression.
         site_cvg_regex = r"theta\['(\*_\w*)'\]"
@@ -545,9 +545,9 @@ class SteadyStateSolver(MeanFieldSolver):
         # Get dtheta_dt sym according rate symbols.
         rf_sym, rr_sym = self.get_elementary_rate_sym(rxn_expression)
         if state_idx == 0:
-            dtheta_dt_sym = -rf_sym + rr_sym
+            dtheta_dt_sym = (-rf_sym + rr_sym)*stoichiometry
         else:
-            dtheta_dt_sym = rf_sym - rr_sym
+            dtheta_dt_sym = (rf_sym - rr_sym)*stoichiometry
 
         return dtheta_dt_sym
         # }}}
@@ -586,12 +586,10 @@ class SteadyStateSolver(MeanFieldSolver):
 
         dtheta_dt_syms = tuple(dtheta_dt_syms)
 
-        # Latex strings.
-        dtheta_dt_latexs = self.get_latex_strs(part1=r'\frac{d\theta_{', part2=r'}}{dt}} ',
-                                               symbols=dtheta_dt_syms)
-
         # Log it.
         if log_latex:
+            dtheta_dt_latexs = self.get_latex_strs(part1=r'\frac{d\theta_{', part2=r'}}{dt}} ',
+                                                   symbols=dtheta_dt_syms)
             self.log_latex(self.dtheta_dt_latex)
 
         return dtheta_dt_syms
@@ -611,7 +609,7 @@ class SteadyStateSolver(MeanFieldSolver):
         # Loop to get values of dtheta/dt.
         dtheta_dts = []
         for dtheta_dt_sym in dtheta_dt_syms:
-            dtheta_dt = self._mpf(dtheta_dt_sym.evalf(subs=subs_dict))
+            dtheta_dt = dtheta_dt_sym.evalf(subs=subs_dict)
             dtheta_dts.append(dtheta_dt)
 
         return tuple(dtheta_dts)
@@ -624,7 +622,7 @@ class SteadyStateSolver(MeanFieldSolver):
 
         # Allocate memories for jacobian matrix.
         m = n = len(dtheta_dt_syms)
-        sym_jacobian = [[0.0]*m, [0.0]*n]
+        sym_jacobian = np.zeros((m, n)).tolist()
 
         # dtheta/dt (row).
         for i in range(m):
@@ -654,7 +652,7 @@ class SteadyStateSolver(MeanFieldSolver):
         sym_jacobian = self.analytical_jacobian_sym()
 
         m = n = len(sym_jacobian)
-        num_jacobian = [[0.0]*m, [0.0]*n]
+        num_jacobian = np.zeros((m, n)).tolist()
 
         for i in range(m):
             for j in range(n):
@@ -663,6 +661,26 @@ class SteadyStateSolver(MeanFieldSolver):
 
         return self._matrix(num_jacobian)
 
+    def get_residual_by_sym(self, cvgs_tuple):
+        """
+        Function to get residual value of equations(the max value of dthe/dt).
+
+        :param cvgs_tuple: Adsorbate coverages
+        :type cvgs_tuple: tuple of float
+
+        :param relative_energies: Relative eneriges of elementary reactions.
+        :type relative_energies: dict
+
+        .. note::
+            keys ":obj:`Gaf` and ":obj:`Gar` must be in relative energies dict
+
+        :return: The max value of dtheta/dt wrt the coverages.
+        :rtype: list of float
+        """
+        dtheta_dts = self.steady_state_function_by_sym(cvgs_tuple)
+        residual = max([abs(dtheta_dt) for dtheta_dt in dtheta_dts])
+
+        return residual
 #    def get_rate_control_by_sym(self, RDS):
 #        """
 #        RDS: int, Rate Determining Step number.
@@ -785,6 +803,10 @@ class SteadyStateSolver(MeanFieldSolver):
         f_resid = lambda x: self.get_residual(x, relative_energies=relative_energies)
         constraint = self.__constrain_coverages
         J = lambda x: self.analytical_jacobian(x, relative_energies=relative_energies)
+        #f = lambda x: self.steady_state_function_by_sym(x)
+        #f_resid = lambda x: self.get_residual_by_sym(x)
+        #constraint = self.__constrain_coverages
+        #J = lambda x: self.analytical_jacobian_by_sym(x)
 
         ############    Main Loop with changed initial guess   ##############
         if self._owner.log_allowed:
@@ -807,9 +829,9 @@ class SteadyStateSolver(MeanFieldSolver):
                     self.__log_sscvg(c0, self._owner.adsorbate_names)
 
                     # Get error.
-                    fx = self.steady_state_function(c0, relative_energies)  # dtheta/dts
+                    fx = f(c0)#self.steady_state_function(c0, relative_energies)  # dtheta/dts
                     norm = self._norm(fx)
-                    resid = self.get_residual(c0)
+                    resid = f_resid(c0) #self.get_residual(c0)
                     error = min(norm, resid)
                     self._error = error
                     if self._owner.log_allowed:
@@ -941,9 +963,8 @@ class SteadyStateSolver(MeanFieldSolver):
                         c0 = self._owner.hybrid_method(self._owner, icvg_counter)
                         icvg_counter += 1
             # }}}
-            except ZeroDivisionError:
-                self.__logger.warning("ZeroDivisionError is catched !")
-                #c0 = self.modify_init_guess()
+            except ZeroDivisionError as e:
+                self.__logger.warning("ZeroDivisionError is catched: {}".format(e))
                 if not self._owner.hybrid_method:
                     msg = 'No hybrid method registered for hybrid iteration'
                     self.__logger.warning(msg)
@@ -1170,23 +1191,6 @@ class SteadyStateSolver(MeanFieldSolver):
 
         return all_data
         # }}}
-
-    def modify_init_guess(self, *args):
-        """ Use ODE integration to get new initial coverages guess.
-        """
-        if self._owner.log_allowed:
-            self.__logger.info("Use ODE integration to get new initial coverages...")
-        end_time = random.randint(0, 10)
-
-        time_span = 10**(-random.randint(0, 5))
-
-        new_cvgs = self.solve_ode(time_end=end_time, time_span=time_span)[-1]
-
-        if self._owner.log_allowed:
-            self.__logger.info('modify initial coverage - success')
-            self.__logger.debug(str(new_cvgs))
-
-        return new_cvgs
 
     ####################################
     ## solve model by ODE integration ##

@@ -99,6 +99,9 @@ class Integer(Type):
     def __init__(self, name, default, deepcopy=False, candidates=None):
         super(Integer, self).__init__(name, int, default, deepcopy, candidates)
 
+    def __set__(self, instance, value):
+        super(Integer, self).__set__(instance, value)
+
 
 class Float(Type):
     ''' Descriptor for float type attribute of kinetic model and components

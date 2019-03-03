@@ -240,10 +240,14 @@ class SolverBase(ModelShell):
                 p = P0
 
             # Use Collision Theory to get forward rate.
-            Ea = Gaf
-            rf = self.get_kCT(Ea=Ea, Auc=Auc, act_ratio=act_ratio, p=p, m=m, T=T)
-            if log_allowed:
-                self.__logger.info("R(forward) = {} s^-1 (Collision Theory)".format(rf))
+            if Gaf > 0.0:
+                rf = self.get_kTST(Gaf, T)
+                if log_allowed:
+                    self.__logger.info("R(forward) = {} s^-1 (Transition State Theory)".format(rf))
+            else:
+                rf = self.get_kCT(Ea=0.0, Auc=Auc, act_ratio=act_ratio, p=p, m=m, T=T)
+                if log_allowed:
+                    self.__logger.info("R(forward) = {} s^-1 (Collision Theory)".format(rf))
 
             # Use equilibrium condition to get reverse rate.
 #            correction_energy = corrector.entropy_correction(gas_name, m, p, T)
@@ -255,30 +259,30 @@ class SolverBase(ModelShell):
 #                msg = "Correct dG: {} -> {}".format(dG+correction_energy, dG)
 #                self.__logger.info(msg)
 
-#            # Use Equilibrium condition to get reverse rate.
-#            K = exp(-dG/(kB_eV*T))
-#            rr = rf/K
-#            if log_allowed:
-#                self.__logger.info("R(reverse) = {} s^-1 (Equilibrium Condition)".format(rr))
+            # Use Equilibrium condition to get reverse rate.
+            K = exp(-dG/(kB_eV*T))
+            rr = rf/K
+            if log_allowed:
+                self.__logger.info("R(reverse) = {} s^-1 (Equilibrium Condition)".format(rr))
 
             # Use Transition State Theory to get reverse rate.
             # Get equivalent free energy barrier for TST.
-            Gaf_TST = self.get_TST_barrier_from_CT(rf, T)
-
-            # Correct the reaction energy dG.
-            correction_energy = corrector.entropy_correction(gas_name, m, p, T)
-            stoichiometry = formula.stoichiometry()
-            dG -= stoichiometry*correction_energy
-            Gar_TST = Gaf_TST - dG
-
-            if Gar_TST < 0:
-                Gar_TST = 0.0
-
-            rr = self.get_kTST(Gar_TST, T);
-            if log_allowed:
-                self.__logger.info("Get equivalent TST barrier from CT: {} eV".format(Gaf_TST))
-                self.__logger.info("Get equivalent reverse barrier: {} eV".format(Gar_TST))
-                self.__logger.info("R(reverse) = {} s^-1 (Transition State Theory)".format(rr))
+#            Gaf_TST = self.get_TST_barrier_from_CT(rf, T)
+#
+#            # Correct the reaction energy dG.
+#            correction_energy = corrector.entropy_correction(gas_name, m, p, T)
+#            stoichiometry = formula.stoichiometry()
+#            dG -= stoichiometry*correction_energy
+#            Gar_TST = Gaf_TST - dG
+#
+#            if Gar_TST < 0:
+#                Gar_TST = 0.0
+#
+#            rr = self.get_kTST(Gar_TST, T);
+#            if log_allowed:
+#                self.__logger.info("Get equivalent TST barrier from CT: {} eV".format(Gaf_TST))
+#                self.__logger.info("Get equivalent reverse barrier: {} eV".format(Gar_TST))
+#                self.__logger.info("R(reverse) = {} s^-1 (Transition State Theory)".format(rr))
 
         # Desorption process.
         elif "gas" in fs_types:
@@ -294,13 +298,14 @@ class SolverBase(ModelShell):
 
             # Use Collision Theory to get reverse rate.
 #            Ea = Gar
-            m = ParserBase.get_molecular_mass(formula.species(), absolute=True)
+#            Ea = 0.0  # Use Ea=0 for collision theory
+#            m = ParserBase.get_molecular_mass(formula.species(), absolute=True)
 #            rr = self.get_kCT(Ea=Ea, Auc=Auc, act_ratio=act_ratio, p=p, m=m, T=T)
 #            if log_allowed:
 #                self.__logger.info("R(reverse) = {} s^-1 (Collision Theory)".format(rr))
-            correction_energy = corrector.entropy_correction(gas_name, m, p, T)
-            stoichiometry = formula.stoichiometry()
-            Gar -= stoichiometry*correction_energy
+#            correction_energy = corrector.entropy_correction(gas_name, m, p, T)
+#            stoichiometry = formula.stoichiometry()
+#            Gar -= stoichiometry*correction_energy
             rr = self.get_kTST(Gar, T)
 
             # Use Transition State theory to get forward rate.

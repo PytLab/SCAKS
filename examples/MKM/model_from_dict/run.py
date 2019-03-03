@@ -27,7 +27,7 @@ model_dict = {
 }
 
 # Build micor-kinetic model.
-model = MicroKineticModel(setup_dict=model_dict)
+model = MicroKineticModel(setup_dict=model_dict, logger_level=10, console_handler_level=10)
 
 # Read data.
 model.parser.parse_data(filename='./rel_energy.py')
@@ -40,6 +40,8 @@ model.solver.get_data()
 # Create corrector for energy correction
 corrector = ThermodynamicCorrector(model)
 model.set_corrector(corrector)
+
+model.solver.get_data_symbols()
 
 if __name__ == '__main__':
     trajectory = model.solver.solve_ode(time_span=0.01, time_end=1, traj_output=True)

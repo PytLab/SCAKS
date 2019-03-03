@@ -762,13 +762,10 @@ class MeanFieldSolver(SolverBase):
         kB, h, T = self._kB_sym, self._h_sym, self._T_sym
         kf_syms, kr_syms = [], []
 
-        for Gaf_sym, dG_sym in zip(self._Ga_sym, self._dG_sym):
-            Gar_sym = Gaf_sym - dG_sym
-
-            kf_sym = kB*T/h*sym.E**(-Gaf_sym/(kB*T))
+        for idx in range(len(self._owner.rxn_expressions)):
+            kf_sym, kr_sym = sym.symbols('kf_{}, kr_{}'.format(idx, idx),
+                                         is_real=True)
             kf_syms.append(kf_sym)
-
-            kr_sym = kB*T/h*sym.E**(-Gar_sym/(kB*T))
             kr_syms.append(kr_sym)
 
         return kf_syms, kr_syms
@@ -841,13 +838,13 @@ class MeanFieldSolver(SolverBase):
             rf_syms.append(rf_sym)
             rr_syms.append(rr_sym)
 
-        # Latex strings.
-        rf_latexs = self.get_latex_strs(part1=r'r_{f', part2=r'^{+}}',
-                                        symbols=rf_syms)
-        rr_latexs = self.get_latex_strs(part1=r'r_{r', part2=r'^{-}}',
-                                        symbols=rr_syms)
 
         if log_latex:
+            # Latex strings.
+            rf_latexs = self.get_latex_strs(part1=r'r_{f', part2=r'^{+}}',
+                                            symbols=rf_syms)
+            rr_latexs = self.get_latex_strs(part1=r'r_{r', part2=r'^{-}}',
+                                            symbols=rr_syms)
             # log it.
             self.log_latex(rf_latexs)
             self.log_latex(rr_latexs)
@@ -864,11 +861,14 @@ class MeanFieldSolver(SolverBase):
         :return: Substitution dict whose keys are Sympy.Symbol object and values are float.
         """
         # {{{
+        # rate constants substitution dict
+        k_subs_dict = self._get_k_subs_dict()
+
         # Free energy substitution dict.
         G_subs_dict = self._get_G_subs_dict()
 
         # Coverage substitution dict.
-        if coverages:
+        if coverages is not None:
             theta_subs_dict = self._get_theta_subs_dict(coverages)
 
         # Pressure substitution dict.
@@ -881,11 +881,11 @@ class MeanFieldSolver(SolverBase):
         constants_subs_dict = self._constants_subs_dict
 
         # Get dicts list.
-        if coverages:
-            dicts_list = [G_subs_dict, theta_subs_dict, constants_subs_dict,
+        if coverages is not None:
+            dicts_list = [k_subs_dict, theta_subs_dict, constants_subs_dict,
                           p_subs_dict, c_subs_dict]
         else:
-            dicts_list = [G_subs_dict, constants_subs_dict, p_subs_dict, c_subs_dict]
+            dicts_list = [k_subs_dict, constants_subs_dict, p_subs_dict, c_subs_dict]
 
         # Merge dicts.
         subs_dict = {}
@@ -945,6 +945,19 @@ class MeanFieldSolver(SolverBase):
         self.archive_data('rates', (rfs, rrs))
 
         return tuple(rfs), tuple(rrs)
+
+    def _get_k_subs_dict(self, relative_energies=None):
+        ''' Protected function to get rate constant symbol substitution dict
+        '''
+        kfs, krs = self.get_rate_constants(relative_energies=relative_energies)
+        kf_syms, kr_syms = self.get_rate_constant_syms()
+        syms, vals = kf_syms + kr_syms, kfs + krs
+
+        k_dict = {}
+        for sym, val in zip(syms, vals):
+            k_dict.setdefault(sym, val)
+
+        return k_dict
 
     def _get_G_subs_dict(self):
         """
