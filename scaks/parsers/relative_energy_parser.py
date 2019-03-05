@@ -1,5 +1,6 @@
 import os
 import logging
+import mpmath as mp
 
 from scipy.linalg import solve
 
@@ -16,6 +17,9 @@ class RelativeEnergyParser(ParserBase):
     '''
     def __init__(self, owner):
         super(RelativeEnergyParser, self).__init__(owner)
+
+        # Set precision
+        mp.mp.dps = self._owner.decimal_precision
 
         # Set logger.
         self.__logger = logging.getLogger('model.parsers.RelativeEnergyParser')
@@ -56,8 +60,8 @@ class RelativeEnergyParser(ParserBase):
             # -------------------------------------------------------
             if abs(Gaf - 0.0) < 1e-10 and dG > 0.0:
                 Gaf = dG
-            Gafs.append(Gaf)
-            dGs.append(dG)
+            Gafs.append(mp.mpf(Gaf))
+            dGs.append(mp.mpf(dG))
 
         relative_energies = dict(Gaf=Gafs, dG=dGs)
 
