@@ -44,8 +44,7 @@ class SolverBase(ModelShell):
 
         return kTST
 
-    @staticmethod
-    def get_kCT(Ea, Auc, act_ratio, m, T, p=P0, f=1.0):
+    def get_kCT(self, Ea, Auc, act_ratio, m, T, p=P0, f=1.0):
         """ Static function to get rate constant/collision rate according to 
         Collision Theory.
 
@@ -81,10 +80,10 @@ class SolverBase(ModelShell):
             msg = "factor f must be less than 1.0"
             raise ParameterError(msg)
 
-        # Sticking coefficient.
-        S = f*act_ratio*exp(-Ea/(kB_eV*T))
-
-        # Rate constant.
+        if self.__class__.__name__ == "SteadyStateSolver":
+            S = f*act_ratio*self._math.exp(-self._mpf(Ea)/(kB_eV*T))
+        else:
+            S = f*act_ratio*exp(-Ea/(kB_eV*T))
         kCT = S*(p*Auc)/(sqrt(2*pi*m*kB_J*T))
 
         return kCT
@@ -240,12 +239,12 @@ class SolverBase(ModelShell):
                 p = P0
 
             # Use Collision Theory to get forward rate.
-            if Gaf > 0.0:
+            if Gaf > 0.01:
                 rf = self.get_kTST(Gaf, T)
                 if log_allowed:
                     self.__logger.info("R(forward) = {} s^-1 (Transition State Theory)".format(rf))
             else:
-                rf = self.get_kCT(Ea=0.0, Auc=Auc, act_ratio=act_ratio, p=p, m=m, T=T)
+                rf = self.get_kCT(Ea=Gaf, Auc=Auc, act_ratio=act_ratio, p=p, m=m, T=T)
                 if log_allowed:
                     self.__logger.info("R(forward) = {} s^-1 (Collision Theory)".format(rf))
 

@@ -1070,12 +1070,14 @@ class SteadyStateSolver(MeanFieldSolver):
         return all_data
         # }}}
 
-    def get_single_XRC(self, gas_name, epsilon=None, relative_energies=None):
+    def get_single_XRC(self, gas_name, init_cvgs=None, epsilon=None, relative_energies=None):
         """
         Function to get XRC for one gas species.
 
         :param gas_name: The gas name whose XTRC would be calculated
         :type gas_name: str
+
+        :param init_cvgs: Initial coverages for all steady-state function solving.
 
         :param epsilon: The perturbation size for numerical jacobian matrix
         :type epsilon: float
@@ -1093,7 +1095,9 @@ class SteadyStateSolver(MeanFieldSolver):
             self.__logger.info("-"*55 + "\n")
 
         # Get original TOF for the gas speices.
-        if hasattr(self, "_coverages"):
+        if init_cvgs is not None:
+            init_guess = init_cvgs
+        elif hasattr(self, "_coverages"):
             init_guess = self._coverages
         else:
             msg = ("Converged coverages are needed to calculate XRC, " +
@@ -1132,6 +1136,9 @@ class SteadyStateSolver(MeanFieldSolver):
             dk = k_prime - k
 
             # Get steady state coverages.
+            #ode_guess = self.solve_ode(initial_cvgs=init_guess,
+            #                           time_end=1000.,
+            #                           relative_energies=relative_energies)[-1]
             steady_cvgs = self.get_steady_state_cvgs(c0=init_guess,
                                                      relative_energies=relative_energies_copy)
             r_prime = self.get_tof(cvgs=steady_cvgs,
