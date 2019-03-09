@@ -1070,14 +1070,20 @@ class SteadyStateSolver(MeanFieldSolver):
         return all_data
         # }}}
 
-    def get_single_XRC(self, gas_name, init_cvgs=None, epsilon=None, relative_energies=None):
+    def get_single_XRC(self,
+                       rxn_idx,
+                       xrc_init_cvgs=None,
+                       epsilon=None,
+                       relative_energies=None,
+                       run_ode=False):
         """
         Function to get XRC for one gas species.
 
-        :param gas_name: The gas name whose XTRC would be calculated
-        :type gas_name: str
+        :param rxn_idx: Which rate of elementary reaction will be used for XRC calculation
+        :type rxn_idx: int
 
-        :param init_cvgs: Initial coverages for all steady-state function solving.
+        :param xrc_init_cvgs: Initial coverages for all steady-state function solving.
+        :type xrc_init_cvgs: list of float
 
         :param epsilon: The perturbation size for numerical jacobian matrix
         :type epsilon: float
@@ -1095,17 +1101,13 @@ class SteadyStateSolver(MeanFieldSolver):
             self.__logger.info("-"*55 + "\n")
 
         # Get original TOF for the gas speices.
-        if init_cvgs is not None:
-            init_guess = init_cvgs
-        elif hasattr(self, "_coverages"):
+        if hasattr(self, "_coverages"):
             init_guess = self._coverages
         else:
             msg = ("Converged coverages are needed to calculate XRC, " +
                    "so try to get steady state coverages first.")
             raise AttributeError(msg)
-        r = self.get_tof(cvgs=init_guess,
-                         gas_name=gas_name,
-                         relative_energies=relative_energies)
+        r = self.get_net_rates(cvgs_tuple=init_guess, relative_energies=relative_energies)[idx]
 
         # Original rate constants.
         kfs, _ = self.get_rate_constants(relative_energies=relative_energies)
@@ -1133,21 +1135,28 @@ class SteadyStateSolver(MeanFieldSolver):
             k = kfs[idx]
             ks_prime, _ = self.get_rate_constants(relative_energies=relative_energies_copy)
             k_prime = ks_prime[idx]
-            dk = k_prime - k
+            #dk = k_prime - k
 
             # Get steady state coverages.
-            #ode_guess = self.solve_ode(initial_cvgs=init_guess,
-            #                           time_end=1000.,
-            #                           relative_energies=relative_energies)[-1]
-            steady_cvgs = self.get_steady_state_cvgs(c0=init_guess,
+            ode_guess = None
+            if run_ode:
+                ode_guess = self.solve_ode(initial_cvgs=xrc_init_cvgs,
+                                           time_end=1000.,
+                                           relative_energies=relative_energies_copy)[idx]
+            steady_cvgs = self.get_steady_state_cvgs(c0=init_guess if ode_guess is None else ode_guess,
                                                      relative_energies=relative_energies_copy)
-            r_prime = self.get_tof(cvgs=steady_cvgs,
-                                   relative_energies=relative_energies_copy,
-                                   gas_name=gas_name)
-            dr = r_prime - r
+            #r_prime = self.get_tof(cvgs=steady_cvgs,
+            #                       relative_energies=relative_energies_copy,
+            #                       gas_name=gas_name)
+            r_prime = self.get_net_rates(cvgs_tuple=steady_cvgs, relative_energies=relative_energies_copy)[-1]
+            #dr = r_prime - r
+
+            dlnr = self._math.ln(r_prime) - self._math.ln(r)
+            dlnk = self._math.ln(k_prime) - self._math.ln(k)
 
             try:
-                XRCi = k/r*(dr/dk)
+                #XRCi = k/r*(dr/dk)
+                XRCi = dlnr/dlnk
             except ZeroDivisionError:
                 self.__logger.error("ZeroDivisionError exception detected when" +
                                     "calculating XRC, the XRC is set to inf")
