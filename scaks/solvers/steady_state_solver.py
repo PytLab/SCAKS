@@ -15,6 +15,7 @@ from ..utilities.format_utilities import get_list_string
 from ..parsers.rxn_parser import *
 from .rootfinding_iterators import *
 from .mean_field_solver import MeanFieldSolver
+from ..database.thermo_data import kB_eV
 
 
 class SteadyStateSolver(MeanFieldSolver):
@@ -1015,61 +1016,6 @@ class SteadyStateSolver(MeanFieldSolver):
         return all_data
         # }}}
 
-    def __log_single_XTRC(self, XTRCs, gas_name):
-        """
-        Private helper function to log XTRC for a gas species.
-        """
-        # {{{
-        head_str = "\n {:<10s}{:<25s}{:<30s}\n".format("index", "intermediate", "XTRC")
-        head_str = "Degree of Rate Control for {}:\n".format(gas_name) + head_str
-        line_str = '-'*60 + '\n'
-
-        all_data = ''
-        all_data += head_str + line_str
-        intermediates = (self._owner.adsorbate_names +
-                         self._owner.transition_state_names)
-
-        for idx, (intermediate, XTRC) in enumerate(zip(intermediates, XTRCs)):
-            idx = str(idx).zfill(2)
-            data = " {:<10s}{:<25s}{:<30.16e}\n".format(idx, intermediate, float(XTRC))
-            all_data += data
-        all_data += line_str
-
-        if self._owner.log_allowed:
-            self.__logger.info(all_data)
-
-        return all_data
-        # }}}
-
-    def __log_XTRC(self, XTRC_matrix):
-        """
-        Private helper function to log XTRC for all gas species.
-        """
-        # {{{
-        gas_names = self._owner.gas_names
-        intermediate_names = (self._owner.adsorbate_names +
-                              self._owner.transition_state_names)
-
-        head_str = "\n{:<15s}{:<30s}{:<30s}\n".format("gas", "intermediate", "XTRC")
-        head_str = "Degree of Thermodynamic Rate Control:\n" + head_str
-        line_str = "-"*70 + "\n"
-
-        all_data = ""
-        all_data += head_str + line_str
-
-        for gas_name, XTRC_vect in zip(gas_names, XTRC_matrix):
-            for intermediate, XTRC in zip(intermediate_names, XTRC_vect):
-                data = "{:<15s}{:<30s}{:<30.16e}\n".format(gas_name, intermediate, float(XTRC))
-                all_data += data
-
-        all_data += line_str
-
-        if self._owner.log_allowed:
-            self.__logger.info(all_data)
-
-        return all_data
-        # }}}
-
     def get_single_XRC(self,
                        rxn_idx,
                        xrc_init_cvgs=None,
@@ -1107,7 +1053,7 @@ class SteadyStateSolver(MeanFieldSolver):
             msg = ("Converged coverages are needed to calculate XRC, " +
                    "so try to get steady state coverages first.")
             raise AttributeError(msg)
-        r = self.get_net_rates(cvgs_tuple=init_guess, relative_energies=relative_energies)[idx]
+        r = self.get_net_rates(cvgs_tuple=init_guess, relative_energies=relative_energies)[rxn_idx]
 
         # Original rate constants.
         kfs, _ = self.get_rate_constants(relative_energies=relative_energies)
@@ -1142,13 +1088,14 @@ class SteadyStateSolver(MeanFieldSolver):
             if run_ode:
                 ode_guess = self.solve_ode(initial_cvgs=xrc_init_cvgs,
                                            time_end=1000.,
-                                           relative_energies=relative_energies_copy)[idx]
+                                           relative_energies=relative_energies_copy)[-1]
             steady_cvgs = self.get_steady_state_cvgs(c0=init_guess if ode_guess is None else ode_guess,
                                                      relative_energies=relative_energies_copy)
             #r_prime = self.get_tof(cvgs=steady_cvgs,
             #                       relative_energies=relative_energies_copy,
             #                       gas_name=gas_name)
-            r_prime = self.get_net_rates(cvgs_tuple=steady_cvgs, relative_energies=relative_energies_copy)[-1]
+            r_prime = self.get_net_rates(cvgs_tuple=steady_cvgs,
+                                         relative_energies=relative_energies_copy)[rxn_idx]
             #dr = r_prime - r
 
             dlnr = self._math.ln(r_prime) - self._math.ln(r)
@@ -1178,18 +1125,94 @@ class SteadyStateSolver(MeanFieldSolver):
                 self.__logger.info("XRC({}) = {:.2e}\n".format(rxn_expressions[i], float(XRC)))
 
         # Ouput log info.
-        self.__log_single_XRC(XRCs=XRCs, gas_name=gas_name)
+        self.__log_single_XRC(XRCs=XRCs)
 
         return XRCs
         # }}}
 
-    def __log_single_XRC(self, XRCs, gas_name):
+    def get_XTRC(self, rate_rxn_idx, xrc_init_cvgs, epsilon=None, run_ode=False):
+        relative_energies = self._owner.relative_energies
+
+        # Get original TOF for the gas speices.
+        if hasattr(self, "_coverages"):
+            current_root = self._coverages
+        else:
+            msg = ("Converged coverages are needed to calculate XTRC, " +
+                   "so try to get steady state coverages first.")
+            raise AttributeError(msg)
+        r = self.get_net_rates(cvgs_tuple=current_root,
+                               relative_energies=relative_energies)[rate_rxn_idx]
+
+        def get_XTRC_ads(adsorbate_name):
+            adsorbate_info = []
+            rxn_indices = []
+            for idx, rxn_expression in enumerate(self._owner.rxn_expressions):
+                rxn_equation = RxnEquation(rxn_expression)
+                search_result = rxn_equation.search_adsorbate(adsorbate_name)
+                if search_result is not None:
+                    adsorbate_info.append(search_result)
+                    rxn_indices.append(idx)
+
+            if not adsorbate_info:
+                raise ValueError('Invalid adsorbate name: {}'.format(adsorbate_name))
+
+            # New energies
+            relative_energies_copy = copy.deepcopy(relative_energies)
+            for rxn_idx, ads_info in zip(rxn_indices, adsorbate_info):
+                stoichiometry = ads_info['adsorbate'].stoichiometry()
+                if ads_info['state'] == 'IS':
+                    relative_energies_copy['Gaf'][rxn_idx] += epsilon
+                    relative_energies_copy['dG'][rxn_idx] += epsilon
+                elif ads_info['state'] == 'FS':
+                    relative_energies_copy['Gar'][rxn_idx] += epsilon
+                    relative_energies_copy['dG'][rxn_idx] -= epsilon
+
+            ode_guess = None
+            if run_ode:
+                ode_guess = self.solve_ode(initial_cvgs=xrc_init_cvgs,
+                                           time_end=1000.,
+                                           relative_energies=relative_energies_copy)[-1]
+            steady_cvgs = self.get_steady_state_cvgs(c0=current_root if ode_guess is None else ode_guess,
+                                                     relative_energies=relative_energies_copy)
+            r_prime = self.get_net_rates(cvgs_tuple=steady_cvgs,
+                                         relative_energies=relative_energies_copy)[rate_rxn_idx]
+
+            dlnr = self._math.ln(r_prime) - self._math.ln(r)
+            dr = r_prime - r
+            dG = -epsilon
+            
+            try:
+                XTRC = 1/r*dr/(-dG/(kB_eV*self._owner.temperature))
+                #import ipdb; ipdb.set_trace()
+            except ZeroDivisionError:
+                self.__logger.error("ZeroDivisionError exception detected when" +
+                                    "calculating XTRC, the XTRC is set to inf")
+                XTRC = 'inf'
+
+            return XTRC
+
+        XTRCs = []
+        for ads in self._owner.adsorbate_names:
+            if self._owner.log_allowed:
+                self.__logger.info("Calculating XTRC for {} ...".format(ads))
+
+            XTRC = get_XTRC_ads(ads)
+            XTRCs.append(XTRC)
+
+            # Ouput log info.
+            if self._owner.log_allowed:
+                self.__logger.info("XTRC({}) = {:.2e}\n".format(ads, float(XTRC)))
+
+        if self._owner.log_allowed:
+            self.__log_single_XTRC(XTRCs=XTRCs)
+
+    def __log_single_XRC(self, XRCs):
         """
         Private helper function to log XRC for a gas species.
         """
         # {{{
         head_str = "\n {:<10s}{:<70s}{:<30s}\n".format("index", "elementary reaction", "XRC")
-        head_str = "Degree of Rate Control for {}:\n".format(gas_name) + head_str
+        head_str = "Degree of Rate Control\n" + head_str
         line_str = '-'*100 + '\n'
 
         all_data = ''
@@ -1199,6 +1222,31 @@ class SteadyStateSolver(MeanFieldSolver):
         for idx, (rxn_expression, XRC) in enumerate(zip(rxn_expressions, XRCs)):
             idx = str(idx).zfill(2)
             data = " {:<10s}{:<70s}{:<30.16e}\n".format(idx, rxn_expression, float(XRC))
+            all_data += data
+        all_data += line_str
+
+        if self._owner.log_allowed:
+            self.__logger.info(all_data)
+
+        return all_data
+        # }}}
+
+    def __log_single_XTRC(self, XTRCs):
+        """
+        Private helper function to log XTRC for a gas species.
+        """
+        # {{{
+        head_str = "\n {:<10s}{:<25s}{:<30s}\n".format("index", "intermediate", "XTRC")
+        head_str = "Degree of Thermodynamic Rate Control\n" + head_str
+        line_str = '-'*60 + '\n'
+
+        all_data = ''
+        all_data += head_str + line_str
+        intermediates = self._owner.adsorbate_names
+
+        for idx, (intermediate, XTRC) in enumerate(zip(intermediates, XTRCs)):
+            idx = str(idx).zfill(2)
+            data = " {:<10s}{:<25s}{:<30.16e}\n".format(idx, intermediate, float(XTRC))
             all_data += data
         all_data += line_str
 

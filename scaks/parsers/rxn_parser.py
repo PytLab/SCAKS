@@ -129,6 +129,33 @@ class RxnEquation(object):
 
         return gases
 
+    def search_adsorbate(self, adsorbate_name):
+        ''' Search an adsorbate in current elementary reaction
+
+        :param adsorbate_name: The name of adsorbate to be searched
+        :type adsorbate_name: str
+
+        :return: search result information about the adsorbate
+        :rtype: dict containing state and stoichiometry info or None if not found
+        '''
+        formula_lists = self.to_formula_list()
+
+        # IS
+        try:
+            idx = [sp.formula() for sp in formula_lists[0]].index(adsorbate_name)
+            formula = formula_lists[0][idx]
+            return {'state': 'IS', 'adsorbate': formula}
+        except ValueError:
+            pass
+
+        # FS
+        try:
+            idx = [sp.formula() for sp in formula_lists[-1]].index(adsorbate_name)
+            formula = formula_lists[-1][idx]
+            return {'state': 'FS', 'adsorbate': formula}
+        except ValueError:
+            return None
+
     # ----------------------------------------
     # Query functions.
 
