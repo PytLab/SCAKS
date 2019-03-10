@@ -78,12 +78,12 @@ class RxnEquationTest(unittest.TestCase):
         " Make sure adsorbate can be searched correctly "
         adsorbate = 'CO_s'
         equation = RxnEquation("CO_s + O_s <-> CO-O_2s -> CO2_g + 2*_s")
-        res = equation.search(adsorbate)
+        res = equation.search_intermediate(adsorbate)
         self.assertEqual(res['state'], 'IS')
-        self.assertEqual(res['adsorbate'].formula, adsorbate)
-        self.assertEqual(res['adsorbate'].stoichiometry, 1)
+        self.assertEqual(res['intermediate'].formula, adsorbate)
+        self.assertEqual(res['intermediate'].stoichiometry, 1)
 
-        res = equation.search('H_s')
+        res = equation.search_intermediate('H_s')
         self.assertIsNone(res)
 
     def tearDown(self):

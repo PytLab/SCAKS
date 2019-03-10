@@ -129,32 +129,49 @@ class RxnEquation(object):
 
         return gases
 
-    def search_adsorbate(self, adsorbate_name):
-        ''' Search an adsorbate in current elementary reaction
+    def search_intermediate(self, intermediate_name):
+        ''' Search an intermediate in current elementary reaction
 
-        :param adsorbate_name: The name of adsorbate to be searched
-        :type adsorbate_name: str
+        :param intermediate_name: The name of intermediate to be searched
+        :type intermediate_name: str
 
-        :return: search result information about the adsorbate
+        :return: search result information about the intermediate
         :rtype: dict containing state and stoichiometry info or None if not found
         '''
         formula_lists = self.to_formula_list()
 
         # IS
         try:
-            idx = [sp.formula() for sp in formula_lists[0]].index(adsorbate_name)
+            idx = [sp.formula() for sp in formula_lists[0]].index(intermediate_name)
             formula = formula_lists[0][idx]
-            return {'state': 'IS', 'adsorbate': formula}
+            return {'state': 'IS', 'intermediate': formula}
         except ValueError:
             pass
 
         # FS
         try:
-            idx = [sp.formula() for sp in formula_lists[-1]].index(adsorbate_name)
+            idx = [sp.formula() for sp in formula_lists[-1]].index(intermediate_name)
             formula = formula_lists[-1][idx]
-            return {'state': 'FS', 'adsorbate': formula}
+            return {'state': 'FS', 'intermediate': formula}
         except ValueError:
+            pass
+
+        # TS
+        if len(formula_lists) == 3:
+            try:
+                idx = [sp.formula() for sp in formula_lists[1]].index(intermediate_name)
+                formula = formula_lists[1][idx]
+                return {'state': 'TS', 'intermediate': formula}
+            except ValueError:
+                return None
+        else:
             return None
+
+
+
+
+
+
 
     # ----------------------------------------
     # Query functions.

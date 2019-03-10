@@ -682,19 +682,6 @@ class SteadyStateSolver(MeanFieldSolver):
         residual = max([abs(dtheta_dt) for dtheta_dt in dtheta_dts])
 
         return residual
-#    def get_rate_control_by_sym(self, RDS):
-#        """
-#        RDS: int, Rate Determining Step number.
-#        """
-#        #get quasi_quilibrium_solver instance
-#        _temp = __import__('quasi_equilibrium_solver',
-#                           globals(), locals(), ['QuasiEquilibriumSolver'])
-#        qe_solver = _temp.QuasiEquilibriumSolver(owner=self._owner)
-#        qe_solver.RDS = RDS  # set Rate Determining Step
-#        XTRCs = qe_solver.get_XTRCs()
-#        self.qe_solver = qe_solver
-#
-#        return XTRCs
 
     ##########################################################
     ###### calculate micro kinetic model with Sympy END ######
@@ -1125,47 +1112,57 @@ class SteadyStateSolver(MeanFieldSolver):
                 self.__logger.info("XRC({}) = {:.2e}\n".format(rxn_expressions[i], float(XRC)))
 
         # Ouput log info.
-        self.__log_single_XRC(XRCs=XRCs)
+        self.__log_XRC(XRCs=XRCs)
 
         return XRCs
         # }}}
 
-    def get_XTRC(self, rate_rxn_idx, xrc_init_cvgs, epsilon=None, run_ode=False):
+    def get_GXRC(self,
+                 rate_rxn_idx,
+                 xrc_init_cvgs,
+                 intermediates=None,
+                 epsilon=None,
+                 run_ode=False):
+        ''' Get general XRC
+        '''
         relative_energies = self._owner.relative_energies
 
         # Get original TOF for the gas speices.
         if hasattr(self, "_coverages"):
             current_root = self._coverages
         else:
-            msg = ("Converged coverages are needed to calculate XTRC, " +
+            msg = ("Converged coverages are needed to calculate GXRC, " +
                    "so try to get steady state coverages first.")
             raise AttributeError(msg)
         r = self.get_net_rates(cvgs_tuple=current_root,
                                relative_energies=relative_energies)[rate_rxn_idx]
 
-        def get_XTRC_ads(adsorbate_name):
-            adsorbate_info = []
+        def get_GXRC_intermediate(intermediate_name):
+            intermediate_info = []
             rxn_indices = []
             for idx, rxn_expression in enumerate(self._owner.rxn_expressions):
                 rxn_equation = RxnEquation(rxn_expression)
-                search_result = rxn_equation.search_adsorbate(adsorbate_name)
+                search_result = rxn_equation.search_intermediate(intermediate_name)
                 if search_result is not None:
-                    adsorbate_info.append(search_result)
+                    intermediate_info.append(search_result)
                     rxn_indices.append(idx)
 
-            if not adsorbate_info:
-                raise ValueError('Invalid adsorbate name: {}'.format(adsorbate_name))
+            if not intermediate_info:
+                raise ValueError('Invalid intermediate name: {}'.format(intermediate_name))
 
             # New energies
             relative_energies_copy = copy.deepcopy(relative_energies)
-            for rxn_idx, ads_info in zip(rxn_indices, adsorbate_info):
-                stoichiometry = ads_info['adsorbate'].stoichiometry()
-                if ads_info['state'] == 'IS':
+            for rxn_idx, info in zip(rxn_indices, intermediate_info):
+                stoichiometry = info['intermediate'].stoichiometry()
+                if info['state'] == 'IS':
                     relative_energies_copy['Gaf'][rxn_idx] += epsilon
                     relative_energies_copy['dG'][rxn_idx] += epsilon
-                elif ads_info['state'] == 'FS':
+                elif info['state'] == 'FS':
                     relative_energies_copy['Gar'][rxn_idx] += epsilon
                     relative_energies_copy['dG'][rxn_idx] -= epsilon
+                elif info['state'] == 'TS':
+                    relative_energies_copy['Gaf'][rxn_idx] -= epsilon
+                    relative_energies_copy['Gar'][rxn_idx] -= epsilon
 
             ode_guess = None
             if run_ode:
@@ -1182,31 +1179,34 @@ class SteadyStateSolver(MeanFieldSolver):
             dG = -epsilon
             
             try:
-                XTRC = 1/r*dr/(-dG/(kB_eV*self._owner.temperature))
+                GXRC = 1/r*dr/(-dG/(kB_eV*self._owner.temperature))
                 #import ipdb; ipdb.set_trace()
             except ZeroDivisionError:
                 self.__logger.error("ZeroDivisionError exception detected when" +
-                                    "calculating XTRC, the XTRC is set to inf")
-                XTRC = 'inf'
+                                    "calculating GXRC, the GXRC is set to inf")
+                GXRC = 'inf'
 
-            return XTRC
+            return GXRC
 
-        XTRCs = []
-        for ads in self._owner.adsorbate_names:
+        GXRCs = []
+        if intermediates is None:
+            intermediates = self._owner.transition_state_names + self._owner.adsorbate_names
+
+        for intermediate in intermediates:
             if self._owner.log_allowed:
-                self.__logger.info("Calculating XTRC for {} ...".format(ads))
+                self.__logger.info("Calculating general XRC for {} ...".format(intermediate))
 
-            XTRC = get_XTRC_ads(ads)
-            XTRCs.append(XTRC)
+            GXRC = get_GXRC_intermediate(intermediate)
+            GXRCs.append(GXRC)
 
             # Ouput log info.
             if self._owner.log_allowed:
-                self.__logger.info("XTRC({}) = {:.2e}\n".format(ads, float(XTRC)))
+                self.__logger.info("GXRC({}) = {:.2e}\n".format(intermediate, float(GXRC)))
 
         if self._owner.log_allowed:
-            self.__log_single_XTRC(XTRCs=XTRCs)
+            self.__log_GXRC(GXRCs=GXRCs, intermediates=intermediates)
 
-    def __log_single_XRC(self, XRCs):
+    def __log_XRC(self, XRCs):
         """
         Private helper function to log XRC for a gas species.
         """
@@ -1231,22 +1231,21 @@ class SteadyStateSolver(MeanFieldSolver):
         return all_data
         # }}}
 
-    def __log_single_XTRC(self, XTRCs):
+    def __log_GXRC(self, GXRCs, intermediates):
         """
-        Private helper function to log XTRC for a gas species.
+        Private helper function to log GXRC for a gas species.
         """
         # {{{
-        head_str = "\n {:<10s}{:<25s}{:<30s}\n".format("index", "intermediate", "XTRC")
-        head_str = "Degree of Thermodynamic Rate Control\n" + head_str
+        head_str = "\n {:<10s}{:<25s}{:<30s}\n".format("index", "intermediate", "GXRC")
+        head_str = "General Degree of Rate Control\n" + head_str
         line_str = '-'*60 + '\n'
 
         all_data = ''
         all_data += head_str + line_str
-        intermediates = self._owner.adsorbate_names
 
-        for idx, (intermediate, XTRC) in enumerate(zip(intermediates, XTRCs)):
+        for idx, (intermediate, GXRC) in enumerate(zip(intermediates, GXRCs)):
             idx = str(idx).zfill(2)
-            data = " {:<10s}{:<25s}{:<30.16e}\n".format(idx, intermediate, float(XTRC))
+            data = " {:<10s}{:<25s}{:<30.16e}\n".format(idx, intermediate, float(GXRC))
             all_data += data
         all_data += line_str
 
