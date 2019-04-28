@@ -19,7 +19,8 @@ class RelativeEnergyParser(ParserBase):
         super(RelativeEnergyParser, self).__init__(owner)
 
         # Set precision
-        mp.mp.dps = self._owner.decimal_precision
+        if 'KMC' not in owner.__class__.__name__:
+            mp.mp.dps = self._owner.decimal_precision
 
         # Set logger.
         self.__logger = logging.getLogger('model.parsers.RelativeEnergyParser')

@@ -14,7 +14,7 @@ def ODE_integration(model, N):
         model.logger.info('Use ODE integration to get new initial coverages...')
 
     end = 10**N
-    span = 1e-2#10**-(N+2)#1e-2
+    span = 0.1#1e-2#10**-(N+2)#1e-2
     init_cvgs = model.solver.coverages
     model._MicroKinetcModel____ode_output_interval = int(end/span)//10
 

@@ -1,0 +1,68 @@
+#!/usr/bin/env python
+rxn_expressions = [
+    'CH4_g + 2*_f <-> CH3-H_2f -> CH3_f + H_f',                       # CO adsorption at fcc site
+    'H2O2_g + *_f -> H2O2_f',           # O2 dissociate adsorption
+    'CH3_f + H2O2_f <-> CH3-OHOH_f + *_f -> CH3OH_f + OH_f',
+    'CH3OH_f + OH_f + H_f <-> CH3OH-OHH_f + 2*_f -> CH3OH_f + H2O_f + *_f',
+    'CH3OH_f  -> CH3OH_g + *_f',
+    'H2O_f -> H2O_g + *_f'
+]
+
+# Gas pressure.
+species_definitions = {}
+species_definitions['CH4_g'] = {'pressure': 1e-6}    # define the gas pressures
+species_definitions['H2O2_g'] = {'pressure':4e-7}  # 0.094
+species_definitions['H2O_g'] = {'pressure': 5.5e-5}
+species_definitions['CH3OH_g'] = {'pressure': 1e-8}
+# Site info.
+species_definitions['f'] = {'site_name': 'fcc', 'type': 'site'}
+species_definitions['h'] = {'site_name': 'hcp', 'type': 'site'}
+
+# Temperature.
+temperature = 500  # K
+
+# Lattice information.
+surface_name = 'Pt-111'
+
+# Unitcell.
+cell_vectors = [[1.0, 0.0, 0.0],
+                [0.5, 0.87, 0.0],
+                [0.0, 0.0, 1.0]]
+
+basis_sites = [[0.0, 0.0, 0.0],
+               [0.0, 0.5, 0.0],
+               [0.5, 0.0, 0.0],
+               [0.5, 0.5, 0.0]]
+unitcell_area = 7.15e-20
+active_ratio = 1./3
+
+# Supercell.
+repetitions = (1, 1, 1)   # (x, y, z)
+periodic = (True, True, False)           # periodic boundary condition
+possible_element_types = ["H", "V", "H1", "C1", "O", "C", "H2O", "OH", ]
+empty_type = "V"
+possible_site_types = ["P"]
+
+
+# KMC model attributes.
+# specify tools for model to use
+parser = 'KMCParser'  # default
+solver = 'KMCSolver'
+corrector = "ThermodynamicCorrector"
+rate_algo = 'TST'
+
+# KMC loop control parameters.
+nstep = 2000                           # number of KMC loop step
+#time_limit = 1000
+seed = 13996                         # seed for random number generator
+random_generator = 'MT'              # 'MT' | 'MINSTD' | 'RANLUX24' | 'RANLUX48'
+analysis = ["FrequencyAnalysis"]     # ['CoveragesAnalysis', 'FrequencyAnalysis']
+analysis_interval = [1]
+#coverage_ratios = [1.0, 1./3, 1./3, 1./3, 1.0, 1.0]
+trajectory_dump_interval = 1
+
+# Redistribution
+#do_redistribution = True
+#redistribution_interval = 300
+#distributor_type = 'ProcessRandomDistributor'
+
