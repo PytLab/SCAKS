@@ -237,7 +237,8 @@ class MeanFieldSolver(SolverBase):
         return kfs, krs
         # }}}
 
-    def __log_rates(self, fdata, rdata, fname, rname):
+    def __log_rates(self, fdata, rdata, fname, rname,
+                    net_data=None, net_name=None):
         """
         Private helpr function to output rate log information.
 
@@ -250,20 +251,34 @@ class MeanFieldSolver(SolverBase):
         """
         # Get the width for reaction expressions.
         rxn_width = len(sorted(self._owner.rxn_expressions, key=lambda x: len(x))[-1])
-        title_format = "{{:<{width}}}{{:<12s}}{{:<12s}}\n".format(width=rxn_width+3)
-        data_format = "{{:<{width}}}{{:<12.4e}}{{:<12.4e}}\n".format(width=rxn_width+3)
+        if net_data and net_name:
+            title_format = "{{:<{width}}}{{:<12s}}{{:<12s}}{{:<12s}}\n".format(width=rxn_width+3)
+            data_format = "{{:<{width}}}{{:<12.4e}}{{:<12.4e}}{{:<12.4e}}\n".format(width=rxn_width+3)
+            # Title string.
+            title = title_format.format("reactions", fname, rname, net_name)
+            # Cut-off line.
+            line = "-"*len(title) + "\n"
 
-        # Title string.
-        title = title_format.format("reactions", fname, rname)
-        # Cut-off line.
-        line = "-"*len(title) + "\n"
+            # Get data content of table.
+            content = title + line
+            for rxn_expression, f, r, net in zip(self._owner.rxn_expressions,
+                                                 fdata, rdata, net_data):
+                content += data_format.format(rxn_expression, float(f),
+                                              float(r), float(net))
+            content = "\n\n" + content + line
+        else:
+            title_format = "{{:<{width}}}{{:<12s}}{{:<12s}}\n".format(width=rxn_width+3)
+            data_format = "{{:<{width}}}{{:<12.4e}}{{:<12.4e}}\n".format(width=rxn_width+3)
+            # Title string.
+            title = title_format.format("reactions", fname, rname, )
+            # Cut-off line.
+            line = "-"*len(title) + "\n"
 
-        # Get data content of table.
-        content = title + line
-        for rxn_expression, f, r in zip(self._owner.rxn_expressions, fdata, rdata):
-            content += data_format.format(rxn_expression, float(f), float(r))
-
-        content = "\n\n" + content + line
+            # Get data content of table.
+            content = title + line
+            for rxn_expression, f, r in zip(self._owner.rxn_expressions, fdata, rdata):
+                content += data_format.format(rxn_expression, float(f), float(r))
+            content = "\n\n" + content + line
 
         self.__logger.info(content)
 
@@ -423,9 +438,11 @@ class MeanFieldSolver(SolverBase):
             exprs_str = '\n'.join(exprs_list)
             exec(exprs_str)
 
-        if self._owner.log_allowed and log:
-            self.__log_rates(rfs, rrs, "R_forward", "R_reverse")
+        net_rates = [rf - rr for rf, rr in zip(rfs, rrs)]
 
+        if self._owner.log_allowed and log:
+            self.__log_rates(rfs, rrs, "R_forward", "R_reverse",
+                             net_rates, "R_net")
         # Archive.
         self.archive_data('rates', (rfs, rrs))
 
