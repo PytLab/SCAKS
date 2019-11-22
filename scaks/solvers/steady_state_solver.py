@@ -46,6 +46,10 @@ class SteadyStateSolver(MeanFieldSolver):
         # Convert tuple to dict
         cvgs_dict = self._cvg_tuple2dict(cvgs_tuple)
 
+        # Filter intermediates
+        #adsorbate_names = [ads for ads in adsorbate_names if ChemFormula(ads).type() != 'intermediate']
+        site_names = [site for site in site_names if site != '*_i']
+
         # Enforce explicit maxima, cannot be larger than 1.0, smaller than 0.0
         for adsorbate_name in adsorbate_names:
             if cvgs_dict[adsorbate_name] > 1.0:
@@ -340,7 +344,6 @@ class SteadyStateSolver(MeanFieldSolver):
         formula = ChemFormula(adsorbate_name)
         site_name = "*_{}".format(formula.site())
         site_cvg_expr = theta(site_name)
-        site_total = self._owner.species_definitions[site_name]['total']
 
         # Get derivation expression wrt free site.
         def deriv_site_part(site_name, term_expression):
@@ -348,6 +351,7 @@ class SteadyStateSolver(MeanFieldSolver):
 
             # Convert site expression to adsobate expression.
             if site_cvg_expr in initial_expr:
+                site_total = self._owner.species_definitions[site_name]['total']
                 # Get substitute expression.
                 substitute_expr = str(site_total)
                 for adsorbate_name in self._classified_adsorbates[site_name]:

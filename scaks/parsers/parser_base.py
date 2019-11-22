@@ -82,7 +82,7 @@ class ParserBase(ModelShell):
                     species_site = formula.species_site()
 
                     # Gas.
-                    if "g" in site_dict:
+                    if "g" in site_dict and '-' not in formula.species():
                         gas_names.append(species_site)
                     # Liquid.
                     elif "l" in site_dict:

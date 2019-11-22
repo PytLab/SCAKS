@@ -248,7 +248,7 @@ class ChemState(object):
         sites_dicts = (formula.get_sites_dict() for formula in formula_list)
 
         # Site types that are not included.
-        exclusive_sites = ("g", "l")
+        exclusive_sites = ("g", "l", "i")
 
         # Merge all elements dicts.
         merged_dict = {}
@@ -373,6 +373,8 @@ class ChemFormula(object):
             return "gas"
         elif self.__site == "l":
             return "liquid"
+        elif self.__site == "i":
+            return "intermediate"
         else:
             if "*" in self.__species_site:
                 return "site"

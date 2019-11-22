@@ -11,10 +11,10 @@ model_dict = {
     'rxn_expressions': [
         'H2O_g + *_o + *_b <-> H-OH_b + *_o -> H_o + OH_b',
         'O2_g + *_n -> O2_n',
-        'O2_n + CH4_g + *_b <-> CH3-H_g + O2_n -> CH3_i + O_n + OH_b',
+        'O2_n + CH4_g + *_b <-> CH3-H_g + O2_n + *_b -> CH3_i + O_n + OH_b',
         'CH3_i + O_n <-> CH3-O_n -> OCH3_n',
-        'OCH3_n + OH_b + H_o <-> OCH3_n + OH-H_b + *_o -> OCH3_i + H2O_g + *_n + *_b',
-        'CH4_g + OH_b <-> CH3-H_g + OH_b -> CH3_i + H2O_g',
+        'OCH3_n + OH_b + H_o <-> OCH3_n + OH-H_b + *_o -> OCH3_i + H2O_g + *_n + *_b + *_o',
+        'CH4_g + OH_b <-> CH3-H_g + OH_b -> CH3_i + H2O_g + *_b',
         'OCH3_i <-> OCH2-H_i -> HCHO_g + H_i', #1
         'OCH3_i + O2_g <-> OCH2-H_i + O2_g -> HCHO_g + OOH_i', #2
         'HCHO_g + CH3_i <-> CH3_i + H-CHO_g -> CHO_i + CH4_g', #3
@@ -24,7 +24,7 @@ model_dict = {
         '2H_i -> H2_g', #7
         'H_i + CH4_g <-> CH3-H_g + H_i -> H2_g + CH3_i', #8
         'H_i + C2H6_g <-> C2H5-H_g + H_i -> H2_g + C2H5_i', #9
-        'O2 + H_i <-> OO-H_i -> OOH_i', #10
+        'O2_g + H_i <-> OO-H_i -> OOH_i', #10
         'CH3_i + OOH_i -> CH3OOH_g', #11
         'CH3OOH_g <-> CH3O-OH_g -> CH3O_i + OH_i', #12
         'OH_i + H_i -> H2O_g', #13
@@ -33,20 +33,25 @@ model_dict = {
     ],
 
     'species_definitions': {
-        'H2_g': {'pressure': 2.},
-        'C8H6NO2_g': {'pressure': 0.005},
-        'H2O_g': {'pressure': 0.01},
-        'C8H6NH2_g': {'pressure': 0.005},
-        'C8H6NHOH_g': {'pressure': 0.1},
-        '*_a': {'site_name': 'TiO2', 'type': 'site', 'total': 1.0},
-        '*_b': {'site_name': 'interface', 'type': 'site', 'total': 1.0},
-        '*_c': {'site_name': 'Au', 'type': 'site', 'total': 1.0},
+        'CH4_g': {'pressure': 0.28},
+        'O2_g': {'pressure': 0.14},
+        'CO_g': {'pressure': 0.043},
+        'H2_g': {'pressure': 0.0078},
+        'C2H4_g': {'pressure': 0.0054},
+        'C2H6_g': {'pressure': 0.0054},
+        'CO2_g': {'pressure': 0.0025},
+        'H2O_g': {'pressure': 0.14},
+        'HCHO_g': {'pressure': 0.0025},
+        'CH3OOH_g': {'pressure': 0.0025},
+        '*_b': {'site_name': 'B', 'type': 'site', 'total': 1.0},
+        '*_o': {'site_name': 'O', 'type': 'site', 'total': 1.0},
+        '*_n': {'site_name': 'N', 'type': 'site', 'total': 1.0},
     },
 
-    'temperature': 353.15,
+    'temperature': 690 + 273.15,
     'parser': "RelativeEnergyParser",
 
-    'rate_algo': 'CT',
+    'rate_algo': 'TST',
     'unitcell_area': 9.0e-20,
     'active_ratio': 1.0,
 
@@ -70,18 +75,15 @@ model.solver.get_data()
 corrector = ThermodynamicCorrector(model)
 model.set_corrector(corrector)
 
-model.solver.get_data_symbols()
+#model.solver.get_data_symbols()
 
 def ss_equation(t, y):
     return model.solver.steady_state_function(y)
 
 if __name__ == '__main__':
 
-    from results import cvgs
-#    with open('root.pkl', 'rb') as f:
-#        data = pkl.load(f)
-#    init_guess = cvgs = data['steady_state_coverages']
-    trajectory = model.solver.solve_ode(algo='lsoda', time_span=0.1, initial_cvgs=cvgs, time_end=10**3, traj_output=True)
+    cvgs = [0.0]*13
+    trajectory = model.solver.solve_ode(algo='lsoda', time_span=0.1, initial_cvgs=cvgs, time_end=100, traj_output=True)
     init_guess = trajectory[-1]
 
     # Run.
@@ -89,8 +91,5 @@ if __name__ == '__main__':
               solve_ode=False,
               coarse_guess=False,
               XRC=False,
-              product_name='C8H6NH2_g')
-    #model.solver.get_GXRC(19, cvgs, model.transition_state_names + model.adsorbate_names, epsilon=1e-100, run_ode=True)
-    #model.solver.get_GXRC(17, cvgs, ['C8H6NH-OH_a', 'C8H6NH-H_a', 'C8H6NHOH_a', 'C8H6NH2_a', 'H-H_c'], epsilon=1e-50, run_ode=True)
-    #model.solver.get_GXRC(18, cvgs, model.transition_state_names, epsilon=1e-50, run_ode=True)
+              product_name='CO_g')
 

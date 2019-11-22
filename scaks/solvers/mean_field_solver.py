@@ -146,6 +146,9 @@ class MeanFieldSolver(SolverBase):
         # Add free site coverages
         species_definitions = self._owner.species_definitions
         for site_name in self._owner.site_names:
+            # Ignore gaseous intermediate
+            if site_name == '*_i':
+                continue
             total_cvg = species_definitions[site_name]['total']
             sum_cvg = 0.0
             for sp in self._classified_adsorbates[site_name]:
@@ -357,7 +360,7 @@ class MeanFieldSolver(SolverBase):
                         sp_expr = "*theta['" + species_name + "']**" + str(stoichiometry)
                 else:
                     sp_type = formula.type()
-                    if sp_type == 'adsorbate':
+                    if sp_type in ['adsorbate', 'intermediate']:
                         if stoichiometry == 1:
                             sp_expr = "*theta['" + species_name + "']"
                         else:
@@ -659,6 +662,8 @@ class MeanFieldSolver(SolverBase):
         # Free sites.
         fsite_theta_sym = []
         for site_name in self._owner.site_names:
+            if site_name == '*_i':
+                continue
             total = self._owner.species_definitions[site_name]['total']
             free_site_cvg = total
             for ads_name in self._classified_adsorbates[site_name]:

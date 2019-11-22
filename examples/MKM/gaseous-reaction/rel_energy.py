@@ -14,7 +14,7 @@ Ga.append(4.56 - 2.27)
 dG.append(2.56 - 2.27)
 
 #4 'CH3_i + O_n <-> CH3-O_n -> OCH3_n',
-Ga.append(0.4)
+Ga.append(0.0) #0.4
 dG.append(1.82 - 2.56)
 
 #5 'OCH3_n + OH_b + H_o <-> OCH3_n + OH-H_b + *_o -> OCH3_g + H2O_g + *_n + *_b',
