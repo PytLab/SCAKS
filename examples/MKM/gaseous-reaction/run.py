@@ -40,9 +40,9 @@ model_dict = {
         'C2H4_g': {'pressure': 0.0054},
         'C2H6_g': {'pressure': 0.0054},
         'CO2_g': {'pressure': 0.0025},
-        'H2O_g': {'pressure': 0.14},
-        'HCHO_g': {'pressure': 0.0025},
-        'CH3OOH_g': {'pressure': 0.0025},
+        'H2O_g': {'pressure': 0.0},
+        'HCHO_g': {'pressure': 0.0},
+        'CH3OOH_g': {'pressure': 0.0},
         '*_b': {'site_name': 'B', 'type': 'site', 'total': 1.0},
         '*_o': {'site_name': 'O', 'type': 'site', 'total': 1.0},
         '*_n': {'site_name': 'N', 'type': 'site', 'total': 1.0},
@@ -51,7 +51,7 @@ model_dict = {
     'temperature': 690 + 273.15,
     'parser': "RelativeEnergyParser",
 
-    'rate_algo': 'TST',
+    'rate_algo': 'CT',
     'unitcell_area': 9.0e-20,
     'active_ratio': 1.0,
 
