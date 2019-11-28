@@ -9,14 +9,14 @@ from scaks.correctors.thermodynamic_corrector import ThermodynamicCorrector
 
 model_dict = {
     'rxn_expressions': [
-        'H2O_g + BOB_i <-> H-OH_g + *_o -> H_o + OH_b',
-        'O2_g + *_n -> O2_n',
-        'O2_n + CH4_g + *_b <-> CH3-H_g + O2_n + *_b -> CH3_i + O_n + OH_b',
-        'CH3_i + O_n <-> CH3-O_n -> OCH3_n',
-        'OCH3_n + OH_b + H_o <-> OCH3_n + OH-H_b + *_o -> OCH3_i + H2O_g + *_n + *_b + *_o',
-        'CH4_g + OH_b <-> CH3-H_g + OH_b -> CH3_i + H2O_g + *_b',
-        'OCH3_i <-> OCH2-H_i -> HCHO_g + H_i', #1
-        'OCH3_i + O2_g <-> OCH2-H_i + O2_g -> HCHO_g + OOH_i', #2
+        'H2O_g + BOB_i <-> H-OH_g + BOB_i -> BOHBOH_i',
+        'O2_g + BOHBOH_i -> O2BOHBOH_i',
+        'O2BOHBOH_i + CH4_g <-> CH3-H_g + O2BOHBOH_i -> CH3_i + OBOHBOHOH_i',
+        'CH3_i + OBOHBOHOH_i <-> CH3-OBOHBOHOH_i -> OCH3BOHBOHOH_i',
+        'OCH3BOHBOHOH_i <-> OCH3-BOHBOHOH_i -> CH3O_i + H2O_g + BOBOH_i',
+        'CH4_g + BOBOH_i <-> CH3-H_g + BOBOH_i -> CH3_i + H2O_g + BOB_i',
+        'CH3O_i <-> OCH2-H_i -> HCHO_g + H_i', #1
+        'CH3O_i + O2_g <-> OCH2-H_i + O2_g -> HCHO_g + OOH_i', #2
         'HCHO_g + CH3_i <-> CH3_i + H-CHO_g -> CHO_i + CH4_g', #3
         'CHO_i + O2_g <-> CO-H_i + O2_g -> CO_g + OOH_i', #4
         'CHO_i <-> CO-H_i -> CO_g + H_i', #5
@@ -40,24 +40,21 @@ model_dict = {
         'C2H4_g': {'pressure': 0.0054},
         'C2H6_g': {'pressure': 0.0054},
         'CO2_g': {'pressure': 0.0025},
-        'H2O_g': {'pressure': 0.0},
-        'HCHO_g': {'pressure': 0.0},
-        'CH3OOH_g': {'pressure': 0.0},
-        '*_b': {'site_name': 'B', 'type': 'site', 'total': 1.0},
-        '*_o': {'site_name': 'O', 'type': 'site', 'total': 1.0},
-        '*_n': {'site_name': 'N', 'type': 'site', 'total': 1.0},
+        'H2O_g': {'pressure': 0.28},
+        'HCHO_g': {'pressure': 1e-8},
+        'CH3OOH_g': {'pressure': 1e-8},
     },
 
     'temperature': 690 + 273.15,
     'parser': "RelativeEnergyParser",
 
-    'rate_algo': 'CT',
+    'rate_algo': 'TST',
     'unitcell_area': 9.0e-20,
     'active_ratio': 1.0,
 
     'ode_output_interval': 100,
     'decimal_precision': 1000,
-    'tolerance': 1e-15
+    'tolerance': 1e-50
 }
 
 # Build micor-kinetic model.
